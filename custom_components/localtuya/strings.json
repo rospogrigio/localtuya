@@ -8,7 +8,8 @@
             "cannot_connect": "Cannot connect to device. Verify that address is correct.",
             "invalid_auth": "Failed to authenticate with device. Verify that device id and local key are correct.",
             "unknown": "An unknown error occurred. See log for details.",
-            "switch_already_configured": "Switch with this ID has already been configured."
+            "switch_already_configured": "Switch with this ID has already been configured.",
+            "cover_already_configured": "Cover with this ID has already been configured."
         },
         "step": {
             "user": {
