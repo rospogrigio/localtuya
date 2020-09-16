@@ -19,6 +19,7 @@
  Functions 
     json = status()          # returns json payload
     set_version(version)     #  3.1 [default] or 3.3
+    detect_available_dps()   # returns a list of available dps provided by the device
     set_dpsUsed(dpsUsed)     
     set_dps(on, dps_index)   # Set int value of any dps index.
     set_timer(num_secs):
@@ -35,6 +36,7 @@
 
 import base64
 from hashlib import md5
+from itertools import chain
 import json
 import logging
 import socket
@@ -52,7 +54,7 @@ except ImportError:
     import pyaes  # https://github.com/ricmoo/pyaes
 
 
-version_tuple = (8, 0, 0)
+version_tuple = (8, 1, 0)
 version = version_string = __version__ = '%d.%d.%d' % version_tuple
 __author__ = 'rospogrigio'
 
@@ -238,6 +240,51 @@ class TuyaDevice(object):
 
     def set_version(self, version):
         self.version = version
+
+    def detect_available_dps(self):
+        # type_0d devices need a sort of bruteforce querying in order to detect the list of available dps 
+        # experience shows that the dps available are usually in the ranges [1-25] and [100-110]
+        # need to split the bruteforcing in different steps due to request payload limitation (max. length = 255)
+        detected_dps = {}
+
+        # dps 1 must always be sent, otherwise it might fail in case no dps is found in the requested range
+        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(2, 11)) })
+        try:
+            data = self.status()
+        except Exception as e:
+            print("Failed to get status: [{}]".format(e))
+            raise CannotConnect
+        detected_dps.update( data["dps"] )
+
+        if self.dev_type == "type_0a":
+            return detected_dps
+
+        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(11, 21)) })
+        try:
+            data = self.status()
+        except Exception as e:
+            print("Failed to get status: [{}]".format(e))
+            raise CannotConnect
+        detected_dps.update( data["dps"] )
+
+        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(21, 31)) })
+        try:
+            data = self.status()
+        except Exception as e:
+            print("Failed to get status: [{}]".format(e))
+            raise CannotConnect
+        detected_dps.update( data["dps"] )
+
+        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(100, 111)) })
+        try:
+            data = self.status()
+        except Exception as e:
+            print("Failed to get status: [{}]".format(e))
+            raise CannotConnect
+        detected_dps.update( data["dps"] )
+#        print("DATA IS [{}] detected_dps [{}]".format(data,detected_dps))
+
+        return detected_dps
 
     def set_dpsUsed(self, dpsUsed):
         self.dpsUsed = dpsUsed

@@ -1,6 +1,7 @@
 """Config flow for LocalTuya integration integration."""
 import logging
 from importlib import import_module
+from itertools import chain
 
 import voluptuous as vol
 
@@ -78,14 +79,16 @@ async def validate_input(hass: core.HomeAssistant, data):
         data[CONF_LOCAL_KEY],
     )
     pytuyadevice.set_version(float(data[CONF_PROTOCOL_VERSION]))
-    pytuyadevice.set_dpsUsed({str(dps): None for dps in range(1, 151)})
+    detected_dps = {}
+
     try:
-        data = await hass.async_add_executor_job(pytuyadevice.status)
+        detected_dps = await hass.async_add_executor_job(pytuyadevice.detect_available_dps)
     except (ConnectionRefusedError, ConnectionResetError):
         raise CannotConnect
     except ValueError:
         raise InvalidAuth
-    return dps_string_list(data["dps"])
+
+    return dps_string_list(detected_dps)
 
 
 class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
