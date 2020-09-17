@@ -149,10 +149,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 class TuyaCache:
     """Cache wrapper for pytuya.TuyaDevice"""
 
-    def __init__(self, device, friendly_name):
+    def __init__(self, device):
         """Initialize the cache."""
         self._cached_status = ""
-        self._friendly_name = friendly_name
         self._cached_status_time = 0
         self._device = device
         self._lock = Lock()
@@ -182,15 +181,15 @@ class TuyaCache:
                     #                    return None
                     raise ConnectionError("Failed to update status .")
 
-    def set_dps(self, state, dps_index):
+    def set_dps(self, value, dps_index):
         #_LOGGER.info("running def set_dps from cover")
         """Change the Tuya cover status and clear the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
         for i in range(5):
             try:
-                #_LOGGER.info("Running a try from def set_dps from cover where state=%s and dps_index=%s", state, dps_index)
-                return self._device.set_dps(state, dps_index)
+                #_LOGGER.info("Running a try from def set_dps from cover where value=%s and dps_index=%s", state, dps_index)
+                return self._device.set_dps(value, dps_index)
             except Exception:
                 print(
                     "Failed to set status of device [{}]".format(self._device.address)
@@ -267,7 +266,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 # Serial numbers are unique identifiers within a specific domain
                 ("LocalTuya", f"local_{self._device.unique_id}")
             },
-            "name": self._device._friendly_name,
+            "name": self._name,
             "manufacturer": "Tuya generic",
             "model": "SmartCover",
             "sw_version": "3.3",
@@ -485,3 +484,17 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     #     """Stop the cover."""
     #     #_LOGGER.info("stop_cover called where self._cover_command_key=%s and self._stop_cmd=%s", self._cover_command_key, self._stop_cmd)
     #     self._device.set_dps(str(self._cover_command_key), str(self.stop_cmd))
+        #_LOGGER.info("open_cover called where self._cover_command_key=%s and self._open_cmd=%s", self._cover_command_key, self._open_cmd)
+    #     self._device.set_dps(str(self._open_cmd), str(self._cover_command_key))
+
+    # def close_cover(self, **kwargs):
+    #     """Close the cover."""
+    #     #_LOGGER.info("close_cover called where self._cover_command_key=%s and self._close_cmd=%s", self._cover_command_key, self._close_cmd)
+    #     self._device.set_dps(str(self._close_cmd), str(self._cover_command_key))
+
+    # def stop_cover(self, **kwargs):
+    #     """Stop the cover."""
+    #     #_LOGGER.info("stop_cover called where self._cover_command_key=%s and self._stop_cmd=%s", self._cover_command_key, self._stop_cmd)
+    #     self._device.set_dps(str(self._stop_cmd), str(self._cover_command_key))
+                
+                
