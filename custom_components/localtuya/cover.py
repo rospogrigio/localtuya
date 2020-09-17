@@ -149,11 +149,12 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 class TuyaCache:
     """Cache wrapper for pytuya.TuyaDevice"""
 
-    def __init__(self, device):
+    def __init__(self, device, friendly_name):
         """Initialize the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
         self._device = device
+        self._friendly_name = friendly_name
         self._lock = Lock()
 
     @property
@@ -266,7 +267,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 # Serial numbers are unique identifiers within a specific domain
                 ("LocalTuya", f"local_{self._device.unique_id}")
             },
-            "name": self._name,
+            "name": self._device._friendly_name,
             "manufacturer": "Tuya generic",
             "model": "SmartCover",
             "sw_version": "3.3",
