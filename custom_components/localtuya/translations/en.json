@@ -14,7 +14,7 @@
                 "title": "Add Tuya device",
                 "description": "Fill in the basic details and pick device type. The name entered here will be used to identify the integration itself (as seen in the `Integrations` page). You will add entities and give them names in the following steps.",
                 "data": {
-                    "name": "Name",
+                    "friendly_name": "Name",
                     "host": "Host",
                     "device_id": "Device ID",
                     "local_key": "Local key",

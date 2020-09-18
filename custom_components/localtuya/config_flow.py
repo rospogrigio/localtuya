@@ -11,7 +11,6 @@ from homeassistant.const import (
     CONF_ID,
     CONF_HOST,
     CONF_DEVICE_ID,
-    CONF_NAME,
     CONF_FRIENDLY_NAME,
     CONF_PLATFORM,
     CONF_SWITCHES,
@@ -32,7 +31,7 @@ NO_ADDITIONAL_PLATFORMS = "no_additional_platforms"
 
 USER_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_NAME): str,
+        vol.Required(CONF_FRIENDLY_NAME): str,
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_DEVICE_ID): str,
         vol.Required(CONF_LOCAL_KEY): str,
@@ -133,7 +132,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             if user_input.get(NO_ADDITIONAL_PLATFORMS):
                 config = {**self.basic_info, CONF_ENTITIES: self.entities}
-                return self.async_create_entry(title=config[CONF_NAME], data=config)
+                return self.async_create_entry(title=config[CONF_FRIENDLY_NAME], data=config)
 
             self._set_platform(user_input[PLATFORM_TO_ADD])
             return await self.async_step_add_entity()
@@ -193,7 +192,6 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         #print('ENTITIES: [{}] '.format(self.entities))
         config = {
-            CONF_NAME:  f"{user_input[CONF_FRIENDLY_NAME]} (YAML)",
             CONF_FRIENDLY_NAME: f"{user_input[CONF_FRIENDLY_NAME]}",
             CONF_HOST: user_input[CONF_HOST],
             CONF_DEVICE_ID: user_input[CONF_DEVICE_ID],
@@ -202,7 +200,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_ENTITIES: self.entities,
         }
         self._abort_if_unique_id_configured(updates=config)
-        return self.async_create_entry(title=config[CONF_NAME], data=config)
+        return self.async_create_entry(title=config[CONF_FRIENDLY_NAME], data=config)
 
     def _set_platform(self, platform):
         integration_module = ".".join(__name__.split(".")[:-1])
