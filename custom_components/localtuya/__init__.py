@@ -113,6 +113,19 @@ class LocalTuyaEntity(Entity):
         self._status = None
 
     @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                # Serial numbers are unique identifiers within a specific domain
+                ("LocalTuya", f"local_{self._device.unique_id}")
+            },
+            "name": self._device._friendly_name,
+            "manufacturer": "Unknown",
+            "model": "Tuya generic",
+            "sw_version": "3.3",
+        }
+
+    @property
     def name(self):
         """Get name of Tuya entity."""
         return self._config[CONF_FRIENDLY_NAME]

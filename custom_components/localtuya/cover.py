@@ -39,7 +39,17 @@ from homeassistant.const import (
 )
 import homeassistant.helpers.config_validation as cv
 
-from . import BASE_PLATFORM_SCHEMA, prepare_setup_entities, import_from_yaml
+from . import (
+    BASE_PLATFORM_SCHEMA,
+    LocalTuyaEntity,
+    prepare_setup_entities,
+    import_from_yaml,
+)
+from .const import (
+    CONF_OPEN_CMD,
+    CONF_CLOSE_CMD,
+    CONF_STOP_CMD,
+)
 from .const import CONF_OPEN_CMD, CONF_CLOSE_CMD, CONF_STOP_CMD
 from .pytuya import TuyaDevice
 
@@ -85,15 +95,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         covers.append(
             LocaltuyaCover(
                 TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),
-                device_config[CONF_FRIENDLY_NAME],
+                config_entry,
                 device_config[CONF_ID],
-                device_config.get(CONF_OPEN_CMD),
-                device_config.get(CONF_CLOSE_CMD),
-                device_config.get(CONF_STOP_CMD),
             )
-#    print('Setup localtuya cover [{}] with device ID [{}] '.format(config.get(CONF_FRIENDLY_NAME), config.get(CONF_ID)))
-#    _LOGGER.info("Setup localtuya cover %s with device ID=%s", config.get(CONF_FRIENDLY_NAME), config.get(CONF_ID) )
-#    _LOGGER.debug("Cover %s uses open_cmd=%s close_cmd=%s stop_cmd=%s", config.get(CONF_FRIENDLY_NAME), config.get(CONF_OPEN_CMD), config.get(CONF_CLOSE_CMD), config.get(CONF_STOP_CMD) )
         )
 
     device.set_dpsUsed(dps)
@@ -175,64 +179,25 @@ class TuyaCache:
         finally:
             self._lock.release()
 
-class LocaltuyaCover(CoverEntity):
+class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     """Tuya cover devices."""
 
-    def __init__(self, device, friendly_name, switchid, open_cmd, close_cmd, stop_cmd):
-        self._device = device
-        self._available = False
-        self._name = friendly_name
-        self._switch_id = switchid
-        self._status = None
+    def __init__(
+        self,
+        device,
+        config_entry,
+        switchid,
+        **kwargs,
+    ):
+        #_LOGGER.info("running def __init__ of LocaltuyaCover(CoverEntity) with self=%s device=%s name=%s friendly_name=%s icon=%s switchid=%s open_cmd=%s close_cmd=%s stop_cmd=%s", self, device, name, friendly_name, icon, switchid, open_cmd, close_cmd, stop_cmd)
+        super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
         self._position = 50
-        self._open_cmd = open_cmd
-        self._close_cmd = close_cmd
-        self._stop_cmd = stop_cmd
-        #_LOGGER.info("running def __init__ of LocaltuyaCover(CoverEntity) with self=%s device=%s name=%s friendly_name=%s icon=%s switchid=%s open_cmd=%s close_cmd=%s stop_cmd=%s", self, device, name, friendly_name, icon, switchid, open_cmd, close_cmd, stop_cmd)
         print(
-            "Initialized tuya cover [{}] with switch status [{}] and state [{}]".format(
-                self._name, self._status, self._state
+            "Initialized tuya cover  [{}] with switch status [{}] and state [{}]".format(
+                self.name, self._status, self._state
             )
         )
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                ("LocalTuya", f"local_{self._device.unique_id}")
-            },
-            "name": self._device._friendly_name,
-            "manufacturer": "Tuya generic",
-            "model": "SmartCover",
-            "sw_version": "3.3",
-        }
-
-    @property
-    def unique_id(self):
-        """Return unique device identifier."""
-        return f"local_{self._device.unique_id}_{self._switch_id}"
-
-    @property
-    def name(self):
-        """Get name of Tuya switch."""
-        return self._name
-
-    @property
-    def open_cmd(self):
-        """Get name of open command."""
-        return self._open_cmd
-
-    @property
-    def close_cmd(self):
-        """Get name of close command."""
-        return self._close_cmd
-
-    @property
-    def stop_cmd(self):
-        """Get name of stop command."""
-        return self._stop_cmd
 
     @property
     def available(self):
@@ -307,39 +272,22 @@ class LocaltuyaCover(CoverEntity):
         self.stop_cover()
         self._position = 50  # newpos
 
-    #        self._state = 'on'
-    #        self._device._device.open_cover()
 
     def open_cover(self, **kwargs):
         """Open the cover."""
-        #_LOGGER.info("running open_cover from cover")
-        self._device.set_dps(self._open_cmd, self._switch_id)
-#        self._state = 'on'
-#        self._device._device.open_cover()
+        _LOGGER.info("Launching command %s to cover ", self._config[CONF_OPEN_CMD])
+        self._device.set_dps(self._config[CONF_OPEN_CMD], self._dps_id)
 
     def close_cover(self, **kwargs):
-        # _LOGGER.info("running close_cover from cover")
         """Close cover."""
-        #_LOGGER.info('about to set_dps from cover of off, %s', self._switch_id)
-        self._device.set_dps(self._close_cmd, self._switch_id)
-#        self._state = 'off'
-#        self._device._device.close_cover()
+        _LOGGER.info("Launching command %s to cover ", self._config[CONF_CLOSE_CMD])
+        self._device.set_dps(self._config[CONF_CLOSE_CMD], self._dps_id)
 
     def stop_cover(self, **kwargs):
-        # _LOGGER.info("running stop_cover from cover")
         """Stop the cover."""
-        self._device.set_dps(self._stop_cmd, self._switch_id)
-#        self._state = 'stop'
-#        self._device._device.stop_cover()
+        _LOGGER.info("Launching command %s to cover ", self._config[CONF_STOP_CMD])
+        self._device.set_dps(self._config[CONF_STOP_CMD], self._dps_id)
 
-    def update(self):
-        """Get state of Tuya switch."""
-        # _LOGGER.info("running update(self) from cover")
-        try:
-            self._status = self._device.status()
-            self._state = self._status["dps"][self._switch_id]
-            # print('update() : state [{}]'.format(self._state))
-        except Exception:
-            self._available = False
-        else:
-            self._available = True
+    def status_updated(self):
+        """Device status was updated. """
+        self._state = self.dps(self._dps_id)

@@ -170,6 +170,7 @@ class TuyaCache:
                     return
 
     #                    raise ConnectionError("Failed to set status.")
+        self.update()
 
     def status(self):
         """Get state of Tuya switch and cache the results."""
@@ -203,19 +204,6 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
                 self.name, self._status, self._state
             )
         )
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                ("LocalTuya", f"local_{self._device.unique_id}")
-            },
-            "name": self._device._friendly_name,
-            "manufacturer": "Tuya generic",
-            "model": "SmartSwitch",
-            "sw_version": "3.3",
-        }
 
     @property
     def is_on(self):
