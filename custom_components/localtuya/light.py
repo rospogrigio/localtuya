@@ -61,6 +61,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     lights = []
     for device_config in entities_to_setup:
+        # this has to be done in case the device type is type_0d
+        device.add_dps_to_request(device_config[CONF_ID])
+
         lights.append(
             LocaltuyaLight(
                 TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),

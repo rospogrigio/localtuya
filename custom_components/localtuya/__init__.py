@@ -55,7 +55,6 @@ def prepare_setup_entities(config_entry, platform):
         config_entry.data[CONF_LOCAL_KEY],
     )
     device.set_version(float(config_entry.data[CONF_PROTOCOL_VERSION]))
-    device.set_dpsUsed({})
     return device, entities_to_setup
 
 

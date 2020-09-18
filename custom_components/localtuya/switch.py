@@ -101,6 +101,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     switches = []
     for device_config in entities_to_setup:
+        # this has to be done in case the device type is type_0d
+        device.add_dps_to_request(device_config[CONF_ID])
+        if device_config[CONF_CURRENT] != "-1":
+            device.add_dps_to_request(device_config[CONF_CURRENT])
+        if device_config[CONF_CURRENT_CONSUMPTION] != "-1":
+            device.add_dps_to_request(device_config[CONF_CURRENT_CONSUMPTION])
+        if device_config[CONF_VOLTAGE] != "-1":
+            device.add_dps_to_request(device_config[CONF_VOLTAGE])
+
         switches.append(
             LocaltuyaSwitch(
                 TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),
