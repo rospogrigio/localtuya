@@ -275,17 +275,17 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     def open_cover(self, **kwargs):
         """Open the cover."""
-        _LOGGER.info("Launching command %s to cover ", self._config[CONF_OPEN_CMD])
+        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_OPEN_CMD])
         self._device.set_dps(self._config[CONF_OPEN_CMD], self._dps_id)
 
     def close_cover(self, **kwargs):
         """Close cover."""
-        _LOGGER.info("Launching command %s to cover ", self._config[CONF_CLOSE_CMD])
+        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_CLOSE_CMD])
         self._device.set_dps(self._config[CONF_CLOSE_CMD], self._dps_id)
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.info("Launching command %s to cover ", self._config[CONF_STOP_CMD])
+        _LOGGER.debug("Laudebugching command %s to cover ", self._config[CONF_STOP_CMD])
         self._device.set_dps(self._config[CONF_STOP_CMD], self._dps_id)
 
     def status_updated(self):

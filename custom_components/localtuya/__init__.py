@@ -117,12 +117,12 @@ class LocalTuyaEntity(Entity):
         return {
             "identifiers": {
                 # Serial numbers are unique identifiers within a specific domain
-                ("LocalTuya", f"local_{self._device.unique_id}")
+                (DOMAIN, f"local_{self._device.unique_id}")
             },
-            "name": self._device._friendly_name,
+            "name": self._config_entry.data[CONF_FRIENDLY_NAME],
             "manufacturer": "Unknown",
             "model": "Tuya generic",
-            "sw_version": "3.3",
+            "sw_version": self._config_entry.data[CONF_PROTOCOL_VERSION],
         }
 
     @property
