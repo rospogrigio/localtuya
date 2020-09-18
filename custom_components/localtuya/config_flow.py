@@ -200,7 +200,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_ENTITIES: self.entities,
         }
         self._abort_if_unique_id_configured(updates=config)
-        return self.async_create_entry(title=config[CONF_FRIENDLY_NAME], data=config)
+        return self.async_create_entry(title=f"{config[CONF_FRIENDLY_NAME]} (YAML)", data=config)
 
     def _set_platform(self, platform):
         integration_module = ".".join(__name__.split(".")[:-1])
