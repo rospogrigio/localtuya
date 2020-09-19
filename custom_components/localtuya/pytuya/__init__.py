@@ -250,8 +250,7 @@ class TuyaDevice(object):
 
         # dps 1 must always be sent, otherwise it might fail in case no dps is found in the requested range
         self.dps_to_request = {"1": None}
-        for dps in range(2, 11):
-            self.add_dps_to_request(dps)
+        self.add_dps_to_request(range(2, 11))
         try:
             data = self.status()
         except Exception as e:
@@ -263,8 +262,7 @@ class TuyaDevice(object):
             return detected_dps
 
         self.dps_to_request = {"1": None}
-        for dps in range(11, 21):
-            self.add_dps_to_request(dps)
+        self.add_dps_to_request(range(11, 21))
         try:
             data = self.status()
         except Exception as e:
@@ -273,8 +271,7 @@ class TuyaDevice(object):
         detected_dps.update( data["dps"] )
 
         self.dps_to_request = {"1": None}
-        for dps in range(21, 31):
-            self.add_dps_to_request(dps)
+        self.add_dps_to_request(range(21, 31))
         try:
             data = self.status()
         except Exception as e:
@@ -283,8 +280,7 @@ class TuyaDevice(object):
         detected_dps.update( data["dps"] )
 
         self.dps_to_request = {"1": None}
-        for dps in range(100, 111):
-            self.add_dps_to_request(dps)
+        self.add_dps_to_request(range(100, 111))
         try:
             data = self.status()
         except Exception as e:
@@ -296,7 +292,10 @@ class TuyaDevice(object):
         return detected_dps
 
     def add_dps_to_request(self, dps_index):
-        self.dps_to_request[str(dps_index)] = None
+        if isinstance(dps_index, int):
+            self.dps_to_request[str(dps_index)] = None
+        else:
+            self.dps_to_request.update({str(index): None for index in dps_index})
 
     def generate_payload(self, command, data=None):
         """

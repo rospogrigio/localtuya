@@ -55,6 +55,11 @@ def prepare_setup_entities(config_entry, platform):
         config_entry.data[CONF_LOCAL_KEY],
     )
     device.set_version(float(config_entry.data[CONF_PROTOCOL_VERSION]))
+
+    for device_config in entities_to_setup:
+        # this has to be done in case the device type is type_0d
+        device.add_dps_to_request(device_config[CONF_ID])
+
     return device, entities_to_setup
 
 

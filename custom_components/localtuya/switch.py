@@ -101,14 +101,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     switches = []
     for device_config in entities_to_setup:
-        # this has to be done in case the device type is type_0d
-        device.add_dps_to_request(device_config[CONF_ID])
-        if device_config[CONF_CURRENT] != "-1":
-            device.add_dps_to_request(device_config[CONF_CURRENT])
-        if device_config[CONF_CURRENT_CONSUMPTION] != "-1":
-            device.add_dps_to_request(device_config[CONF_CURRENT_CONSUMPTION])
-        if device_config[CONF_VOLTAGE] != "-1":
-            device.add_dps_to_request(device_config[CONF_VOLTAGE])
+        if device_config.get(CONF_CURRENT, "-1") != "-1":
+            device.add_dps_to_request(device_config.get(CONF_CURRENT))
+        if device_config.get(CONF_CURRENT_CONSUMPTION, "-1") != "-1":
+            device.add_dps_to_request(device_config.get(CONF_CURRENT_CONSUMPTION))
+        if device_config.get(CONF_VOLTAGE, "-1") != "-1":
+            device.add_dps_to_request(device_config.get(CONF_VOLTAGE))
 
         switches.append(
             LocaltuyaSwitch(
@@ -127,8 +125,6 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
 
 class TuyaCache:
-    """Cache wrapper for pytuya.TuyaDevice"""
-
     def __init__(self, device, friendly_name):
         """Initialize the cache."""
         self._cached_status = ""
@@ -222,13 +218,13 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
     @property
     def device_state_attributes(self):
         attrs = {}
-        if CONF_CURRENT in self._config:
+        if self._config.get(CONF_CURRENT, "-1") != "-1":
             attrs[ATTR_CURRENT] = self.dps(self._config[CONF_CURRENT])
-        if CONF_CURRENT_CONSUMPTION in self._config:
+        if self._config.get(ATTR_CURRENT_CONSUMPTION, "-1") != "-1":
             attrs[ATTR_CURRENT_CONSUMPTION] = (
                 self.dps(self._config[CONF_CURRENT_CONSUMPTION]) / 10
             )
-        if CONF_VOLTAGE in self._config:
+        if self._config.get(CONF_VOLTAGE, "-1") != "-1":
             attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE]) / 10
         return attrs
 

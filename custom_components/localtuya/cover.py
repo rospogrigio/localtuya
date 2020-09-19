@@ -51,7 +51,6 @@ from .const import (
     CONF_STOP_CMD,
 )
 from .const import CONF_OPEN_CMD, CONF_CLOSE_CMD, CONF_STOP_CMD
-from .pytuya import TuyaDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -88,9 +87,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     covers = []
     for device_config in entities_to_setup:
-        # this has to be done in case the device type is type_0d
-        device.add_dps_to_request(device_config[CONF_ID])
-
         covers.append(
             LocaltuyaCover(
                 TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),
