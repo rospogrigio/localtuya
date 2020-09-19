@@ -196,6 +196,8 @@ class TuyaDevice(object):
         self.dev_type = 'type_0a'
 
         self.port = 6668  # default - do not expect caller to pass in
+        
+        log.debug("Initiated TuyaDevice where self.id=%s self.address=%s self.local_key=%s self.connection_timeout=%s self.version=%s self.dev_type=%s self.port=%s", self.id, self.address, self.local_key, self.connection_timeout, self.version, self.dev_type, self.port)
 
     def __repr__(self):
         return '%r' % ((self.id, self.address),)  # FIXME can do better than this

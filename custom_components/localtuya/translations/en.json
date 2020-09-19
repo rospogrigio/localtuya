@@ -41,9 +41,9 @@
                     "open_cmd": "Open Command",
                     "close_cmd": "Close Command",
                     "stop_cmd": "Stop Command",
-                    "get_position_dps": "Get Position Key",
-                    "set_position_dps": "Set Position Key",
-                    "last_movement_dps": "Last Movement Key"
+                    "get_position_dps": "Get Position DPS",
+                    "set_position_dps": "Set Position DPS",
+                    "last_movement_dps": "Last Movement DPS"
                 }
             }
         }
