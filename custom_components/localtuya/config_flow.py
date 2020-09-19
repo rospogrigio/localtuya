@@ -16,7 +16,6 @@ from homeassistant.const import (
     CONF_FRIENDLY_NAME,
     CONF_PLATFORM,
     CONF_SWITCHES,
-    CONF_COVERS,
 )
 
 from . import pytuya
@@ -205,7 +204,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle adding a new entity."""
         errors = {}
         if user_input is not None:
-            already_configured = any(switch[CONF_ID] == user_input[CONF_ID] for switch in self.entities) or any(cover[CONF_ID] == user_input[CONF_ID] for cover in self.entities)              
+            already_configured = any(entity[CONF_ID] == user_input[CONF_ID] for entity in self.entities)               
             if not already_configured:
                 user_input[CONF_PLATFORM] = self.platform
                 self.entities.append(strip_dps_values(user_input, self.dps_strings))
@@ -239,13 +238,9 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if len(user_input.get(CONF_SWITCHES, [])) > 0:
                     for switch_conf in user_input[CONF_SWITCHES].values():
                         self.entities.append(_convert_entity(switch_conf))
-        elif len(user_input.get(CONF_COVERS, [])) > 0:
-            for cover_conf in user_input[CONF_COVERS].values():
-                self.entities.append(_convert_entity(cover_conf))
         else:
             self.entities.append(_convert_entity(user_input))
 
-        #print('ENTITIES: [{}] '.format(self.entities))
         config = {
             CONF_FRIENDLY_NAME: f"{user_input[CONF_FRIENDLY_NAME]}",
             CONF_HOST: user_input[CONF_HOST],

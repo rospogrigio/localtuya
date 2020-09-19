@@ -18,9 +18,9 @@ CONF_VOLTAGE = "voltage"
 CONF_OPEN_CMD = "open_cmd"
 CONF_CLOSE_CMD = "close_cmd"
 CONF_STOP_CMD = "stop_cmd"
-CONF_GET_POSITION_DPS = "get_position_dps"
-CONF_SET_POSITION_DPS = "set_position_dps"
-CONF_LAST_MOVEMENT_DPS = "last_movement_dps"
+CONF_GET_POSITION = "get_position"
+CONF_SET_POSITION = "set_position"
+CONF_LAST_MOVEMENT = "last_movement"
 
 DOMAIN = "localtuya"
 

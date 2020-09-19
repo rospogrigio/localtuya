@@ -1,5 +1,10 @@
 """
-Simple platform to locally control Tuya-based cover devices.
+Platform to locally control Tuya-based cover devices.
+
+It is recommend to setup LocalTUya using the graphical configuration flow:
+Configuration-->Integrations-->+-->LocalTuya
+
+YAML may be used as an alternative setup method.
 
 Sample config yaml:
 
@@ -14,9 +19,9 @@ cover:
   open_cmd: open #OPTIONAL, default is 'on'
   close_cmd: close #OPTIONAL, default is 'off'
   stop_cmd: stop #OPTIONAL, default is 'stop'
-  get_position_dps: 3 #OPTIONAL, default is 0
-  set_position_dps: 2 #OPTIONAL, default is 0
-  last_movement_dps: 7 #OPTIONAL, default is 0
+  get_position: 3 #OPTIONAL, default is 0
+  set_position: 2 #OPTIONAL, default is 0
+  last_movement: 7 #OPTIONAL, default is 0
   id: 1 #OPTIONAL
   icon: mdi:blinds #OPTIONAL
 """
@@ -38,7 +43,6 @@ from homeassistant.components.cover import (
 )
 from homeassistant.const import (
     CONF_ID,
-    CONF_COVERS,
     CONF_FRIENDLY_NAME,
     CONF_NAME,
 )
@@ -54,9 +58,9 @@ from .const import (
     CONF_OPEN_CMD,
     CONF_CLOSE_CMD,
     CONF_STOP_CMD,
-    CONF_GET_POSITION_DPS,
-    CONF_SET_POSITION_DPS,
-    CONF_LAST_MOVEMENT_DPS
+    CONF_GET_POSITION,
+    CONF_SET_POSITION,
+    CONF_LAST_MOVEMENT
 )
 
 from .pytuya import TuyaDevice
@@ -66,9 +70,9 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_OPEN_CMD = "open"
 DEFAULT_CLOSE_CMD = "close"
 DEFAULT_STOP_CMD = "stop"
-DEFAULT_SET_POSITION_DPS = 0
-DEFAULT_GET_POSITION_DPS = 0
-DEFAULT_LAST_MOVEMENT_DPS = 0
+DEFAULT_SET_POSITION = 0
+DEFAULT_GET_POSITION = 0
+DEFAULT_LAST_MOVEMENT = 0
 
 MIN_POSITION = 0
 MAX_POSITION = 100
@@ -80,9 +84,9 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA).extend(
         vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): cv.string,
         vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): cv.string,
         vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): cv.string,
-        vol.Optional(CONF_SET_POSITION_DPS, default=DEFAULT_SET_POSITION_DPS): cv.positive_int, # TODO only allow user to select from returned dps list
-        vol.Optional(CONF_GET_POSITION_DPS, default=DEFAULT_GET_POSITION_DPS): cv.positive_int, # TODO only allow user to select from returned dps list
-        vol.Optional(CONF_LAST_MOVEMENT_DPS, default=DEFAULT_LAST_MOVEMENT_DPS): cv.positive_int, # TODO only allow user to select from returned dps list
+        vol.Optional(CONF_SET_POSITION, default=DEFAULT_SET_POSITION): cv.positive_int,
+        vol.Optional(CONF_GET_POSITION, default=DEFAULT_GET_POSITION): cv.positive_int,
+        vol.Optional(CONF_LAST_MOVEMENT, default=DEFAULT_LAST_MOVEMENT): cv.positive_int,
     }
 )
 
@@ -93,9 +97,9 @@ def flow_schema(dps):
             vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): str,
             vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): str,
             vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): str,
-            vol.Optional(CONF_SET_POSITION_DPS, default=DEFAULT_SET_POSITION_DPS): cv.positive_int,
-            vol.Optional(CONF_GET_POSITION_DPS, default=DEFAULT_GET_POSITION_DPS): cv.positive_int,
-            vol.Optional(CONF_LAST_MOVEMENT_DPS, default=DEFAULT_LAST_MOVEMENT_DPS): cv.positive_int,    
+            vol.Optional(CONF_SET_POSITION, default=DEFAULT_SET_POSITION): cv.positive_int,
+            vol.Optional(CONF_GET_POSITION, default=DEFAULT_GET_POSITION): cv.positive_int,
+            vol.Optional(CONF_LAST_MOVEMENT, default=DEFAULT_LAST_MOVEMENT): cv.positive_int,    
         }
 
 
@@ -118,15 +122,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),
                 config_entry,
                 device_config[CONF_ID],
-                # TuyaCache(device),
-                # device_config[CONF_FRIENDLY_NAME],
-                # device_config[CONF_ID],
-                # device_config.get(CONF_OPEN_CMD),
-                # device_config.get(CONF_CLOSE_CMD),
-                # device_config.get(CONF_STOP_CMD),
-                # device_config.get(CONF_SET_POSITION_DPS),
-                # device_config.get(CONF_GET_POSITION_DPS),
-                # device_config.get(CONF_LAST_MOVEMENT_DPS),
             )
         )
 
@@ -135,7 +130,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Set up of the Tuya cover."""
-    _LOGGER.info("running setup_platform")
     return import_from_yaml(hass, config, DOMAIN)
 
 
@@ -144,7 +138,6 @@ class TuyaCache:
 
     def __init__(self, device, friendly_name):
         """Initialize the cache."""
-        _LOGGER.info("initializing cache where device=%s friendly_name=%s", device, friendly_name)
         self._cached_status = ""
         self._cached_status_time = 0
         self._device = device
@@ -154,11 +147,9 @@ class TuyaCache:
     @property
     def unique_id(self):
         """Return unique device identifier."""
-        _LOGGER.info("unique_id returning self._device.id=%s", self._device.id)
         return self._device.id
 
     def __get_status(self):
-        _LOGGER.info("running def __get_status from cover")
         for i in range(5):
             try:
                 status = self._device.status()
@@ -174,17 +165,15 @@ class TuyaCache:
                     _LOGGER.error(
                         "Failed to update status of device %s", self._device.address
                     )
-                    #                    return None
                     raise ConnectionError("Failed to update status .")
 
     def set_dps(self, value, dps_index):
-        _LOGGER.info("set_dps where value=%s dps_index=%s", value, dps_index)
+        _LOGGER.debug("set_dps where value=%s dps_index=%s", value, dps_index)
         """Change the Tuya cover status and clear the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
         for i in range(5):
             try:
-                #_LOGGER.info("Running a try from def set_dps from cover where value=%s and dps_index=%s", state, dps_index)
                 return self._device.set_dps(value, dps_index)
             except Exception:
                 print(
@@ -195,13 +184,10 @@ class TuyaCache:
                         "Failed to set status of device %s", self._device.address
                     )
                     return
-
-    #                    raise ConnectionError("Failed to set status.")
         self.update()
 
     def status(self):
         """Get state of Tuya cover and cache the results."""
-        _LOGGER.info("running def status(self) from cover")
         self._lock.acquire()
         try:
             now = time()
@@ -223,178 +209,40 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         coverid,
         **kwargs,
     ):
-        #_LOGGER.info("running def __init__ of LocaltuyaCover(CoverEntity) with self=%s device=%s name=%s friendly_name=%s icon=%s coverid=%s open_cmd=%s close_cmd=%s stop_cmd=%s", self, device, name, friendly_name, icon, coverid, open_cmd, close_cmd, stop_cmd)
         super().__init__(device, config_entry, coverid, **kwargs)
-        self._state = None
         self._position = None
         self._current_cover_position = None
         self._last_movement = None
         self._last_position_set = None
         self._last_command = None
-        #self._position = 50
-        _LOGGER.info("Initialized device=%s config_entry=%s coverid=%s", device, config_entry, coverid)
         print(
-            "Initialized tuya cover  [{}] with switch status [{}] and state [{}]".format(
-                self.name, self._status, self._state
-
-    # def __init__(self, device, friendly_name, coverid, open_cmd, close_cmd, stop_cmd, set_position_dps, get_position_dps, last_movement_dps):
-    #     self._device = device
-    #     self._available = False 
-    #     self._name = friendly_name
-    #     self._cover_id = coverid
-    #     self._status = None
-    #     self._state = None
-    #     self._last_movement = None
-    #     self._last_position_set = None
-    #     self._last_command = None
-    #     self._current_cover_position = 50
-    #     self._open_cmd = open_cmd
-    #     self._close_cmd = close_cmd
-    #     self._stop_cmd = stop_cmd
-    #     self._get_position_dps = get_position_dps
-    #     self._set_position_dps = set_position_dps
-    #     self._last_movement_dps = last_movement_dps
-        
-    #     print(
-    #         "Initialized tuya cover [{}] with cover status [{}] and state [{}]".format(
-    #             self._name, self._status, self._state
+            "Initialized tuya cover  [{}] with switch status [{}]".format(
+                self.name, self._status
             )
         )
 
     @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                ("LocalTuya", f"local_{self._device.unique_id}")
-            },
-            "name": self._device._friendly_name,
-            "manufacturer": "Tuya Generic",
-            "model": "SmartCover",
-            "sw_version": "3.3",
-        }
-
-    @property
-    def open_cmd(self):
-        """Get name of open command."""
-        _LOGGER.info("def open_cmd called=%s", self._open_cmd)
-        return self._open_cmd
-
-    @property
-    def close_cmd(self):
-        """Get name of close command."""
-        _LOGGER.info("def close_cmd called=%s", self._close_cmd)
-        return self._close_cmd
-
-    @property
-    def stop_cmd(self):
-        """Get name of stop command."""
-        _LOGGER.info("def close_cmd called=%s", self._stop_cmd)
-        return self._stop_cmd
-
-    @property
-    def last_movement_dps(self):
-        """Get last movement key"""
-        #_LOGGER.info("def last_movement_dps called=%s", self._last_movement_dps)
-        return self._last_movement_dps
-
-
-    @property
-    def last_movement(self):
-        #_LOGGER.info("def last_movement called=%s", self._last_movement)
-        """Return the last movement of the device (should be "Opening" or "Closing")"""
-        return self._last_movement
-
-    def last_position_set(self):
-        #_LOGGER.info("def last_position_set called=%s", self._last_position_set)
-        """Return the last position set of the device"""
-        return self._last_position_set
-        
-    @property
-    def last_command(self):
-        #_LOGGER.info("def last_command called=%s", self._last_command)
-        """Return the last command of the device"""
-        return self._last_command
-
-    @property
-    def is_open(self):
-        """Check if the cover is partially or fully open."""
-        #_LOGGER.info("def is_open called, self._current_cover_position = %s", self._current_cover_position)
-        if self._current_cover_position != 100:
-            #_LOGGER.info("is_open returning true)")
-            return True
-        #_LOGGER.info("is_open returning false")
-        return False
-
-    @property
     def is_closed(self):
         """Check if the cover is fully closed."""
-        #_LOGGER.info("def is_closed called")
         if self._current_cover_position == 100:
-            #_LOGGER.info("is_closed returning true)")
             return True
-        #_LOGGER.info("is_closed returning false")
         return False
 
-    def update(self):
-        """Update cover attributes and store in cache."""
-        _LOGGER.info("update(self) called")
+    def status_updated(self):
+        """Device status was updated."""
+        _LOGGER.debug("status_updated called")
+        self._cached_status = self._status
+        _LOGGER.debug("status_updated called, self._status=%s, self._cached_status=%s", self._status, self._cached_status)
         try:
-            _LOGGER.info("about to call status=self._device.status() from def update(self)")
-            status = self._device.status()
-            _LOGGER.info("def update set status =%s", status)
-            self._cached_status = status
-            _LOGGER.info("self._cached_status set =%s", self._cached_status)
-            
-            _LOGGER.info("about to call self._update_last_command()")
-            self._update_last_command()
-            _LOGGER.info("about to call self._update_last_movement()")
-            self._update_last_movement()
-            _LOGGER.info("about to call self._update_last_position_set()")
-            self._update_last_position_set()
-            _LOGGER.info("about to call self._update_current_cover_position)")
-            self._update_current_cover_position()
-
+            self._last_movement = self._cached_status['dps'][str(self._config[CONF_LAST_MOVEMENT])]
+            self._last_position_set = self._cached_status['dps'][str(self._config[CONF_SET_POSITION])]
+            self._current_cover_position = self._cached_status['dps'][str(self._config[CONF_GET_POSITION])]
+            self._last_command = self._cached_status['dps'][str(self._dps_id)]
         except:
-            _LOGGER.info("def update returned except, setting available to false")
-            self._available = False
-        else:
-            _LOGGER.info("def update reached else, setting available to true")
-            self._available = True
-
-    def _update_last_movement(self):
-        _LOGGER.info("_update_last_movement called")
-        _LOGGER.info("self._config=%s", self._config)
-        _LOGGER.info("CONF_LAST_MOVEMENT_DPS=%s", CONF_LAST_MOVEMENT_DPS)
-        _LOGGER.info("self._config[CONF_LAST_MOVEMENT_DPS]=%s", self._config[CONF_LAST_MOVEMENT_DPS])
-        _LOGGER.info("_update_last_movement called, currently = %s and self._cached_status=%s ", self._last_movement, self._cached_status)
-        self._last_movement = self._cached_status['dps'][str(self._config[CONF_LAST_MOVEMENT_DPS])]
-        _LOGGER.info("_update_last_movement set, now = %s", self._last_movement)
-        
-    def _update_last_command(self):
-        _LOGGER.info("_update_last_command called")
-        _LOGGER.info("self._config=%s", self._config)
-        _LOGGER.info("_update_last_command called, currently = %s and self._cached_status=%s", self._last_command, self._cached_status)
-        self._last_command = self._cached_status['dps'][str(self._dps_id)]
-        _LOGGER.info("_update_last_command set, now = %s", self._last_command)
-
-        
-    def _update_last_position_set(self):
-        _LOGGER.info("_update_last_position called")
-        _LOGGER.info("_update_last_position_set called, currently = %s and self._cached_status=%s", self._last_position_set, self._cached_status)
-        self._last_position_set = self._cached_status['dps'][str(self._config[CONF_SET_POSITION_DPS])]
-        _LOGGER.info("_update_last_position_set set, now = %s", self._last_position_set)
-        
-        
-    def _update_current_cover_position(self):
-        _LOGGER.info("_update_current_cover_position called")
-        _LOGGER.info("_update_current_cover_position called, currently = %s and self._cached_status=%s", self._current_cover_position, self._cached_status)
-        self._current_cover_position = self._cached_status['dps'][str(self._config[CONF_GET_POSITION_DPS])]
-        _LOGGER.info("_update_current_cover_position set, now = %s", self._current_cover_position)
+            _LOGGER.warning("status_updated failed to update certain variables")
 
     @property
     def current_cover_position(self):
-        _LOGGER.info("current_cover_position called")
         """Return position of Tuya cover."""
         return self._current_cover_position 
 
@@ -416,85 +264,27 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP | SUPPORT_SET_POSITION
-        return supported_features
-
-    @property
-    def is_opening(self):
-        _LOGGER.info("is_opening called")
-        last_movement = self._last_movement;
-        if last_movement == 'Opening':
-            return True
-        return False
-
-    @property
-    def is_closing(self):
-        _LOGGER.info("is_closing called")
-        last_movement = self._last_movement;
-        if last_movement == 'Closing':
-            return True
-        return False
+        return SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP | SUPPORT_SET_POSITION     
+        #TODO set supported features dynamically based on config or yaml input
 
     def set_cover_position(self, **kwargs):
         """Set the cover to a specific position from 0-100"""
-        _LOGGER.debug("set_cover_position called")
         if ATTR_POSITION in kwargs:
             converted_position = int(kwargs[ATTR_POSITION])
             if converted_position in range(0,101):
-                _LOGGER.info("set_cover_position about to set position to =%s", converted_position)
-                self._device.set_dps(converted_position, self._config[CONF_SET_POSITION_DPS])
+                _LOGGER.debug("set_cover_position about to set position to =%s", converted_position)
+                self._device.set_dps(converted_position, self._config[CONF_SET_POSITION])
             else:
                 _LOGGER.warning("set_position given number outside range")
 
-
     def open_cover(self, **kwargs):
         """Open the cover."""
-        _LOGGER.debug("open_cover called")
-        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_OPEN_CMD])
         self._device.set_dps(self._config[CONF_OPEN_CMD], self._dps_id)
 
     def close_cover(self, **kwargs):
         """Close cover."""
-        _LOGGER.debug("close_cover called")
-        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_CLOSE_CMD])
         self._device.set_dps(self._config[CONF_CLOSE_CMD], self._dps_id)
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.debug("stop_cover called called")
-        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_STOP_CMD])
         self._device.set_dps(self._config[CONF_STOP_CMD], self._dps_id)
-
-    def status_updated(self):
-        """Device status was updated. """
-        self._state = self.dps(self._dps_id)
-
-
-    # def open_cover(self, **kwargs):
-    #     """Open the cover."""
-    #     #_LOGGER.info("open_cover called where self._dps_id=%s and self._open_cmd=%s", self._dps_id, self._open_cmd)
-    #     self._device.set_dps(str(self._dps_id), str(self._open_cmd))
-
-    # def close_cover(self, **kwargs):
-    #     """Close the cover."""
-    #     #_LOGGER.info("close_cover called where self._dps_id=%s and self._close_cmd=%s", self._dps_id, self._close_cmd)
-    #     self._device.set_dps(str(self._dps_id), str(self._close_cmd))
-
-    # def stop_cover(self, **kwargs):
-    #     """Stop the cover."""
-    #     #_LOGGER.info("stop_cover called where self._dps_id=%s and self._stop_cmd=%s", self._dps_id, self._stop_cmd)
-    #     self._device.set_dps(str(self._dps_id), str(self.stop_cmd))
-    #_LOGGER.info("open_cover called where self._dps_id=%s and self._open_cmd=%s", self._dps_id, self._open_cmd)
-    #     self._device.set_dps(str(self._open_cmd), str(self._dps_id))
-
-    # def close_cover(self, **kwargs):
-    #     """Close the cover."""
-    #     #_LOGGER.info("close_cover called where self._dps_id=%s and self._close_cmd=%s", self._dps_id, self._close_cmd)
-    #     self._device.set_dps(str(self._close_cmd), str(self._dps_id))
-
-    # def stop_cover(self, **kwargs):
-    #     """Stop the cover."""
-    #     #_LOGGER.info("stop_cover called where self._dps_id=%s and self._stop_cmd=%s", self._dps_id, self._stop_cmd)
-    #     self._device.set_dps(str(self._stop_cmd), str(self._dps_id))
-                
-                
