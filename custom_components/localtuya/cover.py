@@ -111,12 +111,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     if not entities_to_setup:
         return
 
-    # TODO: keeping for now but should be removed
-    dps = {}
-
     covers = []
     for device_config in entities_to_setup:
-        dps[device_config[CONF_ID]] = None
         covers.append(
             LocaltuyaCover(
                 TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),
@@ -125,7 +121,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             )
         )
 
-    device.set_dpsUsed(dps)
     async_add_entities(covers, True)
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
