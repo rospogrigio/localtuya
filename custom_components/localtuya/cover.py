@@ -8,20 +8,17 @@ cover:
   host: 192.168.0.123 #REQUIRED
   local_key: 1234567891234567 #REQUIRED
   device_id: 123456789123456789abcd #REQUIRED
-  name: cover_guests #REQUIRED
+  name: cover_guests #OPTIONAL
   friendly_name: Cover guests #REQUIRED
   protocol_version: 3.3 #REQUIRED
-  get_position_key: 3 #REQUIRED, default is 0
-  set_position_key: 2 #REQUIRED, default is 0
-  last_movement_key: 7 #REQUIRED, default is 0
-  cover_command_key: 1 #REQUIRED, default is 0
+  get_position_dps: 3 #OPTIONAL, default is 0
+  set_position_dps: 2 #OPTIONAL, default is 0
+  last_movement_dps: 7 #OPTIONAL, default is 0
   id: 1 #OPTIONAL
   icon: mdi:blinds #OPTIONAL
   open_cmd: open #OPTIONAL, default is 'on'
   close_cmd: close #OPTIONAL, default is 'off'
   stop_cmd: stop #OPTIONAL, default is 'stop'
-  get_position_key: 1 #OPTIONAL, default is 0
-
 """
 import logging
 from time import time, sleep
@@ -54,13 +51,12 @@ from . import (
     import_from_yaml,
 )
 from .const import (
-    CONF_COVER_COMMAND_KEY,
     CONF_OPEN_CMD,
     CONF_CLOSE_CMD,
     CONF_STOP_CMD,
-    CONF_GET_POSITION_KEY,
-    CONF_SET_POSITION_KEY,
-    CONF_LAST_MOVEMENT_KEY
+    CONF_GET_POSITION_DPS,
+    CONF_SET_POSITION_DPS,
+    CONF_LAST_MOVEMENT_DPS
 )
 
 from .pytuya import TuyaDevice
@@ -70,10 +66,9 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_OPEN_CMD = "on"
 DEFAULT_CLOSE_CMD = "off"
 DEFAULT_STOP_CMD = "stop"
-DEFAULT_SET_POSITION_KEY = 0
-DEFAULT_GET_POSITION_KEY = 0
-DEFAULT_LAST_MOVEMENT_KEY = 0
-DEFAULT_COVER_COMMAND_KEY = 0
+DEFAULT_SET_POSITION_DPS = 0
+DEFAULT_GET_POSITION_DPS = 0
+DEFAULT_LAST_MOVEMENT_DPS = 0
 
 MIN_POSITION = 0
 MAX_POSITION = 100
@@ -82,13 +77,12 @@ UPDATE_RETRY_LIMIT = 3
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA).extend(
     {
-        vol.Required(CONF_COVER_COMMAND_KEY, default=DEFAULT_COVER_COMMAND_KEY): cv.positive_int, # TODO only allow user to select from returned dps list
         vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): cv.string,
         vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): cv.string,
         vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): cv.string,
-        vol.Optional(CONF_SET_POSITION_KEY, default=DEFAULT_SET_POSITION_KEY): cv.positive_int, # TODO only allow user to select from returned dps list
-        vol.Optional(CONF_GET_POSITION_KEY, default=DEFAULT_GET_POSITION_KEY): cv.positive_int, # TODO only allow user to select from returned dps list
-        vol.Optional(CONF_LAST_MOVEMENT_KEY, default=DEFAULT_LAST_MOVEMENT_KEY): cv.positive_int, # TODO only allow user to select from returned dps list
+        vol.Optional(CONF_SET_POSITION_DPS, default=DEFAULT_SET_POSITION_DPS): cv.positive_int, # TODO only allow user to select from returned dps list
+        vol.Optional(CONF_GET_POSITION_DPS, default=DEFAULT_GET_POSITION_DPS): cv.positive_int, # TODO only allow user to select from returned dps list
+        vol.Optional(CONF_LAST_MOVEMENT_DPS, default=DEFAULT_LAST_MOVEMENT_DPS): cv.positive_int, # TODO only allow user to select from returned dps list
     }
 )
 
@@ -96,13 +90,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA).extend(
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-            vol.Required(CONF_COVER_COMMAND_KEY, default=DEFAULT_COVER_COMMAND_KEY): cv.positive_int,
             vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): str,
             vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): str,
             vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): str,
-            vol.Optional(CONF_SET_POSITION_KEY, default=DEFAULT_SET_POSITION_KEY): cv.positive_int,
-            vol.Optional(CONF_GET_POSITION_KEY, default=DEFAULT_GET_POSITION_KEY): cv.positive_int,
-            vol.Optional(CONF_LAST_MOVEMENT_KEY, default=DEFAULT_LAST_MOVEMENT_KEY): cv.positive_int,    
+            vol.Optional(CONF_SET_POSITION_DPS, default=DEFAULT_SET_POSITION_DPS): cv.positive_int,
+            vol.Optional(CONF_GET_POSITION_DPS, default=DEFAULT_GET_POSITION_DPS): cv.positive_int,
+            vol.Optional(CONF_LAST_MOVEMENT_DPS, default=DEFAULT_LAST_MOVEMENT_DPS): cv.positive_int,    
         }
 
 
@@ -128,13 +121,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 # TuyaCache(device),
                 # device_config[CONF_FRIENDLY_NAME],
                 # device_config[CONF_ID],
-                # device_config.get(CONF_COVER_COMMAND_KEY),
                 # device_config.get(CONF_OPEN_CMD),
                 # device_config.get(CONF_CLOSE_CMD),
                 # device_config.get(CONF_STOP_CMD),
-                # device_config.get(CONF_SET_POSITION_KEY),
-                # device_config.get(CONF_GET_POSITION_KEY),
-                # device_config.get(CONF_LAST_MOVEMENT_KEY),
+                # device_config.get(CONF_SET_POSITION_DPS),
+                # device_config.get(CONF_GET_POSITION_DPS),
+                # device_config.get(CONF_LAST_MOVEMENT_DPS),
             )
         )
 
@@ -235,7 +227,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             "Initialized tuya cover  [{}] with switch status [{}] and state [{}]".format(
                 self.name, self._status, self._state
 
-    # def __init__(self, device, friendly_name, coverid, cover_command_key, open_cmd, close_cmd, stop_cmd, set_position_key, get_position_key, last_movement_key):
+    # def __init__(self, device, friendly_name, coverid, open_cmd, close_cmd, stop_cmd, set_position_dps, get_position_dps, last_movement_dps):
     #     self._device = device
     #     self._available = False 
     #     self._name = friendly_name
@@ -246,13 +238,12 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     #     self._last_position_set = None
     #     self._last_command = None
     #     self._current_cover_position = 50
-    #     self._cover_command_key = cover_command_key
     #     self._open_cmd = open_cmd
     #     self._close_cmd = close_cmd
     #     self._stop_cmd = stop_cmd
-    #     self._get_position_key = get_position_key
-    #     self._set_position_key = set_position_key
-    #     self._last_movement_key = last_movement_key
+    #     self._get_position_dps = get_position_dps
+    #     self._set_position_dps = set_position_dps
+    #     self._last_movement_dps = last_movement_dps
         
     #     print(
     #         "Initialized tuya cover [{}] with cover status [{}] and state [{}]".format(
@@ -282,12 +273,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def name(self):
         """Get name of Tuya cover."""
         return self._name
-        
-    @property
-    def cover_command_key(self):
-        """Get name of Tuya cover."""
-        #_LOGGER.info("def cover_command_key called=%s", self._cover_command_key)
-        return self._cover_command_key
 
     @property
     def open_cmd(self):
@@ -308,10 +293,10 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         return self._stop_cmd
 
     @property
-    def last_movement_key(self):
+    def last_movement_dps(self):
         """Get last movement key"""
-        #_LOGGER.info("def last_movement_key called=%s", self._last_movement_key)
-        return self._last_movement_key
+        #_LOGGER.info("def last_movement_dps called=%s", self._last_movement_dps)
+        return self._last_movement_dps
 
 
     @property
@@ -376,24 +361,24 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def _update_last_movement(self):
         #_LOGGER.info("_update_last_movement called, currently = %s and self._cached_status=%s ", self._last_movement, self._cached_status)
         
-        self._last_movement = self._cached_status['dps'][str(self._last_movement_key)]
+        self._last_movement = self._cached_status['dps'][str(self._last_movement_dps)]
         #_LOGGER.info("_update_last_movement set, now = %s", self._last_movement)
         
     def _update_last_command(self):
         #_LOGGER.info("_update_last_command called, currently = %s and self._cached_status=%s", self._last_command, self._cached_status)
-        self._last_command = self._cached_status['dps'][str(self._cover_command_key)]
+        self._last_command = self._cached_status['dps'][str(self._dps_id)]
         #_LOGGER.info("_update_last_command set, now = %s", self._last_command)
 
         
     def _update_last_position_set(self):
         #_LOGGER.info("_update_last_position_set called, currently = %s and self._cached_status=%s", self._last_position_set, self._cached_status)
-        self._last_position_set = self._cached_status['dps'][str(self._set_position_key)]
+        self._last_position_set = self._cached_status['dps'][str(self._set_position_dps)]
         #_LOGGER.info("_update_last_position_set set, now = %s", self._last_position_set)
         
         
     def _update_current_cover_position(self):
         #_LOGGER.info("_update_current_cover_position called, currently = %s and self._cached_status=%s", self._current_cover_position, self._cached_status)
-        self._current_cover_position = self._cached_status['dps'][str(self._get_position_key)]
+        self._current_cover_position = self._cached_status['dps'][str(self._get_position_dps)]
         #_LOGGER.info("_update_current_cover_position set, now = %s", self._current_cover_position)
 
     @property
@@ -446,7 +431,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             converted_position = int(kwargs[ATTR_POSITION])
             if converted_position in range(0,101):
                 _LOGGER.info("set_cover_position about to set position to =%s", converted_position)
-                self._device.set_dps(converted_position, self._config[SET_POSITION_KEY])
+                self._device.set_dps(converted_position, self._config[SET_POSITION_DPS])
             else:
                 _LOGGER.warning("set_position given number outside range")
 
@@ -473,29 +458,29 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     # def open_cover(self, **kwargs):
     #     """Open the cover."""
-    #     #_LOGGER.info("open_cover called where self._cover_command_key=%s and self._open_cmd=%s", self._cover_command_key, self._open_cmd)
-    #     self._device.set_dps(str(self._cover_command_key), str(self._open_cmd))
+    #     #_LOGGER.info("open_cover called where self._dps_id=%s and self._open_cmd=%s", self._dps_id, self._open_cmd)
+    #     self._device.set_dps(str(self._dps_id), str(self._open_cmd))
 
     # def close_cover(self, **kwargs):
     #     """Close the cover."""
-    #     #_LOGGER.info("close_cover called where self._cover_command_key=%s and self._close_cmd=%s", self._cover_command_key, self._close_cmd)
-    #     self._device.set_dps(str(self._cover_command_key), str(self._close_cmd))
+    #     #_LOGGER.info("close_cover called where self._dps_id=%s and self._close_cmd=%s", self._dps_id, self._close_cmd)
+    #     self._device.set_dps(str(self._dps_id), str(self._close_cmd))
 
     # def stop_cover(self, **kwargs):
     #     """Stop the cover."""
-    #     #_LOGGER.info("stop_cover called where self._cover_command_key=%s and self._stop_cmd=%s", self._cover_command_key, self._stop_cmd)
-    #     self._device.set_dps(str(self._cover_command_key), str(self.stop_cmd))
-        #_LOGGER.info("open_cover called where self._cover_command_key=%s and self._open_cmd=%s", self._cover_command_key, self._open_cmd)
-    #     self._device.set_dps(str(self._open_cmd), str(self._cover_command_key))
+    #     #_LOGGER.info("stop_cover called where self._dps_id=%s and self._stop_cmd=%s", self._dps_id, self._stop_cmd)
+    #     self._device.set_dps(str(self._dps_id), str(self.stop_cmd))
+        #_LOGGER.info("open_cover called where self._dps_id=%s and self._open_cmd=%s", self._dps_id, self._open_cmd)
+    #     self._device.set_dps(str(self._open_cmd), str(self._dps_id))
 
     # def close_cover(self, **kwargs):
     #     """Close the cover."""
-    #     #_LOGGER.info("close_cover called where self._cover_command_key=%s and self._close_cmd=%s", self._cover_command_key, self._close_cmd)
-    #     self._device.set_dps(str(self._close_cmd), str(self._cover_command_key))
+    #     #_LOGGER.info("close_cover called where self._dps_id=%s and self._close_cmd=%s", self._dps_id, self._close_cmd)
+    #     self._device.set_dps(str(self._close_cmd), str(self._dps_id))
 
     # def stop_cover(self, **kwargs):
     #     """Stop the cover."""
-    #     #_LOGGER.info("stop_cover called where self._cover_command_key=%s and self._stop_cmd=%s", self._cover_command_key, self._stop_cmd)
-    #     self._device.set_dps(str(self._stop_cmd), str(self._cover_command_key))
+    #     #_LOGGER.info("stop_cover called where self._dps_id=%s and self._stop_cmd=%s", self._dps_id, self._stop_cmd)
+    #     self._device.set_dps(str(self._stop_cmd), str(self._dps_id))
                 
                 

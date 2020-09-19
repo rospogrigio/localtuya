@@ -41,10 +41,9 @@
                     "open_cmd": "Open Command",
                     "close_cmd": "Close Command",
                     "stop_cmd": "Stop Command",
-                    "get_position_key": "Get Position Key",
-                    "set_position_key": "Set Position Key",
-                    "cover_command_key": "Open/Close/Stop Key",
-                    "last_movement_key": "Last Movement Key"
+                    "get_position_dps": "Get Position Key",
+                    "set_position_dps": "Set Position Key",
+                    "last_movement_dps": "Last Movement Key"
                 }
             }
         }
