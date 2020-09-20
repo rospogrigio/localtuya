@@ -7,12 +7,20 @@
             "cannot_connect": "Cannot connect to device. Verify that address is correct and try again.",
             "invalid_auth": "Failed to authenticate with device. Verify that device id and local key are correct.",
             "unknown": "An unknown error occurred. See log for details.",
-            "entity_already_configured": "Entity with this ID has already been configured."
+            "entity_already_configured": "Entity with this ID has already been configured.",
+            "discovery_failed": "Failed to discover devices. You can still add a device manually."
         },
         "step": {
             "user": {
+                "title": "Device Discovery",
+                "description": "Pick one of the automatically discovered devices or `...` to manually to add a device.",
+                "data": {
+                    "discovered_device": "Discovered Device"
+                }
+            },
+            "basic_info": {
                 "title": "Add Tuya device",
-                "description": "Fill in the basic details and pick device type. The name entered here will be used to identify the integration itself (as seen in the `Integrations` page). You will add entities and give them names in the following steps.",
+                "description": "Fill in the basic device details. The name entered here will be used to identify the integration itself (as seen in the `Integrations` page). You will add entities and give them names in the following steps.",
                 "data": {
                     "friendly_name": "Name",
                     "host": "Host",
@@ -41,9 +49,12 @@
                     "open_cmd": "Open Command",
                     "close_cmd": "Close Command",
                     "stop_cmd": "Stop Command",
-                    "get_position": "Get Position DPS",
-                    "set_position": "Set Position DPS",
-                    "last_movement": "Last Movement DPS"
+                    "get_position": "Get Position",
+                    "set_position": "Set Position",
+                    "last_movement": "Last Movement"
+                    "unit_of_measurement": "Unit of Measurement",
+                    "device_class": "Device Class",
+                    "scaling": "Scaling Factor"
                 }
             }
         }
@@ -71,7 +82,10 @@
                     "voltage": "Voltage",
                     "open_cmd": "Open Command",
                     "close_cmd": "Close Command",
-                    "stop_cmd": "Stop Command"
+                    "stop_cmd": "Stop Command",
+                    "unit_of_measurement": "Unit of Measurement",
+                    "device_class": "Device Class",
+                    "scaling": "Scaling Factor"
                 }
             },
             "yaml_import": {

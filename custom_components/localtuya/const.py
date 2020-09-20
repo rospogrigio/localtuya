@@ -22,7 +22,10 @@ CONF_GET_POSITION = "get_position"
 CONF_SET_POSITION = "set_position"
 CONF_LAST_MOVEMENT = "last_movement"
 
+# sensor
+CONF_SCALING = "scaling"
+
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["cover", "fan", "light", "switch"]
+PLATFORMS = ["cover", "fan", "light", "sensor", "switch"]
