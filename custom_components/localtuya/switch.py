@@ -80,13 +80,13 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
     def device_state_attributes(self):
         """Return device state attributes."""
         attrs = {}
-        if self._config.get(CONF_CURRENT, "-1") != "-1":
+        if self.has_config(CONF_CURRENT):
             attrs[ATTR_CURRENT] = self.dps(self._config[CONF_CURRENT])
-        if self._config.get(ATTR_CURRENT_CONSUMPTION, "-1") != "-1":
+        if self.has_config(CONF_CURRENT_CONSUMPTION):
             attrs[ATTR_CURRENT_CONSUMPTION] = (
                 self.dps(self._config[CONF_CURRENT_CONSUMPTION]) / 10
             )
-        if self._config.get(CONF_VOLTAGE, "-1") != "-1":
+        if self.has_config(CONF_VOLTAGE):
             attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE]) / 10
         return attrs
 

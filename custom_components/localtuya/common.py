@@ -184,6 +184,11 @@ class LocalTuyaEntity(Entity):
         """Return unique device identifier."""
         return f"local_{self._device.unique_id}_{self._dps_id}"
 
+    def has_config(self, attr):
+        """Return if a config parameter has a valid value."""
+        value = self._config.get(attr, "-1")
+        return value is not None and value != "-1"
+
     @property
     def available(self):
         """Return if device is available or not."""
