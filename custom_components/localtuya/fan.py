@@ -84,11 +84,10 @@ class TuyaDevice(FanEntity):
         """Initialize the entity."""
         self._device = device
         self._name = friendly_name
-        self._available = False
+        self._available = True
         self._friendly_name = friendly_name
         self._icon = icon
         self._switch_id = switchid
-        self._status = self._device.status()
         self._state = False
         self._supported_features = SUPPORT_SET_SPEED | SUPPORT_OSCILLATE
         self._speed = STATE_OFF
