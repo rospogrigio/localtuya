@@ -20,8 +20,8 @@
     json = status()          # returns json payload
     set_version(version)     #  3.1 [default] or 3.3
     detect_available_dps()   # returns a list of available dps provided by the device
-    set_dpsUsed(dpsUsed)     
-    set_dps(on, dps_index)   # Set int value of any dps index.
+    add_dps_to_request(dps_index)  # adds dps_index to the list of dps used by the device (to be queried in the payload)
+    set_dps(on, dps_index)   # Set value of any dps index.
     set_timer(num_secs):
 
         
@@ -194,6 +194,7 @@ class TuyaDevice(object):
         self.connection_timeout = connection_timeout
         self.version = 3.1
         self.dev_type = 'type_0a'
+        self.dps_to_request = {}
 
         self.port = 6668  # default - do not expect caller to pass in
         
@@ -250,7 +251,8 @@ class TuyaDevice(object):
         detected_dps = {}
 
         # dps 1 must always be sent, otherwise it might fail in case no dps is found in the requested range
-        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(2, 11)) })
+        self.dps_to_request = {"1": None}
+        self.add_dps_to_request(range(2, 11))
         try:
             data = self.status()
         except Exception as e:
@@ -261,7 +263,8 @@ class TuyaDevice(object):
         if self.dev_type == "type_0a":
             return detected_dps
 
-        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(11, 21)) })
+        self.dps_to_request = {"1": None}
+        self.add_dps_to_request(range(11, 21))
         try:
             data = self.status()
         except Exception as e:
@@ -269,7 +272,8 @@ class TuyaDevice(object):
             raise CannotConnect
         detected_dps.update( data["dps"] )
 
-        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(21, 31)) })
+        self.dps_to_request = {"1": None}
+        self.add_dps_to_request(range(21, 31))
         try:
             data = self.status()
         except Exception as e:
@@ -277,7 +281,8 @@ class TuyaDevice(object):
             raise CannotConnect
         detected_dps.update( data["dps"] )
 
-        self.set_dpsUsed({ str(dps): None for dps in chain(range(1,2), range(100, 111)) })
+        self.dps_to_request = {"1": None}
+        self.add_dps_to_request(range(100, 111))
         try:
             data = self.status()
         except Exception as e:
@@ -288,8 +293,11 @@ class TuyaDevice(object):
 
         return detected_dps
 
-    def set_dpsUsed(self, dpsUsed):
-        self.dpsUsed = dpsUsed
+    def add_dps_to_request(self, dps_index):
+        if isinstance(dps_index, int):
+            self.dps_to_request[str(dps_index)] = None
+        else:
+            self.dps_to_request.update({str(index): None for index in dps_index})
 
     def generate_payload(self, command, data=None):
         """
@@ -316,8 +324,8 @@ class TuyaDevice(object):
         if data is not None:
             json_data['dps'] = data
         if command_hb == '0d':
-            json_data['dps'] = self.dpsUsed
-#            log.info('******** COMMAND IS %r', self.dpsUsed)
+            json_data['dps'] = self.dps_to_request
+#            log.info('******** COMMAND IS %r', self.dps_to_request)
 
         # Create byte buffer from hex data
         json_payload = json.dumps(json_data)

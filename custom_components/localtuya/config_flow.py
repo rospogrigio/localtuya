@@ -1,14 +1,12 @@
 """Config flow for LocalTuya integration integration."""
 import logging
 from importlib import import_module
-from itertools import chain
 
 import voluptuous as vol
 
 from homeassistant import config_entries, core, exceptions
 from homeassistant.core import callback
 from homeassistant.const import (
-    CONF_NAME,
     CONF_ENTITIES,
     CONF_ID,
     CONF_HOST,
@@ -27,13 +25,19 @@ from .const import (  # pylint: disable=unused-import
     DOMAIN,
     PLATFORMS,
 )
+from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
+DISCOVER_TIMEOUT = 6.0
+
 PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_PLATFORMS = "no_additional_platforms"
+DISCOVERED_DEVICE = "discovered_device"
 
-USER_SCHEMA = vol.Schema(
+CUSTOM_DEVICE = "..."
+
+BASIC_INFO_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_FRIENDLY_NAME): str,
         vol.Required(CONF_HOST): str,
@@ -55,6 +59,14 @@ OPTIONS_SCHEMA = vol.Schema(
 PICK_ENTITY_SCHEMA = vol.Schema(
     {vol.Required(PLATFORM_TO_ADD, default=PLATFORMS[0]): vol.In(PLATFORMS)}
 )
+
+
+def user_schema(devices):
+    """Create schema for user step."""
+    devices = [f"{ip} ({dev['gwId']})" for ip, dev in devices.items()]
+    return vol.Schema(
+        {vol.Required(DISCOVERED_DEVICE): vol.In(devices + [CUSTOM_DEVICE])}
+    )
 
 
 def schema_defaults(schema, dps_list=None, **defaults):
@@ -125,7 +137,9 @@ async def validate_input(hass: core.HomeAssistant, data):
     detected_dps = {}
 
     try:
-        detected_dps = await hass.async_add_executor_job(pytuyadevice.detect_available_dps)
+        detected_dps = await hass.async_add_executor_job(
+            pytuyadevice.detect_available_dps
+        )
     except (ConnectionRefusedError, ConnectionResetError):
         raise CannotConnect
     except ValueError:
@@ -151,10 +165,35 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.basic_info = None
         self.dps_strings = []
         self.platform = None
+        self.devices = {}
+        self.selected_device = None
         self.entities = []
 
     async def async_step_user(self, user_input=None):
-        """Handle the initial step."""
+        """Handle initial step."""
+        errors = {}
+        if user_input is not None:
+            if user_input[DISCOVERED_DEVICE] != CUSTOM_DEVICE:
+                self.selected_device = user_input[DISCOVERED_DEVICE].split(" ")[0]
+            return await self.async_step_basic_info()
+
+        try:
+            devices = await discover(DISCOVER_TIMEOUT, self.hass.loop)
+            self.devices = {
+                ip: dev
+                for ip, dev in devices.items()
+                if dev["gwId"] not in self._async_current_ids()
+            }
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("discovery failed")
+            errors["base"] = "discovery_failed"
+
+        return self.async_show_form(
+            step_id="user", errors=errors, data_schema=user_schema(self.devices)
+        )
+
+    async def async_step_basic_info(self, user_input=None):
+        """Handle input of basic info."""
         errors = {}
         if user_input is not None:
             await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
@@ -172,8 +211,18 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
 
+        defaults = {}
+        defaults.update(user_input or {})
+        if self.selected_device is not None:
+            device = self.devices[self.selected_device]
+            defaults[CONF_HOST] = device.get("ip")
+            defaults[CONF_DEVICE_ID] = device.get("gwId")
+            defaults[CONF_PROTOCOL_VERSION] = device.get("version")
+
         return self.async_show_form(
-            step_id="user", data_schema=USER_SCHEMA, errors=errors
+            step_id="basic_info",
+            data_schema=schema_defaults(BASIC_INFO_SCHEMA, **defaults),
+            errors=errors,
         )
 
     async def async_step_pick_entity_type(self, user_input=None):
@@ -185,7 +234,9 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_DPS_STRINGS: self.dps_strings,
                     CONF_ENTITIES: self.entities,
                 }
-                return self.async_create_entry(title=config[CONF_FRIENDLY_NAME], data=config)
+                return self.async_create_entry(
+                    title=config[CONF_FRIENDLY_NAME], data=config
+                )
 
             self.platform = user_input[PLATFORM_TO_ADD]
             return await self.async_step_add_entity()
@@ -243,6 +294,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             self.entities.append(_convert_entity(user_input))
 
+        # print('ENTITIES: [{}] '.format(self.entities))
         config = {
             CONF_FRIENDLY_NAME: f"{user_input[CONF_FRIENDLY_NAME]}",
             CONF_HOST: user_input[CONF_HOST],
@@ -253,7 +305,9 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_ENTITIES: self.entities,
         }
         self._abort_if_unique_id_configured(updates=config)
-        return self.async_create_entry(title=f"{config[CONF_FRIENDLY_NAME]} (YAML)", data=config)
+        return self.async_create_entry(
+            title=f"{config[CONF_FRIENDLY_NAME]} (YAML)", data=config
+        )
 
 
 class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
@@ -299,7 +353,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
             if len(self.entities) == len(self.data[CONF_ENTITIES]):
                 self.hass.config_entries.async_update_entry(
-                    self.config_entry, title=self.data[CONF_FRIENDLY_NAME], data=self.data
+                    self.config_entry,
+                    title=self.data[CONF_FRIENDLY_NAME],
+                    data=self.data,
                 )
                 return self.async_create_entry(title="", data={})
 
