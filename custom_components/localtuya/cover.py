@@ -217,11 +217,10 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        self._cached_status = self._status
-        self._last_movement = self._cached_status['dps'][str(self._config[CONF_LAST_MOVEMENT])]
-        self._last_position_set = self._cached_status['dps'][str(self._config[CONF_SET_POSITION])]
-        self._current_cover_position = self._cached_status['dps'][str(self._config[CONF_GET_POSITION])]
-        self._last_command = self._cached_status['dps'][str(self._dps_id)]
+        self._last_movement = self.dps(str._config.get(CONF_LAST_MOVEMENT))
+        self._last_position_set = self.dps(str._config.get(CONF_SET_POSITION))
+        self._current_cover_position = self.dps(str._config.get(CONF_GET_POSITION))
+        self._last_command = self.dps(str._dps_id)
 
     @property
     def current_cover_position(self):
