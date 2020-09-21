@@ -174,7 +174,7 @@ class TuyaCache:
                     )
                     return
 
-    #                    raise ConnectionError("Failed to set status.")
+        #                    raise ConnectionError("Failed to set status.")
         self.update()
 
     def status(self):
@@ -237,5 +237,5 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         self._device.set_dps(False, self._dps_id)
 
     def status_updated(self):
-        """Device statua was updated."""
+        """Device status was updated."""
         self._state = self.dps(self._dps_id)
