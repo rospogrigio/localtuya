@@ -43,7 +43,7 @@
                     "stop_cmd": "Stop Command",
                     "get_position": "Get Position DPS",
                     "set_position": "Set Position DPS",
-                    "last_movement": "Last Movement DPS"
+                    "last_movement": "Last Movement DPS",
                 }
             }
         }

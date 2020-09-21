@@ -157,10 +157,8 @@ class LocalTuyaEntity(Entity):
             self._status = self._device.status()
             self.status_updated()
         except Exception:
-            _LOGGER.debug("update hit exception, setting self._available=false")
             self._available = False
         else:
-            _LOGGER.debug("update succeeded, setting self._available=true")
             self._available = True
 
     def status_updated(self):

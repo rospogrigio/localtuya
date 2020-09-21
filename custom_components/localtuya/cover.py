@@ -44,7 +44,6 @@ from homeassistant.components.cover import (
 from homeassistant.const import (
     CONF_ID,
     CONF_FRIENDLY_NAME,
-    CONF_NAME,
 )
 import homeassistant.helpers.config_validation as cv
 
@@ -73,11 +72,6 @@ DEFAULT_STOP_CMD = "stop"
 DEFAULT_SET_POSITION = 0
 DEFAULT_GET_POSITION = 0
 DEFAULT_LAST_MOVEMENT = 0
-
-MIN_POSITION = 0
-MAX_POSITION = 100
-UPDATE_RETRY_LIMIT = 3
-
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA).extend(
     {
@@ -224,42 +218,20 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_closed(self):
         """Check if the cover is fully closed."""
-        if self._current_cover_position == 100:
-            return True
-        return False
+        return self._current_cover_position == 100:
 
     def status_updated(self):
         """Device status was updated."""
-        _LOGGER.debug("status_updated called")
         self._cached_status = self._status
-        _LOGGER.debug("status_updated called, self._status=%s, self._cached_status=%s", self._status, self._cached_status)
-        try:
-            self._last_movement = self._cached_status['dps'][str(self._config[CONF_LAST_MOVEMENT])]
-            self._last_position_set = self._cached_status['dps'][str(self._config[CONF_SET_POSITION])]
-            self._current_cover_position = self._cached_status['dps'][str(self._config[CONF_GET_POSITION])]
-            self._last_command = self._cached_status['dps'][str(self._dps_id)]
-        except:
-            _LOGGER.warning("status_updated failed to update certain variables")
+        self._last_movement = self._cached_status['dps'][str(self._config[CONF_LAST_MOVEMENT])]
+        self._last_position_set = self._cached_status['dps'][str(self._config[CONF_SET_POSITION])]
+        self._current_cover_position = self._cached_status['dps'][str(self._config[CONF_GET_POSITION])]
+        self._last_command = self._cached_status['dps'][str(self._dps_id)]
 
     @property
     def current_cover_position(self):
         """Return position of Tuya cover."""
         return self._current_cover_position 
-
-    @property
-    def min_position(self):
-        """Return minimum position of Tuya cover."""
-        return MIN_POSITION
-
-    @property
-    def max_position(self):
-        """Return maximum position of Tuya cover."""
-        return MAX_POSITION 
-
-    @property
-    def available(self):
-        """Return if device is available or not."""
-        return self._available
 
     @property
     def supported_features(self):
