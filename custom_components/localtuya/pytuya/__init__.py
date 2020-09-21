@@ -11,7 +11,7 @@
  For more information see https://github.com/clach04/python-tuya
 
  Classes
-    TuyaDevice(dev_id, address, local_key=None)
+    TuyaInterface(dev_id, address, local_key=None)
         dev_id (str): Device ID e.g. 01234567891234567890
         address (str): Device Network IP Address e.g. 10.0.1.99
         local_key (str, optional): The encryption key. Defaults to None.
@@ -174,8 +174,8 @@ payload_dict = {
 }
 
 
-class TuyaDevice(object):
-    def __init__(self, dev_id, address, local_key, connection_timeout=10):
+class TuyaInterface(object):
+    def __init__(self, dev_id, address, local_key, protocol_version, connection_timeout=10):
         """
         Represents a Tuya device.
         
@@ -192,7 +192,7 @@ class TuyaDevice(object):
         self.address = address
         self.local_key = local_key.encode('latin1')
         self.connection_timeout = connection_timeout
-        self.version = 3.1
+        self.version = protocol_version
         self.dev_type = 'type_0a'
         self.dps_to_request = {}
 
@@ -238,9 +238,6 @@ class TuyaDevice(object):
 
         s.close()
         return data
-
-    def set_version(self, version):
-        self.version = version
 
     def detect_available_dps(self):
         # type_0d devices need a sort of bruteforce querying in order to detect the list of available dps 
@@ -395,6 +392,7 @@ class TuyaDevice(object):
             result = result[16:]  # remove (what I'm guessing, but not confirmed is) 16-bytes of MD5 hexdigest of payload
             cipher = AESCipher(self.local_key)
             result = cipher.decrypt(result)
+            print('decrypted result=[{}]'.format(result))
             log.debug('decrypted result=%r', result)
             if not isinstance(result, str):
                 result = result.decode()

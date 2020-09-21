@@ -128,17 +128,17 @@ def strip_dps_values(user_input, dps_strings):
 
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect."""
-    pytuyadevice = pytuya.TuyaDevice(
+    tuyainterface = pytuya.TuyaInterface(
         data[CONF_DEVICE_ID],
         data[CONF_HOST],
         data[CONF_LOCAL_KEY],
+        float(data[CONF_PROTOCOL_VERSION]),
     )
-    pytuyadevice.set_version(float(data[CONF_PROTOCOL_VERSION]))
     detected_dps = {}
 
     try:
         detected_dps = await hass.async_add_executor_job(
-            pytuyadevice.detect_available_dps
+            tuyainterface.detect_available_dps
         )
     except (ConnectionRefusedError, ConnectionResetError):
         raise CannotConnect

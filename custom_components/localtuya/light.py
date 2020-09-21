@@ -14,7 +14,6 @@ light:
 import socket
 import logging
 from time import time, sleep
-from threading import Lock
 
 from homeassistant.const import (
     CONF_ID,
@@ -33,6 +32,7 @@ from homeassistant.components.light import (
 
 from . import (
     BASE_PLATFORM_SCHEMA,
+    TuyaDevice,
     LocalTuyaEntity,
     import_from_yaml,
     prepare_setup_entities,
@@ -60,18 +60,18 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Setup a Tuya light based on a config entry."""
-    device, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
     if not entities_to_setup:
         return
 
     lights = []
     for device_config in entities_to_setup:
         # this has to be done in case the device type is type_0d
-        device.add_dps_to_request(device_config[CONF_ID])
+        tuyainterface.add_dps_to_request(device_config[CONF_ID])
 
         lights.append(
             LocaltuyaLight(
-                TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),
+                TuyaCache(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
                 config_entry,
                 device_config[CONF_ID],
             )
@@ -84,64 +84,6 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     """Set up of the Tuya light."""
     return import_from_yaml(hass, config, DOMAIN)
 
-
-class TuyaCache:
-    """Cache wrapper for pytuya.TuyaDevices"""
-
-    def __init__(self, device, friendly_name):
-        """Initialize the cache."""
-        self._cached_status = ""
-        self._cached_status_time = 0
-        self._device = device
-        self._friendly_name = friendly_name
-        self._lock = Lock()
-
-    @property
-    def unique_id(self):
-        """Return unique device identifier."""
-        return self._device.id
-
-    def __get_status(self):
-        for i in range(5):
-            try:
-                status = self._device.status()
-                return status
-            except Exception:
-                print(
-                    "Failed to update status of device [{}]".format(
-                        self._device.address
-                    )
-                )
-                sleep(1.0)
-                if i + 1 == 3:
-                    _LOGGER.error(
-                        "Failed to update status of device %s", self._device.address
-                    )
-                    #                    return None
-                    raise ConnectionError("Failed to update status .")
-
-    def set_dps(self, state, dps_index):
-        """Change the Tuya light status and clear the cache."""
-        self._cached_status = ""
-        self._cached_status_time = 0
-        for _ in range(UPDATE_RETRY_LIMIT):
-            try:
-                return self._device.set_dps(state, dps_index)
-            except ConnectionError:
-                pass
-            except socket.timeout:
-                pass
-        _LOGGER.warning("Failed to set status after %d tries", UPDATE_RETRY_LIMIT)
-
-    def status(self):
-        """Get state of Tuya light and cache the results."""
-        with self._lock:
-            now = time()
-            if not self._cached_status or now - self._cached_status_time > 15:
-                sleep(0.5)
-                self._cached_status = self.__get_status()
-                self._cached_status_time = time()
-            return self._cached_status
 
 
 class LocaltuyaLight(LocalTuyaEntity, LightEntity):
