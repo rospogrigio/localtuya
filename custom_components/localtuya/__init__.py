@@ -9,8 +9,9 @@ from homeassistant.const import (
     CONF_ENTITIES,
 )
 
-from .const import DOMAIN
+from .const import DOMAIN, TUYA_DEVICE
 from .config_flow import config_schema
+from .common import TuyaDevice
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,23 +20,17 @@ UNSUB_LISTENER = "unsub_listener"
 CONFIG_SCHEMA = config_schema()
 
 
-def import_from_yaml(hass, config, platform):
-    """Import configuration from YAML."""
-    config[CONF_PLATFORM] = platform
-    hass.async_create_task(
-        hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": SOURCE_IMPORT}, data=config
-        )
-    )
-
-    return True
-
-
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
 
-    print("setup:", config.get(DOMAIN))
+    for host_config in config.get(DOMAIN, []):
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": SOURCE_IMPORT}, data=host_config
+            )
+        )
+
     return True
 
 
@@ -45,12 +40,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data[DOMAIN][entry.entry_id] = {
         UNSUB_LISTENER: unsub_listener,
+        TUYA_DEVICE: TuyaDevice(entry.data),
     }
 
-    for platform in set(entity[CONF_PLATFORM] for entity in entry.data[CONF_ENTITIES]):
+    for entity in entry.data[CONF_ENTITIES]:
+        platform = entity[CONF_PLATFORM]
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
+
     return True
 
 

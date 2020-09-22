@@ -22,13 +22,12 @@ from homeassistant.components.sensor import DOMAIN, DEVICE_CLASSES
 from homeassistant.const import (
     CONF_ID,
     CONF_DEVICE_CLASS,
-    CONF_FRIENDLY_NAME,
     CONF_UNIT_OF_MEASUREMENT,
     STATE_UNKNOWN,
 )
 
 from .const import CONF_SCALING
-from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +47,9 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya sensor based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, DOMAIN
+    )
     if not entities_to_setup:
         return
 
@@ -56,7 +57,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         sensors.append(
             LocaltuyaSensor(
-                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                tuyainterface,
                 config_entry,
                 device_config[CONF_ID],
             )

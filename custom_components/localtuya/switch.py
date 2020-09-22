@@ -32,10 +32,7 @@ from homeassistant.components.switch import (
     SwitchEntity,
     DOMAIN,
 )
-from homeassistant.const import (
-    CONF_ID,
-    CONF_FRIENDLY_NAME,
-)
+from homeassistant.const import CONF_ID
 
 from .const import (
     ATTR_CURRENT,
@@ -45,11 +42,9 @@ from .const import (
     CONF_CURRENT_CONSUMPTION,
     CONF_VOLTAGE,
 )
-from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
-
-DEFAULT_ID = "1"
 
 
 def flow_schema(dps):
@@ -63,24 +58,17 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya switch based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, DOMAIN
+    )
     if not entities_to_setup:
         return
 
     switches = []
     for device_config in entities_to_setup:
-        if device_config.get(CONF_CURRENT, "-1") != "-1":
-            tuyainterface.add_dps_to_request(device_config.get(CONF_CURRENT))
-        if device_config.get(CONF_CURRENT_CONSUMPTION, "-1") != "-1":
-            tuyainterface.add_dps_to_request(
-                device_config.get(CONF_CURRENT_CONSUMPTION)
-            )
-        if device_config.get(CONF_VOLTAGE, "-1") != "-1":
-            tuyainterface.add_dps_to_request(device_config.get(CONF_VOLTAGE))
-
         switches.append(
             LocaltuyaSwitch(
-                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                tuyainterface,
                 config_entry,
                 device_config[CONF_ID],
             )

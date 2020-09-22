@@ -13,10 +13,7 @@ light:
 """
 import logging
 
-from homeassistant.const import (
-    CONF_ID,
-    CONF_FRIENDLY_NAME,
-)
+from homeassistant.const import CONF_ID
 from homeassistant.components.light import (
     LightEntity,
     DOMAIN,
@@ -27,7 +24,7 @@ from homeassistant.components.light import (
     SUPPORT_COLOR,
 )
 
-from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,18 +46,17 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya light based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, DOMAIN
+    )
     if not entities_to_setup:
         return
 
     lights = []
     for device_config in entities_to_setup:
-        # this has to be done in case the device type is type_0d
-        tuyainterface.add_dps_to_request(device_config[CONF_ID])
-
         lights.append(
             LocaltuyaLight(
-                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                tuyainterface,
                 config_entry,
                 device_config[CONF_ID],
             )

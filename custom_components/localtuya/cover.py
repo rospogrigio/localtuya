@@ -31,17 +31,14 @@ from homeassistant.components.cover import (
     SUPPORT_STOP,
     SUPPORT_SET_POSITION,
 )
-from homeassistant.const import (
-    CONF_ID,
-    CONF_FRIENDLY_NAME,
-)
+from homeassistant.const import CONF_ID
 
 from .const import (
     CONF_OPEN_CMD,
     CONF_CLOSE_CMD,
     CONF_STOP_CMD,
 )
-from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +58,9 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya cover based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, DOMAIN
+    )
     if not entities_to_setup:
         return
 
@@ -69,7 +68,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         covers.append(
             LocaltuyaCover(
-                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                tuyainterface,
                 config_entry,
                 device_config[CONF_ID],
             )
@@ -185,7 +184,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.debug("Laudebugching command %s to cover ", self._config[CONF_STOP_CMD])
+        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_STOP_CMD])
         self._device.set_dps(self._config[CONF_STOP_CMD], self._dps_id)
 
     def status_updated(self):

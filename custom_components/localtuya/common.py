@@ -15,12 +15,12 @@ from homeassistant.const import (
 )
 
 from . import pytuya
-from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN
+from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN, TUYA_DEVICE
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def prepare_setup_entities(config_entry, platform):
+def prepare_setup_entities(hass, config_entry, platform):
     """Prepare ro setup entities for a platform."""
     entities_to_setup = [
         entity
@@ -30,16 +30,7 @@ def prepare_setup_entities(config_entry, platform):
     if not entities_to_setup:
         return None, None
 
-    tuyainterface = pytuya.TuyaInterface(
-        config_entry.data[CONF_DEVICE_ID],
-        config_entry.data[CONF_HOST],
-        config_entry.data[CONF_LOCAL_KEY],
-        float(config_entry.data[CONF_PROTOCOL_VERSION]),
-    )
-
-    for entity_config in entities_to_setup:
-        # this has to be done in case the device type is type_0d
-        tuyainterface.add_dps_to_request(entity_config[CONF_ID])
+    tuyainterface = hass.data[DOMAIN][config_entry.entry_id][TUYA_DEVICE]
 
     return tuyainterface, entities_to_setup
 
@@ -55,12 +46,20 @@ def get_entity_config(config_entry, dps_id):
 class TuyaDevice:
     """Cache wrapper for pytuya.TuyaInterface."""
 
-    def __init__(self, interface, friendly_name):
+    def __init__(self, config_entry):
         """Initialize the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
-        self._interface = interface
-        self._friendly_name = friendly_name
+        self._interface = pytuya.TuyaInterface(
+            config_entry[CONF_DEVICE_ID],
+            config_entry[CONF_HOST],
+            config_entry[CONF_LOCAL_KEY],
+            config_entry[CONF_PROTOCOL_VERSION],
+        )
+        for entity in config_entry[CONF_ENTITIES]:
+            # this has to be done in case the device type is type_0d
+            self._interface.add_dps_to_request(entity[CONF_ID])
+        self._friendly_name = config_entry[CONF_FRIENDLY_NAME]
         self._lock = Lock()
 
     @property
@@ -90,7 +89,7 @@ class TuyaDevice:
 
     def set_dps(self, state, dps_index):
         # _LOGGER.info("running def set_dps from cover")
-        """Change the Tuya device status and clear the cache."""
+        """Change the Tuya switch status and clear the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
         for i in range(5):
@@ -111,7 +110,7 @@ class TuyaDevice:
     #                    raise ConnectionError("Failed to set status.")
 
     def status(self):
-        """Get state of Tuya device and cache the results."""
+        """Get state of Tuya switch and cache the results."""
         _LOGGER.debug("running def status(self) from TuyaDevice")
         self._lock.acquire()
         try:
