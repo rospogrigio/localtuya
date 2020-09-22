@@ -27,7 +27,6 @@ cover:
 """
 import logging
 from time import time, sleep
-from threading import Lock
 
 import voluptuous as vol
 
@@ -49,6 +48,7 @@ import homeassistant.helpers.config_validation as cv
 
 from . import (
     BASE_PLATFORM_SCHEMA,
+    TuyaDevice,
     LocalTuyaEntity,
     prepare_setup_entities,
     import_from_yaml,
@@ -99,7 +99,7 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Setup a Tuya cover based on a config entry."""
-    device, entities_to_setup = prepare_setup_entities(
+    tuyainterface, entities_to_setup = prepare_setup_entities(
         config_entry, DOMAIN
     )
     if not entities_to_setup:
@@ -109,7 +109,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         covers.append(
             LocaltuyaCover(
-                TuyaCache(device, config_entry.data[CONF_FRIENDLY_NAME]),
+                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
                 config_entry,
                 device_config[CONF_ID],
             )
@@ -186,6 +186,7 @@ class TuyaCache:
             return self._cached_status
         finally:
             self._lock.release()
+
 
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     """Tuya cover devices."""
