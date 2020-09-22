@@ -197,7 +197,7 @@ class TuyaInterface(object):
         self.dps_to_request = {}
 
         self.port = 6668  # default - do not expect caller to pass in
-        
+
     def __repr__(self):
         return '%r' % ((self.id, self.address),)  # FIXME can do better than this
 
