@@ -126,6 +126,7 @@ class TuyaCache:
     """Cache wrapper for pytuya.TuyaDevice"""
 
     def __init__(self, device, friendly_name):
+        _LOGGER.info("initiating TuyaCache")
         """Initialize the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
@@ -213,14 +214,24 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_closed(self):
         """Check if the cover is fully closed."""
-        return self._current_cover_position == 100:
+        return self._current_cover_position == 100
 
     def status_updated(self):
         """Device status was updated."""
-        self._last_movement = self.dps(str._config.get(CONF_LAST_MOVEMENT))
-        self._last_position_set = self.dps(str._config.get(CONF_SET_POSITION))
-        self._current_cover_position = self.dps(str._config.get(CONF_GET_POSITION))
-        self._last_command = self.dps(str._dps_id)
+        _LOGGER.info("status_updated called ")
+        _LOGGER.info("self._config=%s", self._config)
+        _LOGGER.info("self._config_entry=%s", self._config_entry)
+        _LOGGER.info("CONF_LAST_MOV=%s CONF_SET_POS=%s CONF_GET_POS=%s self._dps_id=%s", CONF_LAST_MOVEMENT, CONF_SET_POSITION, CONF_GET_POSITION, self._dps_id)
+        self.dps("7")
+        _LOGGER.info("self.dps(7)=%s", self.dps("7"))
+        self._last_movement = self.dps(str(self._config.get(CONF_LAST_MOVEMENT)))
+        _LOGGER.info("last_movement set to =%s", self._last_movement)
+        self._last_position = self.dps(str(self._config.get(CONF_SET_POSITION)))
+        _LOGGER.info("last_position_set set to =%s", self._last_position_set)
+        self._current_cover_position = self.dps(str(self._config.get(CONF_GET_POSITION)))
+        _LOGGER.info("current_cover_position set to =%s", self._current_cover_position)
+        self._last_command = self.dps(str(self._dps_id))
+        _LOGGER.info("last_command set to =%s", self._last_command)
 
     @property
     def current_cover_position(self):
