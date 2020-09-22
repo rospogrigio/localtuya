@@ -140,7 +140,7 @@ def get_entity_config(config_entry, dps_id):
 
 
 class TuyaDevice:
-    """Cache wrapper for pytuya.TuyaInterface"""
+    """Cache wrapper for pytuya.TuyaInterface."""
 
     def __init__(self, interface, friendly_name):
         """Initialize the cache."""
@@ -226,6 +226,7 @@ class LocalTuyaEntity(Entity):
 
     @property
     def device_info(self):
+        """Return device information for the device registry."""
         return {
             "identifiers": {
                 # Serial numbers are unique identifiers within a specific domain

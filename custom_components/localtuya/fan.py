@@ -49,7 +49,7 @@ def flow_schema(dps):
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Setup a Tuya fan based on a config entry."""
+    """Set up a Tuya fan based on a config entry."""
     tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
     if not entities_to_setup:
         return

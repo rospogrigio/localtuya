@@ -1,37 +1,38 @@
 # PyTuya Module
 # -*- coding: utf-8 -*-
 """
- Python module to interface with Tuya WiFi smart devices
- Mostly derived from Shenzhen Xenon ESP8266MOD WiFi smart devices
- E.g. https://wikidevi.com/wiki/Xenon_SM-PW701U
+Python module to interface with Tuya WiFi smart devices.
 
- Author: clach04
- Maintained by: rospogrigio
+Mostly derived from Shenzhen Xenon ESP8266MOD WiFi smart devices
+E.g. https://wikidevi.com/wiki/Xenon_SM-PW701U
 
- For more information see https://github.com/clach04/python-tuya
+Author: clach04
+Maintained by: rospogrigio
 
- Classes
-    TuyaInterface(dev_id, address, local_key=None)
-        dev_id (str): Device ID e.g. 01234567891234567890
-        address (str): Device Network IP Address e.g. 10.0.1.99
-        local_key (str, optional): The encryption key. Defaults to None.
+For more information see https://github.com/clach04/python-tuya
 
- Functions 
-    json = status()          # returns json payload
-    set_version(version)     #  3.1 [default] or 3.3
-    detect_available_dps()   # returns a list of available dps provided by the device
-    add_dps_to_request(dps_index)  # adds dps_index to the list of dps used by the device (to be queried in the payload)
-    set_dps(on, dps_index)   # Set value of any dps index.
-    set_timer(num_secs):
+Classes
+   TuyaInterface(dev_id, address, local_key=None)
+       dev_id (str): Device ID e.g. 01234567891234567890
+       address (str): Device Network IP Address e.g. 10.0.1.99
+       local_key (str, optional): The encryption key. Defaults to None.
+
+Functions 
+   json = status()          # returns json payload
+   set_version(version)     #  3.1 [default] or 3.3
+   detect_available_dps()   # returns a list of available dps provided by the device
+   add_dps_to_request(dps_index)  # adds dps_index to the list of dps used by the device (to be queried in the payload)
+   set_dps(on, dps_index)   # Set value of any dps index.
+   set_timer(num_secs):
 
         
- Credits
-  * TuyaAPI https://github.com/codetheweb/tuyapi by codetheweb and blackrozes
-    For protocol reverse engineering 
-  * PyTuya https://github.com/clach04/python-tuya by clach04
-    The origin of this python module (now abandoned)
-  * LocalTuya https://github.com/rospogrigio/localtuya-homeassistant by rospogrigio
-    Updated pytuya to support devices with Device IDs of 22 characters
+Credits
+ * TuyaAPI https://github.com/codetheweb/tuyapi by codetheweb and blackrozes
+   For protocol reverse engineering 
+ * PyTuya https://github.com/clach04/python-tuya by clach04
+   The origin of this python module (now abandoned)
+ * LocalTuya https://github.com/rospogrigio/localtuya-homeassistant by rospogrigio
+   Updated pytuya to support devices with Device IDs of 22 characters
 """
 
 import base64
@@ -80,12 +81,16 @@ PROTOCOL_VERSION_BYTES_33 = b"3.3"
 IS_PY2 = sys.version_info[0] == 2
 
 
-class AESCipher(object):
+class AESCipher:
+    """Cipher module for Tuya communication."""
+
     def __init__(self, key):
+        """Initialize a new AESCipher."""
         self.bs = 16
         self.key = key
 
     def encrypt(self, raw, use_base64=True):
+        """Encrypt data to be sent to device."""
         if Crypto:
             raw = self._pad(raw)
             cipher = AES.new(self.key, mode=AES.MODE_ECB)
@@ -104,6 +109,7 @@ class AESCipher(object):
             return crypted_text
 
     def decrypt(self, enc, use_base64=True):
+        """Decrypt data from device."""
         if use_base64:
             enc = base64.b64decode(enc)
         # print('enc (%d) %r' % (len(enc), enc))
@@ -134,6 +140,7 @@ class AESCipher(object):
 
 
 def bin2hex(x, pretty=False):
+    """Convert binary data to hex string."""
     if pretty:
         space = " "
     else:
@@ -146,6 +153,7 @@ def bin2hex(x, pretty=False):
 
 
 def hex2bin(x):
+    """Convert hex string to binary."""
     if IS_PY2:
         return x.decode("hex")
     else:
@@ -171,12 +179,14 @@ payload_dict = {
 }
 
 
-class TuyaInterface(object):
+class TuyaInterface:
+    """Represent a Tuya device."""
+
     def __init__(
         self, dev_id, address, local_key, protocol_version, connection_timeout=10
     ):
         """
-        Represents a Tuya device.
+        Initialize a new TuyaInterface.
 
         Args:
             dev_id (str): The device id.
@@ -186,7 +196,6 @@ class TuyaInterface(object):
         Attributes:
             port (int): The port to connect to.
         """
-
         self.id = dev_id
         self.address = address
         self.local_key = local_key.encode("latin1")
@@ -198,6 +207,7 @@ class TuyaInterface(object):
         self.port = 6668  # default - do not expect caller to pass in
 
     def __repr__(self):
+        """Return internal string representation of object."""
         return "%r" % ((self.id, self.address),)  # FIXME can do better than this
 
     def _send_receive(self, payload):
@@ -239,6 +249,7 @@ class TuyaInterface(object):
         return data
 
     def detect_available_dps(self):
+        """Return which datapoints are supported by the device."""
         # type_0d devices need a sort of bruteforce querying in order to detect the list of available dps
         # experience shows that the dps available are usually in the ranges [1-25] and [100-110]
         # need to split the bruteforcing in different steps due to request payload limitation (max. length = 255)
@@ -288,6 +299,7 @@ class TuyaInterface(object):
         return detected_dps
 
     def add_dps_to_request(self, dps_index):
+        """Add a datapoint (DP) to be included in requests."""
         if isinstance(dps_index, int):
             self.dps_to_request[str(dps_index)] = None
         else:
@@ -393,6 +405,7 @@ class TuyaInterface(object):
         return buffer
 
     def status(self):
+        """Return device status."""
         log.debug("status() entry (dev_type is %s)", self.dev_type)
         # open device, send request, then close connection
         payload = self.generate_payload("status")

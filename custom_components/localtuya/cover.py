@@ -78,7 +78,7 @@ def flow_schema(dps):
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Setup a Tuya cover based on a config entry."""
+    """Set up a Tuya cover based on a config entry."""
     tuyainterface, entities_to_setup = prepare_setup_entities(
         config_entry, DOMAIN
     )
@@ -103,7 +103,7 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
 
 
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
-    """Tuya cover devices."""
+    """Tuya cover device."""
 
     def __init__(
         self,
@@ -112,6 +112,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         switchid,
         **kwargs,
     ):
+        """Initialize a new LocaltuyaCover."""
         #_LOGGER.info("running def __init__ of LocaltuyaCover(CoverEntity) with self=%s device=%s name=%s friendly_name=%s icon=%s switchid=%s open_cmd=%s close_cmd=%s stop_cmd=%s", self, device, name, friendly_name, icon, switchid, open_cmd, close_cmd, stop_cmd)
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
@@ -137,6 +138,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     @property
     def current_cover_position(self):
+        """Return current cover position in percent."""
         # self.update()
         # state = self._state
         #        _LOGGER.info("curr_pos() : %i", self._position)
@@ -145,6 +147,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     @property
     def is_opening(self):
+        """Return if cover is opening."""
         # self.update()
         state = self._state
         # print('is_opening() : state [{}]'.format(state))
@@ -154,6 +157,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     @property
     def is_closing(self):
+        """Return if cover is closing."""
         # self.update()
         state = self._state
         # print('is_closing() : state [{}]'.format(state))
@@ -177,7 +181,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def set_cover_position(self, **kwargs):
         # _LOGGER.info("running set_cover_position from cover")
         """Move the cover to a specific position."""
-
         newpos = float(kwargs["position"])
         #        _LOGGER.info("Set new pos: %f", newpos)
 
@@ -212,5 +215,5 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._device.set_dps(self._config[CONF_STOP_CMD], self._dps_id)
 
     def status_updated(self):
-        """Device status was updated. """
+        """Device status was updated."""
         self._state = self.dps(self._dps_id)
