@@ -189,11 +189,9 @@ class LocalTuyaEntity(Entity):
             self._status = self._device.status()
             self.status_updated()
         except Exception:
-            _LOGGER.info("update set available to False")
             self._available = False
         else:
             self._available = True
-            _LOGGER.info("update set available to True")
 
     def status_updated(self):
         """Device status was updated.

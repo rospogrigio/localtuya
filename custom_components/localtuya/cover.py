@@ -126,7 +126,6 @@ class TuyaCache:
     """Cache wrapper for pytuya.TuyaDevice"""
 
     def __init__(self, device, friendly_name):
-        _LOGGER.info("initiating TuyaCache")
         """Initialize the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
@@ -158,7 +157,6 @@ class TuyaCache:
                     raise ConnectionError("Failed to update status .")
 
     def set_dps(self, value, dps_index):
-        _LOGGER.debug("set_dps where value=%s dps_index=%s", value, dps_index)
         """Change the Tuya cover status and clear the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
@@ -218,20 +216,10 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        _LOGGER.info("status_updated called ")
-        _LOGGER.info("self._config=%s", self._config)
-        _LOGGER.info("self._config_entry=%s", self._config_entry)
-        _LOGGER.info("CONF_LAST_MOV=%s CONF_SET_POS=%s CONF_GET_POS=%s self._dps_id=%s", CONF_LAST_MOVEMENT, CONF_SET_POSITION, CONF_GET_POSITION, self._dps_id)
-        self.dps("7")
-        _LOGGER.info("self.dps(7)=%s", self.dps("7"))
         self._last_movement = self.dps(str(self._config.get(CONF_LAST_MOVEMENT)))
-        _LOGGER.info("last_movement set to =%s", self._last_movement)
         self._last_position = self.dps(str(self._config.get(CONF_SET_POSITION)))
-        _LOGGER.info("last_position_set set to =%s", self._last_position_set)
         self._current_cover_position = self.dps(str(self._config.get(CONF_GET_POSITION)))
-        _LOGGER.info("current_cover_position set to =%s", self._current_cover_position)
         self._last_command = self.dps(str(self._dps_id))
-        _LOGGER.info("last_command set to =%s", self._last_command)
 
     @property
     def current_cover_position(self):
@@ -249,10 +237,8 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if ATTR_POSITION in kwargs:
             converted_position = int(kwargs[ATTR_POSITION])
             if converted_position in range(0,101):
-                _LOGGER.debug("set_cover_position about to set position to =%s", converted_position)
                 self._device.set_dps(converted_position, self._config[CONF_SET_POSITION])
             else:
-                _LOGGER.warning("set_position given number outside range")
 
     def open_cover(self, **kwargs):
         """Open the cover."""
