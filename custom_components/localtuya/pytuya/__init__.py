@@ -331,7 +331,7 @@ class TuyaInterface:
         if "devId" in json_data:
             json_data["devId"] = self.id
         if "uid" in json_data:
-            json_data["uid"] = self.id  # still use id, no seperate uid
+            json_data["uid"] = self.id  # still use id, no separate uid
         if "t" in json_data:
             json_data["t"] = str(int(time.time()))
 
