@@ -30,11 +30,10 @@ from homeassistant.components.light import (
 
 from . import (
     BASE_PLATFORM_SCHEMA,
-    TuyaDevice,
-    LocalTuyaEntity,
     import_from_yaml,
-    prepare_setup_entities,
 )
+from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+
 
 _LOGGER = logging.getLogger(__name__)
 

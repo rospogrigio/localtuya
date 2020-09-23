@@ -31,11 +31,9 @@ from homeassistant.const import CONF_ID, CONF_FRIENDLY_NAME
 
 from . import (
     BASE_PLATFORM_SCHEMA,
-    TuyaDevice,
-    LocalTuyaEntity,
-    prepare_setup_entities,
     import_from_yaml,
 )
+from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 

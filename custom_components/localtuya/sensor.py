@@ -29,12 +29,10 @@ from homeassistant.const import (
 
 from . import (
     BASE_PLATFORM_SCHEMA,
-    TuyaDevice,
-    LocalTuyaEntity,
-    prepare_setup_entities,
     import_from_yaml,
 )
 from .const import CONF_SCALING
+from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -38,18 +38,13 @@ from homeassistant.const import (
 )
 import homeassistant.helpers.config_validation as cv
 
-from . import (
-    BASE_PLATFORM_SCHEMA,
-    TuyaDevice,
-    LocalTuyaEntity,
-    prepare_setup_entities,
-    import_from_yaml,
-)
+from . import BASE_PLATFORM_SCHEMA, import_from_yaml
 from .const import (
     CONF_OPEN_CMD,
     CONF_CLOSE_CMD,
     CONF_STOP_CMD,
 )
+from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
