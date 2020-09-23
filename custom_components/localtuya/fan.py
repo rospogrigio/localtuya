@@ -15,7 +15,6 @@ fan:
 
 """
 import logging
-from time import time, sleep
 
 from homeassistant.components.fan import (
     FanEntity,
@@ -59,7 +58,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         fans.append(
             LocaltuyaFan(
-                TuyaCache(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
                 config_entry,
                 device_config[CONF_ID],
             )
@@ -71,7 +70,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Set up of the Tuya fan."""
     return import_from_yaml(hass, config, DOMAIN)
-
 
 
 class LocaltuyaFan(LocalTuyaEntity, FanEntity):

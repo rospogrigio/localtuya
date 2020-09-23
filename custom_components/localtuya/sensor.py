@@ -15,7 +15,6 @@ sensor:
     device_class: current
 """
 import logging
-from time import time, sleep
 
 import voluptuous as vol
 
@@ -65,7 +64,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         sensors.append(
             LocaltuyaSensor(
-                TuyaCache(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
                 config_entry,
                 device_config[CONF_ID],
             )
@@ -77,7 +76,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Set up of the Tuya sensor."""
     return import_from_yaml(hass, config, DOMAIN)
-
 
 
 class LocaltuyaSensor(LocalTuyaEntity):

@@ -11,9 +11,7 @@ light:
     friendly_name: This Light
     protocol_version: 3.3
 """
-import socket
 import logging
-from time import time, sleep
 
 from homeassistant.const import (
     CONF_ID,
@@ -71,7 +69,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
         lights.append(
             LocaltuyaLight(
-                TuyaCache(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
                 config_entry,
                 device_config[CONF_ID],
             )
@@ -83,7 +81,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Set up of the Tuya light."""
     return import_from_yaml(hass, config, DOMAIN)
-
 
 
 class LocaltuyaLight(LocalTuyaEntity, LightEntity):

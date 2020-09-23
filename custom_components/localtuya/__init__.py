@@ -25,6 +25,7 @@ from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN
 
 
 import pprint
+
 pp = pprint.PrettyPrinter(indent=4)
 
 _LOGGER = logging.getLogger(__name__)
@@ -138,7 +139,6 @@ def get_entity_config(config_entry, dps_id):
     raise Exception(f"missing entity config for id {dps_id}")
 
 
-
 class TuyaDevice:
     """Cache wrapper for pytuya.TuyaInterface."""
 
@@ -160,7 +160,6 @@ class TuyaDevice:
         for i in range(5):
             try:
                 status = self._interface.status()
-#                print("STATUS OF [{}] IS  [{}]".format(self._interface.address,status))
                 return status
             except Exception:
                 print(
@@ -177,17 +176,18 @@ class TuyaDevice:
                     raise ConnectionError("Failed to update status .")
 
     def set_dps(self, state, dps_index):
-        #_LOGGER.info("running def set_dps from cover")
+        # _LOGGER.info("running def set_dps from cover")
         """Change the Tuya switch status and clear the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
         for i in range(5):
             try:
-                #_LOGGER.info("Running a try from def set_dps from cover where state=%s and dps_index=%s", state, dps_index)
                 return self._interface.set_dps(state, dps_index)
             except Exception:
                 print(
-                    "Failed to set status of device [{}]".format(self._interface.address)
+                    "Failed to set status of device [{}]".format(
+                        self._interface.address
+                    )
                 )
                 if i + 1 == 3:
                     _LOGGER.error(

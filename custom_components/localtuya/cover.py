@@ -19,7 +19,7 @@ cover:
 
 """
 import logging
-from time import time, sleep
+from time import sleep
 
 import voluptuous as vol
 
@@ -50,7 +50,6 @@ from .const import (
     CONF_CLOSE_CMD,
     CONF_STOP_CMD,
 )
-from .const import CONF_OPEN_CMD, CONF_CLOSE_CMD, CONF_STOP_CMD
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -79,9 +78,7 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya cover based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(
-        config_entry, DOMAIN
-    )
+    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
     if not entities_to_setup:
         return
 
@@ -96,6 +93,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
     async_add_entities(covers, True)
+
 
 def setup_platform(hass, config, add_devices, discovery_info=None):
     """Set up of the Tuya cover."""
@@ -113,12 +111,11 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         **kwargs,
     ):
         """Initialize a new LocaltuyaCover."""
-        #_LOGGER.info("running def __init__ of LocaltuyaCover(CoverEntity) with self=%s device=%s name=%s friendly_name=%s icon=%s switchid=%s open_cmd=%s close_cmd=%s stop_cmd=%s", self, device, name, friendly_name, icon, switchid, open_cmd, close_cmd, stop_cmd)
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
         self._position = 50
         print(
-            "Initialized tuya cover  [{}] with switch status [{}] and state [{}]".format(
+            "Initialized cover [{}] with status [{}] and state [{}]".format(
                 self.name, self._status, self._state
             )
         )
@@ -197,7 +194,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         sleep(mydelay)
         self.stop_cover()
         self._position = 50  # newpos
-
 
     def open_cover(self, **kwargs):
         """Open the cover."""

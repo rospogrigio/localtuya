@@ -18,8 +18,9 @@ UDP_KEY = md5(b"yGAdlopoPVldABfn").digest()
 
 def decrypt_udp(message):
     """Decrypt encrypted UDP broadcasts."""
+
     def _unpad(data):
-        return data[:-ord(data[len(data) - 1:])]
+        return data[: -ord(data[len(data) - 1 :])]
 
     return _unpad(AES.new(UDP_KEY, AES.MODE_ECB).decrypt(message)).decode()
 

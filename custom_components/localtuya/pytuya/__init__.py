@@ -17,18 +17,19 @@ Classes
        address (str): Device Network IP Address e.g. 10.0.1.99
        local_key (str, optional): The encryption key. Defaults to None.
 
-Functions 
+Functions
    json = status()          # returns json payload
    set_version(version)     #  3.1 [default] or 3.3
    detect_available_dps()   # returns a list of available dps provided by the device
-   add_dps_to_request(dps_index)  # adds dps_index to the list of dps used by the device (to be queried in the payload)
+   add_dps_to_request(dps_index)  # adds dps_index to the list of dps used by the
+                                  # device (to be queried in the payload)
    set_dps(on, dps_index)   # Set value of any dps index.
    set_timer(num_secs):
 
-        
+
 Credits
  * TuyaAPI https://github.com/codetheweb/tuyapi by codetheweb and blackrozes
-   For protocol reverse engineering 
+   For protocol reverse engineering
  * PyTuya https://github.com/clach04/python-tuya by clach04
    The origin of this python module (now abandoned)
  * LocalTuya https://github.com/rospogrigio/localtuya-homeassistant by rospogrigio
@@ -37,13 +38,11 @@ Credits
 
 import base64
 from hashlib import md5
-from itertools import chain
 import json
 import logging
 import socket
 import sys
 import time
-import colorsys
 import binascii
 
 try:
@@ -160,20 +159,26 @@ def hex2bin(x):
         return bytes.fromhex(x)
 
 
-# This is intended to match requests.json payload at https://github.com/codetheweb/tuyapi :
+# This is intended to match requests.json payload at
+# https://github.com/codetheweb/tuyapi :
 # type_0a devices require the 0a command as the status request
-# type_0d devices require the 0d command as the status request, and the list of dps used set to null in the request payload (see generate_payload method)
+# type_0d devices require the 0d command as the status request, and the list of
+# dps used set to null in the request payload (see generate_payload method)
+
+# prefix: # Next byte is command byte ("hexByte") some zero padding, then length
+# of remaining payload, i.e. command + suffix (unclear if multiple bytes used for
+# length, zero padding implies could be more than one byte)
 payload_dict = {
     "type_0a": {
         "status": {"hexByte": "0a", "command": {"gwId": "", "devId": ""}},
         "set": {"hexByte": "07", "command": {"devId": "", "uid": "", "t": ""}},
-        "prefix": "000055aa00000000000000",  # Next byte is command byte ("hexByte") some zero padding, then length of remaining payload, i.e. command + suffix (unclear if multiple bytes used for length, zero padding implies could be more than one byte)
+        "prefix": "000055aa00000000000000",
         "suffix": "000000000000aa55",
     },
     "type_0d": {
         "status": {"hexByte": "0d", "command": {"devId": "", "uid": "", "t": ""}},
         "set": {"hexByte": "07", "command": {"devId": "", "uid": "", "t": ""}},
-        "prefix": "000055aa00000000000000",  # Next byte is command byte ("hexByte") some zero padding, then length of remaining payload, i.e. command + suffix (unclear if multiple bytes used for length, zero padding implies could be more than one byte)
+        "prefix": "000055aa00000000000000",
         "suffix": "000000000000aa55",
     },
 }
@@ -235,7 +240,8 @@ class TuyaInterface:
         try:
             data = s.recv(1024)
             #            print("FIRST:  Received %d bytes" % len(data) )
-            # sometimes the first packet does not contain data (typically 28 bytes): need to read again
+            # sometimes the first packet does not contain data (typically 28 bytes):
+            # need to read again
             if len(data) < 40:
                 time.sleep(0.1)
                 data = s.recv(1024)
@@ -250,19 +256,21 @@ class TuyaInterface:
 
     def detect_available_dps(self):
         """Return which datapoints are supported by the device."""
-        # type_0d devices need a sort of bruteforce querying in order to detect the list of available dps
-        # experience shows that the dps available are usually in the ranges [1-25] and [100-110]
-        # need to split the bruteforcing in different steps due to request payload limitation (max. length = 255)
+        # type_0d devices need a sort of bruteforce querying in order to detect the
+        # list of available dps experience shows that the dps available are usually
+        # in the ranges [1-25] and [100-110] need to split the bruteforcing in
+        # different steps due to request payload limitation (max. length = 255)
         detected_dps = {}
 
-        # dps 1 must always be sent, otherwise it might fail in case no dps is found in the requested range
+        # dps 1 must always be sent, otherwise it might fail in case no dps is found
+        # in the requested range
         self.dps_to_request = {"1": None}
         self.add_dps_to_request(range(2, 11))
         try:
             data = self.status()
         except Exception as e:
             print("Failed to get status: [{}]".format(e))
-            raise CannotConnect
+            raise
         detected_dps.update(data["dps"])
 
         if self.dev_type == "type_0a":
@@ -274,7 +282,7 @@ class TuyaInterface:
             data = self.status()
         except Exception as e:
             print("Failed to get status: [{}]".format(e))
-            raise CannotConnect
+            raise
         detected_dps.update(data["dps"])
 
         self.dps_to_request = {"1": None}
@@ -283,7 +291,7 @@ class TuyaInterface:
             data = self.status()
         except Exception as e:
             print("Failed to get status: [{}]".format(e))
-            raise CannotConnect
+            raise
         detected_dps.update(data["dps"])
 
         self.dps_to_request = {"1": None}
@@ -292,7 +300,7 @@ class TuyaInterface:
             data = self.status()
         except Exception as e:
             print("Failed to get status: [{}]".format(e))
-            raise CannotConnect
+            raise
         detected_dps.update(data["dps"])
         #        print("DATA IS [{}] detected_dps [{}]".format(data,detected_dps))
 
@@ -400,8 +408,6 @@ class TuyaInterface:
         # calc the CRC of everything except where the CRC goes and the suffix
         hex_crc = format(binascii.crc32(buffer[:-8]) & 0xFFFFFFFF, "08X")
         buffer = buffer[:-8] + hex2bin(hex_crc) + buffer[-4:]
-        # print('full buffer(%d) %r' % (len(buffer), bin2hex(buffer, pretty=True) ))
-        # print('full buffer(%d) %r' % (len(buffer), " ".join("{:02x}".format(ord(c)) for c in buffer)))
         return buffer
 
     def status(self):
@@ -418,7 +424,8 @@ class TuyaInterface:
             result = result[15:]
 
         log.debug("result=%r", result)
-        # result = data[data.find('{'):data.rfind('}')+1]  # naive marker search, hope neither { nor } occur in header/footer
+        # result = data[data.find('{'):data.rfind('}')+1]  # naive marker search,
+        # hope neither { nor } occur in header/footer
         # print('result %r' % result)
         if result.startswith(b"{"):
             # this is the regular expected code path
@@ -427,12 +434,13 @@ class TuyaInterface:
             result = json.loads(result)
         elif result.startswith(PROTOCOL_VERSION_BYTES_31):
             # got an encrypted payload, happens occasionally
-            # expect resulting json to look similar to:: {"devId":"ID","dps":{"1":true,"2":0},"t":EPOCH_SECS,"s":3_DIGIT_NUM}
+            # expect resulting json to look similar to:
+            #   {"devId":"ID","dps":{"1":true,"2":0},"t":EPOCH_SECS,"s":3_DIGIT_NUM}
             # NOTE dps.2 may or may not be present
             result = result[len(PROTOCOL_VERSION_BYTES_31) :]  # remove version header
-            result = result[
-                16:
-            ]  # remove (what I'm guessing, but not confirmed is) 16-bytes of MD5 hexdigest of payload
+            # remove (what I'm guessing, but not confirmed is) 16-bytes of MD5
+            # hexdigest of payload
+            result = result[16:]
             cipher = AESCipher(self.local_key)
             result = cipher.decrypt(result)
             print("decrypted result=[{}]".format(result))
@@ -487,7 +495,8 @@ class TuyaInterface:
         """
         # FIXME / TODO support schemas? Accept timer id number as parameter?
 
-        # Dumb heuristic; Query status, pick last device id as that is probably the timer
+        # Dumb heuristic; Query status, pick last device id as that is probably
+        # the timer
         status = self.status()
         devices = status["dps"]
         devices_numbers = list(devices.keys())

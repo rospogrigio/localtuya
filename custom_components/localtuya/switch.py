@@ -25,7 +25,6 @@ switch:
         id: 7
 """
 import logging
-from time import time, sleep
 
 import voluptuous as vol
 
@@ -104,7 +103,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         if device_config.get(CONF_CURRENT, "-1") != "-1":
             tuyainterface.add_dps_to_request(device_config.get(CONF_CURRENT))
         if device_config.get(CONF_CURRENT_CONSUMPTION, "-1") != "-1":
-            tuyainterface.add_dps_to_request(device_config.get(CONF_CURRENT_CONSUMPTION))
+            tuyainterface.add_dps_to_request(
+                device_config.get(CONF_CURRENT_CONSUMPTION)
+            )
         if device_config.get(CONF_VOLTAGE, "-1") != "-1":
             tuyainterface.add_dps_to_request(device_config.get(CONF_VOLTAGE))
 
@@ -124,8 +125,6 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     return import_from_yaml(hass, config, DOMAIN)
 
 
-
-
 class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
     """Representation of a Tuya switch."""
 
@@ -140,7 +139,7 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
         print(
-            "Initialized tuya switch [{}] with switch status [{}] and state [{}]".format(
+            "Initialized switch [{}] with status [{}] and state [{}]".format(
                 self.name, self._status, self._state
             )
         )
