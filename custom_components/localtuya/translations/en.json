@@ -51,7 +51,9 @@
                     "stop_cmd": "Stop Command",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
-                    "scaling": "Scaling Factor"
+                    "scaling": "Scaling Factor",
+                    "brightness": "Brightness",
+                    "color_temp": "Color Temperature"
                 }
             }
         }
@@ -82,7 +84,9 @@
                     "stop_cmd": "Stop Command",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
-                    "scaling": "Scaling Factor"
+                    "scaling": "Scaling Factor",
+                    "brightness": "Brightness",
+                    "color_temp": "Color Temperature"
                 }
             },
             "yaml_import": {

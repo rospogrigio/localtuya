@@ -13,9 +13,13 @@ light:
 """
 import logging
 
+import voluptuous as vol
+
 from homeassistant.const import (
     CONF_ID,
     CONF_FRIENDLY_NAME,
+    CONF_BRIGHTNESS,
+    CONF_COLOR_TEMP,
 )
 from homeassistant.components.light import (
     LightEntity,
@@ -27,6 +31,7 @@ from homeassistant.components.light import (
     SUPPORT_BRIGHTNESS,
     SUPPORT_COLOR,
 )
+import homeassistant.helpers.config_validation as cv
 
 from . import (
     BASE_PLATFORM_SCHEMA,
@@ -42,18 +47,21 @@ MIN_MIRED = 153
 MAX_MIRED = 370
 UPDATE_RETRY_LIMIT = 3
 
-DPS_INDEX_ON = "1"
-DPS_INDEX_MODE = "2"
-DPS_INDEX_BRIGHTNESS = "3"
-DPS_INDEX_COLOURTEMP = "4"
-DPS_INDEX_COLOUR = "5"
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA)
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA).extend(
+    {
+        vol.Optional(CONF_BRIGHTNESS, default="-1"): cv.string,
+        vol.Optional(CONF_COLOR_TEMP, default="-1"): cv.string,
+    }
+)
 
 
 def flow_schema(dps):
     """Return schema used in config flow."""
-    return {}
+    return {
+        vol.Optional(CONF_BRIGHTNESS): vol.In(dps),
+        vol.Optional(CONF_COLOR_TEMP): vol.In(dps),
+    }
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -141,7 +149,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
         if ATTR_BRIGHTNESS in kwargs:
             self._device.set_dps(
-                max(int(kwargs[ATTR_BRIGHTNESS]), 25), DPS_INDEX_BRIGHTNESS
+                max(int(kwargs[ATTR_BRIGHTNESS]), 25), self._config.get(CONF_BRIGHTNESS)
             )
 
         if ATTR_HS_COLOR in kwargs:
@@ -153,7 +161,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 - (255 / (MAX_MIRED - MIN_MIRED))
                 * (int(kwargs[ATTR_COLOR_TEMP]) - MIN_MIRED)
             )
-            self._device.set_dps(color_temp, DPS_INDEX_COLOURTEMP)
+            self._device.set_dps(color_temp, self._config.get(CONF_COLOR_TEMP))
 
     def turn_off(self, **kwargs):
         """Turn Tuya light off."""
@@ -163,10 +171,10 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         """Device status was updated."""
         self._state = self.dps(self._dps_id)
 
-        brightness = self.dps(DPS_INDEX_BRIGHTNESS)
+        brightness = self.dps_conf(CONF_BRIGHTNESS)
         if brightness is not None:
             brightness = min(brightness, 255)
             brightness = max(brightness, 25)
         self._brightness = brightness
 
-        self._color_temp = self.dps(DPS_INDEX_COLOURTEMP)
+        self._color_temp = self.dps_conf(CONF_COLOR_TEMP)
