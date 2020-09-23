@@ -51,7 +51,9 @@
                     "stop_cmd": "Stop Command",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
-                    "scaling": "Scaling Factor"
+                    "scaling": "Scaling Factor",
+                    "state_on": "On Value",
+                    "state_off": "Off Value"
                 }
             }
         }
@@ -82,7 +84,9 @@
                     "stop_cmd": "Stop Command",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
-                    "scaling": "Scaling Factor"
+                    "scaling": "Scaling Factor",
+                    "state_on": "On Value",
+                    "state_off": "Off Value"
                 }
             },
             "yaml_import": {

@@ -25,4 +25,4 @@ CONF_SCALING = "scaling"
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch"]
