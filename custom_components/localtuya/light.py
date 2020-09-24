@@ -20,7 +20,6 @@ from homeassistant.const import (
 from homeassistant.components.light import (
     LightEntity,
     DOMAIN,
-    PLATFORM_SCHEMA,
     ATTR_BRIGHTNESS,
     ATTR_COLOR_TEMP,
     ATTR_HS_COLOR,
@@ -28,12 +27,7 @@ from homeassistant.components.light import (
     SUPPORT_COLOR,
 )
 
-from . import (
-    BASE_PLATFORM_SCHEMA,
-    import_from_yaml,
-)
 from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,8 +40,6 @@ DPS_INDEX_MODE = "2"
 DPS_INDEX_BRIGHTNESS = "3"
 DPS_INDEX_COLOURTEMP = "4"
 DPS_INDEX_COLOUR = "5"
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA)
 
 
 def flow_schema(dps):
@@ -75,11 +67,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
     async_add_entities(lights, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya light."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class LocaltuyaLight(LocalTuyaEntity, LightEntity):

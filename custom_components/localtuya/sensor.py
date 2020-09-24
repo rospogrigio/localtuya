@@ -18,7 +18,7 @@ import logging
 
 import voluptuous as vol
 
-from homeassistant.components.sensor import DOMAIN, PLATFORM_SCHEMA, DEVICE_CLASSES
+from homeassistant.components.sensor import DOMAIN, DEVICE_CLASSES
 from homeassistant.const import (
     CONF_ID,
     CONF_DEVICE_CLASS,
@@ -27,18 +27,12 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 
-from . import (
-    BASE_PLATFORM_SCHEMA,
-    import_from_yaml,
-)
 from .const import CONF_SCALING
 from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_SCALING = 1.0
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA)
 
 
 def flow_schema(dps):
@@ -69,11 +63,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
     async_add_entities(sensors, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya sensor."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class LocaltuyaSensor(LocalTuyaEntity):

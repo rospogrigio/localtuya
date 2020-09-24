@@ -19,7 +19,6 @@ import logging
 from homeassistant.components.fan import (
     FanEntity,
     DOMAIN,
-    PLATFORM_SCHEMA,
     SPEED_OFF,
     SPEED_LOW,
     SPEED_MEDIUM,
@@ -29,15 +28,9 @@ from homeassistant.components.fan import (
 )
 from homeassistant.const import CONF_ID, CONF_FRIENDLY_NAME
 
-from . import (
-    BASE_PLATFORM_SCHEMA,
-    import_from_yaml,
-)
 from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA)
 
 
 def flow_schema(dps):
@@ -63,11 +56,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
     async_add_entities(fans, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya fan."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class LocaltuyaFan(LocalTuyaEntity, FanEntity):

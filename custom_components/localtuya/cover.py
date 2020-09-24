@@ -26,7 +26,6 @@ import voluptuous as vol
 from homeassistant.components.cover import (
     CoverEntity,
     DOMAIN,
-    PLATFORM_SCHEMA,
     SUPPORT_CLOSE,
     SUPPORT_OPEN,
     SUPPORT_STOP,
@@ -36,9 +35,7 @@ from homeassistant.const import (
     CONF_ID,
     CONF_FRIENDLY_NAME,
 )
-import homeassistant.helpers.config_validation as cv
 
-from . import BASE_PLATFORM_SCHEMA, import_from_yaml
 from .const import (
     CONF_OPEN_CMD,
     CONF_CLOSE_CMD,
@@ -51,15 +48,6 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_OPEN_CMD = "on"
 DEFAULT_CLOSE_CMD = "off"
 DEFAULT_STOP_CMD = "stop"
-
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA).extend(
-    {
-        vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): cv.string,
-        vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): cv.string,
-        vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): cv.string,
-    }
-)
 
 
 def flow_schema(dps):
@@ -88,11 +76,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
     async_add_entities(covers, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya cover."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):

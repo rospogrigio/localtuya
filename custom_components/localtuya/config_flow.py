@@ -15,6 +15,7 @@ from homeassistant.const import (
     CONF_PLATFORM,
     CONF_SWITCHES,
 )
+import homeassistant.helpers.config_validation as cv
 
 from . import pytuya
 from .const import (  # pylint: disable=unused-import
@@ -53,6 +54,16 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_LOCAL_KEY): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+    }
+)
+
+DEVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_HOST): cv.string,
+        vol.Required(CONF_DEVICE_ID): cv.string,
+        vol.Required(CONF_LOCAL_KEY): cv.string,
+        vol.Required(CONF_FRIENDLY_NAME): cv.string,
+        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.Coerce(float),
     }
 )
 
@@ -100,9 +111,12 @@ def gen_dps_strings():
     return [f"{dp} (value: ?)" for dp in range(1, 256)]
 
 
-def platform_schema(platform, dps_strings, allow_id=True):
+def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
     """Generate input validation schema for a platform."""
     schema = {}
+    if yaml:
+        # In YAML mode we force the specified platform to match flow schema
+        schema[vol.Required(CONF_PLATFORM)] = vol.In([platform])
     if allow_id:
         schema[vol.Required(CONF_ID)] = vol.In(dps_strings)
     schema[vol.Required(CONF_FRIENDLY_NAME)] = str
@@ -124,6 +138,26 @@ def strip_dps_values(user_input, dps_strings):
         else:
             stripped[field] = user_input[field]
     return stripped
+
+
+def config_schema():
+    """Build schema used for setting up component."""
+    entity_schemas = [
+        platform_schema(platform, range(1, 256), yaml=True) for platform in PLATFORMS
+    ]
+    return vol.Schema(
+        {
+            DOMAIN: vol.All(
+                cv.ensure_list,
+                [
+                    DEVICE_SCHEMA.extend(
+                        {vol.Required(CONF_ENTITIES): [vol.Any(*entity_schemas)]}
+                    )
+                ],
+            )
+        },
+        extra=vol.ALLOW_EXTRA,
+    )
 
 
 async def validate_input(hass: core.HomeAssistant, data):

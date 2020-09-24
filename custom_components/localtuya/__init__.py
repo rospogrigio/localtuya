@@ -1,48 +1,22 @@
 """The LocalTuya integration integration."""
 import asyncio
 import logging
-import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import (
-    CONF_DEVICE_ID,
-    CONF_ID,
-    CONF_ICON,
-    CONF_NAME,
-    CONF_FRIENDLY_NAME,
-    CONF_HOST,
     CONF_PLATFORM,
     CONF_ENTITIES,
 )
-import homeassistant.helpers.config_validation as cv
 
-from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN
-
-
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
+from .const import DOMAIN
+from .config_flow import config_schema
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_ID = "1"
-DEFAULT_PROTOCOL_VERSION = 3.3
-
 UNSUB_LISTENER = "unsub_listener"
 
-BASE_PLATFORM_SCHEMA = {
-    vol.Optional(CONF_ICON): cv.icon,  # Deprecated: not used
-    vol.Required(CONF_HOST): cv.string,
-    vol.Required(CONF_DEVICE_ID): cv.string,
-    vol.Required(CONF_LOCAL_KEY): cv.string,
-    vol.Optional(CONF_NAME): cv.string,  # Deprecated: not used
-    vol.Required(CONF_FRIENDLY_NAME): cv.string,
-    vol.Required(CONF_PROTOCOL_VERSION, default=DEFAULT_PROTOCOL_VERSION): vol.Coerce(
-        float
-    ),
-    vol.Optional(CONF_ID, default=DEFAULT_ID): cv.string,
-}
+CONFIG_SCHEMA = config_schema()
 
 
 def import_from_yaml(hass, config, platform):
@@ -60,6 +34,8 @@ def import_from_yaml(hass, config, platform):
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
+
+    print("setup:", config.get(DOMAIN))
     return True
 
 

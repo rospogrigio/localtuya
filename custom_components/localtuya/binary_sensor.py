@@ -23,7 +23,6 @@ import voluptuous as vol
 
 from homeassistant.components.binary_sensor import (
     DOMAIN,
-    PLATFORM_SCHEMA,
     DEVICE_CLASSES_SCHEMA,
     BinarySensorEntity,
 )
@@ -33,19 +32,12 @@ from homeassistant.const import (
     CONF_FRIENDLY_NAME,
 )
 
-from . import (
-    BASE_PLATFORM_SCHEMA,
-    LocalTuyaEntity,
-    prepare_setup_entities,
-    import_from_yaml,
-)
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
 CONF_STATE_ON = "state_on"
 CONF_STATE_OFF = "state_off"
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA)
 
 
 def flow_schema(dps):
@@ -74,11 +66,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         )
 
     async_add_entities(sensors, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya sensor."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class TuyaCache:
