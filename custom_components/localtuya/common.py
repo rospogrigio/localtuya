@@ -54,7 +54,7 @@ class TuyaDevice:
             config_entry[CONF_DEVICE_ID],
             config_entry[CONF_HOST],
             config_entry[CONF_LOCAL_KEY],
-            config_entry[CONF_PROTOCOL_VERSION],
+            float(config_entry[CONF_PROTOCOL_VERSION]),
         )
         for entity in config_entry[CONF_ENTITIES]:
             # this has to be done in case the device type is type_0d

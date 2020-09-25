@@ -62,7 +62,7 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_DEVICE_ID): cv.string,
         vol.Required(CONF_LOCAL_KEY): cv.string,
         vol.Required(CONF_FRIENDLY_NAME): cv.string,
-        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.Coerce(float),
+        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
     }
 )
 
@@ -132,7 +132,7 @@ def strip_dps_values(user_input, dps_strings):
     stripped = {}
     for field, value in user_input.items():
         if value in dps_strings:
-            stripped[field] = user_input[field].split(" ")[0]
+            stripped[field] = int(user_input[field].split(" ")[0])
         else:
             stripped[field] = user_input[field]
     return stripped
@@ -306,17 +306,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_import(self, user_input):
         """Handle import from YAML."""
-
-        def _convert_entity(conf):
-            for field in flow_schema(conf[CONF_PLATFORM], self.dps_strings).keys():
-                if str(field) in conf:
-                    conf[str(field)] = str(conf[field])
-
         await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
-
-        for entity_conf in user_input[CONF_ENTITIES]:
-            entity_conf[CONF_ID] = str(entity_conf[CONF_ID])
-            _convert_entity(entity_conf)
 
         user_input[CONF_YAML_IMPORT] = True
 
