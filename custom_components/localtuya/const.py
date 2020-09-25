@@ -7,7 +7,6 @@ ATTR_VOLTAGE = "voltage"
 CONF_LOCAL_KEY = "local_key"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
-CONF_YAML_IMPORT = "yaml_import"
 
 # switch
 CONF_CURRENT = "current"
