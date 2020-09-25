@@ -17,6 +17,7 @@ from .common import LocalTuyaEntity, prepare_setup_entities
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_SCALING = 1.0
+DEFAULT_PRECISION = 2
 
 
 def flow_schema(dps):
@@ -68,9 +69,6 @@ class LocaltuyaSensor(LocalTuyaEntity):
     @property
     def state(self):
         """Return sensor state."""
-        scale_factor = self._config.get(CONF_SCALING)
-        if scale_factor is not None:
-            return self._state * scale_factor
         return self._state
 
     @property
@@ -85,4 +83,8 @@ class LocaltuyaSensor(LocalTuyaEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dps_id)
+        state = self.dps(self._dps_id)
+        scale_factor = self._config.get(CONF_SCALING)
+        if scale_factor is not None:
+            state = round(state * scale_factor, DEFAULT_PRECISION)
+        self._state = state
