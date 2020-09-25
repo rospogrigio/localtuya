@@ -1,19 +1,4 @@
-"""
-Platform to prsent any Tuya DP as a sensor.
-
-Sample config yaml
-
-sensor:
-  - platform: localtuya
-    host: 192.168.0.1
-    local_key: 1234567891234567
-    device_id: 12345678912345671234
-    friendly_name: Current
-    protocol_version: 3.3
-    id: 18
-    unit_of_measurement: mA
-    device_class: current
-"""
+"""Platform to present any Tuya DP as a sensor."""
 import logging
 
 import voluptuous as vol

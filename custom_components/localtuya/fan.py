@@ -1,19 +1,4 @@
-"""
-Simple platform to control LOCALLY Tuya cover devices.
-
-Sample config yaml
-
-fan:
-  - platform: localtuya
-    host: 192.168.0.123
-    local_key: 1234567891234567
-    device_id: 123456789123456789abcd
-    name: fan guests
-    friendly_name: fan guests
-    protocol_version: 3.3
-    id: 1
-
-"""
+"""Platform to locally control Tuya-based fan devices."""
 import logging
 
 from homeassistant.components.fan import (

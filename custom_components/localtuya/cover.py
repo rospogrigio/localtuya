@@ -1,23 +1,4 @@
-"""
-Simple platform to locally control Tuya-based cover devices.
-
-Sample config yaml:
-
-cover:
-  - platform: localtuya #REQUIRED
-    host: 192.168.0.123 #REQUIRED
-    local_key: 1234567891234567 #REQUIRED
-    device_id: 123456789123456789abcd #REQUIRED
-    name: cover_guests #REQUIRED
-    friendly_name: Cover guests #REQUIRED
-    protocol_version: 3.3 #REQUIRED
-    id: 1 #OPTIONAL
-    icon: mdi:blinds #OPTIONAL
-    open_cmd: open #OPTIONAL, default is 'on'
-    close_cmd: close #OPTIONAL, default is 'off'
-    stop_cmd: stop #OPTIONAL, default is 'stop'
-
-"""
+"""Platform to locally control Tuya-based cover devices."""
 import logging
 from time import sleep
 

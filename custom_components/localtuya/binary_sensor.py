@@ -1,20 +1,4 @@
-"""
-Platform to prsent any Tuya DP as a binary sensor.
-
-Sample config yaml
-
-sensor:
-  - platform: localtuya
-    host: 192.168.0.1
-    local_key: 1234567891234567
-    device_id: 12345678912345671234
-    friendly_name: Current
-    protocol_version: 3.3
-    id: 18
-    state_on: "true" (optional, default is "true")
-    state_off: "false" (optional, default is "false")
-    device_class: current
-"""
+"""Platform to present any Tuya DP as a binary sensor."""
 import logging
 
 import voluptuous as vol

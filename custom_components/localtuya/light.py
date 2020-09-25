@@ -1,16 +1,4 @@
-"""
-Simple platform to control LOCALLY Tuya light devices.
-
-Sample config yaml
-
-light:
-  - platform: localtuya
-    host: 192.168.0.1
-    local_key: 1234567891234567
-    device_id: 12345678912345671234
-    friendly_name: This Light
-    protocol_version: 3.3
-"""
+"""Platform to locally control Tuya-based light devices."""
 import logging
 
 from homeassistant.const import CONF_ID

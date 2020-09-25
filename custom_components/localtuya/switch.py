@@ -1,29 +1,4 @@
-"""
-Simple platform to control LOCALLY Tuya switch devices.
-
-Sample config yaml
-
-switch:
-  - platform: localtuya
-    host: 192.168.0.1
-    local_key: 1234567891234567
-    device_id: 12345678912345671234
-    name: tuya_01
-    friendly_name: tuya_01
-    protocol_version: 3.3
-    switches:
-      sw01:
-        name: main_plug
-        friendly_name: Main Plug
-        id: 1
-        current: 18
-        current_consumption: 19
-        voltage: 20
-      sw02:
-        name: usb_plug
-        friendly_name: USB Plug
-        id: 7
-"""
+"""Platform to locally control Tuya-based switch devices."""
 import logging
 
 import voluptuous as vol

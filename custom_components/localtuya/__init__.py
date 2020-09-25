@@ -1,4 +1,51 @@
-"""The LocalTuya integration integration."""
+"""The LocalTuya integration integration.
+
+Sample YAML config with all supported entity types (default values
+are pre-filled for optional fields):
+
+localtuya:
+  - host: 192.168.1.x
+    device_id: xxxxx
+    local_key: xxxxx
+    friendly_name: Tuya Device
+    protocol_version: "3.3"
+    entities:
+      - platform: binary_sensor
+        friendly_name: Plug Status
+        id: 1
+        device_class: power
+        state_on: "true" # Optional
+        state_off: "false" # Optional
+
+      - platform: cover
+        friendly_name: Device Cover
+        id: 2
+        open_cmd: "on" # Optional
+        close_cmd: "off" # Optional
+        stop_cmd: "stop" # Optional
+
+      - platform: fan
+        friendly_name: Device Fan
+        id: 3
+
+      - platform: light
+        friendly_name: Device Light
+        id: 4
+
+      - platform: sensor
+        friendly_name: Plug Voltage
+        id: 20
+        scaling: 0.1 # Optional
+        device_class: voltage # Optional
+        unit_of_measurement: "V" # Optional
+
+      - platform: switch
+        friendly_name: Plug
+        id: 1
+        current: 18 # Optional
+        current_consumption: 19 # Optional
+        voltage: 20 # Optional
+"""
 import asyncio
 import logging
 
