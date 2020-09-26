@@ -50,7 +50,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             )
         )
 
-    async_add_entities(lights, True)
+    async_add_entities(lights)
 
 
 class LocaltuyaLight(LocalTuyaEntity, LightEntity):

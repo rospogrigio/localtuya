@@ -4,6 +4,7 @@ from time import time, sleep
 from threading import Lock
 
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from homeassistant.const import (
     CONF_DEVICE_ID,
@@ -132,9 +133,27 @@ class LocalTuyaEntity(Entity):
         self._device = device
         self._config_entry = config_entry
         self._config = get_entity_config(config_entry, dps_id)
-        self._available = False
         self._dps_id = dps_id
-        self._status = None
+        self._status = {}
+
+    async def async_added_to_hass(self):
+        """Subscribe localtuya events."""
+        await super().async_added_to_hass()
+
+        def _update_handler(status):
+            """Update entity state when status was updated."""
+            if status is not None:
+                self._status = status
+                self.status_updated()
+            else:
+                self._status = {}
+
+            self.schedule_update_ha_state()
+
+        signal = f"localtuya_{self._config_entry.data[CONF_DEVICE_ID]}"
+        self.async_on_remove(
+            async_dispatcher_connect(self.hass, signal, _update_handler)
+        )
 
     @property
     def device_info(self):
@@ -156,6 +175,11 @@ class LocalTuyaEntity(Entity):
         return self._config[CONF_FRIENDLY_NAME]
 
     @property
+    def should_poll(self):
+        """Return if platform should poll for updates."""
+        return False
+
+    @property
     def unique_id(self):
         """Return unique device identifier."""
         return f"local_{self._device.unique_id}_{self._dps_id}"
@@ -163,10 +187,13 @@ class LocalTuyaEntity(Entity):
     @property
     def available(self):
         """Return if device is available or not."""
-        return self._available
+        return bool(self._status)
 
     def dps(self, dps_index):
         """Return cached value for DPS index."""
+        if "dps" not in self._status:
+            return None
+
         value = self._status["dps"].get(str(dps_index))
         if value is None:
             _LOGGER.warning(
@@ -174,17 +201,8 @@ class LocalTuyaEntity(Entity):
                 self.entity_id,
                 dps_index,
             )
-        return value
 
-    def update(self):
-        """Update state of Tuya entity."""
-        try:
-            self._status = self._device.status()
-            self.status_updated()
-        except Exception:
-            self._available = False
-        else:
-            self._available = True
+        return value
 
     def status_updated(self):
         """Device status was updated.

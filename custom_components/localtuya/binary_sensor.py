@@ -45,7 +45,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             )
         )
 
-    async_add_entities(sensors, True)
+    async_add_entities(sensors)
 
 
 class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):

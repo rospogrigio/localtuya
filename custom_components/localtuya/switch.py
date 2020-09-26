@@ -49,7 +49,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             )
         )
 
-    async_add_entities(switches, True)
+    async_add_entities(switches)
 
 
 class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):

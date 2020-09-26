@@ -55,7 +55,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             )
         )
 
-    async_add_entities(covers, True)
+    async_add_entities(covers)
 
 
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
@@ -77,11 +77,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 self.name, self._status, self._state
             )
         )
-
-    @property
-    def available(self):
-        """Return if device is available or not."""
-        return self._available
 
     @property
     def supported_features(self):

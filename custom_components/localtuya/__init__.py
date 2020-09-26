@@ -48,13 +48,17 @@ localtuya:
 """
 import asyncio
 import logging
+from datetime import timedelta, datetime
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import (
+    CONF_DEVICE_ID,
     CONF_PLATFORM,
     CONF_ENTITIES,
 )
+from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .const import DOMAIN, TUYA_DEVICE
 from .config_flow import config_schema
@@ -63,6 +67,9 @@ from .common import TuyaDevice
 _LOGGER = logging.getLogger(__name__)
 
 UNSUB_LISTENER = "unsub_listener"
+UNSUB_TRACK = "unsub_track"
+
+POLL_INTERVAL = 30
 
 CONFIG_SCHEMA = config_schema()
 
@@ -85,16 +92,42 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up LocalTuya integration from a config entry."""
     unsub_listener = entry.add_update_listener(update_listener)
 
+    device = TuyaDevice(entry.data)
+
+    def update_state(now):
+        """Read device status and update platforms."""
+        status = None
+        try:
+            status = device.status()
+        except Exception:
+            _LOGGER.exception("update failed")
+
+        signal = f"localtuya_{entry.data[CONF_DEVICE_ID]}"
+        async_dispatcher_send(hass, signal, status)
+
+    unsub_track = async_track_time_interval(
+        hass, update_state, timedelta(seconds=POLL_INTERVAL)
+    )
+
     hass.data[DOMAIN][entry.entry_id] = {
         UNSUB_LISTENER: unsub_listener,
-        TUYA_DEVICE: TuyaDevice(entry.data),
+        UNSUB_TRACK: unsub_track,
+        TUYA_DEVICE: device,
     }
 
-    for entity in entry.data[CONF_ENTITIES]:
-        platform = entity[CONF_PLATFORM]
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, platform)
+    async def setup_entities():
+        await asyncio.gather(
+            *[
+                hass.config_entries.async_forward_entry_setup(
+                    entry, entity[CONF_PLATFORM]
+                )
+                for entity in entry.data[CONF_ENTITIES]
+            ]
         )
+
+        update_state(datetime.now())
+
+    hass.async_create_task(setup_entities())
 
     return True
 
@@ -113,6 +146,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+    hass.data[DOMAIN][entry.entry_id][UNSUB_TRACK]()
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
