@@ -45,14 +45,8 @@ import sys
 import time
 import binascii
 
-try:
-    # raise ImportError
-    import Crypto
-    from Crypto.Cipher import AES  # PyCrypto
-except ImportError:
-    Crypto = AES = None
-    import pyaes  # https://github.com/ricmoo/pyaes
-
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 version_tuple = (8, 1, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
@@ -61,15 +55,6 @@ __author__ = "rospogrigio"
 log = logging.getLogger(__name__)
 logging.basicConfig()  # TODO include function name/line numbers in log
 # log.setLevel(level=logging.DEBUG)  # Uncomment to Debug
-
-log.debug("%s version %s", __name__, version)
-log.debug("Python %s on %s", sys.version, sys.platform)
-if Crypto is None:
-    log.debug("Using pyaes version %r", pyaes.VERSION)
-    log.debug("Using pyaes from %r", pyaes.__file__)
-else:
-    log.debug("Using PyCrypto %r", Crypto.version_info)
-    log.debug("Using PyCrypto from %r", Crypto.__file__)
 
 SET = "set"
 STATUS = "status"
@@ -86,22 +71,13 @@ class AESCipher:
     def __init__(self, key):
         """Initialize a new AESCipher."""
         self.bs = 16
-        self.key = key
+        self.cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
 
     def encrypt(self, raw, use_base64=True):
         """Encrypt data to be sent to device."""
-        if Crypto:
-            raw = self._pad(raw)
-            cipher = AES.new(self.key, mode=AES.MODE_ECB)
-            crypted_text = cipher.encrypt(raw)
-        else:
-            _ = self._pad(raw)
-            cipher = pyaes.blockfeeder.Encrypter(
-                pyaes.AESModeOfOperationECB(self.key)
-            )  # no IV, auto pads to 16
-            crypted_text = cipher.feed(raw)
-            crypted_text += cipher.feed()  # flush final block
-        # print('crypted_text (%d) %r' % (len(crypted_text), crypted_text))
+        encryptor = self.cipher.encryptor()
+        crypted_text = encryptor.update(self._pad(raw)) + encryptor.finalize()
+
         if use_base64:
             return base64.b64encode(crypted_text)
         else:
@@ -111,23 +87,9 @@ class AESCipher:
         """Decrypt data from device."""
         if use_base64:
             enc = base64.b64decode(enc)
-        # print('enc (%d) %r' % (len(enc), enc))
-        # enc = self._unpad(enc)
-        # enc = self._pad(enc)
-        # print('upadenc (%d) %r' % (len(enc), enc))
-        if Crypto:
-            cipher = AES.new(self.key, AES.MODE_ECB)
-            raw = cipher.decrypt(enc)
-            # print('raw (%d) %r' % (len(raw), raw))
-            return self._unpad(raw).decode("utf-8")
-            # return self._unpad(cipher.decrypt(enc)).decode('utf-8')
-        else:
-            cipher = pyaes.blockfeeder.Decrypter(
-                pyaes.AESModeOfOperationECB(self.key)
-            )  # no IV, auto pads to 16
-            plain_text = cipher.feed(enc)
-            plain_text += cipher.feed()  # flush final block
-            return plain_text
+
+        decryptor = self.cipher.decryptor()
+        return self._unpad(decryptor.update(enc) + decryptor.finalize()).decode()
 
     def _pad(self, s):
         padnum = self.bs - len(s) % self.bs
