@@ -107,6 +107,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._state = False
         self._brightness = 127
         self._color_temp = 127
+        self._color = None
 
     @property
     def is_on(self):
@@ -142,6 +143,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         supports = SUPPORT_BRIGHTNESS
         if self._color_temp is not None:
             supports = supports | SUPPORT_COLOR_TEMP
+        if self._color is not None:
+            supports = supports | SUPPORT_COLOR
         return supports
 
     def turn_on(self, **kwargs):
