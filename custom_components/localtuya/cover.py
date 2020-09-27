@@ -1,23 +1,4 @@
-"""
-Simple platform to locally control Tuya-based cover devices.
-
-Sample config yaml:
-
-cover:
-  - platform: localtuya #REQUIRED
-    host: 192.168.0.123 #REQUIRED
-    local_key: 1234567891234567 #REQUIRED
-    device_id: 123456789123456789abcd #REQUIRED
-    name: cover_guests #REQUIRED
-    friendly_name: Cover guests #REQUIRED
-    protocol_version: 3.3 #REQUIRED
-    id: 1 #OPTIONAL
-    icon: mdi:blinds #OPTIONAL
-    open_cmd: open #OPTIONAL, default is 'on'
-    close_cmd: close #OPTIONAL, default is 'off'
-    stop_cmd: stop #OPTIONAL, default is 'stop'
-
-"""
+"""Platform to locally control Tuya-based cover devices."""
 import logging
 from time import sleep
 
@@ -26,40 +7,25 @@ import voluptuous as vol
 from homeassistant.components.cover import (
     CoverEntity,
     DOMAIN,
-    PLATFORM_SCHEMA,
     SUPPORT_CLOSE,
     SUPPORT_OPEN,
     SUPPORT_STOP,
     SUPPORT_SET_POSITION,
 )
-from homeassistant.const import (
-    CONF_ID,
-    CONF_FRIENDLY_NAME,
-)
-import homeassistant.helpers.config_validation as cv
+from homeassistant.const import CONF_ID
 
-from . import BASE_PLATFORM_SCHEMA, import_from_yaml
 from .const import (
     CONF_OPEN_CMD,
     CONF_CLOSE_CMD,
     CONF_STOP_CMD,
 )
-from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_OPEN_CMD = "on"
 DEFAULT_CLOSE_CMD = "off"
 DEFAULT_STOP_CMD = "stop"
-
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA).extend(
-    {
-        vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): cv.string,
-        vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): cv.string,
-        vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): cv.string,
-    }
-)
 
 
 def flow_schema(dps):
@@ -73,7 +39,9 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya cover based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, DOMAIN
+    )
     if not entities_to_setup:
         return
 
@@ -81,18 +49,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         covers.append(
             LocaltuyaCover(
-                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                tuyainterface,
                 config_entry,
                 device_config[CONF_ID],
             )
         )
 
     async_add_entities(covers, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya cover."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
@@ -202,7 +165,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.debug("Laudebugching command %s to cover ", self._config[CONF_STOP_CMD])
+        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_STOP_CMD])
         self._device.set_dps(self._config[CONF_STOP_CMD], self._dps_id)
 
     def status_updated(self):

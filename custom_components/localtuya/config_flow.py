@@ -13,15 +13,14 @@ from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_FRIENDLY_NAME,
     CONF_PLATFORM,
-    CONF_SWITCHES,
 )
+import homeassistant.helpers.config_validation as cv
 
 from . import pytuya
 from .const import (  # pylint: disable=unused-import
     CONF_LOCAL_KEY,
     CONF_PROTOCOL_VERSION,
     CONF_DPS_STRINGS,
-    CONF_YAML_IMPORT,
     DOMAIN,
     PLATFORMS,
 )
@@ -56,6 +55,16 @@ OPTIONS_SCHEMA = vol.Schema(
     }
 )
 
+DEVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_HOST): cv.string,
+        vol.Required(CONF_DEVICE_ID): cv.string,
+        vol.Required(CONF_LOCAL_KEY): cv.string,
+        vol.Required(CONF_FRIENDLY_NAME): cv.string,
+        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+    }
+)
+
 PICK_ENTITY_SCHEMA = vol.Schema(
     {vol.Required(PLATFORM_TO_ADD, default=PLATFORMS[0]): vol.In(PLATFORMS)}
 )
@@ -86,7 +95,6 @@ def schema_defaults(schema, dps_list=None, **defaults):
 
         if field.schema in defaults:
             field.default = vol.default_factory(defaults[field])
-
     return copy
 
 
@@ -100,9 +108,12 @@ def gen_dps_strings():
     return [f"{dp} (value: ?)" for dp in range(1, 256)]
 
 
-def platform_schema(platform, dps_strings, allow_id=True):
+def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
     """Generate input validation schema for a platform."""
     schema = {}
+    if yaml:
+        # In YAML mode we force the specified platform to match flow schema
+        schema[vol.Required(CONF_PLATFORM)] = vol.In([platform])
     if allow_id:
         schema[vol.Required(CONF_ID)] = vol.In(dps_strings)
     schema[vol.Required(CONF_FRIENDLY_NAME)] = str
@@ -120,10 +131,30 @@ def strip_dps_values(user_input, dps_strings):
     stripped = {}
     for field, value in user_input.items():
         if value in dps_strings:
-            stripped[field] = user_input[field].split(" ")[0]
+            stripped[field] = int(user_input[field].split(" ")[0])
         else:
             stripped[field] = user_input[field]
     return stripped
+
+
+def config_schema():
+    """Build schema used for setting up component."""
+    entity_schemas = [
+        platform_schema(platform, range(1, 256), yaml=True) for platform in PLATFORMS
+    ]
+    return vol.Schema(
+        {
+            DOMAIN: vol.All(
+                cv.ensure_list,
+                [
+                    DEVICE_SCHEMA.extend(
+                        {vol.Required(CONF_ENTITIES): [vol.Any(*entity_schemas)]}
+                    )
+                ],
+            )
+        },
+        extra=vol.ALLOW_EXTRA,
+    )
 
 
 async def validate_input(hass: core.HomeAssistant, data):
@@ -274,39 +305,10 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_import(self, user_input):
         """Handle import from YAML."""
-
-        def _convert_entity(conf):
-            converted = {
-                CONF_ID: conf[CONF_ID],
-                CONF_FRIENDLY_NAME: conf[CONF_FRIENDLY_NAME],
-                CONF_PLATFORM: self.platform,
-            }
-            for field in flow_schema(self.platform, self.dps_strings).keys():
-                converted[str(field)] = conf[field]
-            return converted
-
         await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
-        self.platform = user_input[CONF_PLATFORM]
-
-        if len(user_input.get(CONF_SWITCHES, [])) > 0:
-            for switch_conf in user_input[CONF_SWITCHES].values():
-                self.entities.append(_convert_entity(switch_conf))
-        else:
-            self.entities.append(_convert_entity(user_input))
-
-        # print('ENTITIES: [{}] '.format(self.entities))
-        config = {
-            CONF_FRIENDLY_NAME: f"{user_input[CONF_FRIENDLY_NAME]}",
-            CONF_HOST: user_input[CONF_HOST],
-            CONF_DEVICE_ID: user_input[CONF_DEVICE_ID],
-            CONF_LOCAL_KEY: user_input[CONF_LOCAL_KEY],
-            CONF_PROTOCOL_VERSION: user_input[CONF_PROTOCOL_VERSION],
-            CONF_YAML_IMPORT: True,
-            CONF_ENTITIES: self.entities,
-        }
-        self._abort_if_unique_id_configured(updates=config)
+        self._abort_if_unique_id_configured(updates=user_input)
         return self.async_create_entry(
-            title=f"{config[CONF_FRIENDLY_NAME]} (YAML)", data=config
+            title=f"{user_input[CONF_FRIENDLY_NAME]} (YAML)", data=user_input
         )
 
 
@@ -333,7 +335,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_entity()
 
         # Not supported for YAML imports
-        if self.config_entry.data.get(CONF_YAML_IMPORT):
+        if self.config_entry.source == config_entries.SOURCE_IMPORT:
             return await self.async_step_yaml_import()
 
         return self.async_show_form(

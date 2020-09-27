@@ -1,44 +1,23 @@
-"""
-Platform to prsent any Tuya DP as a sensor.
-
-Sample config yaml
-
-sensor:
-  - platform: localtuya
-    host: 192.168.0.1
-    local_key: 1234567891234567
-    device_id: 12345678912345671234
-    friendly_name: Current
-    protocol_version: 3.3
-    id: 18
-    unit_of_measurement: mA
-    device_class: current
-"""
+"""Platform to present any Tuya DP as a sensor."""
 import logging
 
 import voluptuous as vol
 
-from homeassistant.components.sensor import DOMAIN, PLATFORM_SCHEMA, DEVICE_CLASSES
+from homeassistant.components.sensor import DOMAIN, DEVICE_CLASSES
 from homeassistant.const import (
     CONF_ID,
     CONF_DEVICE_CLASS,
-    CONF_FRIENDLY_NAME,
     CONF_UNIT_OF_MEASUREMENT,
     STATE_UNKNOWN,
 )
 
-from . import (
-    BASE_PLATFORM_SCHEMA,
-    import_from_yaml,
-)
 from .const import CONF_SCALING
-from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_SCALING = 1.0
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA)
+DEFAULT_PRECISION = 2
 
 
 def flow_schema(dps):
@@ -54,7 +33,9 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya sensor based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, DOMAIN
+    )
     if not entities_to_setup:
         return
 
@@ -62,18 +43,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         sensors.append(
             LocaltuyaSensor(
-                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                tuyainterface,
                 config_entry,
                 device_config[CONF_ID],
             )
         )
 
     async_add_entities(sensors, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya sensor."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class LocaltuyaSensor(LocalTuyaEntity):
@@ -93,9 +69,6 @@ class LocaltuyaSensor(LocalTuyaEntity):
     @property
     def state(self):
         """Return sensor state."""
-        scale_factor = self._config.get(CONF_SCALING)
-        if scale_factor is not None:
-            return self._state * scale_factor
         return self._state
 
     @property
@@ -110,4 +83,8 @@ class LocaltuyaSensor(LocalTuyaEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dps_id)
+        state = self.dps(self._dps_id)
+        scale_factor = self._config.get(CONF_SCALING)
+        if scale_factor is not None:
+            state = round(state * scale_factor, DEFAULT_PRECISION)
+        self._state = state

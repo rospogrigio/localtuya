@@ -1,65 +1,83 @@
-"""The LocalTuya integration integration."""
+"""The LocalTuya integration integration.
+
+Sample YAML config with all supported entity types (default values
+are pre-filled for optional fields):
+
+localtuya:
+  - host: 192.168.1.x
+    device_id: xxxxx
+    local_key: xxxxx
+    friendly_name: Tuya Device
+    protocol_version: "3.3"
+    entities:
+      - platform: binary_sensor
+        friendly_name: Plug Status
+        id: 1
+        device_class: power
+        state_on: "true" # Optional
+        state_off: "false" # Optional
+
+      - platform: cover
+        friendly_name: Device Cover
+        id: 2
+        open_cmd: "on" # Optional
+        close_cmd: "off" # Optional
+        stop_cmd: "stop" # Optional
+
+      - platform: fan
+        friendly_name: Device Fan
+        id: 3
+
+      - platform: light
+        friendly_name: Device Light
+        id: 4
+
+      - platform: sensor
+        friendly_name: Plug Voltage
+        id: 20
+        scaling: 0.1 # Optional
+        device_class: voltage # Optional
+        unit_of_measurement: "V" # Optional
+
+      - platform: switch
+        friendly_name: Plug
+        id: 1
+        current: 18 # Optional
+        current_consumption: 19 # Optional
+        voltage: 20 # Optional
+"""
 import asyncio
 import logging
-import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import (
-    CONF_DEVICE_ID,
-    CONF_ID,
-    CONF_ICON,
-    CONF_NAME,
-    CONF_FRIENDLY_NAME,
-    CONF_HOST,
     CONF_PLATFORM,
     CONF_ENTITIES,
 )
-import homeassistant.helpers.config_validation as cv
 
-from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN
-
-
-import pprint
-
-pp = pprint.PrettyPrinter(indent=4)
+from .const import DOMAIN, TUYA_DEVICE
+from .config_flow import config_schema
+from .common import TuyaDevice
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_ID = "1"
-DEFAULT_PROTOCOL_VERSION = 3.3
-
 UNSUB_LISTENER = "unsub_listener"
 
-BASE_PLATFORM_SCHEMA = {
-    vol.Optional(CONF_ICON): cv.icon,  # Deprecated: not used
-    vol.Required(CONF_HOST): cv.string,
-    vol.Required(CONF_DEVICE_ID): cv.string,
-    vol.Required(CONF_LOCAL_KEY): cv.string,
-    vol.Optional(CONF_NAME): cv.string,  # Deprecated: not used
-    vol.Required(CONF_FRIENDLY_NAME): cv.string,
-    vol.Required(CONF_PROTOCOL_VERSION, default=DEFAULT_PROTOCOL_VERSION): vol.Coerce(
-        float
-    ),
-    vol.Optional(CONF_ID, default=DEFAULT_ID): cv.string,
-}
-
-
-def import_from_yaml(hass, config, platform):
-    """Import configuration from YAML."""
-    config[CONF_PLATFORM] = platform
-    hass.async_create_task(
-        hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": SOURCE_IMPORT}, data=config
-        )
-    )
-
-    return True
+CONFIG_SCHEMA = config_schema()
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
+
+    for host_config in config.get(DOMAIN, []):
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN, context={"source": SOURCE_IMPORT}, data=host_config
+            )
+        )
+
     return True
 
 
@@ -69,12 +87,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data[DOMAIN][entry.entry_id] = {
         UNSUB_LISTENER: unsub_listener,
+        TUYA_DEVICE: TuyaDevice(entry.data),
     }
 
-    for platform in set(entity[CONF_PLATFORM] for entity in entry.data[CONF_ENTITIES]):
+    for entity in entry.data[CONF_ENTITIES]:
+        platform = entity[CONF_PLATFORM]
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
+
     return True
 
 

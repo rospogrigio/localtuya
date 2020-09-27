@@ -1,25 +1,9 @@
-"""
-Simple platform to control LOCALLY Tuya cover devices.
-
-Sample config yaml
-
-fan:
-  - platform: localtuya
-    host: 192.168.0.123
-    local_key: 1234567891234567
-    device_id: 123456789123456789abcd
-    name: fan guests
-    friendly_name: fan guests
-    protocol_version: 3.3
-    id: 1
-
-"""
+"""Platform to locally control Tuya-based fan devices."""
 import logging
 
 from homeassistant.components.fan import (
     FanEntity,
     DOMAIN,
-    PLATFORM_SCHEMA,
     SPEED_OFF,
     SPEED_LOW,
     SPEED_MEDIUM,
@@ -27,17 +11,11 @@ from homeassistant.components.fan import (
     SUPPORT_SET_SPEED,
     SUPPORT_OSCILLATE,
 )
-from homeassistant.const import CONF_ID, CONF_FRIENDLY_NAME
+from homeassistant.const import CONF_ID
 
-from . import (
-    BASE_PLATFORM_SCHEMA,
-    import_from_yaml,
-)
-from .common import LocalTuyaEntity, TuyaDevice, prepare_setup_entities
+from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(BASE_PLATFORM_SCHEMA)
 
 
 def flow_schema(dps):
@@ -47,7 +25,9 @@ def flow_schema(dps):
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up a Tuya fan based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(config_entry, DOMAIN)
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, DOMAIN
+    )
     if not entities_to_setup:
         return
 
@@ -56,18 +36,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device_config in entities_to_setup:
         fans.append(
             LocaltuyaFan(
-                TuyaDevice(tuyainterface, config_entry.data[CONF_FRIENDLY_NAME]),
+                tuyainterface,
                 config_entry,
                 device_config[CONF_ID],
             )
         )
 
     async_add_entities(fans, True)
-
-
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """Set up of the Tuya fan."""
-    return import_from_yaml(hass, config, DOMAIN)
 
 
 class LocaltuyaFan(LocalTuyaEntity, FanEntity):
