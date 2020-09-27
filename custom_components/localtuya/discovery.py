@@ -9,7 +9,8 @@ import asyncio
 import logging
 from hashlib import md5
 
-from Cryptodome.Cipher import AES
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +23,9 @@ def decrypt_udp(message):
     def _unpad(data):
         return data[: -ord(data[len(data) - 1 :])]
 
-    return _unpad(AES.new(UDP_KEY, AES.MODE_ECB).decrypt(message)).decode()
+    cipher = Cipher(algorithms.AES(UDP_KEY), modes.ECB(), default_backend())
+    decryptor = cipher.decryptor()
+    return _unpad(decryptor.update(message) + decryptor.finalize()).decode()
 
 
 class TuyaDiscovery(asyncio.DatagramProtocol):

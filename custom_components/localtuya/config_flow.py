@@ -21,7 +21,6 @@ from .const import (  # pylint: disable=unused-import
     CONF_LOCAL_KEY,
     CONF_PROTOCOL_VERSION,
     CONF_DPS_STRINGS,
-    CONF_YAML_IMPORT,
     DOMAIN,
     PLATFORMS,
 )
@@ -307,9 +306,6 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_import(self, user_input):
         """Handle import from YAML."""
         await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
-
-        user_input[CONF_YAML_IMPORT] = True
-
         self._abort_if_unique_id_configured(updates=user_input)
         return self.async_create_entry(
             title=f"{user_input[CONF_FRIENDLY_NAME]} (YAML)", data=user_input
@@ -339,7 +335,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             return await self.async_step_entity()
 
         # Not supported for YAML imports
-        if self.config_entry.data.get(CONF_YAML_IMPORT):
+        if self.config_entry.source == config_entries.SOURCE_IMPORT:
             return await self.async_step_yaml_import()
 
         return self.async_show_form(

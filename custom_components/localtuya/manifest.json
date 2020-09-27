@@ -6,6 +6,6 @@
   "codeowners": [
     "@rospogrigio"
   ],
-  "requirements": ["pycryptodome==3.9.8"],
+  "requirements": ["cryptography==2.9.2"],
   "config_flow": true
 }
