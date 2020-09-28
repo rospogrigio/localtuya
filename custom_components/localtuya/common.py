@@ -89,6 +89,7 @@ class TuyaDevice:
                     raise ConnectionError("Failed to update status .")
 
     def set_dps(self, state, dps_index):
+        """Changes the value of a DP of the Tuya device, and update the cached status."""
         # _LOGGER.info("running def set_dps from TuyaDevice")
         # No need to clear the cache here: let's just update the status of the changed dps as returned by the interface (see 5 lines below)
 #        self._cached_status = ""
@@ -116,7 +117,7 @@ class TuyaDevice:
     #                    raise ConnectionError("Failed to set status.")
 
     def status(self):
-        """Get state of Tuya switch and cache the results."""
+        """Get the state of the Tuya device and cache the results."""
         _LOGGER.debug("running def status(self) from TuyaDevice")
         self._lock.acquire()
         try:
