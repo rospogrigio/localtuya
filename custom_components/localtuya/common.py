@@ -4,7 +4,10 @@ from time import time, sleep
 from threading import Lock
 
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
 
 from homeassistant.const import (
     CONF_DEVICE_ID,
@@ -47,7 +50,7 @@ def get_entity_config(config_entry, dps_id):
 class TuyaDevice:
     """Cache wrapper for pytuya.TuyaInterface."""
 
-    def __init__(self, config_entry):
+    def __init__(self, hass, config_entry):
         """Initialize the cache."""
         self._cached_status = ""
         self._cached_status_time = 0
@@ -61,6 +64,7 @@ class TuyaDevice:
             # this has to be done in case the device type is type_0d
             self._interface.add_dps_to_request(entity[CONF_ID])
         self._friendly_name = config_entry[CONF_FRIENDLY_NAME]
+        self._hass = hass
         self._lock = Lock()
 
     @property
@@ -74,10 +78,10 @@ class TuyaDevice:
             try:
                 status = self._interface.status()
                 return status
-            except Exception:
+            except Exception as e:
                 print(
-                    "Failed to update status of device [{}]".format(
-                        self._interface.address
+                    "Failed to update status of device [{}]: [{}]".format(
+                        self._interface.address, e
                     )
                 )
                 sleep(1.0)
@@ -99,15 +103,13 @@ class TuyaDevice:
             try:
                 result = self._interface.set_dps(state, dps_index)
                 self._cached_status["dps"].update(result["dps"])
-                # NOW WE SHOULD TRIGGER status_updated FOR ALL ENTITIES
-                # INVOLVED IN result["dps"] :
-                # for dp in result["dps"]:
-                #    have status_updated() called....
+                signal = f"localtuya_{self._interface.id}"
+                async_dispatcher_send(self._hass, signal, self._cached_status)
                 return
-            except Exception:
+            except Exception as e:
                 print(
-                    "Failed to set status of device [{}]".format(
-                        self._interface.address
+                    "Failed to set status of device [{}]: [{}]".format(
+                        self._interface.address, e
                     )
                 )
                 if i + 1 == 3:

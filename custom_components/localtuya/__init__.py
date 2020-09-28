@@ -92,7 +92,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up LocalTuya integration from a config entry."""
     unsub_listener = entry.add_update_listener(update_listener)
 
-    device = TuyaDevice(entry.data)
+    device = TuyaDevice(hass, entry.data)
 
     async def update_state(now):
         """Read device status and update platforms."""
