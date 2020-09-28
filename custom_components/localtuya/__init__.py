@@ -94,13 +94,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     device = TuyaDevice(entry.data)
 
-    def update_state(now):
+    async def update_state(now):
         """Read device status and update platforms."""
         status = None
         try:
-            status = device.status()
+            status = await hass.async_add_executor_job(device.status)
         except Exception:
-            _LOGGER.exception("update failed")
+            _LOGGER.debug("update failed")
 
         signal = f"localtuya_{entry.data[CONF_DEVICE_ID]}"
         async_dispatcher_send(hass, signal, status)
@@ -125,7 +125,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             ]
         )
 
-        update_state(datetime.now())
+        await update_state(datetime.now())
 
     hass.async_create_task(setup_entities())
 
