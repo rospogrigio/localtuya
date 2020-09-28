@@ -53,14 +53,16 @@ import logging
 from datetime import timedelta, datetime
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_PLATFORM,
     CONF_ENTITIES,
+    SERVICE_RELOAD,
 )
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.reload import async_integration_yaml_config
 
 from .const import DOMAIN, TUYA_DEVICE
 from .config_flow import config_schema
@@ -76,9 +78,45 @@ POLL_INTERVAL = 30
 CONFIG_SCHEMA = config_schema()
 
 
+@callback
+def _async_update_config_entry_if_from_yaml(hass, entries_by_id, conf):
+    """Update a config entry with the latest yaml."""
+    device_id = conf[CONF_DEVICE_ID]
+
+    if device_id in entries_by_id and entries_by_id[device_id].source == SOURCE_IMPORT:
+        entry = entries_by_id[device_id]
+        hass.config_entries.async_update_entry(entry, data=conf.copy())
+
+
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
+
+    async def _handle_reload(service):
+        """Handle reload service call."""
+        config = await async_integration_yaml_config(hass, DOMAIN)
+
+        if not config or DOMAIN not in config:
+            return
+
+        current_entries = hass.config_entries.async_entries(DOMAIN)
+        entries_by_id = {entry.data[CONF_DEVICE_ID]: entry for entry in current_entries}
+
+        for conf in config[DOMAIN]:
+            _async_update_config_entry_if_from_yaml(hass, entries_by_id, conf)
+
+        reload_tasks = [
+            hass.config_entries.async_reload(entry.entry_id)
+            for entry in current_entries
+        ]
+
+        await asyncio.gather(*reload_tasks)
+
+    hass.helpers.service.async_register_admin_service(
+        DOMAIN,
+        SERVICE_RELOAD,
+        _handle_reload,
+    )
 
     for host_config in config.get(DOMAIN, []):
         hass.async_create_task(
