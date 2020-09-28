@@ -89,13 +89,18 @@ class TuyaDevice:
                     raise ConnectionError("Failed to update status .")
 
     def set_dps(self, state, dps_index):
-        # _LOGGER.info("running def set_dps from cover")
-        """Change the Tuya switch status and clear the cache."""
-        self._cached_status = ""
-        self._cached_status_time = 0
+        # _LOGGER.info("running def set_dps from TuyaDevice")
+        # No need to clear the cache here: let's just update the status of the changed dps as returned by the interface (see 5 lines below)
+#        self._cached_status = ""
+#        self._cached_status_time = 0
         for i in range(5):
             try:
-                return self._interface.set_dps(state, dps_index)
+                result = self._interface.set_dps(state, dps_index)
+                self._cached_status["dps"].update(result["dps"])
+                # NOW WE SHOULD TRIGGER status_updated FOR ALL ENTITIES INVOLVED IN result["dps"] :
+                #for dp in result["dps"]:
+                #    have status_updated() called....
+                return
             except Exception:
                 print(
                     "Failed to set status of device [{}]".format(
@@ -116,7 +121,7 @@ class TuyaDevice:
         self._lock.acquire()
         try:
             now = time()
-            if not self._cached_status or now - self._cached_status_time > 15:
+            if not self._cached_status or now - self._cached_status_time > 10:
                 sleep(0.5)
                 self._cached_status = self.__get_status()
                 self._cached_status_time = time()
