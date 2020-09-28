@@ -253,10 +253,10 @@ class TuyaInterface:
         """
         return self.exchange(SET, {str(dps_index): value})
 
-
     def _decode_received_data(self, data, is_status):
-        """Return device status."""
-        """is_status may be True (result of a status request) or False (result of a set_dps request)"""
+        """decode the response data received from the device"""
+        # is_status may be True (result of a status request) 
+        # or False (result of a set_dps request)
         result = data[20:-8]  # hard coded offsets
         if self.dev_type != "type_0a":
             result = result[15:]
@@ -283,7 +283,7 @@ class TuyaInterface:
             result = result[16:]
             cipher = AESCipher(self.local_key)
             result = cipher.decrypt(result)
-            #print("decrypted result=[{}]".format(result))
+            # print("decrypted result=[{}]".format(result))
             log.info("decrypted result=%r", result)
             if not isinstance(result, str):
                 result = result.decode()
@@ -307,7 +307,6 @@ class TuyaInterface:
             log.error("Unexpected status() payload=%r", result)
 
         return result
-
 
     def detect_available_dps(self):
         """Return which datapoints are supported by the device."""
