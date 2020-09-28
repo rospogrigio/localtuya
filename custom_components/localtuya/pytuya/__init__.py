@@ -255,7 +255,7 @@ class TuyaInterface:
 
     def _decode_received_data(self, data, is_status):
         """Decode the response data received from the device."""
-        # is_status may be True (result of a status request) 
+        # is_status may be True (result of a status request)
         # or False (result of a set_dps request)
         result = data[20:-8]  # hard coded offsets
         if self.dev_type != "type_0a":

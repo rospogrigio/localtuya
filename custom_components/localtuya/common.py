@@ -91,7 +91,7 @@ class TuyaDevice:
     def set_dps(self, state, dps_index):
         """Change value of a DP of the Tuya device and update the cached status."""
         # _LOGGER.info("running def set_dps from TuyaDevice")
-        # No need to clear the cache here: let's just update the status of the 
+        # No need to clear the cache here: let's just update the status of the
         # changed dps as returned by the interface (see 5 lines below)
         # self._cached_status = ""
         # self._cached_status_time = 0
@@ -99,7 +99,7 @@ class TuyaDevice:
             try:
                 result = self._interface.set_dps(state, dps_index)
                 self._cached_status["dps"].update(result["dps"])
-                # NOW WE SHOULD TRIGGER status_updated FOR ALL ENTITIES 
+                # NOW WE SHOULD TRIGGER status_updated FOR ALL ENTITIES
                 # INVOLVED IN result["dps"] :
                 # for dp in result["dps"]:
                 #    have status_updated() called....
