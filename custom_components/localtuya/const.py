@@ -17,6 +17,13 @@ CONF_VOLTAGE = "voltage"
 CONF_OPEN_CMD = "open_cmd"
 CONF_CLOSE_CMD = "close_cmd"
 CONF_STOP_CMD = "stop_cmd"
+CONF_POSITIONING_MODE = "positioning_mode"
+CONF_CURRPOS = "currpos_dps"
+CONF_SETPOS = "setpos_dps"
+CONF_MODE_NONE = "none"
+CONF_MODE_YES = "yes"
+CONF_MODE_FAKE = "fake"
+CONF_SPAN_TIME = "span_time"
 
 # sensor
 CONF_SCALING = "scaling"

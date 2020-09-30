@@ -11,6 +11,7 @@ from homeassistant.components.cover import (
     SUPPORT_OPEN,
     SUPPORT_STOP,
     SUPPORT_SET_POSITION,
+    ATTR_POSITION,
 )
 from homeassistant.const import CONF_ID
 
@@ -18,6 +19,13 @@ from .const import (
     CONF_OPEN_CMD,
     CONF_CLOSE_CMD,
     CONF_STOP_CMD,
+    CONF_CURRPOS,
+    CONF_SETPOS,
+    CONF_POSITIONING_MODE,
+    CONF_MODE_NONE,
+    CONF_MODE_YES,
+    CONF_MODE_FAKE,
+    CONF_SPAN_TIME,
 )
 from .common import LocalTuyaEntity, prepare_setup_entities
 
@@ -26,6 +34,8 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_OPEN_CMD = "on"
 DEFAULT_CLOSE_CMD = "off"
 DEFAULT_STOP_CMD = "stop"
+DEFAULT_POSITIONING_MODE = CONF_MODE_NONE
+DEFAULT_SPAN_TIME = 25.0
 
 
 def flow_schema(dps):
@@ -34,6 +44,12 @@ def flow_schema(dps):
         vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): str,
         vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): str,
         vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): str,
+        vol.Optional(CONF_CURRPOS): int,
+        vol.Optional(CONF_SETPOS): int,
+        vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
+            [CONF_MODE_NONE, CONF_MODE_YES, CONF_MODE_FAKE]
+        ),
+        vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): float,
     }
 
 
@@ -71,7 +87,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         """Initialize a new LocaltuyaCover."""
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
-        self._position = 50
+        self._current_cover_position = 50
         print(
             "Initialized cover [{}] with status [{}] and state [{}]".format(
                 self.name, self._status, self._state
@@ -81,72 +97,68 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = (
-            SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP | SUPPORT_SET_POSITION
-        )
+        supported_features = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP
+        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_NONE:
+            supported_features = supported_features | SUPPORT_SET_POSITION
         return supported_features
 
     @property
     def current_cover_position(self):
         """Return current cover position in percent."""
-        # self.update()
-        # state = self._state
-        #        _LOGGER.info("curr_pos() : %i", self._position)
-        # print('curr_pos() : state [{}]'.format(state))
-        return self._position
+        return self._current_cover_position
 
     @property
     def is_opening(self):
         """Return if cover is opening."""
-        # self.update()
         state = self._state
-        # print('is_opening() : state [{}]'.format(state))
-        if state == "on":
-            return True
-        return False
+        return state == self._config[CONF_OPEN_CMD]
 
     @property
     def is_closing(self):
         """Return if cover is closing."""
-        # self.update()
         state = self._state
-        # print('is_closing() : state [{}]'.format(state))
-        if state == "off":
-            return True
-        return False
+        return state == self._config[CONF_CLOSE_CMD]
+
+    @property
+    def is_open(self):
+        """Return if the cover is open or not."""
+        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_YES:
+            return None
+        else:
+            return self._current_cover_position == 100
 
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
-        # _LOGGER.info("running is_closed from cover")
-        # self.update()
-        state = self._state
-        # print('is_closed() : state [{}]'.format(state))
-        if state == "off":
-            return False
-        if state == "on":
-            return True
-        return None
+        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_YES:
+            return None
+        else:
+            return self._current_cover_position == 0
 
     def set_cover_position(self, **kwargs):
-        # _LOGGER.info("running set_cover_position from cover")
         """Move the cover to a specific position."""
-        newpos = float(kwargs["position"])
-        #        _LOGGER.info("Set new pos: %f", newpos)
+        _LOGGER.debug("Setting cover position: %r", kwargs[ATTR_POSITION])
+        if self._config[CONF_POSITIONING_MODE] == CONF_MODE_FAKE:
+            newpos = float(kwargs[ATTR_POSITION])
 
-        currpos = self.current_cover_position
-        posdiff = abs(newpos - currpos)
-        #       25 sec corrisponde alla chiusura/apertura completa
-        mydelay = posdiff / 2.0
-        if newpos > currpos:
-            #            _LOGGER.info("Opening to %f: delay %f", newpos, mydelay )
-            self.open_cover()
-        else:
-            #            _LOGGER.info("Closing to %f: delay %f", newpos, mydelay )
-            self.close_cover()
-        sleep(mydelay)
-        self.stop_cover()
-        self._position = 50  # newpos
+            currpos = self.current_cover_position
+            posdiff = abs(newpos - currpos)
+            mydelay = posdiff / 50.0 * self._config[CONF_SPAN_TIME]
+            if newpos > currpos:
+                _LOGGER.debug("Opening to %f: delay %f", newpos, mydelay)
+                self.open_cover()
+            else:
+                _LOGGER.debug("Closing to %f: delay %f", newpos, mydelay)
+                self.close_cover()
+            sleep(mydelay)
+            self.stop_cover()
+            self._current_cover_position = 50
+            _LOGGER.debug("Done")
+
+        elif self._config[CONF_POSITIONING_MODE] == CONF_MODE_YES:
+            converted_position = int(kwargs[ATTR_POSITION])
+            if converted_position in range(0, 101) and self.has_config(CONF_SETPOS):
+                self._device.set_dps(converted_position, self._config[CONF_SETPOS])
 
     def open_cover(self, **kwargs):
         """Open the cover."""
@@ -166,3 +178,5 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dps_id)
+        if self.has_config(CONF_CURRPOS):
+            self._current_cover_position = self.dps(self._config[CONF_CURRPOS])
