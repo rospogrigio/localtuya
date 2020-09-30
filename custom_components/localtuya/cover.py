@@ -44,11 +44,11 @@ def flow_schema(dps):
         vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): str,
         vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): str,
         vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): str,
-        vol.Optional(CONF_CURRPOS): int,
-        vol.Optional(CONF_SETPOS): int,
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
             [CONF_MODE_NONE, CONF_MODE_YES, CONF_MODE_FAKE]
         ),
+        vol.Optional(CONF_CURRPOS): vol.In(dps),
+        vol.Optional(CONF_SETPOS): vol.In(dps),
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): float,
     }
 

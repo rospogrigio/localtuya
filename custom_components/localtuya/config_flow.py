@@ -39,9 +39,9 @@ CUSTOM_DEVICE = "..."
 BASIC_INFO_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_FRIENDLY_NAME): str,
+        vol.Required(CONF_LOCAL_KEY): str,
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_DEVICE_ID): str,
-        vol.Required(CONF_LOCAL_KEY): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
     }
 )
