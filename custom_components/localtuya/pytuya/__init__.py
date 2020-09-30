@@ -207,10 +207,10 @@ class TuyaInterface:
 
         self.port = 6668  # default - do not expect caller to pass in
 
-    def exchange(self, command, data=None):
-        """Send and recive a message, returning response from device."""
-        _LOGGER.debug("Sending command %s (device type: %s", self.dev_type)
-        payload = self._generate_payload(command, data)
+    def exchange(self, command, dps=None):
+        """Send and receive a message, returning response from device."""
+        _LOGGER.debug("Sending command %s (device type: %s)", command, self.dev_type)
+        payload = self._generate_payload(command, dps)
         dev_type = self.dev_type
 
         with socketcontext(self.address, self.port, self.connection_timeout) as s:
@@ -236,7 +236,7 @@ class TuyaInterface:
                 dev_type,
                 self.dev_type,
             )
-            return self.exchange(command, data)
+            return self.exchange(command, dps)
         return payload
 
     def status(self):
@@ -270,7 +270,7 @@ class TuyaInterface:
             try:
                 data = self.status()
             except Exception as e:
-                _LOGGER.warning("Failed to get status: [{}]", e)
+                _LOGGER.warning("Failed to get status: %s", e)
                 raise
             detected_dps.update(data["dps"])
 
@@ -341,7 +341,7 @@ class TuyaInterface:
 
         if data is not None:
             json_data["dps"] = data
-        if command_hb == "0d":
+        if command_hb == 0x0D:
             json_data["dps"] = self.dps_to_request
 
         payload = json.dumps(json_data).replace(" ", "").encode("utf-8")
