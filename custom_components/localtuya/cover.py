@@ -41,9 +41,12 @@ DEFAULT_SPAN_TIME = 25.0
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): str,
-        vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): str,
-        vol.Optional(CONF_STOP_CMD, default=DEFAULT_STOP_CMD): str,
+        vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): vol.In(
+            ["on", "open"]
+        ),
+        vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): vol.In(
+            ["off", "close"]
+        ),
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
             [CONF_MODE_NONE, CONF_MODE_YES, CONF_MODE_FAKE]
         ),
@@ -88,6 +91,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
         self._current_cover_position = 50
+        self._config[CONF_STOP_CMD] = DEFAULT_STOP_CMD
         print(
             "Initialized cover [{}] with status [{}] and state [{}]".format(
                 self.name, self._status, self._state
