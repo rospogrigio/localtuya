@@ -21,7 +21,7 @@ CONF_POSITIONING_MODE = "positioning_mode"
 CONF_CURRPOS = "currpos_dps"
 CONF_SETPOS = "setpos_dps"
 CONF_MODE_NONE = "none"
-CONF_MODE_YES = "yes"
+CONF_MODE_POSITION = "position"
 CONF_MODE_FAKE = "fake"
 CONF_SPAN_TIME = "span_time"
 

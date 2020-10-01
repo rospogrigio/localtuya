@@ -23,7 +23,7 @@ from .const import (
     CONF_SETPOS,
     CONF_POSITIONING_MODE,
     CONF_MODE_NONE,
-    CONF_MODE_YES,
+    CONF_MODE_POSITION,
     CONF_MODE_FAKE,
     CONF_SPAN_TIME,
 )
@@ -41,14 +41,12 @@ DEFAULT_SPAN_TIME = 25.0
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): vol.In(
-            ["on", "open"]
-        ),
+        vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): vol.In(["on", "open"]),
         vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): vol.In(
             ["off", "close"]
         ),
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
-            [CONF_MODE_NONE, CONF_MODE_YES, CONF_MODE_FAKE]
+            [CONF_MODE_NONE, CONF_MODE_POSITION, CONF_MODE_FAKE]
         ),
         vol.Optional(CONF_CURRPOS): vol.In(dps),
         vol.Optional(CONF_SETPOS): vol.In(dps),
@@ -126,7 +124,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_open(self):
         """Return if the cover is open or not."""
-        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_YES:
+        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_POSITION:
             return None
         else:
             return self._current_cover_position == 100
@@ -134,7 +132,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
-        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_YES:
+        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_POSITION:
             return None
         else:
             return self._current_cover_position == 0
@@ -159,7 +157,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._current_cover_position = 50
             _LOGGER.debug("Done")
 
-        elif self._config[CONF_POSITIONING_MODE] == CONF_MODE_YES:
+        elif self._config[CONF_POSITIONING_MODE] == CONF_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
             if converted_position in range(0, 101) and self.has_config(CONF_SETPOS):
                 self._device.set_dps(converted_position, self._config[CONF_SETPOS])
