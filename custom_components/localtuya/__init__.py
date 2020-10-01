@@ -20,9 +20,11 @@ localtuya:
       - platform: cover
         friendly_name: Device Cover
         id: 2
-        open_cmd: "on" # Optional
-        close_cmd: "off" # Optional
-        stop_cmd: "stop" # Optional
+        open_close_cmds: ["on_off","open_close"] # Optional, default: "on_off"
+        positioning_mode: ["none","position","fake"] # Optional, default: "none"
+        currpos_dps: 3 # Optional, required only for "position" mode
+        setpos_dps: 4 # Optional, required only for "position" mode
+        span_time: 25 # Full movement time: Optional, required only for "fake" mode
 
       - platform: fan
         friendly_name: Device Fan

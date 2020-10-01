@@ -14,15 +14,10 @@ CONF_CURRENT_CONSUMPTION = "current_consumption"
 CONF_VOLTAGE = "voltage"
 
 # cover
-CONF_OPEN_CMD = "open_cmd"
-CONF_CLOSE_CMD = "close_cmd"
-CONF_STOP_CMD = "stop_cmd"
+CONF_OPENCLOSE_CMDS = "open_close_cmds"
 CONF_POSITIONING_MODE = "positioning_mode"
 CONF_CURRPOS = "currpos_dps"
 CONF_SETPOS = "setpos_dps"
-CONF_MODE_NONE = "none"
-CONF_MODE_POSITION = "position"
-CONF_MODE_FAKE = "fake"
 CONF_SPAN_TIME = "span_time"
 
 # sensor

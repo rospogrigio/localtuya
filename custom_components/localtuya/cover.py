@@ -16,41 +16,42 @@ from homeassistant.components.cover import (
 from homeassistant.const import CONF_ID
 
 from .const import (
-    CONF_OPEN_CMD,
-    CONF_CLOSE_CMD,
-    CONF_STOP_CMD,
+    CONF_OPENCLOSE_CMDS,
     CONF_CURRPOS,
     CONF_SETPOS,
     CONF_POSITIONING_MODE,
-    CONF_MODE_NONE,
-    CONF_MODE_POSITION,
-    CONF_MODE_FAKE,
     CONF_SPAN_TIME,
 )
 from .common import LocalTuyaEntity, prepare_setup_entities
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_OPEN_CMD = "on"
-DEFAULT_CLOSE_CMD = "off"
-DEFAULT_STOP_CMD = "stop"
-DEFAULT_POSITIONING_MODE = CONF_MODE_NONE
+COVER_ONOFF_CMDS = "on_off"
+COVER_OPENCLOSE_CMDS = "open_close"
+COVER_STOP_CMD = "stop"
+COVER_MODE_NONE = "none"
+COVER_MODE_POSITION = "position"
+COVER_MODE_FAKE = "fake"
+
+DEFAULT_OPENCLOSE_CMDS = "on_off"
+DEFAULT_POSITIONING_MODE = COVER_MODE_NONE
 DEFAULT_SPAN_TIME = 25.0
 
 
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_OPEN_CMD, default=DEFAULT_OPEN_CMD): vol.In(["on", "open"]),
-        vol.Optional(CONF_CLOSE_CMD, default=DEFAULT_CLOSE_CMD): vol.In(
-            ["off", "close"]
+        vol.Optional(CONF_OPENCLOSE_CMDS, default=DEFAULT_OPENCLOSE_CMDS): vol.In(
+            [COVER_ONOFF_CMDS, COVER_OPENCLOSE_CMDS]
         ),
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
-            [CONF_MODE_NONE, CONF_MODE_POSITION, CONF_MODE_FAKE]
+            [COVER_MODE_NONE, COVER_MODE_POSITION, COVER_MODE_FAKE]
         ),
         vol.Optional(CONF_CURRPOS): vol.In(dps),
         vol.Optional(CONF_SETPOS): vol.In(dps),
-        vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): float,
+        vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
+            vol.Coerce(float), vol.Range(min=1.0, max=300.0)
+        ),
     }
 
 
@@ -88,19 +89,16 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         """Initialize a new LocaltuyaCover."""
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
-        self._current_cover_position = 50
-        self._config[CONF_STOP_CMD] = DEFAULT_STOP_CMD
-        print(
-            "Initialized cover [{}] with status [{}] and state [{}]".format(
-                self.name, self._status, self._state
-            )
-        )
+        self._current_cover_position = None
+        self._open_cmd = self._config[CONF_OPENCLOSE_CMDS].split("_")[0]
+        self._close_cmd = self._config[CONF_OPENCLOSE_CMDS].split("_")[1]
+        print("Initialized cover [{}]".format(self.name))
 
     @property
     def supported_features(self):
         """Flag supported features."""
         supported_features = SUPPORT_OPEN | SUPPORT_CLOSE | SUPPORT_STOP
-        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_NONE:
+        if self._config[CONF_POSITIONING_MODE] != COVER_MODE_NONE:
             supported_features = supported_features | SUPPORT_SET_POSITION
         return supported_features
 
@@ -113,34 +111,32 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def is_opening(self):
         """Return if cover is opening."""
         state = self._state
-        return state == self._config[CONF_OPEN_CMD]
+        return state == self._open_cmd
 
     @property
     def is_closing(self):
         """Return if cover is closing."""
         state = self._state
-        return state == self._config[CONF_CLOSE_CMD]
+        return state == self._close_cmd
 
     @property
     def is_open(self):
         """Return if the cover is open or not."""
-        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_POSITION:
+        if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
-        else:
-            return self._current_cover_position == 100
+        return self._current_cover_position == 100
 
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
-        if self._config[CONF_POSITIONING_MODE] != CONF_MODE_POSITION:
+        if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
-        else:
-            return self._current_cover_position == 0
+        return self._current_cover_position == 0
 
     def set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
         _LOGGER.debug("Setting cover position: %r", kwargs[ATTR_POSITION])
-        if self._config[CONF_POSITIONING_MODE] == CONF_MODE_FAKE:
+        if self._config[CONF_POSITIONING_MODE] == COVER_MODE_FAKE:
             newpos = float(kwargs[ATTR_POSITION])
 
             currpos = self.current_cover_position
@@ -157,28 +153,30 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._current_cover_position = 50
             _LOGGER.debug("Done")
 
-        elif self._config[CONF_POSITIONING_MODE] == CONF_MODE_POSITION:
+        elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
-            if converted_position in range(0, 101) and self.has_config(CONF_SETPOS):
+            if 0 <= converted_position <= 100 and self.has_config(CONF_SETPOS):
                 self._device.set_dps(converted_position, self._config[CONF_SETPOS])
 
     def open_cover(self, **kwargs):
         """Open the cover."""
-        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_OPEN_CMD])
-        self._device.set_dps(self._config[CONF_OPEN_CMD], self._dps_id)
+        _LOGGER.debug("Launching command %s to cover ", self._open_cmd)
+        self._device.set_dps(self._open_cmd, self._dps_id)
 
     def close_cover(self, **kwargs):
         """Close cover."""
-        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_CLOSE_CMD])
-        self._device.set_dps(self._config[CONF_CLOSE_CMD], self._dps_id)
+        _LOGGER.debug("Launching command %s to cover ", self._close_cmd)
+        self._device.set_dps(self._close_cmd, self._dps_id)
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.debug("Launching command %s to cover ", self._config[CONF_STOP_CMD])
-        self._device.set_dps(self._config[CONF_STOP_CMD], self._dps_id)
+        _LOGGER.debug("Launching command %s to cover ", COVER_STOP_CMD)
+        self._device.set_dps(COVER_STOP_CMD, self._dps_id)
 
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dps_id)
         if self.has_config(CONF_CURRPOS):
             self._current_cover_position = self.dps(self._config[CONF_CURRPOS])
+        else:
+            self._current_cover_position = 50
