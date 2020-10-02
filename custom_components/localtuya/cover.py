@@ -17,8 +17,8 @@ from homeassistant.const import CONF_ID
 
 from .const import (
     CONF_OPENCLOSE_CMDS,
-    CONF_CURRPOS,
-    CONF_SETPOS,
+    CONF_CURRENT_POSITION_DP,
+    CONF_SET_POSITION_DP,
     CONF_POSITIONING_MODE,
     CONF_SPAN_TIME,
 )
@@ -47,8 +47,8 @@ def flow_schema(dps):
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
             [COVER_MODE_NONE, COVER_MODE_POSITION, COVER_MODE_FAKE]
         ),
-        vol.Optional(CONF_CURRPOS): vol.In(dps),
-        vol.Optional(CONF_SETPOS): vol.In(dps),
+        vol.Optional(CONF_CURRENT_POSITION_DP): vol.In(dps),
+        vol.Optional(CONF_SET_POSITION_DP): vol.In(dps),
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
@@ -155,8 +155,10 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
-            if 0 <= converted_position <= 100 and self.has_config(CONF_SETPOS):
-                self._device.set_dps(converted_position, self._config[CONF_SETPOS])
+            if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
+                self._device.set_dps(
+                    converted_position, self._config[CONF_SET_POSITION_DP]
+                )
 
     def open_cover(self, **kwargs):
         """Open the cover."""
@@ -176,7 +178,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dps_id)
-        if self.has_config(CONF_CURRPOS):
-            self._current_cover_position = self.dps(self._config[CONF_CURRPOS])
+        if self.has_config(CONF_CURRENT_POSITION_DP):
+            self._current_cover_position = self.dps(
+                self._config[CONF_CURRENT_POSITION_DP]
+            )
         else:
             self._current_cover_position = 50

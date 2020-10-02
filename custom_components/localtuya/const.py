@@ -16,8 +16,8 @@ CONF_VOLTAGE = "voltage"
 # cover
 CONF_OPENCLOSE_CMDS = "open_close_cmds"
 CONF_POSITIONING_MODE = "positioning_mode"
-CONF_CURRPOS = "currpos_dps"
-CONF_SETPOS = "setpos_dps"
+CONF_CURRENT_POSITION_DP = "currpos_dp"
+CONF_SET_POSITION_DP = "setpos_dp"
 CONF_SPAN_TIME = "span_time"
 
 # sensor

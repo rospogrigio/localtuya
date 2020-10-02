@@ -22,8 +22,8 @@ localtuya:
         id: 2
         open_close_cmds: ["on_off","open_close"] # Optional, default: "on_off"
         positioning_mode: ["none","position","fake"] # Optional, default: "none"
-        currpos_dps: 3 # Optional, required only for "position" mode
-        setpos_dps: 4 # Optional, required only for "position" mode
+        currpos_dp: 3 # Optional, required only for "position" mode
+        setpos_dp: 4  # Optional, required only for "position" mode
         span_time: 25 # Full movement time: Optional, required only for "fake" mode
 
       - platform: fan
