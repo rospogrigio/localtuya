@@ -1,5 +1,6 @@
 """Platform to locally control Tuya-based switch devices."""
 import logging
+from functools import partial
 
 import voluptuous as vol
 
@@ -7,7 +8,6 @@ from homeassistant.components.switch import (
     SwitchEntity,
     DOMAIN,
 )
-from homeassistant.const import CONF_ID
 
 from .const import (
     ATTR_CURRENT,
@@ -17,7 +17,7 @@ from .const import (
     CONF_CURRENT_CONSUMPTION,
     CONF_VOLTAGE,
 )
-from .common import LocalTuyaEntity, prepare_setup_entities
+from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,27 +29,6 @@ def flow_schema(dps):
         vol.Optional(CONF_CURRENT_CONSUMPTION): vol.In(dps),
         vol.Optional(CONF_VOLTAGE): vol.In(dps),
     }
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up a Tuya switch based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(
-        hass, config_entry, DOMAIN
-    )
-    if not entities_to_setup:
-        return
-
-    switches = []
-    for device_config in entities_to_setup:
-        switches.append(
-            LocaltuyaSwitch(
-                tuyainterface,
-                config_entry,
-                device_config[CONF_ID],
-            )
-        )
-
-    async_add_entities(switches)
 
 
 class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
@@ -97,3 +76,6 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dps_id)
+
+
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSwitch)

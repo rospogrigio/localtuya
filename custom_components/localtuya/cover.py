@@ -1,5 +1,6 @@
 """Platform to locally control Tuya-based cover devices."""
 import logging
+from functools import partial
 from time import sleep
 
 import voluptuous as vol
@@ -13,7 +14,6 @@ from homeassistant.components.cover import (
     SUPPORT_SET_POSITION,
     ATTR_POSITION,
 )
-from homeassistant.const import CONF_ID
 
 from .const import (
     CONF_OPENCLOSE_CMDS,
@@ -22,7 +22,7 @@ from .const import (
     CONF_POSITIONING_MODE,
     CONF_SPAN_TIME,
 )
-from .common import LocalTuyaEntity, prepare_setup_entities
+from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,27 +53,6 @@ def flow_schema(dps):
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
     }
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up a Tuya cover based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(
-        hass, config_entry, DOMAIN
-    )
-    if not entities_to_setup:
-        return
-
-    covers = []
-    for device_config in entities_to_setup:
-        covers.append(
-            LocaltuyaCover(
-                tuyainterface,
-                config_entry,
-                device_config[CONF_ID],
-            )
-        )
-
-    async_add_entities(covers)
 
 
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
@@ -184,3 +163,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             )
         else:
             self._current_cover_position = 50
+
+
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover)

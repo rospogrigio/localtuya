@@ -39,6 +39,33 @@ def prepare_setup_entities(hass, config_entry, platform):
     return tuyainterface, entities_to_setup
 
 
+async def async_setup_entry(
+    domain, entity_class, hass, config_entry, async_add_entities
+):
+    """Set up a Tuya platform based on a config entry.
+
+    This is a generic method and each platform should lock domain and
+    entity_class with functools.partial.
+    """
+    tuyainterface, entities_to_setup = prepare_setup_entities(
+        hass, config_entry, domain
+    )
+    if not entities_to_setup:
+        return
+
+    entities = []
+    for device_config in entities_to_setup:
+        entities.append(
+            entity_class(
+                tuyainterface,
+                config_entry,
+                device_config[CONF_ID],
+            )
+        )
+
+    async_add_entities(entities)
+
+
 def get_entity_config(config_entry, dps_id):
     """Return entity config for a given DPS id."""
     for entity in config_entry.data[CONF_ENTITIES]:

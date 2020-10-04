@@ -1,5 +1,6 @@
 """Platform to present any Tuya DP as a binary sensor."""
 import logging
+from functools import partial
 
 import voluptuous as vol
 
@@ -8,9 +9,9 @@ from homeassistant.components.binary_sensor import (
     DEVICE_CLASSES_SCHEMA,
     BinarySensorEntity,
 )
-from homeassistant.const import CONF_ID, CONF_DEVICE_CLASS
+from homeassistant.const import CONF_DEVICE_CLASS
 
-from .common import LocalTuyaEntity, prepare_setup_entities
+from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,27 +26,6 @@ def flow_schema(dps):
         vol.Required(CONF_STATE_OFF, default="False"): str,
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
     }
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up a Tuya sensor based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(
-        hass, config_entry, DOMAIN
-    )
-    if not entities_to_setup:
-        return
-
-    sensors = []
-    for device_config in entities_to_setup:
-        sensors.append(
-            LocaltuyaBinarySensor(
-                tuyainterface,
-                config_entry,
-                device_config[CONF_ID],
-            )
-        )
-
-    async_add_entities(sensors)
 
 
 class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
@@ -83,3 +63,6 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
             _LOGGER.warning(
                 "State for entity %s did not match state patterns", self.entity_id
             )
+
+
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaBinarySensor)

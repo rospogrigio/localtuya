@@ -1,7 +1,7 @@
 """Platform to locally control Tuya-based light devices."""
 import logging
+from functools import partial
 
-from homeassistant.const import CONF_ID
 from homeassistant.components.light import (
     LightEntity,
     DOMAIN,
@@ -12,7 +12,7 @@ from homeassistant.components.light import (
     SUPPORT_COLOR,
 )
 
-from .common import LocalTuyaEntity, prepare_setup_entities
+from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,27 +30,6 @@ DPS_INDEX_COLOUR = "5"
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {}
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up a Tuya light based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(
-        hass, config_entry, DOMAIN
-    )
-    if not entities_to_setup:
-        return
-
-    lights = []
-    for device_config in entities_to_setup:
-        lights.append(
-            LocaltuyaLight(
-                tuyainterface,
-                config_entry,
-                device_config[CONF_ID],
-            )
-        )
-
-    async_add_entities(lights)
 
 
 class LocaltuyaLight(LocalTuyaEntity, LightEntity):
@@ -140,3 +119,6 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._brightness = brightness
 
         self._color_temp = self.dps(DPS_INDEX_COLOURTEMP)
+
+
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaLight)

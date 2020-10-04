@@ -1,18 +1,18 @@
 """Platform to present any Tuya DP as a sensor."""
 import logging
+from functools import partial
 
 import voluptuous as vol
 
 from homeassistant.components.sensor import DOMAIN, DEVICE_CLASSES
 from homeassistant.const import (
-    CONF_ID,
     CONF_DEVICE_CLASS,
     CONF_UNIT_OF_MEASUREMENT,
     STATE_UNKNOWN,
 )
 
 from .const import CONF_SCALING
-from .common import LocalTuyaEntity, prepare_setup_entities
+from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,27 +29,6 @@ def flow_schema(dps):
             vol.Coerce(float), vol.Range(min=-1000000.0, max=1000000.0)
         ),
     }
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up a Tuya sensor based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(
-        hass, config_entry, DOMAIN
-    )
-    if not entities_to_setup:
-        return
-
-    sensors = []
-    for device_config in entities_to_setup:
-        sensors.append(
-            LocaltuyaSensor(
-                tuyainterface,
-                config_entry,
-                device_config[CONF_ID],
-            )
-        )
-
-    async_add_entities(sensors)
 
 
 class LocaltuyaSensor(LocalTuyaEntity):
@@ -88,3 +67,6 @@ class LocaltuyaSensor(LocalTuyaEntity):
         if scale_factor is not None:
             state = round(state * scale_factor, DEFAULT_PRECISION)
         self._state = state
+
+
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSensor)

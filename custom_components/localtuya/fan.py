@@ -1,5 +1,6 @@
 """Platform to locally control Tuya-based fan devices."""
 import logging
+from functools import partial
 
 from homeassistant.components.fan import (
     FanEntity,
@@ -11,9 +12,8 @@ from homeassistant.components.fan import (
     SUPPORT_SET_SPEED,
     SUPPORT_OSCILLATE,
 )
-from homeassistant.const import CONF_ID
 
-from .common import LocalTuyaEntity, prepare_setup_entities
+from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,28 +21,6 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {}
-
-
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up a Tuya fan based on a config entry."""
-    tuyainterface, entities_to_setup = prepare_setup_entities(
-        hass, config_entry, DOMAIN
-    )
-    if not entities_to_setup:
-        return
-
-    fans = []
-
-    for device_config in entities_to_setup:
-        fans.append(
-            LocaltuyaFan(
-                tuyainterface,
-                config_entry,
-                device_config[CONF_ID],
-            )
-        )
-
-    async_add_entities(fans)
 
 
 class LocaltuyaFan(LocalTuyaEntity, FanEntity):
@@ -130,3 +108,6 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         elif self._status["dps"]["2"] == "3":
             self._speed = SPEED_HIGH
         self._oscillating = self._status["dps"]["8"]
+
+
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan)
