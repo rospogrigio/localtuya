@@ -5,7 +5,6 @@ from functools import partial
 import voluptuous as vol
 
 from homeassistant.const import (
-    CONF_ID,
     CONF_BRIGHTNESS,
     CONF_COLOR_TEMP,
 )
@@ -17,7 +16,6 @@ from homeassistant.components.light import (
     ATTR_HS_COLOR,
     SUPPORT_BRIGHTNESS,
     SUPPORT_COLOR_TEMP,
-    SUPPORT_COLOR,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -26,7 +24,6 @@ _LOGGER = logging.getLogger(__name__)
 
 MIN_MIRED = 153
 MAX_MIRED = 370
-UPDATE_RETRY_LIMIT = 3
 
 
 def flow_schema(dps):
