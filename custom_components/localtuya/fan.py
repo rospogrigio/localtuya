@@ -110,4 +110,4 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         self._oscillating = self._status["dps"]["8"]
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan, flow_schema)

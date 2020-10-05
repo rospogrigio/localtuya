@@ -121,4 +121,4 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._color_temp = self.dps(DPS_INDEX_COLOURTEMP)
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaLight)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaLight, flow_schema)

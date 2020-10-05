@@ -65,4 +65,6 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
             )
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaBinarySensor)
+async_setup_entry = partial(
+    async_setup_entry, DOMAIN, LocaltuyaBinarySensor, flow_schema
+)

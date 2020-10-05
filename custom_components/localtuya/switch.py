@@ -78,4 +78,4 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         self._state = self.dps(self._dps_id)
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSwitch)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSwitch, flow_schema)

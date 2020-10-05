@@ -165,4 +165,4 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._current_cover_position = 50
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)

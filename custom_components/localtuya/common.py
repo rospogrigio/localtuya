@@ -40,7 +40,7 @@ def prepare_setup_entities(hass, config_entry, platform):
 
 
 async def async_setup_entry(
-    domain, entity_class, hass, config_entry, async_add_entities
+    domain, entity_class, flow_schema, hass, config_entry, async_add_entities
 ):
     """Set up a Tuya platform based on a config entry.
 
@@ -53,8 +53,15 @@ async def async_setup_entry(
     if not entities_to_setup:
         return
 
+    dps_config_fields = list(get_dps_for_platform(flow_schema))
+
     entities = []
     for device_config in entities_to_setup:
+        # Add DPS used by this platform to the request list
+        for dp_conf in dps_config_fields:
+            if dp_conf in device_config:
+                tuyainterface._interface.add_dps_to_request(device_config[dp_conf])
+
         entities.append(
             entity_class(
                 tuyainterface,
@@ -64,6 +71,13 @@ async def async_setup_entry(
         )
 
     async_add_entities(entities)
+
+
+def get_dps_for_platform(flow_schema):
+    """Return config keys for all platform keys that depends on a datapoint."""
+    for key, value in flow_schema(None).items():
+        if hasattr(value, "container") and value.container is None:
+            yield key.schema
 
 
 def get_entity_config(config_entry, dps_id):
