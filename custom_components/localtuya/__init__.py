@@ -33,6 +33,8 @@ localtuya:
       - platform: light
         friendly_name: Device Light
         id: 4
+        brightness: 20
+        color_temp: 21
 
       - platform: sensor
         friendly_name: Plug Voltage

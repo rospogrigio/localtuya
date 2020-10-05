@@ -261,7 +261,7 @@ class LocalTuyaEntity(Entity):
         return value
 
     def dps_conf(self, conf_item):
-        """Return value of datapoint for user speified config item.
+        """Return value of datapoint for user specified config item.
 
         This method looks up which DP a certain config item uses based on
         user configuration and returns its value.
