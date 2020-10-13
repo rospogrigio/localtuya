@@ -75,10 +75,10 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     def set_speed(self, speed: str) -> None:
         mappings = {
-           SPEED_LOW: [ 1, "low" ],
-           SPEED_MEDIUM: [ 2 , "medium" ],
-           SPEED_HIGH: [ 3, "high" ],
-           "auto": [ 2, "medium" ],
+            SPEED_LOW: [1, "low"],
+            SPEED_MEDIUM: [2 , "medium"],
+            SPEED_HIGH: [3, "high"],
+            "auto": [2, "medium"],
         }
 
         dps_id = "%s" % self._dps_id
@@ -106,14 +106,14 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     def status_updated(self):
         mappings = {
-          "1": [ SPEED_LOW, 1 ],
-          "2": [ SPEED_MEDIUM, 1 ],
-          "3": [ SPEED_HIGH, 1 ],
-          "4": [ SPEED_HIGH, 1 ],
-          "low": [ SPEED_LOW, 2 ],
-          "medium": [ SPEED_MEDIUM, 2 ],
-          "high": [ SPEED_HIGH, 2 ],
-          "auto": [ SPEED_LOW, 2 ],
+            "1": [SPEED_LOW, 1],
+            "2": [SPEED_MEDIUM, 1],
+            "3": [SPEED_HIGH, 1],
+            "4": [SPEED_HIGH, 1],
+            "low": [ SPEED_LOW, 2 ],
+            "medium": [ SPEED_MEDIUM, 2 ],
+            "high": [ SPEED_HIGH, 2 ],
+            "auto": [ SPEED_LOW, 2 ],
         }
 
         dps_id = "%s" % self._dps_id
@@ -125,7 +125,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         self._type = mappings[self._status["dps"][dps_id]][1]
 
         if hasattr(self._status["dps"], "8"):
-             self._oscillating = self._status["dps"]["8"]
+            self._oscillating = self._status["dps"]["8"]
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan, flow_schema)
