@@ -65,8 +65,8 @@ class LocaltuyaSensor(LocalTuyaEntity):
         state = self.dps(self._dps_id)
         scale_factor = self._config.get(CONF_SCALING)
         if scale_factor is not None and \
-            (isinstance(state, int) or isinstance(state, float)):
-                state = round(state * scale_factor, DEFAULT_PRECISION)
+                (isinstance(state, int) or isinstance(state, float)):
+            state = round(state * scale_factor, DEFAULT_PRECISION)
         self._state = state
 
 

@@ -110,10 +110,10 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             "2": [SPEED_MEDIUM, 1],
             "3": [SPEED_HIGH, 1],
             "4": [SPEED_HIGH, 1],
-            "low": [ SPEED_LOW, 2 ],
-            "medium": [ SPEED_MEDIUM, 2 ],
-            "high": [ SPEED_HIGH, 2 ],
-            "auto": [ SPEED_LOW, 2 ],
+            "low": [SPEED_LOW, 2],
+            "medium": [SPEED_MEDIUM, 2],
+            "high": [SPEED_HIGH, 2],
+            "auto": [SPEED_LOW, 2],
         }
 
         dps_id = "%s" % self._dps_id
