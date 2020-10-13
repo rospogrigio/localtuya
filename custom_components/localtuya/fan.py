@@ -101,8 +101,6 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     @property
     def supported_features(self) -> int:
-        print("%s fan has dps 8: %s" % ( self.name, self.dps(8)))
-        print("%s fan has dps 9: %s" % ( self.name, self.dps(9)))
         """Flag supported features."""
         return SUPPORT_SET_SPEED | SUPPORT_OSCILLATE
 
