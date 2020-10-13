@@ -76,7 +76,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     def set_speed(self, speed: str) -> None:
         mappings = {
             SPEED_LOW: [1, "low"],
-            SPEED_MEDIUM: [2 , "medium"],
+            SPEED_MEDIUM: [2, "medium"],
             SPEED_HIGH: [3, "high"],
             "auto": [2, "medium"],
         }
