@@ -8,6 +8,10 @@ CONF_LOCAL_KEY = "local_key"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
 
+# light
+CONF_BRIGHTNESS_LOWER = "brightness_lower"
+CONF_BRIGHTNESS_UPPER = "brightness_upper"
+
 # switch
 CONF_CURRENT = "current"
 CONF_CURRENT_CONSUMPTION = "current_consumption"
