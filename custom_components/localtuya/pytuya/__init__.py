@@ -430,6 +430,10 @@ class TuyaProtocol(asyncio.Protocol):
         """
         return await self.exchange(SET, {str(dp_index): value})
 
+    async def set_dps(self, value, dps):
+        """Set values for a set of datapoints."""
+        return await self.exchange(SET, dps)
+
     async def detect_available_dps(self):
         """Return which datapoints are supported by the device."""
         # type_0d devices need a sort of bruteforce querying in order to detect the
