@@ -1,8 +1,9 @@
 """Code shared between all platforms."""
+import asyncio
 import logging
-from time import time, sleep
-from threading import Lock
+from random import randrange
 
+from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -22,6 +23,8 @@ from . import pytuya
 from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN, TUYA_DEVICE
 
 _LOGGER = logging.getLogger(__name__)
+
+BACKOFF_TIME_UPPER_LIMIT = 300  # Five minutes
 
 
 def prepare_setup_entities(hass, config_entry, platform):
@@ -60,7 +63,7 @@ async def async_setup_entry(
         # Add DPS used by this platform to the request list
         for dp_conf in dps_config_fields:
             if dp_conf in device_config:
-                tuyainterface._interface.add_dps_to_request(device_config[dp_conf])
+                tuyainterface._dps_to_request[device_config[dp_conf]] = None
 
         entities.append(
             entity_class(
@@ -88,92 +91,119 @@ def get_entity_config(config_entry, dps_id):
     raise Exception(f"missing entity config for id {dps_id}")
 
 
-class TuyaDevice:
+class TuyaDevice(pytuya.TuyaListener):
     """Cache wrapper for pytuya.TuyaInterface."""
 
     def __init__(self, hass, config_entry):
         """Initialize the cache."""
-        self._cached_status = ""
-        self._cached_status_time = 0
-        self._interface = pytuya.TuyaInterface(
-            config_entry[CONF_DEVICE_ID],
-            config_entry[CONF_HOST],
-            config_entry[CONF_LOCAL_KEY],
-            float(config_entry[CONF_PROTOCOL_VERSION]),
-        )
-        for entity in config_entry[CONF_ENTITIES]:
-            # this has to be done in case the device type is type_0d
-            self._interface.add_dps_to_request(entity[CONF_ID])
-        self._friendly_name = config_entry[CONF_FRIENDLY_NAME]
         self._hass = hass
-        self._lock = Lock()
+        self._config_entry = config_entry
+        self._interface = None
+        self._status = {}
+        self._dps_to_request = {}
+        self._is_closing = False
+        self._connect_task = None
+        self._connection_attempts = 0
 
-    @property
-    def unique_id(self):
-        """Return unique device identifier."""
-        return self._interface.id
+        # This has to be done in case the device type is type_0d
+        for entity in config_entry[CONF_ENTITIES]:
+            self._dps_to_request[entity[CONF_ID]] = None
 
-    def __get_status(self):
-        _LOGGER.debug("running def __get_status from TuyaDevice")
-        for i in range(5):
-            try:
-                status = self._interface.status()
-                return status
-            except Exception as e:
-                print(
-                    "Failed to update status of device [{}]: [{}]".format(
-                        self._interface.address, e
-                    )
-                )
-                sleep(1.0)
-                if i + 1 == 3:
-                    _LOGGER.error(
-                        "Failed to update status of device %s", self._interface.address
-                    )
-                    #                    return None
-                    raise ConnectionError("Failed to update status .")
+    def connect(self):
+        """Connet to device if not already connected."""
+        if not self._is_closing and self._connect_task is None and not self._interface:
+            _LOGGER.debug(
+                "Connecting to %s (%s)",
+                self._config_entry[CONF_HOST],
+                self._config_entry[CONF_DEVICE_ID],
+            )
+            self._connect_task = asyncio.ensure_future(self._make_connection())
+        else:
+            _LOGGER.debug(
+                "Already connecting to %s (%s) - %s, %s, %s",
+                self._config_entry[CONF_HOST],
+                self._config_entry[CONF_DEVICE_ID],
+                self._is_closing,
+                self._connect_task,
+                self._interface,
+            )
 
-    def set_dps(self, state, dps_index):
-        """Change value of a DP of the Tuya device and update the cached status."""
-        # _LOGGER.info("running def set_dps from TuyaDevice")
-        # No need to clear the cache here: let's just update the status of the
-        # changed dps as returned by the interface (see 5 lines below)
-        # self._cached_status = ""
-        # self._cached_status_time = 0
-        for i in range(5):
-            try:
-                result = self._interface.set_dps(state, dps_index)
-                self._cached_status["dps"].update(result["dps"])
-                signal = f"localtuya_{self._interface.id}"
-                async_dispatcher_send(self._hass, signal, self._cached_status)
-                return
-            except Exception as e:
-                print(
-                    "Failed to set status of device [{}]: [{}]".format(
-                        self._interface.address, e
-                    )
-                )
-                if i + 1 == 3:
-                    _LOGGER.error(
-                        "Failed to set status of device %s", self._interface.address
-                    )
-                    return
+    async def _make_connection(self):
+        backoff = min(
+            randrange(2 ** self._connection_attempts), BACKOFF_TIME_UPPER_LIMIT
+        )
 
-    #                    raise ConnectionError("Failed to set status.")
+        _LOGGER.debug("Waiting %d seconds before connecting", backoff)
+        await asyncio.sleep(backoff)
 
-    def status(self):
-        """Get the state of the Tuya device and cache the results."""
-        _LOGGER.debug("running def status(self) from TuyaDevice")
-        self._lock.acquire()
         try:
-            now = time()
-            if not self._cached_status or now - self._cached_status_time > 10:
-                sleep(0.5)
-                self._cached_status = self.__get_status()
-                self._cached_status_time = time()
-            return self._cached_status
-        finally:
-            self._lock.release()
+            _LOGGER.debug("Connecting to %s", self._config_entry[CONF_HOST])
+            self._interface = await pytuya.connect(
+                self._config_entry[CONF_HOST],
+                self._config_entry[CONF_DEVICE_ID],
+                self._config_entry[CONF_LOCAL_KEY],
+                float(self._config_entry[CONF_PROTOCOL_VERSION]),
+                self,
+            )
+            self._interface.add_dps_to_request(self._dps_to_request)
+
+            _LOGGER.debug("Retrieving initial state")
+            status = await self._interface.status()
+            if status is None:
+                raise Exception("Failed to retrieve status")
+
+            self.status_updated(status)
+            self._connection_attempts = 0
+        except Exception:
+            _LOGGER.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
+            self._connection_attempts += 1
+            if self._interface is not None:
+                self._interface.close()
+                self._interface = None
+            self._hass.loop.call_soon(self.connect)
+        self._connect_task = None
+
+    def close(self):
+        """Close connection and stop re-connect loop."""
+        self._is_closing = True
+        if self._connect_task:
+            self._connect_task.cancel()
+        if self._interface:
+            self._interface.close()
+
+    async def set_dps(self, state, dps_index):
+        """Change value of a DP of the Tuya device."""
+        if self._interface is not None:
+            try:
+                await self._interface.set_dps(state, dps_index)
+            except Exception:
+                _LOGGER.exception("Failed to set DP %d to %d", dps_index, state)
+        else:
+            _LOGGER.error(
+                "Not connected to device %s", self._config_entry[CONF_FRIENDLY_NAME]
+            )
+
+    @callback
+    def status_updated(self, status):
+        """Device updated status."""
+        if "dps" in status:
+            self._status.update(status["dps"])
+
+            signal = f"localtuya_{self._config_entry[CONF_DEVICE_ID]}"
+            async_dispatcher_send(self._hass, signal, self._status)
+
+    @callback
+    def disconnected(self, exc):
+        """Device disconnected."""
+        _LOGGER.debug(
+            "Disconnected from %s: %s", self._config_entry[CONF_DEVICE_ID], exc
+        )
+
+        signal = f"localtuya_{self._config_entry[CONF_DEVICE_ID]}"
+        async_dispatcher_send(self._hass, signal, None)
+
+        self._interface = None
+        self.connect()
 
 
 class LocalTuyaEntity(Entity):
@@ -212,7 +242,7 @@ class LocalTuyaEntity(Entity):
         return {
             "identifiers": {
                 # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, f"local_{self._device.unique_id}")
+                (DOMAIN, f"local_{self._config_entry.data[CONF_DEVICE_ID]}")
             },
             "name": self._config_entry.data[CONF_FRIENDLY_NAME],
             "manufacturer": "Unknown",
@@ -233,7 +263,7 @@ class LocalTuyaEntity(Entity):
     @property
     def unique_id(self):
         """Return unique device identifier."""
-        return f"local_{self._device.unique_id}_{self._dps_id}"
+        return f"local_{self._config_entry.data[CONF_DEVICE_ID]}_{self._dps_id}"
 
     def has_config(self, attr):
         """Return if a config parameter has a valid value."""
@@ -243,14 +273,11 @@ class LocalTuyaEntity(Entity):
     @property
     def available(self):
         """Return if device is available or not."""
-        return bool(self._status)
+        return str(self._dps_id) in self._status
 
     def dps(self, dps_index):
         """Return cached value for DPS index."""
-        if "dps" not in self._status:
-            return None
-
-        value = self._status["dps"].get(str(dps_index))
+        value = self._status.get(str(dps_index))
         if value is None:
             _LOGGER.warning(
                 "Entity %s is requesting unknown DPS index %s",

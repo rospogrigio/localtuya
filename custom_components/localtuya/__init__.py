@@ -52,7 +52,6 @@ localtuya:
 """
 import asyncio
 import logging
-from datetime import timedelta, datetime
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -62,8 +61,6 @@ from homeassistant.const import (
     CONF_ENTITIES,
     SERVICE_RELOAD,
 )
-from homeassistant.helpers.event import async_track_time_interval
-from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.reload import async_integration_yaml_config
 
 from .const import DOMAIN, TUYA_DEVICE
@@ -73,9 +70,6 @@ from .common import TuyaDevice
 _LOGGER = logging.getLogger(__name__)
 
 UNSUB_LISTENER = "unsub_listener"
-UNSUB_TRACK = "unsub_track"
-
-POLL_INTERVAL = 30
 
 CONFIG_SCHEMA = config_schema()
 
@@ -136,24 +130,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     device = TuyaDevice(hass, entry.data)
 
-    async def update_state(now):
-        """Read device status and update platforms."""
-        status = None
-        try:
-            status = await hass.async_add_executor_job(device.status)
-        except Exception:
-            _LOGGER.debug("update failed")
-
-        signal = f"localtuya_{entry.data[CONF_DEVICE_ID]}"
-        async_dispatcher_send(hass, signal, status)
-
-    unsub_track = async_track_time_interval(
-        hass, update_state, timedelta(seconds=POLL_INTERVAL)
-    )
-
     hass.data[DOMAIN][entry.entry_id] = {
         UNSUB_LISTENER: unsub_listener,
-        UNSUB_TRACK: unsub_track,
         TUYA_DEVICE: device,
     }
 
@@ -166,8 +144,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 for entity in entry.data[CONF_ENTITIES]
             ]
         )
-
-        await update_state(datetime.now())
+        device.connect()
 
     hass.async_create_task(setup_entities())
 
@@ -188,7 +165,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
-    hass.data[DOMAIN][entry.entry_id][UNSUB_TRACK]()
+    hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE].close()
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
