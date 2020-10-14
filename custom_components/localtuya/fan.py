@@ -74,6 +74,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         self.schedule_update_ha_state()
 
     def set_speed(self, speed: str) -> None:
+        """Set the speed of the fan."""
         mappings = {
             SPEED_LOW: [1, "low"],
             SPEED_MEDIUM: [2, "medium"],
@@ -83,7 +84,6 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
         dps_id = "%s" % self._dps_id
 
-        """Set the speed of the fan."""
         self._speed = speed
 
         if speed == SPEED_OFF:
@@ -105,6 +105,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         return SUPPORT_SET_SPEED | SUPPORT_OSCILLATE
 
     def status_updated(self):
+        """Get state of Tuya fan."""
         mappings = {
             "1": [SPEED_LOW, 1],
             "2": [SPEED_MEDIUM, 1],
@@ -118,7 +119,6 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
         dps_id = "%s" % self._dps_id
 
-        """Get state of Tuya fan."""
         self._is_on = self._status["dps"]["1"]
 
         self._speed = mappings[self._status["dps"][dps_id]][0]
