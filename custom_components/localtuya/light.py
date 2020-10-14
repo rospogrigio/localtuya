@@ -35,7 +35,7 @@ def map_range(value, from_lower, from_upper, to_lower, to_upper):
     mapped = (value - from_lower) * (to_upper - to_lower) / (
         from_upper - from_lower
     ) + to_lower
-    return int(min(max(mapped, to_lower), to_upper))
+    return round(min(max(mapped, to_lower), to_upper))
 
 
 def flow_schema(dps):
@@ -112,7 +112,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn on or control the light."""
-        self._device.set_dp(True, self._dp_id)
+        await self._device.set_dp(True, self._dp_id)
         features = self.supported_features
 
         if ATTR_BRIGHTNESS in kwargs and (features & SUPPORT_BRIGHTNESS):
@@ -123,7 +123,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 self._lower_brightness,
                 self._upper_brightness,
             )
-            self._device.set_dp(brightness, self._config.get(CONF_BRIGHTNESS))
+            await self._device.set_dp(brightness, self._config.get(CONF_BRIGHTNESS))
 
         if ATTR_HS_COLOR in kwargs:
             raise ValueError(" TODO implement RGB from HS")
