@@ -92,7 +92,6 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_set_speed(self, speed: str) -> None:
         """Set the speed of the fan."""
-
         self._speed = speed
 
         if speed == SPEED_OFF:
