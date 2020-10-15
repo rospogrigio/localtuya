@@ -23,7 +23,6 @@ CONF_SPAN_TIME = "span_time"
 # fan
 CONF_FAN_SPEED_CONTROL = "fan_speed"
 CONF_FAN_OSCILLATING_CONTROL = "fan_oscillating"
-SPEED_AUTO = "auto"
 
 # sensor
 CONF_SCALING = "scaling"

@@ -18,7 +18,6 @@ from homeassistant.components.fan import (
 from .const import (
     CONF_FAN_SPEED_CONTROL,
     CONF_FAN_OSCILLATING_CONTROL,
-    SPEED_AUTO,
 )
 
 
@@ -93,7 +92,6 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_set_speed(self, speed: str) -> None:
         """Set the speed of the fan."""
-        dps_id = "%s" % self._dps_id
 
         self._speed = speed
 
@@ -108,7 +106,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_oscillate(self, oscillating: bool) -> None:
         """Set oscillation."""
-        await self._device.set_dps(oscillating, self._config.get(CONF_FAN_OSCILLATING_CONTROL))
+        await self._device.set_dps(oscillating, 
+            self._config.get(CONF_FAN_OSCILLATING_CONTROL)
+        )
         self.schedule_update_ha_state()
 
     @property
