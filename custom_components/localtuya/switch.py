@@ -65,13 +65,13 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
             attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE]) / 10
         return attrs
 
-    def turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs):
         """Turn Tuya switch on."""
-        self._device.set_dps(True, self._dps_id)
+        await self._device.set_dps(True, self._dps_id)
 
-    def turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn Tuya switch off."""
-        self._device.set_dps(False, self._dps_id)
+        await self._device.set_dps(False, self._dps_id)
 
     def status_updated(self):
         """Device status was updated."""

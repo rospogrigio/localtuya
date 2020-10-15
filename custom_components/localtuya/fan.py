@@ -2,6 +2,8 @@
 import logging
 from functools import partial
 
+import voluptuous as vol
+
 from homeassistant.components.fan import (
     FanEntity,
     DOMAIN,
@@ -13,6 +15,13 @@ from homeassistant.components.fan import (
     SUPPORT_OSCILLATE,
 )
 
+from .const import (
+    CONF_FAN_SPEED_CONTROL,
+    CONF_FAN_OSCILLATING_CONTROL,
+    SPEED_AUTO,
+)
+
+
 from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,8 +30,15 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-      vol.Optional(CONF_FAN_SPEED): vol.In(dps),
-      vol.Optional(CONF_FAN_OSCILLATING): vol.In(dps),
+        vol.Optional(CONF_FAN_SPEED_CONTROL): vol.In(dps),
+        vol.Optional(CONF_FAN_OSCILLATING_CONTROL): vol.In(dps),
+        vol.Optional(SPEED_LOW, default=SPEED_LOW): vol.In([SPEED_LOW, "1", "2"]),
+        vol.Optional(SPEED_MEDIUM, default=SPEED_MEDIUM): vol.In(
+            [SPEED_MEDIUM, "mid", "2", "3"]
+        ),
+        vol.Optional(SPEED_HIGH, default=SPEED_HIGH): vol.In(
+            [SPEED_HIGH, "auto", "3", "4"]
+        ),
     }
 
 
@@ -39,9 +55,8 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         """Initialize the entity."""
         super().__init__(device, config_entry, fanid, **kwargs)
         self._is_on = False
-        self._speed = SPEED_OFF
-        self._oscillating = False
-        self._type = 0
+        self._speed = None
+        self._oscillating = None
 
     @property
     def oscillating(self):
@@ -63,72 +78,75 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         """Get the list of available speeds."""
         return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
-    def turn_on(self, speed: str = None, **kwargs) -> None:
+    async def async_turn_on(self, speed: str = None, **kwargs) -> None:
         """Turn on the entity."""
-        self._device.set_dps(True, "1")
+        await self._device.set_dps(True, "1")
         if speed is not None:
-            self.set_speed(speed)
+            await self.async_set_speed(speed)
         else:
             self.schedule_update_ha_state()
 
-    def turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs) -> None:
         """Turn off the entity."""
-        self._device.set_dps(False, "1")
+        await self._device.set_dps(False, "1")
         self.schedule_update_ha_state()
 
-    def set_speed(self, speed: str) -> None:
+    async def async_set_speed(self, speed: str) -> None:
         """Set the speed of the fan."""
-        mappings = {
-            SPEED_LOW: [1, "low"],
-            SPEED_MEDIUM: [2, "medium"],
-            SPEED_HIGH: [3, "high"],
-            SPEED_AUTO: [2, "medium"],
-        }
-
         dps_id = "%s" % self._dps_id
 
         self._speed = speed
 
         if speed == SPEED_OFF:
-            self._device.set_dps(False, "1")
+            await self._device.set_dps(False, "1")
         else:
-            self._device.set_dps(mappings[speed][self._type - 1], dps_id)
+            await self._device.set_dps(
+                self._config.get(speed), self._config.get(CONF_FAN_SPEED_CONTROL)
+            )
 
         self.schedule_update_ha_state()
 
-    def oscillate(self, oscillating: bool) -> None:
+    async def async_oscillate(self, oscillating: bool) -> None:
         """Set oscillation."""
-        self._oscillating = oscillating
-        self._device.set_value("8", oscillating)
+        await self._device.set_dps(oscillating, self._config.get(CONF_FAN_OSCILLATING_CONTROL))
         self.schedule_update_ha_state()
 
     @property
     def supported_features(self) -> int:
         """Flag supported features."""
-        return SUPPORT_SET_SPEED | SUPPORT_OSCILLATE
+        if self.has_config(CONF_FAN_OSCILLATING_CONTROL):
+            return SUPPORT_SET_SPEED | SUPPORT_OSCILLATE
+        else:
+            return SUPPORT_SET_SPEED
 
     def status_updated(self):
         """Get state of Tuya fan."""
         mappings = {
-            "1": [SPEED_LOW, 1],
-            "2": [SPEED_MEDIUM, 1],
-            "3": [SPEED_HIGH, 1],
-            "4": [SPEED_HIGH, 1],
-            "low": [SPEED_LOW, 2],
-            "medium": [SPEED_MEDIUM, 2],
-            "high": [SPEED_HIGH, 2],
-            "auto": [SPEED_LOW, 2],
+            self._config.get(SPEED_LOW): SPEED_LOW,
+            self._config.get(SPEED_MEDIUM): SPEED_MEDIUM,
+            self._config.get(SPEED_HIGH): SPEED_HIGH,
         }
-
-        dps_id = "%s" % self._dps_id
 
         self._is_on = self.dps(self._dps_id)
 
-        self._speed, self._type = mappings[self._status["dps"][dps_id]
-        self._type = mappings[self._status["dps"][dps_id]][1]
+        if self.has_config(CONF_FAN_SPEED_CONTROL) and self.dps_conf(
+            CONF_FAN_SPEED_CONTROL
+        ):
+            try:
+                self._speed = mappings[self.dps_conf(CONF_FAN_SPEED_CONTROL)]
 
-        if self.has_config(FAN_OSCILLATING):
-            self._oscillating = self._status["dps"][self.dps_conf(CONF_FAN_OSCILLATING)]
+            except KeyError:
+                _LOGGER.warning(
+                    "%s: Ignoring unknown fan controller state: %s",
+                    self.name,
+                    self.dps_conf(CONF_FAN_SPEED_CONTROL),
+                )
+                self._speed = None
+
+        if self.has_config(CONF_FAN_OSCILLATING_CONTROL) and self.dps_conf(
+            CONF_FAN_OSCILLATING_CONTROL
+        ):
+            self._oscillating = self.dps_conf(CONF_FAN_OSCILLATING_CONTROL)
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan, flow_schema)

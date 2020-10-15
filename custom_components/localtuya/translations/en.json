@@ -56,8 +56,11 @@
                     "scaling": "Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
-                    "brightness": "Brightness",
-                    "color_temp": "Color Temperature"
+                    "fan_speed": "Fan Speed Control",
+                    "fan_oscillating": "Fan Oscillating Control",
+                    "low": "Low Fan Speed Setting",
+                    "medium": "Medium Fan Speed Setting",
+                    "high": "High Fan Speed Setting"
                 }
             }
         }
@@ -93,8 +96,11 @@
                     "scaling": "Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
-                    "brightness": "Brightness",
-                    "color_temp": "Color Temperature"
+                    "fan_speed": "Fan Speed Control",
+                    "fan_oscillating": "Fan Oscillating Control",
+                    "low": "Low Fan Speed Setting",
+                    "medium": "Medium Fan Speed Setting",
+                    "high": "High Fan Speed Setting"
                 }
             },
             "yaml_import": {

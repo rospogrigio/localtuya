@@ -1,7 +1,7 @@
 """Platform to locally control Tuya-based cover devices."""
+import asyncio
 import logging
 from functools import partial
-from time import sleep
 
 import voluptuous as vol
 
@@ -112,7 +112,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             return None
         return self._current_cover_position == 0
 
-    def set_cover_position(self, **kwargs):
+    async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
         _LOGGER.debug("Setting cover position: %r", kwargs[ATTR_POSITION])
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_FAKE:
@@ -123,36 +123,36 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             mydelay = posdiff / 50.0 * self._config[CONF_SPAN_TIME]
             if newpos > currpos:
                 _LOGGER.debug("Opening to %f: delay %f", newpos, mydelay)
-                self.open_cover()
+                await self.async_open_cover()
             else:
                 _LOGGER.debug("Closing to %f: delay %f", newpos, mydelay)
-                self.close_cover()
-            sleep(mydelay)
-            self.stop_cover()
+                await self.async_close_cover()
+            await asyncio.sleep(mydelay)
+            await self.async_stop_cover()
             self._current_cover_position = 50
             _LOGGER.debug("Done")
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
             if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
-                self._device.set_dps(
+                await self._device.set_dps(
                     converted_position, self._config[CONF_SET_POSITION_DP]
                 )
 
-    def open_cover(self, **kwargs):
+    async def async_open_cover(self, **kwargs):
         """Open the cover."""
         _LOGGER.debug("Launching command %s to cover ", self._open_cmd)
-        self._device.set_dps(self._open_cmd, self._dps_id)
+        await self._device.set_dps(self._open_cmd, self._dps_id)
 
-    def close_cover(self, **kwargs):
+    async def async_close_cover(self, **kwargs):
         """Close cover."""
         _LOGGER.debug("Launching command %s to cover ", self._close_cmd)
-        self._device.set_dps(self._close_cmd, self._dps_id)
+        await self._device.set_dps(self._close_cmd, self._dps_id)
 
-    def stop_cover(self, **kwargs):
+    async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
         _LOGGER.debug("Launching command %s to cover ", COVER_STOP_CMD)
-        self._device.set_dps(COVER_STOP_CMD, self._dps_id)
+        await self._device.set_dps(COVER_STOP_CMD, self._dps_id)
 
     def status_updated(self):
         """Device status was updated."""

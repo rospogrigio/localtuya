@@ -7,7 +7,7 @@ Mostly derived from Shenzhen Xenon ESP8266MOD WiFi smart devices
 E.g. https://wikidevi.com/wiki/Xenon_SM-PW701U
 
 Author: clach04
-Maintained by: rospogrigio
+Maintained by: postlund
 
 For more information see https://github.com/clach04/python-tuya
 
@@ -24,7 +24,6 @@ Functions
    add_dps_to_request(dps_index)  # adds dps_index to the list of dps used by the
                                   # device (to be queried in the payload)
    set_dps(on, dps_index)   # Set value of any dps index.
-   set_timer(num_secs):
 
 
 Credits
@@ -36,23 +35,24 @@ Credits
    Updated pytuya to support devices with Device IDs of 22 characters
 """
 
+import asyncio
 import base64
 from hashlib import md5
 import json
 import logging
-import socket
 import time
 import binascii
 import struct
+import weakref
 from collections import namedtuple
-from contextlib import contextmanager
+from abc import ABC, abstractmethod
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-version_tuple = (8, 1, 0)
+version_tuple = (9, 0, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
-__author__ = "rospogrigio"
+__author__ = "postlund"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +60,7 @@ TuyaMessage = namedtuple("TuyaMessage", "seqno cmd retcode payload crc")
 
 SET = "set"
 STATUS = "status"
+HEARTBEAT = "heartbeat"
 
 PROTOCOL_VERSION_BYTES_31 = b"3.1"
 PROTOCOL_VERSION_BYTES_33 = b"3.3"
@@ -73,6 +74,7 @@ MESSAGE_END_FMT = ">2I"  # 2*uint32: crc, suffix
 PREFIX_VALUE = 0x000055AA
 SUFFIX_VALUE = 0x0000AA55
 
+HEARTBEAT_INTERVAL = 20
 
 # This is intended to match requests.json payload at
 # https://github.com/codetheweb/tuyapi :
@@ -85,33 +87,24 @@ SUFFIX_VALUE = 0x0000AA55
 # length, zero padding implies could be more than one byte)
 PAYLOAD_DICT = {
     "type_0a": {
-        "status": {"hexByte": 0x0A, "command": {"gwId": "", "devId": ""}},
-        "set": {"hexByte": 0x07, "command": {"devId": "", "uid": "", "t": ""}},
+        STATUS: {"hexByte": 0x0A, "command": {"gwId": "", "devId": ""}},
+        SET: {"hexByte": 0x07, "command": {"devId": "", "uid": "", "t": ""}},
+        HEARTBEAT: {"hexByte": 0x09, "command": {}},
     },
     "type_0d": {
-        "status": {"hexByte": 0x0D, "command": {"devId": "", "uid": "", "t": ""}},
-        "set": {"hexByte": 0x07, "command": {"devId": "", "uid": "", "t": ""}},
+        STATUS: {"hexByte": 0x0D, "command": {"devId": "", "uid": "", "t": ""}},
+        SET: {"hexByte": 0x07, "command": {"devId": "", "uid": "", "t": ""}},
+        HEARTBEAT: {"hexByte": 0x09, "command": {}},
     },
 }
 
 
-@contextmanager
-def socketcontext(address, port, timeout):
-    """Context manager which sets up and tears down socket properly."""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-    s.settimeout(timeout)
-    s.connect((address, port))
-    try:
-        yield s
-    except Exception:
-        # This should probably be a warning or error, but since this happens
-        # every now and the and we do retries on a higher level, use debug level
-        # to not spam log with errors.
-        _LOGGER.debug("Failed to connect to %s. Raising Exception.", address)
-        raise
-    finally:
-        s.close()
+class TuyaLoggingAdapter(logging.LoggerAdapter):
+    """Adapter that adds device id to all log points."""
+
+    def process(self, msg, kwargs):
+        """Process log point and return output."""
+        return f"[{self.extra['device_id']}] {msg}", kwargs
 
 
 def pack_message(msg):
@@ -178,12 +171,125 @@ class AESCipher:
         return s[: -ord(s[len(s) - 1 :])]
 
 
-class TuyaInterface:
-    """Represent a Tuya device."""
+class MessageDispatcher:
+    """Buffer and dispatcher for Tuya messages."""
 
-    def __init__(
-        self, dev_id, address, local_key, protocol_version, connection_timeout=5
-    ):
+    # Heartbeats always respond with sequence number 0, so they can't be waited for like
+    # other messages. This is a hack to allow waiting for heartbeats.
+    HEARTBEAT_SEQNO = -100
+
+    def __init__(self, log, listener):
+        """Initialize a new MessageBuffer."""
+        self.log = log
+        self.buffer = b""
+        self.listeners = {}
+        self.listener = listener
+
+    def abort(self):
+        """Abort all waiting clients."""
+        for key in self.listeners:
+            sem = self.listeners[key]
+            self.listeners[key] = None
+
+            # TODO: Received data and semahore should be stored separately
+            if isinstance(sem, asyncio.Semaphore):
+                sem.release()
+
+    async def wait_for(self, seqno, timeout=5):
+        """Wait for response to a sequence number to be received and return it."""
+        if seqno in self.listeners:
+            raise Exception(f"listener exists for {seqno} (id: {self.id})")
+
+        self.log.debug("Waiting for sequence number %d", seqno)
+        self.listeners[seqno] = asyncio.Semaphore(0)
+        try:
+            await asyncio.wait_for(self.listeners[seqno].acquire(), timeout=timeout)
+        except asyncio.TimeoutError:
+            del self.listeners[seqno]
+            raise
+
+        return self.listeners.pop(seqno)
+
+    def add_data(self, data):
+        """Add new data to the buffer and try to parse messages."""
+        self.buffer += data
+        header_len = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
+
+        while self.buffer:
+            # Check if enough data for measage header
+            if len(self.buffer) < header_len:
+                break
+
+            # Parse header and check if enough data according to length in header
+            _, seqno, cmd, length, retcode = struct.unpack_from(
+                MESSAGE_RECV_HEADER_FMT, self.buffer
+            )
+            if len(self.buffer[header_len - 4 :]) < length:
+                break
+
+            # length includes payload length, retcode, crc and suffix
+            payload_length = length - 4 - struct.calcsize(MESSAGE_END_FMT)
+            payload = self.buffer[header_len : header_len + payload_length]
+
+            crc, _ = struct.unpack_from(
+                MESSAGE_END_FMT,
+                self.buffer[header_len + payload_length : header_len + length],
+            )
+
+            self.buffer = self.buffer[header_len + length - 4 :]
+            self._dispatch(TuyaMessage(seqno, cmd, retcode, payload, crc))
+
+    def _dispatch(self, msg):
+        """Dispatch a message to someone that is listening."""
+        if msg.seqno in self.listeners:
+            self.log.debug("Dispatching sequence number %d", msg.seqno)
+            sem = self.listeners[msg.seqno]
+            self.listeners[msg.seqno] = msg
+            sem.release()
+        elif msg.cmd == 0x09:
+            self.log.debug("Got heartbeat response")
+            if self.HEARTBEAT_SEQNO in self.listeners:
+                sem = self.listeners[self.HEARTBEAT_SEQNO]
+                self.listeners[self.HEARTBEAT_SEQNO] = msg
+                sem.release()
+        elif msg.cmd == 0x08:
+            self.log.debug("Got status update")
+            self.listener(msg)
+        else:
+            self.log.debug(
+                "Got message type %d for unknown listener %d: %s",
+                msg.command,
+                msg.seqno,
+                msg,
+            )
+
+
+class TuyaListener(ABC):
+    """Listener interface for Tuya device changes."""
+
+    @abstractmethod
+    def status_updated(self, status):
+        """Device updated status."""
+
+    @abstractmethod
+    def disconnected(self, exc):
+        """Device disconnected."""
+
+
+class EmptyListener(TuyaListener):
+    """Listener doing nothing."""
+
+    def status_updated(self, status):
+        """Device updated status."""
+
+    def disconnected(self, exc):
+        """Device disconnected."""
+
+
+class TuyaProtocol(asyncio.Protocol):
+    """Implementation of the Tuya protocol."""
+
+    def __init__(self, dev_id, local_key, protocol_version, on_connected, listener):
         """
         Initialize a new TuyaInterface.
 
@@ -195,55 +301,126 @@ class TuyaInterface:
         Attributes:
             port (int): The port to connect to.
         """
+        self.loop = asyncio.get_running_loop()
+        self.log = TuyaLoggingAdapter(_LOGGER, {"device_id": dev_id})
         self.id = dev_id
-        self.address = address
         self.local_key = local_key.encode("latin1")
-        self.connection_timeout = connection_timeout
         self.version = protocol_version
         self.dev_type = "type_0a"
         self.dps_to_request = {}
         self.cipher = AESCipher(self.local_key)
         self.seqno = 0
+        self.transport = None
+        self.listener = weakref.ref(listener)
+        self.dispatcher = self._setup_dispatcher()
+        self.on_connected = on_connected
+        self.heartbeater = None
 
-        self.port = 6668  # default - do not expect caller to pass in
+    def _setup_dispatcher(self):
+        def _status_update(msg):
+            listener = self.listener()
+            if listener is not None:
+                listener.status_updated(self._decode_payload(msg.payload))
 
-    def exchange(self, command, dps=None):
+        return MessageDispatcher(self.log, _status_update)
+
+    def connection_made(self, transport):
+        """Did connect to the device."""
+
+        async def heartbeat_loop():
+            """Continuously send heart beat updates."""
+            self.log.debug("Started heartbeat loop")
+            while True:
+                try:
+                    await self.heartbeat()
+                except Exception as ex:
+                    self.log.exception("Heartbeat failed (%s), disconnecting", ex)
+                    break
+                await asyncio.sleep(HEARTBEAT_INTERVAL)
+            self.log.debug("Stopped heartbeat loop")
+            self.close()
+
+        self.transport = transport
+        self.on_connected.set_result(True)
+        self.heartbeater = self.loop.create_task(heartbeat_loop())
+
+    def data_received(self, data):
+        """Received data from device."""
+        self.dispatcher.add_data(data)
+
+    def connection_lost(self, exc):
+        """Disconnected from device."""
+        self.log.debug("Connection lost: %s", exc)
+        try:
+            self.close()
+        except Exception:
+            self.log.exception("Failed to close connection")
+        finally:
+            try:
+                listener = self.listener()
+                if listener is not None:
+                    listener.disconnected(exc)
+            except Exception:
+                self.log.exception("Failed to call disconnected callback")
+
+    def close(self):
+        """Close connection and abort all outstanding listeners."""
+        self.log.debug("Closing connection")
+        if self.heartbeater is not None:
+            self.heartbeater.cancel()
+        if self.dispatcher is not None:
+            self.dispatcher.abort()
+        if self.transport is not None:
+            transport = self.transport
+            self.transport = None
+            transport.close()
+
+    async def exchange(self, command, dps=None):
         """Send and receive a message, returning response from device."""
-        _LOGGER.debug("Sending command %s (device type: %s)", command, self.dev_type)
+        self.log.debug(
+            "Sending command %s (device type: %s)",
+            command,
+            self.dev_type,
+        )
         payload = self._generate_payload(command, dps)
         dev_type = self.dev_type
 
-        with socketcontext(self.address, self.port, self.connection_timeout) as s:
-            s.send(payload)
-            data = s.recv(1024)
+        # Wait for special sequence number if heartbeat
+        seqno = (
+            MessageDispatcher.HEARTBEAT_SEQNO
+            if command == HEARTBEAT
+            else (self.seqno - 1)
+        )
 
-            # sometimes the first packet does not contain data (typically 28 bytes):
-            # need to read again
-            if len(data) < 40:
-                time.sleep(0.1)
-                data = s.recv(1024)
+        self.transport.write(payload)
+        msg = await self.dispatcher.wait_for(seqno)
+        if msg is None:
+            self.log.debug("Wait was aborted for seqno %d", seqno)
+            return None
 
-            msg = unpack_message(data)
-            # TODO: Verify stuff, e.g. CRC sequence number
-
-            payload = self._decode_payload(msg.payload)
+        # TODO: Verify stuff, e.g. CRC sequence number?
+        payload = self._decode_payload(msg.payload)
 
         # Perform a new exchange (once) if we switched device type
         if dev_type != self.dev_type:
-            _LOGGER.debug(
+            self.log.debug(
                 "Re-send %s due to device type change (%s -> %s)",
                 command,
                 dev_type,
                 self.dev_type,
             )
-            return self.exchange(command, dps)
+            return await self.exchange(command, dps)
         return payload
 
-    def status(self):
+    async def status(self):
         """Return device status."""
-        return self.exchange(STATUS)
+        return await self.exchange(STATUS)
 
-    def set_dps(self, value, dps_index):
+    async def heartbeat(self):
+        """Send a heartbeat message."""
+        return await self.exchange(HEARTBEAT)
+
+    async def set_dps(self, value, dps_index):
         """
         Set value (may be any type: bool, int or string) of any dps index.
 
@@ -251,9 +428,9 @@ class TuyaInterface:
             dps_index(int):   dps index to set
             value: new value for the dps index
         """
-        return self.exchange(SET, {str(dps_index): value})
+        return await self.exchange(SET, {str(dps_index): value})
 
-    def detect_available_dps(self):
+    async def detect_available_dps(self):
         """Return which datapoints are supported by the device."""
         # type_0d devices need a sort of bruteforce querying in order to detect the
         # list of available dps experience shows that the dps available are usually
@@ -268,15 +445,16 @@ class TuyaInterface:
             self.dps_to_request = {"1": None}
             self.add_dps_to_request(range(*dps_range))
             try:
-                data = self.status()
+                data = await self.status()
             except Exception as e:
-                _LOGGER.warning("Failed to get status: %s", e)
+                self.log.warning("Failed to get status: %s", e)
                 raise
-            detected_dps.update(data["dps"])
+            if "dps" in data:
+                detected_dps.update(data["dps"])
 
             if self.dev_type == "type_0a":
                 return detected_dps
-
+        self.log.debug("detected dps: %s", detected_dps)
         return detected_dps
 
     def add_dps_to_request(self, dps_index):
@@ -287,9 +465,11 @@ class TuyaInterface:
             self.dps_to_request.update({str(index): None for index in dps_index})
 
     def _decode_payload(self, payload):
-        _LOGGER.debug("decode payload=%r", payload)
+        self.log.debug("Decode payload: %s", payload)
 
-        if payload.startswith(PROTOCOL_VERSION_BYTES_31):
+        if not payload:
+            payload = "{}"
+        elif payload.startswith(PROTOCOL_VERSION_BYTES_31):
             payload = payload[len(PROTOCOL_VERSION_BYTES_31) :]  # remove version header
             # remove (what I'm guessing, but not confirmed is) 16-bytes of MD5
             # hexdigest of payload
@@ -303,17 +483,17 @@ class TuyaInterface:
 
             if "data unvalid" in payload:
                 self.dev_type = "type_0d"
-                _LOGGER.debug(
-                    "'data unvalid' error detected: switching to dev_type %r",
+                self.log.debug(
+                    "switching to dev_type %s",
                     self.dev_type,
                 )
                 return None
         elif not payload.startswith(b"{"):
-            raise Exception(f"Unexpected payload={payload}")
+            raise Exception(f"Unexpected payload={payload} (id: {self.id})")
 
         if not isinstance(payload, str):
             payload = payload.decode()
-        _LOGGER.debug("decrypted result=%r", payload)
+        self.log.debug("Decrypted payload: %s", payload)
         return json.loads(payload)
 
     def _generate_payload(self, command, data=None):
@@ -345,7 +525,7 @@ class TuyaInterface:
             json_data["dps"] = self.dps_to_request
 
         payload = json.dumps(json_data).replace(" ", "").encode("utf-8")
-        _LOGGER.debug("paylod=%r", payload)
+        self.log.debug("Paylod: %s", payload)
 
         if self.version == 3.3:
             payload = self.cipher.encrypt(payload, False)
@@ -377,4 +557,32 @@ class TuyaInterface:
 
     def __repr__(self):
         """Return internal string representation of object."""
-        return "%r" % ((self.id, self.address),)  # FIXME can do better than this
+        return self.id
+
+
+async def connect(
+    address,
+    device_id,
+    local_key,
+    protocol_version,
+    listener=None,
+    port=6668,
+    timeout=5,
+):
+    """Connect to a device."""
+    loop = asyncio.get_running_loop()
+    on_connected = loop.create_future()
+    _, protocol = await loop.create_connection(
+        lambda: TuyaProtocol(
+            device_id,
+            local_key,
+            protocol_version,
+            on_connected,
+            listener or EmptyListener(),
+        ),
+        address,
+        port,
+    )
+
+    await asyncio.wait_for(on_connected, timeout=timeout)
+    return protocol

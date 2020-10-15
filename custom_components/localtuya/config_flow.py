@@ -159,22 +159,23 @@ def config_schema():
 
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect."""
-    tuyainterface = pytuya.TuyaInterface(
-        data[CONF_DEVICE_ID],
-        data[CONF_HOST],
-        data[CONF_LOCAL_KEY],
-        float(data[CONF_PROTOCOL_VERSION]),
-    )
     detected_dps = {}
 
     try:
-        detected_dps = await hass.async_add_executor_job(
-            tuyainterface.detect_available_dps
+        interface = await pytuya.connect(
+            data[CONF_HOST],
+            data[CONF_DEVICE_ID],
+            data[CONF_LOCAL_KEY],
+            float(data[CONF_PROTOCOL_VERSION]),
         )
+
+        detected_dps = await interface.detect_available_dps()
     except (ConnectionRefusedError, ConnectionResetError):
         raise CannotConnect
     except ValueError:
         raise InvalidAuth
+    finally:
+        interface.close()
 
     return dps_string_list(detected_dps)
 
