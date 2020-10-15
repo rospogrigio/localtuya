@@ -31,9 +31,29 @@ def decrypt_udp(message):
 class TuyaDiscovery(asyncio.DatagramProtocol):
     """Datagram handler listening for Tuya broadcast messages."""
 
-    def __init__(self, found_devices):
-        """Initialize a new TuyaDiscovery instance."""
-        self.found_devices = found_devices
+    def __init__(self, callback):
+        """Initialize a new BaseDiscovery."""
+        self.devices = {}
+        self._listeners = []
+        self._callback = callback
+
+    async def start(self):
+        """Start discovery by listening to broadcasts."""
+        loop = asyncio.get_running_loop()
+        listener = loop.create_datagram_endpoint(
+            lambda: self, local_addr=("0.0.0.0", 6666)
+        )
+        encrypted_listener = loop.create_datagram_endpoint(
+            lambda: self, local_addr=("0.0.0.0", 6667)
+        )
+
+        self.listeners = await asyncio.gather(listener, encrypted_listener)
+        _LOGGER.debug("Listening to broadcasts on UDP port 6666 and 6667")
+
+    def close(self):
+        """Stop discovery."""
+        for transport, _ in self.listeners:
+            transport.close()
 
     def datagram_received(self, data, addr):
         """Handle received broadcast message."""
@@ -44,43 +64,12 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
             data = data.decode()
 
         decoded = json.loads(data)
-        if decoded.get("ip") not in self.found_devices:
-            self.found_devices[decoded.get("ip")] = decoded
-            _LOGGER.debug("Discovered device: %s", decoded)
+        self.device_found(decoded)
 
+    def device_found(self, device):
+        """Discover a new device."""
+        if device.get("ip") not in self.devices:
+            self.devices[device.get("ip")] = device
+            _LOGGER.debug("Discovered device: %s", device)
 
-async def discover(timeout, loop):
-    """Discover and return Tuya devices on the network."""
-    found_devices = {}
-
-    def proto_factory():
-        return TuyaDiscovery(found_devices)
-
-    listener = loop.create_datagram_endpoint(
-        proto_factory, local_addr=("0.0.0.0", 6666)
-    )
-    encrypted_listener = loop.create_datagram_endpoint(
-        proto_factory, local_addr=("0.0.0.0", 6667)
-    )
-
-    listeners = await asyncio.gather(listener, encrypted_listener)
-    _LOGGER.debug("Listening to broadcasts on UDP port 6666 and 6667")
-
-    try:
-        await asyncio.sleep(timeout)
-    finally:
-        for transport, _ in listeners:
-            transport.close()
-
-    return found_devices
-
-
-def main():
-    """Run discovery and print result."""
-    loop = asyncio.get_event_loop()
-    res = loop.run_until_complete(discover(5, loop))
-    print(res)
-
-
-if __name__ == "__main__":
-    main()
+        self._callback(device)

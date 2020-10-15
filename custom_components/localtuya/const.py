@@ -27,6 +27,8 @@ CONF_SPAN_TIME = "span_time"
 # sensor
 CONF_SCALING = "scaling"
 
+DATA_DISCOVERY = "discovery"
+
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows

@@ -7,8 +7,7 @@
             "cannot_connect": "Cannot connect to device. Verify that address is correct and try again.",
             "invalid_auth": "Failed to authenticate with device. Verify that device id and local key are correct.",
             "unknown": "An unknown error occurred. See log for details.",
-            "entity_already_configured": "Entity with this ID has already been configured.",
-            "discovery_failed": "Failed to discover devices. You can still add a device manually."
+            "entity_already_configured": "Entity with this ID has already been configured."
         },
         "step": {
             "user": {
