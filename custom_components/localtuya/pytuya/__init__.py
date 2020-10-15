@@ -315,12 +315,17 @@ class TuyaProtocol(asyncio.Protocol):
         self.dispatcher = self._setup_dispatcher()
         self.on_connected = on_connected
         self.heartbeater = None
+        self.dps_cache = {}
 
     def _setup_dispatcher(self):
         def _status_update(msg):
+            decoded_message = self._decode_payload(msg.payload)
+            if "dps" in decoded_message:
+                self.dps_cache.update(decoded_message["dps"])
+
             listener = self.listener()
             if listener is not None:
-                listener.status_updated(self._decode_payload(msg.payload))
+                listener.status_updated(self.dps_cache)
 
         return MessageDispatcher(self.log, _status_update)
 
@@ -414,7 +419,10 @@ class TuyaProtocol(asyncio.Protocol):
 
     async def status(self):
         """Return device status."""
-        return await self.exchange(STATUS)
+        status = await self.exchange(STATUS)
+        if "dps" in status:
+            self.dps_cache.update(status["dps"])
+        return self.dps_cache
 
     async def heartbeat(self):
         """Send a heartbeat message."""
@@ -436,7 +444,7 @@ class TuyaProtocol(asyncio.Protocol):
         # list of available dps experience shows that the dps available are usually
         # in the ranges [1-25] and [100-110] need to split the bruteforcing in
         # different steps due to request payload limitation (max. length = 255)
-        detected_dps = {}
+        self.dps_cache = {}
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
 
         for dps_range in ranges:
@@ -450,12 +458,12 @@ class TuyaProtocol(asyncio.Protocol):
                 self.log.warning("Failed to get status: %s", e)
                 raise
             if "dps" in data:
-                detected_dps.update(data["dps"])
+                self.dps_cache.update(data["dps"])
 
             if self.dev_type == "type_0a":
-                return detected_dps
-        self.log.debug("detected dps: %s", detected_dps)
-        return detected_dps
+                return self.dps_cache
+        self.log.debug("detected dps: %s", self.dps_cache)
+        return self.dps_cache
 
     def add_dps_to_request(self, dps_index):
         """Add a datapoint (DP) to be included in requests."""
