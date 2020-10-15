@@ -20,7 +20,10 @@ _LOGGER = logging.getLogger(__name__)
 
 def flow_schema(dps):
     """Return schema used in config flow."""
-    return {}
+    return {
+      vol.Optional(CONF_FAN_SPEED): vol.In(dps),
+      vol.Optional(CONF_FAN_OSCILLATING): vol.In(dps),
+    }
 
 
 class LocaltuyaFan(LocalTuyaEntity, FanEntity):
@@ -79,7 +82,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             SPEED_LOW: [1, "low"],
             SPEED_MEDIUM: [2, "medium"],
             SPEED_HIGH: [3, "high"],
-            "auto": [2, "medium"],
+            SPEED_AUTO: [2, "medium"],
         }
 
         dps_id = "%s" % self._dps_id
@@ -119,13 +122,13 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
         dps_id = "%s" % self._dps_id
 
-        self._is_on = self._status["dps"]["1"]
+        self._is_on = self.dps(self._dps_id)
 
-        self._speed = mappings[self._status["dps"][dps_id]][0]
+        self._speed, self._type = mappings[self._status["dps"][dps_id]
         self._type = mappings[self._status["dps"][dps_id]][1]
 
-        if hasattr(self._status["dps"], "8"):
-            self._oscillating = self._status["dps"]["8"]
+        if self.has_config(FAN_OSCILLATING):
+            self._oscillating = self._status["dps"][self.dps_conf(CONF_FAN_OSCILLATING)]
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan, flow_schema)

@@ -64,9 +64,7 @@ class LocaltuyaSensor(LocalTuyaEntity):
         """Device status was updated."""
         state = self.dps(self._dps_id)
         scale_factor = self._config.get(CONF_SCALING)
-        if scale_factor is not None and (
-            isinstance(state, int) or isinstance(state, float)
-        ):
+        if scale_factor is not None and isinstance(state, (int, float)):
             state = round(state * scale_factor, DEFAULT_PRECISION)
         self._state = state
 

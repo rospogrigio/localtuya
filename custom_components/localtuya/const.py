@@ -20,6 +20,11 @@ CONF_CURRENT_POSITION_DP = "current_position_dp"
 CONF_SET_POSITION_DP = "set_position_dp"
 CONF_SPAN_TIME = "span_time"
 
+# fan
+CONF_FAN_SPEED = "fan_dp"
+CONF_FAN_OSSILLATING = "oscillating_dp"
+SPEED_AUTO = "auto"
+
 # sensor
 CONF_SCALING = "scaling"
 
