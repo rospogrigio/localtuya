@@ -34,6 +34,8 @@ localtuya:
         friendly_name: Device Light
         id: 4
         brightness: 20
+        brightness_lower: 29 # Optional
+        brightness_upper: 1000 # Optional
         color_temp: 21
 
       - platform: sensor
