@@ -89,6 +89,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         """Return the color_temp of the light."""
         if self.has_config(CONF_COLOR_TEMP):
             return int(MAX_MIRED - (((MAX_MIRED - MIN_MIRED) / 255) * self._color_temp))
+        return None
 
     @property
     def min_mireds(self):
