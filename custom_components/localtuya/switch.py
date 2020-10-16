@@ -67,15 +67,15 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn Tuya switch on."""
-        await self._device.set_dps(True, self._dps_id)
+        await self._device.set_dp(True, self._dp_id)
 
     async def async_turn_off(self, **kwargs):
         """Turn Tuya switch off."""
-        await self._device.set_dps(False, self._dps_id)
+        await self._device.set_dp(False, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dps_id)
+        self._state = self.dps(self._dp_id)
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSwitch, flow_schema)

@@ -83,12 +83,12 @@ def get_dps_for_platform(flow_schema):
             yield key.schema
 
 
-def get_entity_config(config_entry, dps_id):
+def get_entity_config(config_entry, dp_id):
     """Return entity config for a given DPS id."""
     for entity in config_entry.data[CONF_ENTITIES]:
-        if entity[CONF_ID] == dps_id:
+        if entity[CONF_ID] == dp_id:
             return entity
-    raise Exception(f"missing entity config for id {dps_id}")
+    raise Exception(f"missing entity config for id {dp_id}")
 
 
 class TuyaDevice(pytuya.TuyaListener):
@@ -171,13 +171,13 @@ class TuyaDevice(pytuya.TuyaListener):
         if self._interface:
             self._interface.close()
 
-    async def set_dps(self, state, dps_index):
+    async def set_dp(self, state, dp_index):
         """Change value of a DP of the Tuya device."""
         if self._interface is not None:
             try:
-                await self._interface.set_dps(state, dps_index)
+                await self._interface.set_dp(state, dp_index)
             except Exception:
-                _LOGGER.exception("Failed to set DP %d to %d", dps_index, state)
+                _LOGGER.exception("Failed to set DP %d to %d", dp_index, state)
         else:
             _LOGGER.error(
                 "Not connected to device %s", self._config_entry[CONF_FRIENDLY_NAME]
@@ -208,12 +208,12 @@ class TuyaDevice(pytuya.TuyaListener):
 class LocalTuyaEntity(Entity):
     """Representation of a Tuya entity."""
 
-    def __init__(self, device, config_entry, dps_id, **kwargs):
+    def __init__(self, device, config_entry, dp_id, **kwargs):
         """Initialize the Tuya entity."""
         self._device = device
         self._config_entry = config_entry
-        self._config = get_entity_config(config_entry, dps_id)
-        self._dps_id = dps_id
+        self._config = get_entity_config(config_entry, dp_id)
+        self._dp_id = dp_id
         self._status = {}
 
     async def async_added_to_hass(self):
@@ -262,7 +262,7 @@ class LocalTuyaEntity(Entity):
     @property
     def unique_id(self):
         """Return unique device identifier."""
-        return f"local_{self._config_entry.data[CONF_DEVICE_ID]}_{self._dps_id}"
+        return f"local_{self._config_entry.data[CONF_DEVICE_ID]}_{self._dp_id}"
 
     def has_config(self, attr):
         """Return if a config parameter has a valid value."""
@@ -272,16 +272,16 @@ class LocalTuyaEntity(Entity):
     @property
     def available(self):
         """Return if device is available or not."""
-        return str(self._dps_id) in self._status
+        return str(self._dp_id) in self._status
 
-    def dps(self, dps_index):
+    def dps(self, dp_index):
         """Return cached value for DPS index."""
-        value = self._status.get(str(dps_index))
+        value = self._status.get(str(dp_index))
         if value is None:
             _LOGGER.warning(
                 "Entity %s is requesting unknown DPS index %s",
                 self.entity_id,
-                dps_index,
+                dp_index,
             )
 
         return value
