@@ -157,7 +157,11 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     def status_updated(self):
         """Device status was updated."""
+<<<<<<< HEAD
         self._state = self.dps(self._dp_id)
+=======
+        self._state = self.dps(self._dps_id)
+>>>>>>> Introduced uppercase detection for cover commands
         if self._state.isupper():
             self._open_cmd = self._open_cmd.upper()
             self._close_cmd = self._close_cmd.upper()
