@@ -1,5 +1,6 @@
 """Platform to locally control Tuya-based light devices."""
 import logging
+import textwrap
 from functools import partial
 
 import voluptuous as vol
@@ -16,10 +17,16 @@ from homeassistant.components.light import (
     ATTR_HS_COLOR,
     SUPPORT_BRIGHTNESS,
     SUPPORT_COLOR_TEMP,
+    SUPPORT_COLOR,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry
-from .const import CONF_BRIGHTNESS_LOWER, CONF_BRIGHTNESS_UPPER
+from .const import (
+    CONF_BRIGHTNESS_LOWER,
+    CONF_BRIGHTNESS_UPPER,
+    CONF_COLOR,
+    CONF_COLOR_MODE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,6 +56,8 @@ def flow_schema(dps):
         vol.Optional(CONF_BRIGHTNESS_UPPER, default=DEFAULT_UPPER_BRIGHTNESS): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=10000)
         ),
+        vol.Optional(CONF_COLOR_MODE): vol.In(dps),
+        vol.Optional(CONF_COLOR): vol.In(dps),
     }
 
 
@@ -73,6 +82,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._upper_brightness = self._config.get(
             CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS
         )
+        self._is_white_mode = True  # Hopefully sane default
+        self._hs = [0, 0]
 
     @property
     def is_on(self):
@@ -82,7 +93,14 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def brightness(self):
         """Return the brightness of the light."""
-        return self._brightness
+        return map_range(
+            self._brightness, self._lower_brightness, self._upper_brightness, 0, 255
+        )
+
+    @property
+    def hs_color(self):
+        """Return the hs color value."""
+        return self._hs
 
     @property
     def color_temp(self):
@@ -109,6 +127,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             supports |= SUPPORT_BRIGHTNESS
         if self.has_config(CONF_COLOR_TEMP):
             supports |= SUPPORT_COLOR_TEMP
+        if self.has_config(CONF_COLOR):
+            supports |= SUPPORT_COLOR | SUPPORT_BRIGHTNESS
         return supports
 
     async def async_turn_on(self, **kwargs):
@@ -124,10 +144,22 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 self._lower_brightness,
                 self._upper_brightness,
             )
-            await self._device.set_dp(brightness, self._config.get(CONF_BRIGHTNESS))
+            if self._is_white_mode:
+                await self._device.set_dp(brightness, self._config.get(CONF_BRIGHTNESS))
+            else:
+                color = "{:04x}{:04x}{:04x}".format(
+                    round(self._hs[0]), round(self._hs[1] * 10.0), brightness
+                )
+                await self._device.set_dp(color, self._config.get(CONF_COLOR))
 
-        if ATTR_HS_COLOR in kwargs:
-            raise ValueError(" TODO implement RGB from HS")
+        if ATTR_HS_COLOR in kwargs and (features & SUPPORT_COLOR):
+            hs = kwargs[ATTR_HS_COLOR]
+            color = "{:04x}{:04x}{:04x}".format(
+                round(hs[0]), round(hs[1] * 10.0), self._brightness
+            )
+            await self._device.set_dp(color, self._config.get(CONF_COLOR))
+            if self._is_white_mode:
+                await self._device.set_dp("colour", self._config.get(CONF_COLOR_MODE))
 
         if ATTR_COLOR_TEMP in kwargs and (features & SUPPORT_COLOR_TEMP):
             color_temp = int(
@@ -136,6 +168,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 * (int(kwargs[ATTR_COLOR_TEMP]) - MIN_MIRED)
             )
             await self._device.set_dp(color_temp, self._config.get(CONF_COLOR_TEMP))
+            if not self._is_white_mode:
+                await self._device.set_dp("white", self._config.get(CONF_COLOR_MODE))
 
     async def async_turn_off(self, **kwargs):
         """Turn Tuya light off."""
@@ -146,17 +180,17 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._state = self.dps(self._dp_id)
         supported = self.supported_features
 
-        if supported & SUPPORT_BRIGHTNESS:
-            brightness = self.dps_conf(CONF_BRIGHTNESS)
-            if brightness is not None:
-                brightness = map_range(
-                    brightness,
-                    self._lower_brightness,
-                    self._upper_brightness,
-                    0,
-                    255,
-                )
-            self._brightness = brightness
+        if supported & SUPPORT_COLOR:
+            self._is_white_mode = self.dps_conf(CONF_COLOR_MODE) == "white"
+
+        if self._is_white_mode:
+            if supported & SUPPORT_BRIGHTNESS:
+                self._brightness = self.dps_conf(CONF_BRIGHTNESS)
+        else:
+            hsv_color = self.dps_conf(CONF_COLOR)
+            hue, sat, value = [int(value, 16) for value in textwrap.wrap(hsv_color, 4)]
+            self._hs = [hue, sat / 10.0]
+            self._brightness = value
 
         if supported & SUPPORT_COLOR_TEMP:
             self._color_temp = self.dps_conf(CONF_COLOR_TEMP)
