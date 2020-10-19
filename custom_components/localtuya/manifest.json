@@ -7,6 +7,6 @@
     "@rospogrigio", "@postlund"
   ],
   "issue_tracker": "https://github.com/rospogrigio/localtuya-homeassistant/issues",
-  "requirements": ["cryptography==2.9.2"],
+  "requirements": [],
   "config_flow": true
 }

@@ -2,7 +2,7 @@
 
 # localtuya-homeassistant
 
-A Home Assistant / Hass.io add-on for local handling of Tuya-based devices.
+A Home Assistant custom component for local handling of Tuya-based devices.
 
 The following Tuya device types are currently supported:
 * 1 and multiple gang switches
