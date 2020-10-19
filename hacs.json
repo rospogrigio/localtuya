@@ -1,6 +1,6 @@
 {
   "name": "LocalTuya",
-  "domains": ["media_player", "sensor"],
+  "domains": ["binary_sensor", "cover", "fan", "light", "sensor", "switch"],
   "homeassistant": "0.116.0",
   "iot_class": ["Local Push"]
 }
