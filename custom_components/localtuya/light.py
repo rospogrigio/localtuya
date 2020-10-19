@@ -83,7 +83,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS
         )
         self._is_white_mode = True  # Hopefully sane default
-        self._hs = [0, 0]
+        self._hs = None
 
     @property
     def is_on(self):
@@ -182,6 +182,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
         if supported & SUPPORT_COLOR:
             self._is_white_mode = self.dps_conf(CONF_COLOR_MODE) == "white"
+            if self._is_white_mode:
+                self._hs = None
 
         if self._is_white_mode:
             if supported & SUPPORT_BRIGHTNESS:
