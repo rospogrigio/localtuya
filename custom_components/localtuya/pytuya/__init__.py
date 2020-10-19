@@ -228,19 +228,25 @@ class MessageDispatcher:
                 break
 
             # length includes payload length, retcode, crc and suffix
-            payload_length = length - 4 - struct.calcsize(MESSAGE_END_FMT)
-            payload = self.buffer[header_len : header_len + payload_length]
+            if (retcode & 0xFFFFFF00) != 0:
+                payload_start = header_len - 4
+                payload_length = length - struct.calcsize(MESSAGE_END_FMT)
+            else:
+                payload_start = header_len
+                payload_length = length - 4 - struct.calcsize(MESSAGE_END_FMT)
+            payload = self.buffer[payload_start : payload_start + payload_length]
 
             crc, _ = struct.unpack_from(
                 MESSAGE_END_FMT,
-                self.buffer[header_len + payload_length : header_len + length],
+                self.buffer[payload_start + payload_length : payload_start + length],
             )
 
-            self.buffer = self.buffer[header_len + length - 4 :]
+            self.buffer = self.buffer[header_len - 4 + length :]
             self._dispatch(TuyaMessage(seqno, cmd, retcode, payload, crc))
 
     def _dispatch(self, msg):
         """Dispatch a message to someone that is listening."""
+        _LOGGER.debug("Dispatching message %s", msg)
         if msg.seqno in self.listeners:
             self.log.debug("Dispatching sequence number %d", msg.seqno)
             sem = self.listeners[msg.seqno]
@@ -258,7 +264,7 @@ class MessageDispatcher:
         else:
             self.log.debug(
                 "Got message type %d for unknown listener %d: %s",
-                msg.command,
+                msg.cmd,
                 msg.seqno,
                 msg,
             )
@@ -459,14 +465,14 @@ class TuyaProtocol(asyncio.Protocol):
             try:
                 data = await self.status()
             except Exception as e:
-                self.log.warning("Failed to get status: %s", e)
+                self.log.exception("Failed to get status: %s", e)
                 raise
             if "dps" in data:
                 self.dps_cache.update(data["dps"])
 
             if self.dev_type == "type_0a":
                 return self.dps_cache
-        self.log.debug("detected dps: %s", self.dps_cache)
+        self.log.debug("Detected dps: %s", self.dps_cache)
         return self.dps_cache
 
     def add_dps_to_request(self, dp_indicies):
@@ -477,10 +483,10 @@ class TuyaProtocol(asyncio.Protocol):
             self.dps_to_request.update({str(index): None for index in dp_indicies})
 
     def _decode_payload(self, payload):
-        self.log.debug("Decode payload: %s", payload)
-
         if not payload:
             payload = "{}"
+        elif payload.startswith(b"{"):
+            payload = payload
         elif payload.startswith(PROTOCOL_VERSION_BYTES_31):
             payload = payload[len(PROTOCOL_VERSION_BYTES_31) :]  # remove version header
             # remove (what I'm guessing, but not confirmed is) 16-bytes of MD5
@@ -500,7 +506,7 @@ class TuyaProtocol(asyncio.Protocol):
                     self.dev_type,
                 )
                 return None
-        elif not payload.startswith(b"{"):
+        else:
             raise Exception(f"Unexpected payload={payload} (id: {self.id})")
 
         if not isinstance(payload, str):
@@ -537,7 +543,7 @@ class TuyaProtocol(asyncio.Protocol):
             json_data["dps"] = self.dps_to_request
 
         payload = json.dumps(json_data).replace(" ", "").encode("utf-8")
-        self.log.debug("Paylod: %s", payload)
+        self.log.debug("Send payload: %s", payload)
 
         if self.version == 3.3:
             payload = self.cipher.encrypt(payload, False)
