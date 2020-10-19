@@ -25,6 +25,7 @@ from .const import (  # pylint: disable=unused-import
     DOMAIN,
     PLATFORMS,
 )
+from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -209,7 +210,11 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.selected_device = user_input[DISCOVERED_DEVICE].split(" ")[0]
             return await self.async_step_basic_info()
 
-        devices = self.hass.data[DOMAIN][DATA_DISCOVERY].devices
+        # Use cache if available or fallback to manual discovery
+        if DOMAIN in self.hass.data:
+            devices = self.hass.data[DOMAIN][DATA_DISCOVERY].devices
+        else:
+            devices = await discover()
         self.devices = {
             ip: dev
             for ip, dev in devices.items()

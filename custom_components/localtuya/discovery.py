@@ -16,6 +16,8 @@ _LOGGER = logging.getLogger(__name__)
 
 UDP_KEY = md5(b"yGAdlopoPVldABfn").digest()
 
+DEFAULT_TIMEOUT = 6.0
+
 
 def decrypt_udp(message):
     """Decrypt encrypted UDP broadcasts."""
@@ -31,7 +33,7 @@ def decrypt_udp(message):
 class TuyaDiscovery(asyncio.DatagramProtocol):
     """Datagram handler listening for Tuya broadcast messages."""
 
-    def __init__(self, callback):
+    def __init__(self, callback=None):
         """Initialize a new BaseDiscovery."""
         self.devices = {}
         self._listeners = []
@@ -52,6 +54,7 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
     def close(self):
         """Stop discovery."""
+        self.callback = None
         for transport, _ in self.listeners:
             transport.close()
 
@@ -72,4 +75,18 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
             self.devices[device.get("ip")] = device
             _LOGGER.debug("Discovered device: %s", device)
 
-        self._callback(device)
+        if self._callback:
+            self._callback(device)
+
+
+async def discover():
+    """Discover and return devices on local network."""
+    discover = TuyaDiscovery()
+    try:
+        await discover.start()
+        await asyncio.sleep(DEFAULT_TIMEOUT)
+    except Exception:
+        _LOGGER.exception("failed to discover devices")
+    finally:
+        discover.close()
+    return discover.devices
