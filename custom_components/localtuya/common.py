@@ -220,6 +220,8 @@ class LocalTuyaEntity(Entity):
         """Subscribe localtuya events."""
         await super().async_added_to_hass()
 
+        _LOGGER.debug("Adding %s with configuration: %s", self.entity_id, self._config)
+
         def _update_handler(status):
             """Update entity state when status was updated."""
             if status is not None:
@@ -292,7 +294,14 @@ class LocalTuyaEntity(Entity):
         This method looks up which DP a certain config item uses based on
         user configuration and returns its value.
         """
-        return self.dps(self._config.get(conf_item))
+        dp_index = self._config.get(conf_item)
+        if dp_index is None:
+            _LOGGER.warning(
+                "Entity %s is requesting unset index for option %s",
+                self.entity_id,
+                conf_item,
+            )
+        return self.dps(dp_index)
 
     def status_updated(self):
         """Device status was updated.
