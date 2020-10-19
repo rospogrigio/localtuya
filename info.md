@@ -6,7 +6,8 @@
 
 # localtuya-homeassistant
 
-A Home Assistant / Hass.io add-on for local handling of Tuya-based devices.
+A Home Assistant custom Integration for local handling of Tuya-based devices.
+Device status is updated receiving push updates from the device instead of polling, so status updates are extremely fast (even if manually operated).
 
 The following Tuya device types are currently supported:
 * 1 and multiple gang switches
