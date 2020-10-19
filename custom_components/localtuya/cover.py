@@ -103,6 +103,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_open(self):
         """Return if the cover is open or not."""
+        _LOGGER.debug("IS_OPEN: %r", self._current_cover_position)
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
         return self._current_cover_position == 100
@@ -110,6 +111,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
+        _LOGGER.debug("IS_CLOSE: %r", self._current_cover_position)
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
         return self._current_cover_position == 0
