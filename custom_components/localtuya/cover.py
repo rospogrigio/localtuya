@@ -72,6 +72,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._current_cover_position = None
         self._open_cmd = self._config[CONF_OPENCLOSE_CMDS].split("_")[0]
         self._close_cmd = self._config[CONF_OPENCLOSE_CMDS].split("_")[1]
+        self._stop_cmd = COVER_STOP_CMD
         print("Initialized cover [{}]".format(self.name))
 
     @property
@@ -152,17 +153,17 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.debug("Launching command %s to cover ", COVER_STOP_CMD)
-        await self._device.set_dp(COVER_STOP_CMD, self._dp_id)
+        _LOGGER.debug("Launching command %s to cover ", self._stop_cmd)
+        await self._device.set_dp(self._stop_cmd, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dp_id)
         _LOGGER.debug("Status updated: %s", self._state)
-#        if self._state.isupper():
-        self._open_cmd = self._open_cmd.upper()
-        self._close_cmd = self._close_cmd.upper()
-        self._stop_cmd = self._stop_cmd.upper()
+        if self._state.isupper():
+            self._open_cmd = self._open_cmd.upper()
+            self._close_cmd = self._close_cmd.upper()
+            self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
             self._current_cover_position = self.dps(
