@@ -158,10 +158,11 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dp_id)
-        if self._state.isupper():
-            self._open_cmd = self._open_cmd.upper()
-            self._close_cmd = self._close_cmd.upper()
-            self._stop_cmd = self._stop_cmd.upper()
+        _LOGGER.debug("Status updated: %s", self._state)
+#        if self._state.isupper():
+        self._open_cmd = self._open_cmd.upper()
+        self._close_cmd = self._close_cmd.upper()
+        self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
             self._current_cover_position = self.dps(
