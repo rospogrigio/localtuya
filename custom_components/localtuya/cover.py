@@ -135,28 +135,28 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
             if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
-                await self._device.set_dps(
+                await self._device.set_dp(
                     converted_position, self._config[CONF_SET_POSITION_DP]
                 )
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
         _LOGGER.debug("Launching command %s to cover ", self._open_cmd)
-        await self._device.set_dps(self._open_cmd, self._dps_id)
+        await self._device.set_dp(self._open_cmd, self._dp_id)
 
     async def async_close_cover(self, **kwargs):
         """Close cover."""
         _LOGGER.debug("Launching command %s to cover ", self._close_cmd)
-        await self._device.set_dps(self._close_cmd, self._dps_id)
+        await self._device.set_dp(self._close_cmd, self._dp_id)
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
         _LOGGER.debug("Launching command %s to cover ", COVER_STOP_CMD)
-        await self._device.set_dps(COVER_STOP_CMD, self._dps_id)
+        await self._device.set_dp(COVER_STOP_CMD, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dps_id)
+        self._state = self.dps(self._dp_id)
         if self.has_config(CONF_CURRENT_POSITION_DP):
             self._current_cover_position = self.dps(
                 self._config[CONF_CURRENT_POSITION_DP]

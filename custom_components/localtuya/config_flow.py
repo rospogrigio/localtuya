@@ -161,6 +161,7 @@ async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect."""
     detected_dps = {}
 
+    interface = None
     try:
         interface = await pytuya.connect(
             data[CONF_HOST],
@@ -175,7 +176,8 @@ async def validate_input(hass: core.HomeAssistant, data):
     except ValueError:
         raise InvalidAuth
     finally:
-        interface.close()
+        if interface:
+            interface.close()
 
     return dps_string_list(detected_dps)
 

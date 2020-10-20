@@ -8,6 +8,10 @@ CONF_LOCAL_KEY = "local_key"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
 
+# light
+CONF_BRIGHTNESS_LOWER = "brightness_lower"
+CONF_BRIGHTNESS_UPPER = "brightness_upper"
+
 # switch
 CONF_CURRENT = "current"
 CONF_CURRENT_CONSUMPTION = "current_consumption"
@@ -21,8 +25,13 @@ CONF_SET_POSITION_DP = "set_position_dp"
 CONF_SPAN_TIME = "span_time"
 
 # fan
-CONF_FAN_SPEED_CONTROL = "fan_speed"
-CONF_FAN_OSCILLATING_CONTROL = "fan_oscillating"
+CONF_FAN_SPEED_CONTROL = "fan_speed_control"
+CONF_FAN_OSCILLATING_CONTROL = "fan_oscillating_control"
+
+CONF_FAN_SPEED_LOW = "fan_speed_low"
+CONF_FAN_SPEED_MEDIUM = "fan_speed_medium"
+CONF_FAN_SPEED_HIGH = "fan_speed_high"
+
 
 # sensor
 CONF_SCALING = "scaling"

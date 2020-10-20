@@ -57,9 +57,11 @@
                     "state_on": "On Value",
                     "state_off": "Off Value",
                     "brightness": "Brightness",
-                    "color_temp": "Color Temperature",
-                    "fan_speed": "Fan Speed Control",
-                    "fan_oscillating": "Fan Oscillating Control",
+                    "brightness_lower": "Brightness Lower Value",
+                    "brightness_upper": "Brightness Upper Value",
+                    "color_temp": "Color Temperature"
+                    "fan_speed_control": "Fan Speed Control",
+                    "fan_oscillating_control": "Fan Oscillating Control",
                     "low": "Low Fan Speed Setting",
                     "medium": "Medium Fan Speed Setting",
                     "high": "High Fan Speed Setting"
@@ -99,12 +101,14 @@
                     "state_on": "On Value",
                     "state_off": "Off Value",
                     "brightness": "Brightness",
-                    "color_temp": "Color Temperature",
-                    "fan_speed": "Fan Speed Control",
-                    "fan_oscillating": "Fan Oscillating Control",
-                    "low": "Low Fan Speed Setting",
-                    "medium": "Medium Fan Speed Setting",
-                    "high": "High Fan Speed Setting"
+                    "brightness_lower": "Brightness Lower Value",
+                    "brightness_upper": "Brightness Upper Value",
+                    "color_temp": "Color Temperature"
+                    "fan_speed_control": "Fan Speed Control",
+                    "fan_oscillating_control": "Fan Oscillating Control",
+                    "fan_speed_low": "Low Fan Speed Setting",
+                    "fan_speed_medium": "Medium Fan Speed Setting",
+                    "fan_speed_high": "High Fan Speed Setting"
                 }
             },
             "yaml_import": {

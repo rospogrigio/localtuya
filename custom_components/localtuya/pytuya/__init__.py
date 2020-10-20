@@ -21,9 +21,9 @@ Functions
    json = status()          # returns json payload
    set_version(version)     #  3.1 [default] or 3.3
    detect_available_dps()   # returns a list of available dps provided by the device
-   add_dps_to_request(dps_index)  # adds dps_index to the list of dps used by the
+   add_dps_to_request(dp_index)  # adds dp_index to the list of dps used by the
                                   # device (to be queried in the payload)
-   set_dps(on, dps_index)   # Set value of any dps index.
+   set_dp(on, dp_index)   # Set value of any dps index.
 
 
 Credits
@@ -315,12 +315,17 @@ class TuyaProtocol(asyncio.Protocol):
         self.dispatcher = self._setup_dispatcher()
         self.on_connected = on_connected
         self.heartbeater = None
+        self.dps_cache = {}
 
     def _setup_dispatcher(self):
         def _status_update(msg):
+            decoded_message = self._decode_payload(msg.payload)
+            if "dps" in decoded_message:
+                self.dps_cache.update(decoded_message["dps"])
+
             listener = self.listener()
             if listener is not None:
-                listener.status_updated(self._decode_payload(msg.payload))
+                listener.status_updated(self.dps_cache)
 
         return MessageDispatcher(self.log, _status_update)
 
@@ -414,21 +419,28 @@ class TuyaProtocol(asyncio.Protocol):
 
     async def status(self):
         """Return device status."""
-        return await self.exchange(STATUS)
+        status = await self.exchange(STATUS)
+        if "dps" in status:
+            self.dps_cache.update(status["dps"])
+        return self.dps_cache
 
     async def heartbeat(self):
         """Send a heartbeat message."""
         return await self.exchange(HEARTBEAT)
 
-    async def set_dps(self, value, dps_index):
+    async def set_dp(self, value, dp_index):
         """
         Set value (may be any type: bool, int or string) of any dps index.
 
         Args:
-            dps_index(int):   dps index to set
+            dp_index(int):   dps index to set
             value: new value for the dps index
         """
-        return await self.exchange(SET, {str(dps_index): value})
+        return await self.exchange(SET, {str(dp_index): value})
+
+    async def set_dps(self, value, dps):
+        """Set values for a set of datapoints."""
+        return await self.exchange(SET, dps)
 
     async def detect_available_dps(self):
         """Return which datapoints are supported by the device."""
@@ -436,7 +448,7 @@ class TuyaProtocol(asyncio.Protocol):
         # list of available dps experience shows that the dps available are usually
         # in the ranges [1-25] and [100-110] need to split the bruteforcing in
         # different steps due to request payload limitation (max. length = 255)
-        detected_dps = {}
+        self.dps_cache = {}
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
 
         for dps_range in ranges:
@@ -450,19 +462,19 @@ class TuyaProtocol(asyncio.Protocol):
                 self.log.warning("Failed to get status: %s", e)
                 raise
             if "dps" in data:
-                detected_dps.update(data["dps"])
+                self.dps_cache.update(data["dps"])
 
             if self.dev_type == "type_0a":
-                return detected_dps
-        self.log.debug("detected dps: %s", detected_dps)
-        return detected_dps
+                return self.dps_cache
+        self.log.debug("detected dps: %s", self.dps_cache)
+        return self.dps_cache
 
-    def add_dps_to_request(self, dps_index):
+    def add_dps_to_request(self, dp_indicies):
         """Add a datapoint (DP) to be included in requests."""
-        if isinstance(dps_index, int):
-            self.dps_to_request[str(dps_index)] = None
+        if isinstance(dp_indicies, int):
+            self.dps_to_request[str(dp_indicies)] = None
         else:
-            self.dps_to_request.update({str(index): None for index in dps_index})
+            self.dps_to_request.update({str(index): None for index in dp_indicies})
 
     def _decode_payload(self, payload):
         self.log.debug("Decode payload: %s", payload)
