@@ -16,7 +16,7 @@ from homeassistant.components.cover import (
 )
 
 from .const import (
-    CONF_OPENCLOSE_CMDS,
+    CONF_COMMANDS_SET,
     CONF_CURRENT_POSITION_DP,
     CONF_SET_POSITION_DP,
     CONF_POSITIONING_MODE,
@@ -26,14 +26,15 @@ from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
-COVER_ONOFF_CMDS = "on_off"
-COVER_OPENCLOSE_CMDS = "open_close"
-COVER_STOP_CMD = "stop"
+COVER_ONOFF_CMDS = "on_off_stop"
+COVER_OPENCLOSE_CMDS = "open_close_stop"
+COVER_FZZZ_CMDS = "fz_zz_stop"
+COVER_12_CMDS = "1_2_3"
 COVER_MODE_NONE = "none"
 COVER_MODE_POSITION = "position"
 COVER_MODE_FAKE = "fake"
 
-DEFAULT_OPENCLOSE_CMDS = COVER_ONOFF_CMDS
+DEFAULT_COMMANDS_SET = COVER_ONOFF_CMDS
 DEFAULT_POSITIONING_MODE = COVER_MODE_NONE
 DEFAULT_SPAN_TIME = 25.0
 
@@ -41,8 +42,8 @@ DEFAULT_SPAN_TIME = 25.0
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_OPENCLOSE_CMDS, default=DEFAULT_OPENCLOSE_CMDS): vol.In(
-            [COVER_ONOFF_CMDS, COVER_OPENCLOSE_CMDS]
+        vol.Optional(CONF_COMMANDS_SET): vol.In(
+            [COVER_ONOFF_CMDS, COVER_OPENCLOSE_CMDS, COVER_FZZZ_CMDS, COVER_12_CMDS]
         ),
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
             [COVER_MODE_NONE, COVER_MODE_POSITION, COVER_MODE_FAKE]
@@ -69,8 +70,12 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
         self._current_cover_position = None
-        self._open_cmd = self._config[CONF_OPENCLOSE_CMDS].split("_")[0]
-        self._close_cmd = self._config[CONF_OPENCLOSE_CMDS].split("_")[1]
+        command_set = DEFAULT_COMMANDS_SET
+        if self.has_config(CONF_COMMANDS_SET):
+            command_set = self._config[CONF_COMMANDS_SET]
+        self._open_cmd = command_set.split("_")[0]
+        self._close_cmd = command_set.split("_")[1]
+        self._stop_cmd = command_set.split("_")[2]
         print("Initialized cover [{}]".format(self.name))
 
     @property
@@ -151,8 +156,8 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.debug("Launching command %s to cover ", COVER_STOP_CMD)
-        await self._device.set_dp(COVER_STOP_CMD, self._dp_id)
+        _LOGGER.debug("Launching command %s to cover ", self._stop_cmd)
+        await self._device.set_dp(self._stop_cmd, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""

@@ -18,7 +18,7 @@ CONF_CURRENT_CONSUMPTION = "current_consumption"
 CONF_VOLTAGE = "voltage"
 
 # cover
-CONF_OPENCLOSE_CMDS = "open_close_cmds"
+CONF_COMMANDS_SET = "commands_set"
 CONF_POSITIONING_MODE = "positioning_mode"
 CONF_CURRENT_POSITION_DP = "current_position_dp"
 CONF_SET_POSITION_DP = "set_position_dp"
