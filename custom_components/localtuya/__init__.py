@@ -56,18 +56,18 @@ import asyncio
 import logging
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
     CONF_DEVICE_ID,
-    CONF_PLATFORM,
     CONF_ENTITIES,
+    CONF_PLATFORM,
     SERVICE_RELOAD,
 )
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.reload import async_integration_yaml_config
 
-from .const import DOMAIN, TUYA_DEVICE
-from .config_flow import config_schema
 from .common import TuyaDevice
+from .config_flow import config_schema
+from .const import DOMAIN, TUYA_DEVICE
 
 _LOGGER = logging.getLogger(__name__)
 

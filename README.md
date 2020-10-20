@@ -140,6 +140,17 @@ Energy monitoring (voltage, current...) values can be obtained in two different 
                unit_of_measurement: 'W' 
 ```   
 
+# Debugging
+
+Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
+
+```yaml
+logger:
+  default: warning
+  logs:
+    custom_components.localtuya: debug
+```
+
 # Notes:
 
 * Do not declare anything as "tuya", such as by initiating a "switch.tuya". Using "tuya" launches Home Assistant's built-in, cloud-based Tuya integration in lieu of localtuya.

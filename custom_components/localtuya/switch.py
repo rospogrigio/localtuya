@@ -3,12 +3,9 @@ import logging
 from functools import partial
 
 import voluptuous as vol
+from homeassistant.components.switch import DOMAIN, SwitchEntity
 
-from homeassistant.components.switch import (
-    SwitchEntity,
-    DOMAIN,
-)
-
+from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     ATTR_CURRENT,
     ATTR_CURRENT_CONSUMPTION,
@@ -17,7 +14,6 @@ from .const import (
     CONF_CURRENT_CONSUMPTION,
     CONF_VOLTAGE,
 )
-from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 

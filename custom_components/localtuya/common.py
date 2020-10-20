@@ -3,21 +3,20 @@ import asyncio
 import logging
 from random import randrange
 
+from homeassistant.const import (
+    CONF_DEVICE_ID,
+    CONF_ENTITIES,
+    CONF_FRIENDLY_NAME,
+    CONF_HOST,
+    CONF_ID,
+    CONF_PLATFORM,
+)
 from homeassistant.core import callback
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
-
-from homeassistant.const import (
-    CONF_DEVICE_ID,
-    CONF_ID,
-    CONF_FRIENDLY_NAME,
-    CONF_HOST,
-    CONF_PLATFORM,
-    CONF_ENTITIES,
-)
+from homeassistant.helpers.entity import Entity
 
 from . import pytuya
 from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN, TUYA_DEVICE

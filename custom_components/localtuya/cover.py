@@ -4,25 +4,24 @@ import logging
 from functools import partial
 
 import voluptuous as vol
-
 from homeassistant.components.cover import (
-    CoverEntity,
+    ATTR_POSITION,
     DOMAIN,
     SUPPORT_CLOSE,
     SUPPORT_OPEN,
-    SUPPORT_STOP,
     SUPPORT_SET_POSITION,
-    ATTR_POSITION,
+    SUPPORT_STOP,
+    CoverEntity,
 )
 
+from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
-    CONF_OPENCLOSE_CMDS,
     CONF_CURRENT_POSITION_DP,
-    CONF_SET_POSITION_DP,
+    CONF_OPENCLOSE_CMDS,
     CONF_POSITIONING_MODE,
+    CONF_SET_POSITION_DP,
     CONF_SPAN_TIME,
 )
-from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
