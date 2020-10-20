@@ -51,7 +51,7 @@ def flow_schema(dps):
         ),
         vol.Optional(CONF_CURRENT_POSITION_DP): vol.In(dps),
         vol.Optional(CONF_SET_POSITION_DP): vol.In(dps),
-        vol.Optional(CONF_POSITION_INVERTED, default=False): vol.bool,
+        vol.Optional(CONF_POSITION_INVERTED, default=False): bool,
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
@@ -108,9 +108,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
 
-        if self._config[CONF_POSITION_INVERTED]:
-            return self._current_cover_position == 0
-        return self._current_cover_position == 100
+        return 0 if self._config[CONF_POSITION_INVERTED] else 100
 
     @property
     def is_closed(self):
@@ -118,9 +116,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
 
-        if self._config[CONF_POSITION_INVERTED]:
-            return self._current_cover_position == 100
-        return self._current_cover_position == 0
+        return 100 if self._config[CONF_POSITION_INVERTED] else 0
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
