@@ -34,7 +34,9 @@ def flow_schema(dps):
     return {
         vol.Optional(CONF_FAN_SPEED_CONTROL): vol.In(dps),
         vol.Optional(CONF_FAN_OSCILLATING_CONTROL): vol.In(dps),
-        vol.Optional(CONF_FAN_SPEED_LOW, default=SPEED_LOW): vol.In([SPEED_LOW, "1", "2"]),
+        vol.Optional(CONF_FAN_SPEED_LOW, default=SPEED_LOW): vol.In(
+            [SPEED_LOW, "1", "2"]
+        ),
         vol.Optional(CONF_FAN_SPEED_MEDIUM, default=SPEED_MEDIUM): vol.In(
             [SPEED_MEDIUM, "mid", "2", "3"]
         ),
