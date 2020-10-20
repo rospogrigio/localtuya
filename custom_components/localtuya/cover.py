@@ -108,7 +108,8 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
 
-        return 0 if self._config[CONF_POSITION_INVERTED] else 100
+        open_position = 0 if self._config[CONF_POSITION_INVERTED] else 100
+        return self._current_cover_position == open_position
 
     @property
     def is_closed(self):
@@ -116,7 +117,8 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
 
-        return 100 if self._config[CONF_POSITION_INVERTED] else 0
+        closed_position = 100 if self._config[CONF_POSITION_INVERTED] else 0
+        return self._current_cover_position == closed_position
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
