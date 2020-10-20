@@ -24,6 +24,7 @@ localtuya:
         positioning_mode: ["none","position","fake"]     # Optional, default: "none"
         current_position_dp: 3 # Optional, required only for "position" mode
         set_position_dp: 4     # Optional, required only for "position" mode
+        position_inverted: [True,False] # Optional, default: False
         span_time: 25 # Full movement time: Optional, required only for "fake" mode
 
       - platform: fan
