@@ -111,8 +111,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
 
-        open_position = 0 if self._config[CONF_POSITION_INVERTED] else 100
-        return self._current_cover_position == open_position
+        return self._current_cover_position == 100
 
     @property
     def is_closed(self):
@@ -120,8 +119,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
 
-        closed_position = 100 if self._config[CONF_POSITION_INVERTED] else 0
-        return self._current_cover_position == closed_position
+        return self._current_cover_position == 0
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
@@ -145,6 +143,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
+            if self._config[CONF_POSITION_INVERTED]:
+                converted_position = 100 - converted_position
+
             if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
                 await self._device.set_dp(
                     converted_position, self._config[CONF_SET_POSITION_DP]
@@ -174,9 +175,11 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            self._current_cover_position = self.dps(
-                self._config[CONF_CURRENT_POSITION_DP]
-            )
+            curr_pos = self.dps(self._config[CONF_CURRENT_POSITION_DP])
+            if self._config[CONF_POSITION_INVERTED]:
+                self._current_cover_position = 100 - curr_pos
+            else:
+                self._current_cover_position = curr_pos
         else:
             self._current_cover_position = 50
 
