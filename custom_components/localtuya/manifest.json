@@ -1,11 +1,12 @@
 {
   "domain": "localtuya",
   "name": "LocalTuya integration",
-  "documentation": "https://github.com/rospogrigio/localtuya-homeassistant/",
+  "documentation": "https://github.com/rospogrigio/localtuya/",
   "dependencies": [],
   "codeowners": [
-    "@rospogrigio"
+    "@rospogrigio", "@postlund"
   ],
-  "requirements": ["cryptography==2.9.2"],
+  "issue_tracker": "https://github.com/rospogrigio/localtuya/issues",
+  "requirements": [],
   "config_flow": true
 }
