@@ -17,10 +17,10 @@ from homeassistant.const import (
 from homeassistant.core import callback
 
 from . import pytuya
-from .const import CONF_DPS_STRINGS  # pylint: disable=unused-import
 from .const import (
+    CONF_DPS_STRINGS,  # pylint: disable=unused-import
     CONF_LOCAL_KEY,
-    CONF_PRODUCT_KEY,
+    CONF_PASSIVE_DEVICE,
     CONF_PROTOCOL_VERSION,
     DATA_DISCOVERY,
     DOMAIN,
@@ -43,6 +43,7 @@ BASIC_INFO_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_DEVICE_ID): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Required(CONF_PASSIVE_DEVICE, default=False): bool,
     }
 )
 
@@ -52,6 +53,7 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_LOCAL_KEY): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Required(CONF_PASSIVE_DEVICE, default=False): bool,
     }
 )
 
@@ -62,6 +64,7 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_LOCAL_KEY): cv.string,
         vol.Required(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Required(CONF_PASSIVE_DEVICE, default=False): bool,
     }
 )
 
@@ -190,7 +193,7 @@ async def validate_input(hass: core.HomeAssistant, data):
 class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for LocalTuya integration."""
 
-    VERSION = 1
+    VERSION = 2
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @staticmethod
