@@ -20,11 +20,12 @@ localtuya:
       - platform: cover
         friendly_name: Device Cover
         id: 2
-        open_close_stop_cmds: # Optional, default: "on_off_stop"
+        commands_set: # Optional, default: "on_off_stop"
             ["on_off_stop","open_close_stop","fz_zz_stop","1_2_3"]
         positioning_mode: ["none","position","fake"] # Optional, default: "none"
         currpos_dp: 3 # Optional, required only for "position" mode
         setpos_dp: 4  # Optional, required only for "position" mode
+        position_inverted: [True,False] # Optional, default: False
         span_time: 25 # Full movement time: Optional, required only for "fake" mode
 
       - platform: fan

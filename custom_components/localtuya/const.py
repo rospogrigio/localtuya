@@ -22,6 +22,7 @@ CONF_COMMANDS_SET = "commands_set"
 CONF_POSITIONING_MODE = "positioning_mode"
 CONF_CURRENT_POSITION_DP = "current_position_dp"
 CONF_SET_POSITION_DP = "set_position_dp"
+CONF_POSITION_INVERTED = "position_inverted"
 CONF_SPAN_TIME = "span_time"
 
 # sensor
