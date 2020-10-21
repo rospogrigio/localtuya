@@ -18,9 +18,9 @@ from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_COMMANDS_SET,
     CONF_CURRENT_POSITION_DP,
-    CONF_SET_POSITION_DP,
-    CONF_POSITIONING_MODE,
     CONF_POSITION_INVERTED,
+    CONF_POSITIONING_MODE,
+    CONF_SET_POSITION_DP,
     CONF_SPAN_TIME,
 )
 

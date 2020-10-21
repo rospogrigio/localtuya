@@ -17,9 +17,9 @@ from homeassistant.core import callback
 
 from . import pytuya
 from .const import (  # pylint: disable=unused-import
+    CONF_DPS_STRINGS,
     CONF_LOCAL_KEY,
     CONF_PROTOCOL_VERSION,
-    CONF_DPS_STRINGS,
     DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
