@@ -20,6 +20,7 @@ from .const import (
     CONF_CURRENT_POSITION_DP,
     CONF_SET_POSITION_DP,
     CONF_POSITIONING_MODE,
+    CONF_POSITION_INVERTED,
     CONF_SPAN_TIME,
 )
 from .common import LocalTuyaEntity, async_setup_entry
@@ -50,6 +51,7 @@ def flow_schema(dps):
         ),
         vol.Optional(CONF_CURRENT_POSITION_DP): vol.In(dps),
         vol.Optional(CONF_SET_POSITION_DP): vol.In(dps),
+        vol.Optional(CONF_POSITION_INVERTED, default=False): bool,
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
@@ -70,12 +72,12 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         super().__init__(device, config_entry, switchid, **kwargs)
         self._state = None
         self._current_cover_position = None
-        command_set = DEFAULT_COMMANDS_SET
+        commands_set = DEFAULT_COMMANDS_SET
         if self.has_config(CONF_COMMANDS_SET):
-            command_set = self._config[CONF_COMMANDS_SET]
-        self._open_cmd = command_set.split("_")[0]
-        self._close_cmd = command_set.split("_")[1]
-        self._stop_cmd = command_set.split("_")[2]
+            commands_set = self._config[CONF_COMMANDS_SET]
+        self._open_cmd = commands_set.split("_")[0]
+        self._close_cmd = commands_set.split("_")[1]
+        self._stop_cmd = commands_set.split("_")[2]
         print("Initialized cover [{}]".format(self.name))
 
     @property
@@ -108,6 +110,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         """Return if the cover is open or not."""
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
+
         return self._current_cover_position == 100
 
     @property
@@ -115,6 +118,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         """Return if the cover is closed or not."""
         if self._config[CONF_POSITIONING_MODE] != COVER_MODE_POSITION:
             return None
+
         return self._current_cover_position == 0
 
     async def async_set_cover_position(self, **kwargs):
@@ -139,6 +143,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
+            if self._config[CONF_POSITION_INVERTED]:
+                converted_position = 100 - converted_position
+
             if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
                 await self._device.set_dp(
                     converted_position, self._config[CONF_SET_POSITION_DP]
@@ -162,10 +169,17 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dp_id)
+        if self._state.isupper():
+            self._open_cmd = self._open_cmd.upper()
+            self._close_cmd = self._close_cmd.upper()
+            self._stop_cmd = self._stop_cmd.upper()
+
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            self._current_cover_position = self.dps(
-                self._config[CONF_CURRENT_POSITION_DP]
-            )
+            curr_pos = self.dps_conf(CONF_CURRENT_POSITION_DP)
+            if self._config[CONF_POSITION_INVERTED]:
+                self._current_cover_position = 100 - curr_pos
+            else:
+                self._current_cover_position = curr_pos
         else:
             self._current_cover_position = 50
 

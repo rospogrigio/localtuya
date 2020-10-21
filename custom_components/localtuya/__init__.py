@@ -20,11 +20,12 @@ localtuya:
       - platform: cover
         friendly_name: Device Cover
         id: 2
-        open_close_stop_cmds: # Optional, default: "on_off_stop"
+        commands_set: # Optional, default: "on_off_stop"
             ["on_off_stop","open_close_stop","fz_zz_stop","1_2_3"]
         positioning_mode: ["none","position","fake"] # Optional, default: "none"
         currpos_dp: 3 # Optional, required only for "position" mode
         setpos_dp: 4  # Optional, required only for "position" mode
+        position_inverted: [True,False] # Optional, default: False
         span_time: 25 # Full movement time: Optional, required only for "fake" mode
 
       - platform: fan
@@ -62,13 +63,16 @@ from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_PLATFORM,
     CONF_ENTITIES,
+    CONF_HOST,
+    EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
 from homeassistant.helpers.reload import async_integration_yaml_config
 
-from .const import DOMAIN, TUYA_DEVICE
+from .const import DATA_DISCOVERY, DOMAIN, TUYA_DEVICE
 from .config_flow import config_schema
 from .common import TuyaDevice
+from .discovery import TuyaDiscovery
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -91,6 +95,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
 
+    device_cache = {}
+
     async def _handle_reload(service):
         """Handle reload service call."""
         config = await async_integration_yaml_config(hass, DOMAIN)
@@ -110,6 +116,51 @@ async def async_setup(hass: HomeAssistant, config: dict):
         ]
 
         await asyncio.gather(*reload_tasks)
+
+    def _entry_by_device_id(device_id):
+        """Look up config entry by device id."""
+        current_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in current_entries:
+            if entry.data[CONF_DEVICE_ID] == device_id:
+                return entry
+        return None
+
+    def _device_discovered(device):
+        """Update address of device if it has changed."""
+        device_ip = device["ip"]
+        device_id = device["gwId"]
+
+        # If device is not in cache, check if a config entry exists
+        if device_id not in device_cache:
+            entry = _entry_by_device_id(device_id)
+            if entry:
+                # Save address from config entry in cache to trigger
+                # potential update below
+                device_cache[device_id] = entry.data[CONF_HOST]
+
+        # If device is in cache and address changed...
+        if device_id in device_cache and device_cache[device_id] != device_ip:
+            _LOGGER.debug("Device %s changed IP to %s", device_id, device_ip)
+
+            entry = _entry_by_device_id(device_id)
+            if entry:
+                hass.config_entries.async_update_entry(
+                    entry, data={**entry.data, CONF_HOST: device_ip}
+                )
+                device_cache[device_id] = device_ip
+
+    discovery = TuyaDiscovery(_device_discovered)
+
+    def _shutdown(event):
+        """Clean up resources when shutting down."""
+        discovery.close()
+
+    try:
+        await discovery.start()
+        hass.data[DOMAIN][DATA_DISCOVERY] = discovery
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _shutdown)
+    except Exception:
+        _LOGGER.exception("failed to set up discovery")
 
     hass.helpers.service.async_register_admin_service(
         DOMAIN,
