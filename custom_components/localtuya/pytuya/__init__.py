@@ -426,7 +426,7 @@ class TuyaProtocol(asyncio.Protocol):
     async def status(self):
         """Return device status."""
         status = await self.exchange(STATUS)
-        if "dps" in status:
+        if status and "dps" in status:
             self.dps_cache.update(status["dps"])
         return self.dps_cache
 
