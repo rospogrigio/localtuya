@@ -1,8 +1,7 @@
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
-# localtuya-homeassistant
-
-A Home Assistant / Hass.io add-on for local handling of Tuya-based devices.
+A Home Assistant custom Integration for local handling of Tuya-based devices.
+Device status is updated receiving push updates from the device instead of polling, so status updates are extremely fast (even if manually operated).
 
 The following Tuya device types are currently supported:
 * 1 and multiple gang switches
@@ -138,6 +137,17 @@ Energy monitoring (voltage, current...) values can be obtained in two different 
                  {{ states.switch.sw01.attributes.current_consumption }}
                unit_of_measurement: 'W' 
 ```   
+
+# Debugging
+
+Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
+
+```yaml
+logger:
+  default: warning
+  logs:
+    custom_components.localtuya: debug
+```
 
 # Notes:
 
