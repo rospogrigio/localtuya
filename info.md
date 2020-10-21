@@ -4,8 +4,6 @@
 
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
-# localtuya-homeassistant
-
 A Home Assistant custom Integration for local handling of Tuya-based devices.
 Device status is updated receiving push updates from the device instead of polling, so status updates are extremely fast (even if manually operated).
 

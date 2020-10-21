@@ -175,7 +175,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            curr_pos = self.dps(self._config[CONF_CURRENT_POSITION_DP])
+            curr_pos = self.dps_conf(CONF_CURRENT_POSITION_DP)
             if self._config[CONF_POSITION_INVERTED]:
                 self._current_cover_position = 100 - curr_pos
             else:
