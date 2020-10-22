@@ -17,6 +17,19 @@ localtuya:
         state_on: "true" # Optional
         state_off: "false" # Optional
 
+      - platform: climate
+        friendly_name: Device Climate
+        id: 1
+        target_temperature_dp: 2
+        current_temperature_dp: 3
+        temperature_step:  [0.1, 0.5, 1] # Optional, default: 0.5
+        hvac_mode_dp: 4
+        fan_mode_dp: 5          # Optional
+        max_temperature_dp: 114 # Optional
+        min_temperature_dp: 115 # Optional
+        temperature_unit: ["celsius","fahrenheit"] # Optional, default: "celsius"
+        precision:  [0.1, 0.5, 1] # Optional, default: 0.1 (used for DPs values)
+
       - platform: cover
         friendly_name: Device Cover
         id: 2
