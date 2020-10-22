@@ -190,12 +190,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     }
 
     async def setup_entities():
+        platforms = set(entity[CONF_PLATFORM] for entity in entry.data[CONF_ENTITIES])
         await asyncio.gather(
             *[
-                hass.config_entries.async_forward_entry_setup(
-                    entry, entity[CONF_PLATFORM]
-                )
-                for entity in entry.data[CONF_ENTITIES]
+                hass.config_entries.async_forward_entry_setup(entry, platform)
+                for platform in platforms
             ]
         )
         device.connect()
