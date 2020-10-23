@@ -59,7 +59,11 @@
                     "brightness": "Brightness",
                     "brightness_lower": "Brightness Lower Value",
                     "brightness_upper": "Brightness Upper Value",
-                    "color_temp": "Color Temperature"
+                    "color_temp": "Color Temperature",
+                    "color_temp_lower": "Color Temperature Lower Value",
+                    "color_temp_upper": "Color Temperature Upper Value",
+                    "hs_color": "Color",
+                    "light_mode": "Light Mode"
                 }
             }
         }
@@ -99,7 +103,11 @@
                     "brightness": "Brightness",
                     "brightness_lower": "Brightness Lower Value",
                     "brightness_upper": "Brightness Upper Value",
-                    "color_temp": "Color Temperature"
+                    "color_temp": "Color Temperature",
+                    "color_temp_lower": "Color Temperature Lower Value",
+                    "color_temp_upper": "Color Temperature Upper Value",
+                    "hs_color": "Color",
+                    "light_mode": "Light Mode"
                 }
             },
             "yaml_import": {

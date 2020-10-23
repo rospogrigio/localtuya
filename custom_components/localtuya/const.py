@@ -11,6 +11,10 @@ CONF_DPS_STRINGS = "dps_strings"
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
 CONF_BRIGHTNESS_UPPER = "brightness_upper"
+CONF_COLOR_TEMP_LOWER = "color_temp_lower"
+CONF_COLOR_TEMP_UPPER = "color_temp_upper"
+CONF_HS_COLOR = "hs_color"
+CONF_LIGHT_MODE = "light_mode"
 
 # switch
 CONF_CURRENT = "current"
