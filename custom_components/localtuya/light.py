@@ -227,6 +227,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 self._lower_color_temp,
                 self._upper_color_temp,
             )
+            if self.light_mode != LIGHT_MODES[0]:  #If not white mode
+                await self._device.set_dp(LIGHT_MODES[0], self._config.get(CONF_LIGHT_MODE))
             await self._device.set_dp(color_temp, self._config.get(CONF_COLOR_TEMP))
 
     async def async_turn_off(self, **kwargs):
