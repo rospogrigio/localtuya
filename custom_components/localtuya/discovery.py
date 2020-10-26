@@ -4,8 +4,8 @@ Entirely based on tuya-convert.py from tuya-convert:
 
 https://github.com/ct-Open-Source/tuya-convert/blob/master/scripts/tuya-discovery.py
 """
-import json
 import asyncio
+import json
 import logging
 from hashlib import md5
 

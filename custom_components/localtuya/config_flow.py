@@ -2,25 +2,24 @@
 import logging
 from importlib import import_module
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
 from homeassistant import config_entries, core, exceptions
-from homeassistant.core import callback
 from homeassistant.const import (
-    CONF_ENTITIES,
-    CONF_ID,
-    CONF_HOST,
     CONF_DEVICE_ID,
+    CONF_ENTITIES,
     CONF_FRIENDLY_NAME,
+    CONF_HOST,
+    CONF_ID,
     CONF_PLATFORM,
 )
-import homeassistant.helpers.config_validation as cv
+from homeassistant.core import callback
 
 from . import pytuya
 from .const import (  # pylint: disable=unused-import
+    CONF_DPS_STRINGS,
     CONF_LOCAL_KEY,
     CONF_PROTOCOL_VERSION,
-    CONF_DPS_STRINGS,
     DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,

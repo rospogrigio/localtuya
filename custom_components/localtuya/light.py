@@ -4,21 +4,17 @@ import textwrap
 from functools import partial
 
 import voluptuous as vol
-
-from homeassistant.const import (
-    CONF_BRIGHTNESS,
-    CONF_COLOR_TEMP,
-)
 from homeassistant.components.light import (
-    LightEntity,
-    DOMAIN,
     ATTR_BRIGHTNESS,
     ATTR_COLOR_TEMP,
     ATTR_HS_COLOR,
+    DOMAIN,
     SUPPORT_BRIGHTNESS,
     SUPPORT_COLOR_TEMP,
     SUPPORT_COLOR,
+    LightEntity,
 )
+from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP
 
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (

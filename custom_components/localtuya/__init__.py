@@ -58,20 +58,20 @@ import asyncio
 import logging
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import (
     CONF_DEVICE_ID,
-    CONF_PLATFORM,
     CONF_ENTITIES,
     CONF_HOST,
+    CONF_PLATFORM,
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.reload import async_integration_yaml_config
 
-from .const import DATA_DISCOVERY, DOMAIN, TUYA_DEVICE
-from .config_flow import config_schema
 from .common import TuyaDevice
+from .config_flow import config_schema
+from .const import DATA_DISCOVERY, DOMAIN, TUYA_DEVICE
 from .discovery import TuyaDiscovery
 
 _LOGGER = logging.getLogger(__name__)
@@ -190,12 +190,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     }
 
     async def setup_entities():
+        platforms = set(entity[CONF_PLATFORM] for entity in entry.data[CONF_ENTITIES])
         await asyncio.gather(
             *[
-                hass.config_entries.async_forward_entry_setup(
-                    entry, entity[CONF_PLATFORM]
-                )
-                for entity in entry.data[CONF_ENTITIES]
+                hass.config_entries.async_forward_entry_setup(entry, platform)
+                for platform in platforms
             ]
         )
         device.connect()

@@ -3,14 +3,14 @@ import logging
 from functools import partial
 
 from homeassistant.components.fan import (
-    FanEntity,
     DOMAIN,
-    SPEED_OFF,
+    SPEED_HIGH,
     SPEED_LOW,
     SPEED_MEDIUM,
-    SPEED_HIGH,
-    SUPPORT_SET_SPEED,
+    SPEED_OFF,
     SUPPORT_OSCILLATE,
+    SUPPORT_SET_SPEED,
+    FanEntity,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry

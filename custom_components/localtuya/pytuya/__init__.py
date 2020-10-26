@@ -37,15 +37,15 @@ Credits
 
 import asyncio
 import base64
-from hashlib import md5
+import binascii
 import json
 import logging
-import time
-import binascii
 import struct
+import time
 import weakref
-from collections import namedtuple
 from abc import ABC, abstractmethod
+from collections import namedtuple
+from hashlib import md5
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
