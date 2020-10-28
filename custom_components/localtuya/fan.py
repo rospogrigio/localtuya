@@ -54,7 +54,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         **kwargs,
     ):
         """Initialize the entity."""
-        super().__init__(device, config_entry, fanid, **kwargs)
+        super().__init__(device, config_entry, fanid, _LOGGER, **kwargs)
         self._is_on = False
         self._speed = None
         self._oscillating = None
@@ -141,7 +141,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         if self.has_config(CONF_FAN_SPEED_CONTROL):
             self._speed = mappings.get(self.dps_conf(CONF_FAN_SPEED_CONTROL))
             if self.speed is None:
-                _LOGGER.warning(
+                self.warning(
                     "%s/%s: Ignoring unknown fan controller state: %s",
                     self.name,
                     self.entity_id,

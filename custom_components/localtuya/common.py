@@ -90,7 +90,7 @@ def get_entity_config(config_entry, dp_id):
     raise Exception(f"missing entity config for id {dp_id}")
 
 
-class TuyaDevice(pytuya.TuyaListener):
+class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     """Cache wrapper for pytuya.TuyaInterface."""
 
     def __init__(self, hass, config_entry):
@@ -103,6 +103,7 @@ class TuyaDevice(pytuya.TuyaListener):
         self._is_closing = False
         self._connect_task = None
         self._connection_attempts = 0
+        self.set_logger(_LOGGER, config_entry[CONF_DEVICE_ID])
 
         # This has to be done in case the device type is type_0d
         for entity in config_entry[CONF_ENTITIES]:
@@ -111,14 +112,13 @@ class TuyaDevice(pytuya.TuyaListener):
     def connect(self):
         """Connet to device if not already connected."""
         if not self._is_closing and self._connect_task is None and not self._interface:
-            _LOGGER.debug(
-                "Connecting to %s (%s)",
+            self.debug(
+                "Connecting to %s",
                 self._config_entry[CONF_HOST],
-                self._config_entry[CONF_DEVICE_ID],
             )
             self._connect_task = asyncio.ensure_future(self._make_connection())
         else:
-            _LOGGER.debug(
+            self.debug(
                 "Already connecting to %s (%s) - %s, %s, %s",
                 self._config_entry[CONF_HOST],
                 self._config_entry[CONF_DEVICE_ID],
@@ -132,11 +132,11 @@ class TuyaDevice(pytuya.TuyaListener):
             randrange(2 ** self._connection_attempts), BACKOFF_TIME_UPPER_LIMIT
         )
 
-        _LOGGER.debug("Waiting %d seconds before connecting", backoff)
+        self.debug("Waiting %d seconds before connecting", backoff)
         await asyncio.sleep(backoff)
 
         try:
-            _LOGGER.debug("Connecting to %s", self._config_entry[CONF_HOST])
+            self.debug("Connecting to %s", self._config_entry[CONF_HOST])
             self._interface = await pytuya.connect(
                 self._config_entry[CONF_HOST],
                 self._config_entry[CONF_DEVICE_ID],
@@ -146,7 +146,7 @@ class TuyaDevice(pytuya.TuyaListener):
             )
             self._interface.add_dps_to_request(self._dps_to_request)
 
-            _LOGGER.debug("Retrieving initial state")
+            self.debug("Retrieving initial state")
             status = await self._interface.status()
             if status is None:
                 raise Exception("Failed to retrieve status")
@@ -154,7 +154,7 @@ class TuyaDevice(pytuya.TuyaListener):
             self.status_updated(status)
             self._connection_attempts = 0
         except Exception:
-            _LOGGER.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
+            self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
             self._connection_attempts += 1
             if self._interface is not None:
                 self._interface.close()
@@ -176,9 +176,9 @@ class TuyaDevice(pytuya.TuyaListener):
             try:
                 await self._interface.set_dp(state, dp_index)
             except Exception:
-                _LOGGER.exception("Failed to set DP %d to %d", dp_index, state)
+                self.exception("Failed to set DP %d to %d", dp_index, state)
         else:
-            _LOGGER.error(
+            self.error(
                 "Not connected to device %s", self._config_entry[CONF_FRIENDLY_NAME]
             )
 
@@ -188,9 +188,9 @@ class TuyaDevice(pytuya.TuyaListener):
             try:
                 await self._interface.set_dps(states)
             except Exception:
-                _LOGGER.exception("Failed to set DPs %r", states)
+                self.exception("Failed to set DPs %r", states)
         else:
-            _LOGGER.error(
+            self.error(
                 "Not connected to device %s", self._config_entry[CONF_FRIENDLY_NAME]
             )
 
@@ -205,9 +205,7 @@ class TuyaDevice(pytuya.TuyaListener):
     @callback
     def disconnected(self, exc):
         """Device disconnected."""
-        _LOGGER.debug(
-            "Disconnected from %s: %s", self._config_entry[CONF_DEVICE_ID], exc
-        )
+        self.debug("Disconnected: %s", exc)
 
         signal = f"localtuya_{self._config_entry[CONF_DEVICE_ID]}"
         async_dispatcher_send(self._hass, signal, None)
@@ -216,22 +214,23 @@ class TuyaDevice(pytuya.TuyaListener):
         self.connect()
 
 
-class LocalTuyaEntity(Entity):
+class LocalTuyaEntity(Entity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
-    def __init__(self, device, config_entry, dp_id, **kwargs):
+    def __init__(self, device, config_entry, dp_id, logger, **kwargs):
         """Initialize the Tuya entity."""
         self._device = device
         self._config_entry = config_entry
         self._config = get_entity_config(config_entry, dp_id)
         self._dp_id = dp_id
         self._status = {}
+        self.set_logger(logger, self._config_entry.data[CONF_DEVICE_ID])
 
     async def async_added_to_hass(self):
         """Subscribe localtuya events."""
         await super().async_added_to_hass()
 
-        _LOGGER.debug("Adding %s with configuration: %s", self.entity_id, self._config)
+        self.debug("Adding %s with configuration: %s", self.entity_id, self._config)
 
         def _update_handler(status):
             """Update entity state when status was updated."""
@@ -291,7 +290,7 @@ class LocalTuyaEntity(Entity):
         """Return cached value for DPS index."""
         value = self._status.get(str(dp_index))
         if value is None:
-            _LOGGER.warning(
+            self.warning(
                 "Entity %s is requesting unknown DPS index %s",
                 self.entity_id,
                 dp_index,
@@ -307,7 +306,7 @@ class LocalTuyaEntity(Entity):
         """
         dp_index = self._config.get(conf_item)
         if dp_index is None:
-            _LOGGER.warning(
+            self.warning(
                 "Entity %s is requesting unset index for option %s",
                 self.entity_id,
                 conf_item,

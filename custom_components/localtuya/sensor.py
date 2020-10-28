@@ -40,7 +40,7 @@ class LocaltuyaSensor(LocalTuyaEntity):
         **kwargs,
     ):
         """Initialize the Tuya sensor."""
-        super().__init__(device, config_entry, sensorid, **kwargs)
+        super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
         self._state = STATE_UNKNOWN
 
     @property
