@@ -104,7 +104,8 @@ class TuyaLoggingAdapter(logging.LoggerAdapter):
 
     def process(self, msg, kwargs):
         """Process log point and return output."""
-        return f"[{self.extra['device_id']}] {msg}", kwargs
+        dev_id = self.extra["device_id"]
+        return f"[{dev_id[0:3]}...{dev_id[-3:]}] {msg}", kwargs
 
 
 class ContextualLogger:
