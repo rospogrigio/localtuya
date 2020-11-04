@@ -246,7 +246,7 @@ class MessageDispatcher:
 
     def _dispatch(self, msg):
         """Dispatch a message to someone that is listening."""
-        _LOGGER.debug("Dispatching message %s", msg)
+        self.log.debug("Dispatching message %s", msg)
         if msg.seqno in self.listeners:
             self.log.debug("Dispatching sequence number %d", msg.seqno)
             sem = self.listeners[msg.seqno]
