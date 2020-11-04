@@ -3,21 +3,20 @@ import asyncio
 import logging
 from random import randrange
 
+from homeassistant.const import (
+    CONF_DEVICE_ID,
+    CONF_ENTITIES,
+    CONF_FRIENDLY_NAME,
+    CONF_HOST,
+    CONF_ID,
+    CONF_PLATFORM,
+)
 from homeassistant.core import callback
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
-
-from homeassistant.const import (
-    CONF_DEVICE_ID,
-    CONF_ID,
-    CONF_FRIENDLY_NAME,
-    CONF_HOST,
-    CONF_PLATFORM,
-    CONF_ENTITIES,
-)
+from homeassistant.helpers.entity import Entity
 
 from . import pytuya
 from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN, TUYA_DEVICE
@@ -183,6 +182,18 @@ class TuyaDevice(pytuya.TuyaListener):
                 "Not connected to device %s", self._config_entry[CONF_FRIENDLY_NAME]
             )
 
+    async def set_dps(self, states):
+        """Change value of a DPs of the Tuya device."""
+        if self._interface is not None:
+            try:
+                await self._interface.set_dps(states)
+            except Exception:
+                _LOGGER.exception("Failed to set DPs %r", states)
+        else:
+            _LOGGER.error(
+                "Not connected to device %s", self._config_entry[CONF_FRIENDLY_NAME]
+            )
+
     @callback
     def status_updated(self, status):
         """Device updated status."""
@@ -219,6 +230,8 @@ class LocalTuyaEntity(Entity):
     async def async_added_to_hass(self):
         """Subscribe localtuya events."""
         await super().async_added_to_hass()
+
+        _LOGGER.debug("Adding %s with configuration: %s", self.entity_id, self._config)
 
         def _update_handler(status):
             """Update entity state when status was updated."""
@@ -292,7 +305,14 @@ class LocalTuyaEntity(Entity):
         This method looks up which DP a certain config item uses based on
         user configuration and returns its value.
         """
-        return self.dps(self._config.get(conf_item))
+        dp_index = self._config.get(conf_item)
+        if dp_index is None:
+            _LOGGER.warning(
+                "Entity %s is requesting unset index for option %s",
+                self.entity_id,
+                conf_item,
+            )
+        return self.dps(dp_index)
 
     def status_updated(self):
         """Device status was updated.

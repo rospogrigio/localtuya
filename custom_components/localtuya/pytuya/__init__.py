@@ -37,15 +37,15 @@ Credits
 
 import asyncio
 import base64
-from hashlib import md5
+import binascii
 import json
 import logging
-import time
-import binascii
 import struct
+import time
 import weakref
-from collections import namedtuple
 from abc import ABC, abstractmethod
+from collections import namedtuple
+from hashlib import md5
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -426,7 +426,7 @@ class TuyaProtocol(asyncio.Protocol):
     async def status(self):
         """Return device status."""
         status = await self.exchange(STATUS)
-        if "dps" in status:
+        if status and "dps" in status:
             self.dps_cache.update(status["dps"])
         return self.dps_cache
 
@@ -444,7 +444,7 @@ class TuyaProtocol(asyncio.Protocol):
         """
         return await self.exchange(SET, {str(dp_index): value})
 
-    async def set_dps(self, value, dps):
+    async def set_dps(self, dps):
         """Set values for a set of datapoints."""
         return await self.exchange(SET, dps)
 

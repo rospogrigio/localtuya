@@ -3,16 +3,15 @@ import logging
 from functools import partial
 
 import voluptuous as vol
-
-from homeassistant.components.sensor import DOMAIN, DEVICE_CLASSES
+from homeassistant.components.sensor import DEVICE_CLASSES, DOMAIN
 from homeassistant.const import (
     CONF_DEVICE_CLASS,
     CONF_UNIT_OF_MEASUREMENT,
     STATE_UNKNOWN,
 )
 
-from .const import CONF_SCALING
 from .common import LocalTuyaEntity, async_setup_entry
+from .const import CONF_SCALING
 
 _LOGGER = logging.getLogger(__name__)
 

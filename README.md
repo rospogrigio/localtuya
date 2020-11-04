@@ -1,8 +1,7 @@
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
-# localtuya-homeassistant
-
 A Home Assistant custom Integration for local handling of Tuya-based devices.
+
 Device status is updated receiving push updates from the device instead of polling, so status updates are extremely fast (even if manually operated).
 
 The following Tuya device types are currently supported:
@@ -64,7 +63,16 @@ localtuya:
 
       - platform: light
         friendly_name: Device Light
-        id: 4
+        id: 4 # Usually 1 or 20
+        color_mode: 21 # Optional, usually 2 or 21, default: "none"
+        brightness: 22 # Optional, usually 3 or 22, default: "none"
+        color_temp: 23 # Optional, usually 4 or 23, default: "none"
+        color: 24 # Optional, usually 5 (RGB_HSV) or 24(HSV), default: "none"
+        brightness_lower: 29 # Optional, usually 0 or 29, default: 29
+        brightness_upper: 1000 # Optional, usually 255 or 1000, default: 1000
+        color_temp_min_kelvin: 2700 # Optional, default: 2700
+        color_temp_max_kelvin: 6500 # Optional, default: 6500
+
 
       - platform: sensor
         friendly_name: Plug Voltage
@@ -139,6 +147,17 @@ Energy monitoring (voltage, current...) values can be obtained in two different 
                  {{ states.switch.sw01.attributes.current_consumption }}
                unit_of_measurement: 'W' 
 ```   
+
+# Debugging
+
+Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
+
+```yaml
+logger:
+  default: warning
+  logs:
+    custom_components.localtuya: debug
+```
 
 # Notes:
 

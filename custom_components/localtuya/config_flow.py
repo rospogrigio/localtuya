@@ -2,33 +2,31 @@
 import logging
 from importlib import import_module
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
 from homeassistant import config_entries, core, exceptions
-from homeassistant.core import callback
 from homeassistant.const import (
-    CONF_ENTITIES,
-    CONF_ID,
-    CONF_HOST,
     CONF_DEVICE_ID,
+    CONF_ENTITIES,
     CONF_FRIENDLY_NAME,
+    CONF_HOST,
+    CONF_ID,
     CONF_PLATFORM,
 )
-import homeassistant.helpers.config_validation as cv
+from homeassistant.core import callback
 
 from . import pytuya
 from .const import (  # pylint: disable=unused-import
+    CONF_DPS_STRINGS,
     CONF_LOCAL_KEY,
     CONF_PROTOCOL_VERSION,
-    CONF_DPS_STRINGS,
+    DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
 )
 from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
-
-DISCOVER_TIMEOUT = 6.0
 
 PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_PLATFORMS = "no_additional_platforms"
@@ -211,16 +209,16 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.selected_device = user_input[DISCOVERED_DEVICE].split(" ")[0]
             return await self.async_step_basic_info()
 
-        try:
-            devices = await discover(DISCOVER_TIMEOUT, self.hass.loop)
-            self.devices = {
-                ip: dev
-                for ip, dev in devices.items()
-                if dev["gwId"] not in self._async_current_ids()
-            }
-        except Exception:  # pylint: disable=broad-except
-            _LOGGER.exception("discovery failed")
-            errors["base"] = "discovery_failed"
+        # Use cache if available or fallback to manual discovery
+        if DOMAIN in self.hass.data:
+            devices = self.hass.data[DOMAIN][DATA_DISCOVERY].devices
+        else:
+            devices = await discover()
+        self.devices = {
+            ip: dev
+            for ip, dev in devices.items()
+            if dev["gwId"] not in self._async_current_ids()
+        }
 
         return self.async_show_form(
             step_id="user", errors=errors, data_schema=user_schema(self.devices)

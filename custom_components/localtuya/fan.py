@@ -84,7 +84,8 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_turn_on(self, speed: str = None, **kwargs) -> None:
         """Turn on the entity."""
-        await self._device.set_dps(True, "1")
+        await self._device.s
+        (True, "1")
         if speed is not None:
             await self.async_set_speed(speed)
         else:
@@ -92,7 +93,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn off the entity."""
-        await self._device.set_dps(False, "1")
+        await self._device.set_dp(False, "1")
         self.schedule_update_ha_state()
 
     async def async_set_speed(self, speed: str) -> None:
@@ -104,9 +105,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         }
 
         if speed == SPEED_OFF:
-            await self._device.set_dps(False, "1")
+            await self._device.set_dp(False, "1")
         else:
-            await self._device.set_dps(
+            await self._device.set_dp(
                 mapping.get(speed), self._config.get(CONF_FAN_SPEED_CONTROL)
             )
 
@@ -114,7 +115,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_oscillate(self, oscillating: bool) -> None:
         """Set oscillation."""
-        await self._device.set_dps(
+        await self._device.set_dp(
             oscillating, self._config.get(CONF_FAN_OSCILLATING_CONTROL)
         )
         self.schedule_update_ha_state()
@@ -139,7 +140,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             self._config.get(CONF_FAN_SPEED_HIGH): SPEED_HIGH,
         }
 
-        self._is_on = self.dps(self._dps_id)
+        self._is_on = self.dps(self._dp_id)
 
         if self.has_config(CONF_FAN_SPEED_CONTROL):
             self._speed = mappings.get(self.dps_conf(CONF_FAN_SPEED_CONTROL))
