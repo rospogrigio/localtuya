@@ -3,28 +3,25 @@ import logging
 from functools import partial
 
 import voluptuous as vol
-
 from homeassistant.components.fan import (
-    FanEntity,
     DOMAIN,
-    SPEED_OFF,
+    SPEED_HIGH,
     SPEED_LOW,
     SPEED_MEDIUM,
-    SPEED_HIGH,
-    SUPPORT_SET_SPEED,
+    SPEED_OFF,
     SUPPORT_OSCILLATE,
+    SUPPORT_SET_SPEED,
+    FanEntity,
 )
-
-from .const import (
-    CONF_FAN_SPEED_CONTROL,
-    CONF_FAN_OSCILLATING_CONTROL,
-    CONF_FAN_SPEED_LOW,
-    CONF_FAN_SPEED_MEDIUM,
-    CONF_FAN_SPEED_HIGH,
-)
-
 
 from .common import LocalTuyaEntity, async_setup_entry
+from .const import (
+    CONF_FAN_OSCILLATING_CONTROL,
+    CONF_FAN_SPEED_CONTROL,
+    CONF_FAN_SPEED_HIGH,
+    CONF_FAN_SPEED_LOW,
+    CONF_FAN_SPEED_MEDIUM,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
