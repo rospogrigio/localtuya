@@ -115,12 +115,14 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def hs_color(self):
         """Return the hs color value."""
+        if self._is_white_mode:
+            return None
         return self._hs
 
     @property
     def color_temp(self):
         """Return the color_temp of the light."""
-        if self.has_config(CONF_COLOR_TEMP):
+        if self.has_config(CONF_COLOR_TEMP) and self._is_white_mode:
             return int(
                 self._max_mired
                 - (
@@ -239,7 +241,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         if supported & SUPPORT_COLOR:
             self._is_white_mode = self.dps_conf(CONF_COLOR_MODE) == "white"
             if self._is_white_mode:
-                self._hs = [0, 0]
+                self._hs = None
 
         if self._is_white_mode:
             if supported & SUPPORT_BRIGHTNESS:
