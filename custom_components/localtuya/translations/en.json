@@ -63,12 +63,7 @@
                     "color": "Color",
                     "color_mode": "Color Mode",
                     "color_temp_min_kelvin": "Minimum Color Temperature in K",
-                    "color_temp_max_kelvin": "Maximum Color Temperature in K",
-                    "fan_speed_control": "Fan Speed Control",
-                    "fan_oscillating_control": "Fan Oscillating Control",
-                    "low": "Fan Low Speed Setting",
-                    "medium": "Fan Medium Speed Setting",
-                    "high": "Fan High Speed Setting"
+                    "color_temp_max_kelvin": "Maximum Color Temperature in K"
                 }
             }
         }
@@ -112,12 +107,7 @@
                     "color": "Color",
                     "color_mode": "Color Mode",
                     "color_temp_min_kelvin": "Minimum Color Temperature in K",
-                    "color_temp_max_kelvin": "Maximum Color Temperature in K",
-                    "fan_speed_control": "Fan Speed Control",
-                    "fan_oscillating_control": "Fan Oscillating Control",
-                    "fan_speed_low": "Fan Low Speed Setting",
-                    "fan_speed_medium": "Fan Medium Speed Setting",
-                    "fan_speed_high": "Fan High Speed Setting"
+                    "color_temp_max_kelvin": "Maximum Color Temperature in K"
                 }
             },
             "yaml_import": {
