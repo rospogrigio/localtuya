@@ -65,11 +65,7 @@ async def async_setup_entry(
                 tuyainterface._dps_to_request[device_config[dp_conf]] = None
 
         entities.append(
-            entity_class(
-                tuyainterface,
-                config_entry,
-                device_config[CONF_ID],
-            )
+            entity_class(tuyainterface, config_entry, device_config[CONF_ID])
         )
 
     async_add_entities(entities)
@@ -292,9 +288,7 @@ class LocalTuyaEntity(Entity):
         value = self._status.get(str(dp_index))
         if value is None:
             _LOGGER.warning(
-                "Entity %s is requesting unknown DPS index %s",
-                self.entity_id,
-                dp_index,
+                "Entity %s is requesting unknown DPS index %s", self.entity_id, dp_index
             )
 
         return value

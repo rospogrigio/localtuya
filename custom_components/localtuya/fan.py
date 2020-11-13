@@ -26,13 +26,7 @@ def flow_schema(dps):
 class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     """Representation of a Tuya fan."""
 
-    def __init__(
-        self,
-        device,
-        config_entry,
-        fanid,
-        **kwargs,
-    ):
+    def __init__(self, device, config_entry, fanid, **kwargs):
         """Initialize the entity."""
         super().__init__(device, config_entry, fanid, **kwargs)
         self._is_on = False

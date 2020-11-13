@@ -30,13 +30,7 @@ def flow_schema(dps):
 class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
     """Representation of a Tuya binary sensor."""
 
-    def __init__(
-        self,
-        device,
-        config_entry,
-        sensorid,
-        **kwargs,
-    ):
+    def __init__(self, device, config_entry, sensorid, **kwargs):
         """Initialize the Tuya binary sensor."""
         super().__init__(device, config_entry, sensorid, **kwargs)
         self._is_on = False

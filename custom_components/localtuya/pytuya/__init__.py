@@ -388,11 +388,7 @@ class TuyaProtocol(asyncio.Protocol):
 
     async def exchange(self, command, dps=None):
         """Send and receive a message, returning response from device."""
-        self.log.debug(
-            "Sending command %s (device type: %s)",
-            command,
-            self.dev_type,
-        )
+        self.log.debug("Sending command %s (device type: %s)", command, self.dev_type)
         payload = self._generate_payload(command, dps)
         dev_type = self.dev_type
 
@@ -501,10 +497,7 @@ class TuyaProtocol(asyncio.Protocol):
 
             if "data unvalid" in payload:
                 self.dev_type = "type_0d"
-                self.log.debug(
-                    "switching to dev_type %s",
-                    self.dev_type,
-                )
+                self.log.debug("switching to dev_type %s", self.dev_type)
                 return None
         else:
             raise Exception(f"Unexpected payload={payload} (id: {self.id})")
@@ -579,13 +572,7 @@ class TuyaProtocol(asyncio.Protocol):
 
 
 async def connect(
-    address,
-    device_id,
-    local_key,
-    protocol_version,
-    listener=None,
-    port=6668,
-    timeout=5,
+    address, device_id, local_key, protocol_version, listener=None, port=6668, timeout=5
 ):
     """Connect to a device."""
     loop = asyncio.get_running_loop()
