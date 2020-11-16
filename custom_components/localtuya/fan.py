@@ -84,7 +84,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_turn_on(self, speed: str = None, **kwargs) -> None:
         """Turn on the entity."""
-        await self._device.set_dp(True, "1")
+        await self._device.set_dp(True, self._dp_id)
         if speed is not None:
             await self.async_set_speed(speed)
         else:
@@ -92,7 +92,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn off the entity."""
-        await self._device.set_dp(False, "1")
+        await self._device.set_dp(False, self._dp_id)
         self.schedule_update_ha_state()
 
     async def async_set_speed(self, speed: str) -> None:
@@ -104,7 +104,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         }
 
         if speed == SPEED_OFF:
-            await self._device.set_dp(False, "1")
+            await self._device.set_dp(False, self._dp_id)
         else:
             await self._device.set_dp(
                 mapping.get(speed), self._config.get(CONF_FAN_SPEED_CONTROL)
