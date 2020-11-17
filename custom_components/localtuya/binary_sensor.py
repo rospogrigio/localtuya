@@ -32,7 +32,7 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
 
     def __init__(self, device, config_entry, sensorid, **kwargs):
         """Initialize the Tuya binary sensor."""
-        super().__init__(device, config_entry, sensorid, **kwargs)
+        super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
         self._is_on = False
 
     @property
@@ -53,7 +53,7 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
         elif state == self._config[CONF_STATE_OFF].lower():
             self._is_on = False
         else:
-            _LOGGER.warning(
+            self.warning(
                 "State for entity %s did not match state patterns", self.entity_id
             )
 

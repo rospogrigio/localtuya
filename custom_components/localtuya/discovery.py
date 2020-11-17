@@ -55,7 +55,7 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
     def close(self):
         """Stop discovery."""
         self.callback = None
-        for transport, _ in self.listeners:
+        for transport, _ in self._listeners:
             transport.close()
 
     def datagram_received(self, data, addr):
@@ -85,8 +85,6 @@ async def discover():
     try:
         await discover.start()
         await asyncio.sleep(DEFAULT_TIMEOUT)
-    except Exception:
-        _LOGGER.exception("failed to discover devices")
     finally:
         discover.close()
     return discover.devices
