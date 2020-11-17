@@ -180,21 +180,25 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._config[CONF_POSITIONING_MODE] == COVER_MODE_FAKE
             and self._state != self._previous_state
         ):
-            if self._previous_state == self._stop_cmd:
-                self._timer_start = time.time()
-            else:
+            if self._previous_state != self._stop_cmd:
+                # the state has changed, and the cover was moving
                 time_diff = time.time() - self._timer_start
                 pos_diff = round(time_diff / self._config[CONF_SPAN_TIME] * 50.0)
                 if self._previous_state == self._close_cmd:
                     pos_diff = -pos_diff
-                _LOGGER.debug(
-                    "Movement stopped after %s sec., position difference %s",
-                    time_diff,
-                    pos_diff,
-                )
                 self._current_cover_position = min(
                     100, max(0, self._current_cover_position + pos_diff)
                 )
+
+                change = "stopped" if self._state == self._stop_cmd else "inverted"
+                _LOGGER.debug(
+                    "Movement %s after %s sec., position difference %s",
+					change,
+                    time_diff,
+                    pos_diff,
+                )
+            # store the time of the last movement change
+            self._timer_start = time.time()
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)
