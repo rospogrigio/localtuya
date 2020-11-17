@@ -35,6 +35,7 @@
                 "description": "Please pick the type of entity you want to add.",
                 "data": {
                     "platform_to_add": "Platform",
+                    "suggest_dps": "Suggest platform configuration",
                     "no_additional_platforms": "Do not add any more entities"
                 }
             },

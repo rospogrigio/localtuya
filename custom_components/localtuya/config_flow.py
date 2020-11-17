@@ -26,10 +26,12 @@ from .const import (
     PLATFORMS,
 )
 from .discovery import discover
+from .suggestions import suggest
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORM_TO_ADD = "platform_to_add"
+SUGGEST_DPS = "suggest_dps"
 NO_ADDITIONAL_PLATFORMS = "no_additional_platforms"
 DISCOVERED_DEVICE = "discovered_device"
 
@@ -65,7 +67,10 @@ DEVICE_SCHEMA = vol.Schema(
 )
 
 PICK_ENTITY_SCHEMA = vol.Schema(
-    {vol.Required(PLATFORM_TO_ADD, default=PLATFORMS[0]): vol.In(PLATFORMS)}
+    {
+        vol.Required(PLATFORM_TO_ADD, default=PLATFORMS[0]): vol.In(PLATFORMS),
+        vol.Required(SUGGEST_DPS, default=True): bool,
+    }
 )
 
 
@@ -107,7 +112,9 @@ def gen_dps_strings():
     return [f"{dp} (value: ?)" for dp in range(1, 256)]
 
 
-def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
+def platform_schema(
+    platform, dps_strings, allow_id=True, yaml=False, dps_in_use=None, suggest_dps=False
+):
     """Generate input validation schema for a platform."""
     schema = {}
     if yaml:
@@ -116,13 +123,19 @@ def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
     if allow_id:
         schema[vol.Required(CONF_ID)] = vol.In(dps_strings)
     schema[vol.Required(CONF_FRIENDLY_NAME)] = str
-    return vol.Schema(schema).extend(flow_schema(platform, dps_strings))
 
-
-def flow_schema(platform, dps_strings):
-    """Return flow schema for a specific platform."""
     integration_module = ".".join(__name__.split(".")[:-1])
-    return import_module("." + platform, integration_module).flow_schema(dps_strings)
+    module = import_module("." + platform, integration_module)
+
+    schema.update(module.flow_schema(dps_strings))
+    if yaml:
+        return vol.Schema(schema)
+
+    suggestions = {}
+    if suggest_dps:
+        suggestions = suggest(platform, dps_strings, dps_in_use)
+
+    return schema_defaults(vol.Schema(schema), dps_strings, **suggestions)
 
 
 def strip_dps_values(user_input, dps_strings):
@@ -139,7 +152,8 @@ def strip_dps_values(user_input, dps_strings):
 def config_schema():
     """Build schema used for setting up component."""
     entity_schemas = [
-        platform_schema(platform, range(1, 256), yaml=True) for platform in PLATFORMS
+        platform_schema(platform, [dp for dp in range(1, 256)], yaml=True)
+        for platform in PLATFORMS
     ]
     return vol.Schema(
         {
@@ -198,9 +212,14 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.basic_info = None
         self.dps_strings = []
         self.platform = None
+        self.suggest_dps = None
         self.devices = {}
         self.selected_device = None
         self.entities = []
+
+    def async_dps_in_use(self):
+        """Return datapoints used as ID for entities."""
+        return [entity[CONF_ID] for entity in self.entities]
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
@@ -284,6 +303,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             self.platform = user_input[PLATFORM_TO_ADD]
+            self.suggest_dps = user_input[SUGGEST_DPS]
             return await self.async_step_add_entity()
 
         # Add a checkbox that allows bailing out from config flow iff at least one
@@ -312,7 +332,12 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="add_entity",
-            data_schema=platform_schema(self.platform, self.dps_strings),
+            data_schema=platform_schema(
+                self.platform,
+                self.dps_strings,
+                dps_in_use=self.async_dps_in_use(),
+                suggest_dps=self.suggest_dps,
+            ),
             errors=errors,
             description_placeholders={"platform": self.platform},
         )

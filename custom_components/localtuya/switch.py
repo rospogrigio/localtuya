@@ -4,6 +4,7 @@ from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.switch import DOMAIN, SwitchEntity
+from homeassistant.const import CONF_ID
 
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
@@ -16,6 +17,13 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+DP_SUGGESTIONS = {
+    CONF_ID: [1, 2],
+    CONF_CURRENT: [18],
+    CONF_CURRENT_CONSUMPTION: [19],
+    CONF_VOLTAGE: [20],
+}
 
 
 def flow_schema(dps):
