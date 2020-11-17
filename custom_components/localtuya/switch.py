@@ -30,7 +30,13 @@ def flow_schema(dps):
 class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
     """Representation of a Tuya switch."""
 
-    def __init__(self, device, config_entry, switchid, **kwargs):
+    def __init__(
+        self,
+        device,
+        config_entry,
+        switchid,
+        **kwargs,
+    ):
         """Initialize the Tuya switch."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None

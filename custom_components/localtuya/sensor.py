@@ -24,7 +24,7 @@ def flow_schema(dps):
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): str,
         vol.Optional(CONF_DEVICE_CLASS): vol.In(DEVICE_CLASSES),
         vol.Optional(CONF_SCALING): vol.All(
-            vol.Coerce(float), vol.Range(min=-1_000_000.0, max=1_000_000.0)
+            vol.Coerce(float), vol.Range(min=-1000000.0, max=1000000.0)
         ),
     }
 
@@ -32,7 +32,13 @@ def flow_schema(dps):
 class LocaltuyaSensor(LocalTuyaEntity):
     """Representation of a Tuya sensor."""
 
-    def __init__(self, device, config_entry, sensorid, **kwargs):
+    def __init__(
+        self,
+        device,
+        config_entry,
+        sensorid,
+        **kwargs,
+    ):
         """Initialize the Tuya sensor."""
         super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
         self._state = STATE_UNKNOWN

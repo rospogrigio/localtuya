@@ -163,7 +163,9 @@ async def async_setup(hass: HomeAssistant, config: dict):
         _LOGGER.exception("failed to set up discovery")
 
     hass.helpers.service.async_register_admin_service(
-        DOMAIN, SERVICE_RELOAD, _handle_reload
+        DOMAIN,
+        SERVICE_RELOAD,
+        _handle_reload,
     )
 
     for host_config in config.get(DOMAIN, []):
