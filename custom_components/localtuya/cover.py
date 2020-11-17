@@ -193,7 +193,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 change = "stopped" if self._state == self._stop_cmd else "inverted"
                 _LOGGER.debug(
                     "Movement %s after %s sec., position difference %s",
-					change,
+                    change,
                     time_diff,
                     pos_diff,
                 )
