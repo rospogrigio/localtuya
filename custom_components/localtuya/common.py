@@ -19,7 +19,13 @@ from homeassistant.helpers.dispatcher import (
 from homeassistant.helpers.entity import Entity
 
 from . import pytuya
-from .const import CONF_LOCAL_KEY, CONF_PROTOCOL_VERSION, DOMAIN, TUYA_DEVICE
+from .const import (
+    CONF_LOCAL_KEY,
+    CONF_PRODUCT_KEY,
+    CONF_PROTOCOL_VERSION,
+    DOMAIN,
+    TUYA_DEVICE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -257,7 +263,7 @@ class LocalTuyaEntity(Entity, pytuya.ContextualLogger):
             },
             "name": self._config_entry.data[CONF_FRIENDLY_NAME],
             "manufacturer": "Unknown",
-            "model": "Tuya generic",
+            "model": self._config_entry.data.get(CONF_PRODUCT_KEY, "Tuya generic"),
             "sw_version": self._config_entry.data[CONF_PROTOCOL_VERSION],
         }
 
