@@ -178,6 +178,11 @@ async def validate_input(hass: core.HomeAssistant, data):
         if interface:
             interface.close()
 
+    # Indicate an error if no datapoints found as the rest of the flow
+    # won't work in this case
+    if not detected_dps:
+        raise EmptyDpsList
+
     return dps_string_list(detected_dps)
 
 
@@ -252,6 +257,8 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
+            except EmptyDpsList:
+                errors["base"] = "empty_dps"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
@@ -408,3 +415,7 @@ class CannotConnect(exceptions.HomeAssistantError):
 
 class InvalidAuth(exceptions.HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
+
+class EmptyDpsList(exceptions.HomeAssistantError):
+    """Error to indicate no datapoints found."""

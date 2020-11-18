@@ -9,7 +9,8 @@
             "unknown": "An unknown error occurred. See log for details.",
             "entity_already_configured": "Entity with this ID has already been configured.",
             "address_in_use": "Address used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
-            "discovery_failed": "Something failed when discovering devices. See log for details."
+            "discovery_failed": "Something failed when discovering devices. See log for details.",
+            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists."
         },
         "step": {
             "user": {
