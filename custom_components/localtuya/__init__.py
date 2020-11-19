@@ -71,7 +71,7 @@ from homeassistant.helpers.reload import async_integration_yaml_config
 
 from .common import TuyaDevice
 from .config_flow import config_schema
-from .const import DATA_DISCOVERY, DOMAIN, TUYA_DEVICE
+from .const import CONF_PRODUCT_KEY, DATA_DISCOVERY, DOMAIN, TUYA_DEVICE
 from .discovery import TuyaDiscovery
 
 _LOGGER = logging.getLogger(__name__)
@@ -129,6 +129,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         """Update address of device if it has changed."""
         device_ip = device["ip"]
         device_id = device["gwId"]
+        product_key = device["productKey"]
 
         # If device is not in cache, check if a config entry exists
         if device_id not in device_cache:
@@ -138,16 +139,27 @@ async def async_setup(hass: HomeAssistant, config: dict):
                 # potential update below
                 device_cache[device_id] = entry.data[CONF_HOST]
 
-        # If device is in cache and address changed...
-        if device_id in device_cache and device_cache[device_id] != device_ip:
-            _LOGGER.debug("Device %s changed IP to %s", device_id, device_ip)
+        if device_id not in device_cache:
+            return
 
-            entry = _entry_by_device_id(device_id)
-            if entry:
-                hass.config_entries.async_update_entry(
-                    entry, data={**entry.data, CONF_HOST: device_ip}
-                )
-                device_cache[device_id] = device_ip
+        entry = _entry_by_device_id(device_id)
+        if entry is None:
+            return
+
+        updates = {}
+
+        if device_cache[device_id] != device_ip:
+            updates[CONF_HOST] = device_ip
+            device_cache[device_id] = device_ip
+
+        if entry.data.get(CONF_PRODUCT_KEY) != product_key:
+            updates[CONF_PRODUCT_KEY] = product_key
+
+        if updates:
+            _LOGGER.debug("Update keys for device %s: %s", updates)
+            hass.config_entries.async_update_entry(
+                entry, data={**entry.data, **updates}
+            )
 
     discovery = TuyaDiscovery(_device_discovered)
 

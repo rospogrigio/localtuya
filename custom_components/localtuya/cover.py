@@ -1,7 +1,7 @@
 """Platform to locally control Tuya-based cover devices."""
 import asyncio
-import time
 import logging
+import time
 from functools import partial
 
 import voluptuous as vol

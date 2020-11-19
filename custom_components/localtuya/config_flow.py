@@ -20,6 +20,7 @@ from . import pytuya
 from .const import CONF_DPS_STRINGS  # pylint: disable=unused-import
 from .const import (
     CONF_LOCAL_KEY,
+    CONF_PRODUCT_KEY,
     CONF_PROTOCOL_VERSION,
     DATA_DISCOVERY,
     DOMAIN,
@@ -212,7 +213,8 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         if user_input is not None:
             if user_input[DISCOVERED_DEVICE] != CUSTOM_DEVICE:
-                self.selected_device = user_input[DISCOVERED_DEVICE].split(" ")[0]
+                device = user_input[DISCOVERED_DEVICE].split(" ")[0]
+                self.selected_device = self.devices[device]
             return await self.async_step_basic_info()
 
         # Use cache if available or fallback to manual discovery
@@ -251,6 +253,10 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
                 self.basic_info = user_input
+                if self.selected_device is not None:
+                    self.basic_info[CONF_PRODUCT_KEY] = self.selected_device[
+                        "productKey"
+                    ]
                 self.dps_strings = await validate_input(self.hass, user_input)
                 return await self.async_step_pick_entity_type()
             except CannotConnect:
@@ -266,10 +272,9 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         defaults = {}
         defaults.update(user_input or {})
         if self.selected_device is not None:
-            device = self.devices[self.selected_device]
-            defaults[CONF_HOST] = device.get("ip")
-            defaults[CONF_DEVICE_ID] = device.get("gwId")
-            defaults[CONF_PROTOCOL_VERSION] = device.get("version")
+            defaults[CONF_HOST] = self.selected_device.get("ip")
+            defaults[CONF_DEVICE_ID] = self.selected_device.get("gwId")
+            defaults[CONF_PROTOCOL_VERSION] = self.selected_device.get("version")
 
         return self.async_show_form(
             step_id="basic_info",

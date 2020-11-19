@@ -7,6 +7,7 @@ ATTR_VOLTAGE = "voltage"
 CONF_LOCAL_KEY = "local_key"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
+CONF_PRODUCT_KEY = "product_key"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
