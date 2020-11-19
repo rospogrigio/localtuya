@@ -17,10 +17,11 @@ from homeassistant.const import (
 from homeassistant.core import callback
 
 from . import pytuya
+from .const import CONF_DPS_STRINGS  # pylint: disable=unused-import
 from .const import (
-    CONF_DPS_STRINGS,  # pylint: disable=unused-import
     CONF_LOCAL_KEY,
     CONF_PASSIVE_DEVICE,
+    CONF_PRODUCT_KEY,
     CONF_PROTOCOL_VERSION,
     DATA_DISCOVERY,
     DOMAIN,

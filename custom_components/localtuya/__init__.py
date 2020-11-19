@@ -71,7 +71,13 @@ from homeassistant.helpers.reload import async_integration_yaml_config
 
 from .common import TuyaDevice
 from .config_flow import config_schema
-from .const import CONF_PASSIVE_DEVICE, CONF_PRODUCT_KEY, DATA_DISCOVERY, DOMAIN, TUYA_DEVICE
+from .const import (
+    CONF_PASSIVE_DEVICE,
+    CONF_PRODUCT_KEY,
+    DATA_DISCOVERY,
+    DOMAIN,
+    TUYA_DEVICE,
+)
 from .discovery import TuyaDiscovery
 
 _LOGGER = logging.getLogger(__name__)
@@ -254,7 +260,6 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 1:
-        new = {**config_entry.data}
         config_entry.data = {**config_entry.data, CONF_PASSIVE_DEVICE: False}
         config_entry.version = 2
 
