@@ -137,7 +137,7 @@ class ContextualLogger:
 
     def exception(self, msg, *args):
         """Exception level log."""
-        return self._logger.log(logging.EXCEPTION, msg, *args)
+        return self._logger.exception(msg, *args)
 
 
 def pack_message(msg):
