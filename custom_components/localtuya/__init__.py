@@ -156,7 +156,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
             updates[CONF_PRODUCT_KEY] = product_key
 
         if updates:
-            _LOGGER.debug("Update keys for device %s: %s", updates)
+            _LOGGER.debug("Update keys for device %s: %s", device_id, updates)
             hass.config_entries.async_update_entry(
                 entry, data={**entry.data, **updates}
             )
