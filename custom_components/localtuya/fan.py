@@ -136,7 +136,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             self._config.get(CONF_FAN_SPEED_HIGH): SPEED_HIGH,
         }
 
-        self._is_on = self.dps(self._dps_id)
+        self._is_on = self.dps(self._dp_id)
 
         if self.has_config(CONF_FAN_SPEED_CONTROL):
             self._speed = mappings.get(self.dps_conf(CONF_FAN_SPEED_CONTROL))
