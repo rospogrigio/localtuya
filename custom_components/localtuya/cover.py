@@ -65,7 +65,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         """Initialize a new LocaltuyaCover."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
-        self._previous_state = None
         self._current_cover_position = 50
         commands_set = DEFAULT_COMMANDS_SET
         if self.has_config(CONF_COMMANDS_SET):
@@ -73,7 +72,8 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._open_cmd = commands_set.split("_")[0]
         self._close_cmd = commands_set.split("_")[1]
         self._stop_cmd = commands_set.split("_")[2]
-        self._timer_start = None
+        self._timer_start = time.time()
+        self._previous_state = self._stop_cmd
         print("Initialized cover [{}]".format(self.name))
 
     @property
