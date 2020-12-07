@@ -377,7 +377,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     def status_updated(self):
         """Device status was updated."""
         if self._switch_dp:
-            self._state = self.dps(self._switch_id)
+            self._state = self.dps(self._switch_dp)
         else:
             self._state = self.dps(self._dp_id)
 
