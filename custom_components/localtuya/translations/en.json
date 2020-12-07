@@ -28,8 +28,7 @@
                     "host": "Host",
                     "device_id": "Device ID",
                     "local_key": "Local key",
-                    "protocol_version": "Protocol Version",
-                    "passive_device": "Set up as a passive device"
+                    "protocol_version": "Protocol Version"
                 }
             },
             "pick_entity_type": {
@@ -88,8 +87,7 @@
                     "friendly_name": "Friendly Name",
                     "host": "Host",
                     "local_key": "Local key",
-                    "protocol_version": "Protocol Version",
-                    "passive_device": "Set up as a passive device"
+                    "protocol_version": "Protocol Version"
                 }
             },
             "entity": {

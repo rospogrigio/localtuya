@@ -72,7 +72,6 @@ from homeassistant.helpers.reload import async_integration_yaml_config
 from .common import TuyaDevice
 from .config_flow import config_schema
 from .const import (
-    CONF_PASSIVE_DEVICE,
     CONF_PRODUCT_KEY,
     DATA_DISCOVERY,
     DOMAIN,
@@ -161,15 +160,16 @@ async def async_setup(hass: HomeAssistant, config: dict):
         if entry.data.get(CONF_PRODUCT_KEY) != product_key:
             updates[CONF_PRODUCT_KEY] = product_key
 
+        # Update settings if something changed, otherwise try to connect. Updating
+        # settings triggers a reload of the config entry, which tears down the device
+        # so no need to connect in that case.
         if updates:
             _LOGGER.debug("Update keys for device %s: %s", device_id, updates)
             hass.config_entries.async_update_entry(
                 entry, data={**entry.data, **updates}
             )
-
-        # If device is passive, initiate connection attempt
-        if entry.data[CONF_PASSIVE_DEVICE]:
-            _LOGGER.debug("Passive device %s found with IP %s", device_id, device_ip)
+        else:
+            _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
 
             device = hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE]
             device.connect()
@@ -222,12 +222,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 for platform in platforms
             ]
         )
-        if not entry.data[CONF_PASSIVE_DEVICE]:
-            device.connect()
-        else:
-            _LOGGER.debug(
-                "Not connecting to passive device %s", entry.data[CONF_DEVICE_ID]
-            )
 
     hass.async_create_task(setup_entities())
 
@@ -251,19 +245,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     await hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE].close()
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
-
-    return True
-
-
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
-    """Migrate old entry."""
-    _LOGGER.debug("Migrating from version %s", config_entry.version)
-
-    if config_entry.version == 1:
-        config_entry.data = {**config_entry.data, CONF_PASSIVE_DEVICE: False}
-        config_entry.version = 2
-
-    _LOGGER.info("Migration to version %s successful", config_entry.version)
 
     return True
 

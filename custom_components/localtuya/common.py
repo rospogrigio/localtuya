@@ -1,7 +1,6 @@
 """Code shared between all platforms."""
 import asyncio
 import logging
-from random import randrange
 
 from homeassistant.const import (
     CONF_DEVICE_ID,
@@ -21,7 +20,6 @@ from homeassistant.helpers.entity import Entity
 from . import pytuya
 from .const import (
     CONF_LOCAL_KEY,
-    CONF_PASSIVE_DEVICE,
     CONF_PRODUCT_KEY,
     CONF_PROTOCOL_VERSION,
     DOMAIN,
@@ -29,8 +27,6 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-BACKOFF_TIME_UPPER_LIMIT = 300  # Five minutes
 
 
 def prepare_setup_entities(hass, config_entry, platform):
@@ -109,7 +105,6 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._dps_to_request = {}
         self._is_closing = False
         self._connect_task = None
-        self._connection_attempts = 0
         self.set_logger(_LOGGER, config_entry[CONF_DEVICE_ID])
 
         # This has to be done in case the device type is type_0d
@@ -119,31 +114,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     def connect(self):
         """Connet to device if not already connected."""
         if not self._is_closing and self._connect_task is None and not self._interface:
-            self.debug(
-                "Connecting to %s",
-                self._config_entry[CONF_HOST],
-            )
-            self._connect_task = asyncio.ensure_future(self._make_connection())
-        else:
-            self.debug(
-                "Already connecting to %s (%s) - %s, %s, %s",
-                self._config_entry[CONF_HOST],
-                self._config_entry[CONF_DEVICE_ID],
-                self._is_closing,
-                self._connect_task,
-                self._interface,
-            )
+            self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
-        backoff = min(
-            randrange(2 ** self._connection_attempts), BACKOFF_TIME_UPPER_LIMIT
-        )
-
-        self.debug("Waiting %d seconds before connecting", backoff)
-        await asyncio.sleep(backoff)
+        self.debug("Connecting to %s", self._config_entry[CONF_HOST])
 
         try:
-            self.debug("Connecting to %s", self._config_entry[CONF_HOST])
             self._interface = await pytuya.connect(
                 self._config_entry[CONF_HOST],
                 self._config_entry[CONF_DEVICE_ID],
@@ -159,14 +135,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 raise Exception("Failed to retrieve status")
 
             self.status_updated(status)
-            self._connection_attempts = 0
         except Exception:
             self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
-            self._connection_attempts += 1
             if self._interface is not None:
                 await self._interface.close()
                 self._interface = None
-            self._hass.loop.call_soon(self.connect)
         self._connect_task = None
 
     async def close(self):
@@ -217,10 +190,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         async_dispatcher_send(self._hass, signal, None)
 
         self._interface = None
-        if not self._config_entry[CONF_PASSIVE_DEVICE]:
-            self.connect()
-        else:
-            _LOGGER.debug("No automatic re-connect due to passive device")
+        self.debug("Disconnected - waiting for discovery broadcast")
 
 
 class LocalTuyaEntity(Entity, pytuya.ContextualLogger):
