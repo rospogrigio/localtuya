@@ -155,10 +155,16 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 self.debug("No moviment")
                 return
             elif distance > 0:
-                self.debug("Opening to %f - distance %f - delay %f", newpos, distance, mydelay)
+                self.debug(
+                    "Opening to %f - distance %f - delay %f",
+                    newpos, distance, mydelay
+                )
                 await self.async_open_cover()
             elif distance < 0:
-                self.debug("Closing to %f - distance %f - delay %f", newpos, distance, mydelay)
+                self.debug(
+                    "Closing to %f - distance %f - delay %f", 
+                    newpos, distance, mydelay
+                )
                 await self.async_close_cover()
             await asyncio.sleep(mydelay)
             await self.async_stop_cover()
