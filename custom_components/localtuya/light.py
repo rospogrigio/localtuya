@@ -21,6 +21,7 @@ from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
+    CONF_SWITCH_DP,
     CONF_BRIGHTNESS_LOWER,
     CONF_BRIGHTNESS_UPPER,
     CONF_COLOR,
