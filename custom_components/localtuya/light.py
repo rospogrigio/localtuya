@@ -370,7 +370,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     async def async_turn_off(self, **kwargs):
         """Turn Tuya light off."""
         await self._device.set_dp(False, self._dp_id)
-        
+
         if self._switch_dp:
             await self._device.set_dp(False, self._switch_dp)
 
