@@ -10,6 +10,7 @@ CONF_DPS_STRINGS = "dps_strings"
 CONF_PRODUCT_KEY = "product_key"
 
 # light
+CONF_SWITCH_DP = "switch_dp"
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
 CONF_BRIGHTNESS_UPPER = "brightness_upper"
 CONF_COLOR = "color"

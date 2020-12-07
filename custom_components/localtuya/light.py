@@ -101,6 +101,7 @@ def map_range(value, from_lower, from_upper, to_lower, to_upper):
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
+        vol.Optional(CONF_SWITCH_DP): vol.In(dps),
         vol.Optional(CONF_BRIGHTNESS): vol.In(dps),
         vol.Optional(CONF_COLOR_TEMP): vol.In(dps),
         vol.Optional(CONF_BRIGHTNESS_LOWER, default=DEFAULT_LOWER_BRIGHTNESS): vol.All(
@@ -137,6 +138,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         """Initialize the Tuya light."""
         super().__init__(device, config_entry, lightid, _LOGGER, **kwargs)
         self._state = False
+        self._switch_dp = self._config.get(CONF_SWITCH_DP)
         self._brightness = None
         self._color_temp = None
         self._lower_brightness = self._config.get(
@@ -276,6 +278,9 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         """Turn on or control the light."""
         states = {}
         states[self._dp_id] = True
+        if self._switch_dp:
+            states[self._switch_dp] = True
+
         features = self.supported_features
         brightness = None
         if ATTR_EFFECT in kwargs and (features & SUPPORT_EFFECT):
@@ -364,10 +369,17 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     async def async_turn_off(self, **kwargs):
         """Turn Tuya light off."""
         await self._device.set_dp(False, self._dp_id)
+        
+        if self._switch_dp:
+            await self._device.set_dp(False, self._switch_dp)
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dp_id)
+        if self._switch_dp:
+            self._state = self.dps(self._switch_id)
+        else:
+            self._state = self.dps(self._dp_id)
+
         supported = self.supported_features
         self._effect = None
         if supported & SUPPORT_BRIGHTNESS and self.has_config(CONF_BRIGHTNESS):
