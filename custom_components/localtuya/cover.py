@@ -162,7 +162,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 await self.async_open_cover()
             elif distance < 0:
                 self.debug(
-                    "Closing to %f - distance %f - delay %f", 
+                    "Closing to %f - distance %f - delay %f",
                     newpos, distance, mydelay
                 )
                 await self.async_close_cover()
