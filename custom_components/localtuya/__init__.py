@@ -248,7 +248,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
-    hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE].close()
+    await hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE].close()
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 

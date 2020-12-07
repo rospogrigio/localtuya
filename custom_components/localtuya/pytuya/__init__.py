@@ -362,7 +362,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if "dps" in decoded_message:
                 self.dps_cache.update(decoded_message["dps"])
 
-            listener = self.listener()
+            listener = self.listener and self.listener()
             if listener is not None:
                 listener.status_updated(self.dps_cache)
 
@@ -377,12 +377,14 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             while True:
                 try:
                     await self.heartbeat()
+                    await asyncio.sleep(HEARTBEAT_INTERVAL)
+                except asyncio.CancelledError:
+                    break
                 except Exception as ex:
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
-                await asyncio.sleep(HEARTBEAT_INTERVAL)
             self.debug("Stopped heartbeat loop")
-            self.close()
+            self.connection_lost(None)
 
         self.transport = transport
         self.on_connected.set_result(True)
@@ -396,24 +398,22 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Disconnected from device."""
         self.debug("Connection lost: %s", exc)
         try:
-            self.close()
+            listener = self.listener and self.listener()
+            if listener is not None:
+                listener.disconnected()
         except Exception:
-            self.exception("Failed to close connection")
-        finally:
-            try:
-                listener = self.listener()
-                if listener is not None:
-                    listener.disconnected(exc)
-            except Exception:
-                self.exception("Failed to call disconnected callback")
+            self.exception("Failed to call disconnected callback")
 
-    def close(self):
+    async def close(self):
         """Close connection and abort all outstanding listeners."""
         self.debug("Closing connection")
         if self.heartbeater is not None:
             self.heartbeater.cancel()
+            await self.heartbeater
+            self.heartbeater = None
         if self.dispatcher is not None:
             self.dispatcher.abort()
+            self.dispatcher = None
         if self.transport is not None:
             transport = self.transport
             self.transport = None
@@ -572,7 +572,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         if data is not None:
             json_data["dps"] = data
-        if command_hb == 0x0D:
+        elif command_hb == 0x0D:
             json_data["dps"] = self.dps_to_request
 
         payload = json.dumps(json_data).replace(" ", "").encode("utf-8")
