@@ -168,7 +168,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
             hass.config_entries.async_update_entry(
                 entry, data={**entry.data, **updates}
             )
-        else:
+        elif entry.entry_id in hass.data[DOMAIN]:
             _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
 
             device = hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE]
