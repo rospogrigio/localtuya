@@ -112,7 +112,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._dps_to_request[entity[CONF_ID]] = None
 
     def connect(self):
-        """Connet to device if not already connected."""
+        """Connect to device if not already connected."""
         if not self._is_closing and self._connect_task is None and not self._interface:
             self._connect_task = asyncio.create_task(self._make_connection())
 

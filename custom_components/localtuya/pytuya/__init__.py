@@ -379,12 +379,15 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     await self.heartbeat()
                     await asyncio.sleep(HEARTBEAT_INTERVAL)
                 except asyncio.CancelledError:
-                    break
+                    self.debug("Stopped heartbeat loop")
+                    raise
                 except Exception as ex:
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
-            self.debug("Stopped heartbeat loop")
-            self.connection_lost(None)
+
+            transport = self.transport
+            self.transport = None
+            transport.close()
 
         self.transport = transport
         self.on_connected.set_result(True)
@@ -409,7 +412,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.debug("Closing connection")
         if self.heartbeater is not None:
             self.heartbeater.cancel()
-            await self.heartbeater
+            try:
+                await self.heartbeater
+            except asyncio.CancelledError:
+                pass
             self.heartbeater = None
         if self.dispatcher is not None:
             self.dispatcher.abort()
@@ -453,6 +459,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 dev_type,
                 self.dev_type,
             )
+            self.seqno = 0
             return await self.exchange(command, dps)
         return payload
 
