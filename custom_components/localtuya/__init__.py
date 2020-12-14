@@ -57,6 +57,8 @@ localtuya:
 import asyncio
 import logging
 
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import (
     CONF_DEVICE_ID,
@@ -67,16 +69,12 @@ from homeassistant.const import (
     SERVICE_RELOAD,
 )
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.reload import async_integration_yaml_config
 
 from .common import TuyaDevice
 from .config_flow import config_schema
-from .const import (
-    CONF_PRODUCT_KEY,
-    DATA_DISCOVERY,
-    DOMAIN,
-    TUYA_DEVICE,
-)
+from .const import CONF_PRODUCT_KEY, DATA_DISCOVERY, DOMAIN, TUYA_DEVICE
 from .discovery import TuyaDiscovery
 
 _LOGGER = logging.getLogger(__name__)
@@ -84,6 +82,18 @@ _LOGGER = logging.getLogger(__name__)
 UNSUB_LISTENER = "unsub_listener"
 
 CONFIG_SCHEMA = config_schema()
+
+CONF_DP = "dp"
+CONF_VALUE = "value"
+
+SERVICE_SET_DP = "set_dp"
+SERVICE_SET_DP_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_DEVICE_ID): cv.string,
+        vol.Required(CONF_DP): int,
+        vol.Required(CONF_VALUE): object,
+    }
+)
 
 
 @callback
@@ -101,6 +111,14 @@ async def async_setup(hass: HomeAssistant, config: dict):
     hass.data.setdefault(DOMAIN, {})
 
     device_cache = {}
+
+    def _entry_by_device_id(device_id):
+        """Look up config entry by device id."""
+        current_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in current_entries:
+            if entry.data[CONF_DEVICE_ID] == device_id:
+                return entry
+        return None
 
     async def _handle_reload(service):
         """Handle reload service call."""
@@ -122,13 +140,20 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
         await asyncio.gather(*reload_tasks)
 
-    def _entry_by_device_id(device_id):
-        """Look up config entry by device id."""
-        current_entries = hass.config_entries.async_entries(DOMAIN)
-        for entry in current_entries:
-            if entry.data[CONF_DEVICE_ID] == device_id:
-                return entry
-        return None
+    async def _handle_set_dp(event):
+        """Handle set_dp service call."""
+        entry = _entry_by_device_id(event.data[CONF_DEVICE_ID])
+        if not entry:
+            raise HomeAssistantError("unknown device id")
+
+        if entry.entry_id not in hass.data[DOMAIN]:
+            raise HomeAssistantError("device has not been discovered")
+
+        device = hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE]
+        if not device.connected:
+            raise HomeAssistantError("not connected to device")
+
+        await device.set_dp(event.data[CONF_VALUE], event.data[CONF_DP])
 
     def _device_discovered(device):
         """Update address of device if it has changed."""
@@ -191,6 +216,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
         DOMAIN,
         SERVICE_RELOAD,
         _handle_reload,
+    )
+
+    hass.helpers.service.async_register_admin_service(
+        DOMAIN, SERVICE_SET_DP, _handle_set_dp, schema=SERVICE_SET_DP_SCHEMA
     )
 
     for host_config in config.get(DOMAIN, []):

@@ -111,6 +111,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         for entity in config_entry[CONF_ENTITIES]:
             self._dps_to_request[entity[CONF_ID]] = None
 
+    @property
+    def connected(self):
+        """Return if connected to device."""
+        return self._interface is not None
+
     def connect(self):
         """Connect to device if not already connected."""
         if not self._is_closing and self._connect_task is None and not self._interface:
