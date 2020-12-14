@@ -459,7 +459,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 dev_type,
                 self.dev_type,
             )
-            self.seqno = 0
             return await self.exchange(command, dps)
         return payload
 
