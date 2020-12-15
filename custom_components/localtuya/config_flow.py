@@ -177,7 +177,7 @@ async def validate_input(hass: core.HomeAssistant, data):
         raise InvalidAuth
     finally:
         if interface:
-            interface.close()
+            await interface.close()
 
     # Indicate an error if no datapoints found as the rest of the flow
     # won't work in this case
