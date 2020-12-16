@@ -209,7 +209,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         await discovery.start()
         hass.data[DOMAIN][DATA_DISCOVERY] = discovery
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _shutdown)
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         _LOGGER.exception("failed to set up discovery")
 
     hass.helpers.service.async_register_admin_service(

@@ -65,7 +65,7 @@ async def async_setup_entry(
         # Add DPS used by this platform to the request list
         for dp_conf in dps_config_fields:
             if dp_conf in device_config:
-                tuyainterface._dps_to_request[device_config[dp_conf]] = None
+                tuyainterface.add_dps_to_request(device_config[dp_conf])
 
         entities.append(
             entity_class(
@@ -93,11 +93,22 @@ def get_entity_config(config_entry, dp_id):
     raise Exception(f"missing entity config for id {dp_id}")
 
 
+@callback
+def async_config_entry_by_device_id(hass, device_id):
+    """Look up config entry by device id."""
+    current_entries = hass.config_entries.async_entries(DOMAIN)
+    for entry in current_entries:
+        if entry.data[CONF_DEVICE_ID] == device_id:
+            return entry
+    return None
+
+
 class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     """Cache wrapper for pytuya.TuyaInterface."""
 
     def __init__(self, hass, config_entry):
         """Initialize the cache."""
+        super().__init__()
         self._hass = hass
         self._config_entry = config_entry
         self._interface = None
@@ -140,7 +151,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 raise Exception("Failed to retrieve status")
 
             self.status_updated(status)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
             if self._interface is not None:
                 await self._interface.close()
@@ -161,7 +172,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._interface is not None:
             try:
                 await self._interface.set_dp(state, dp_index)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 self.exception("Failed to set DP %d to %d", dp_index, state)
         else:
             self.error(
@@ -173,7 +184,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._interface is not None:
             try:
                 await self._interface.set_dps(states)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 self.exception("Failed to set DPs %r", states)
         else:
             self.error(
@@ -203,6 +214,7 @@ class LocalTuyaEntity(Entity, pytuya.ContextualLogger):
 
     def __init__(self, device, config_entry, dp_id, logger, **kwargs):
         """Initialize the Tuya entity."""
+        super().__init__()
         self._device = device
         self._config_entry = config_entry
         self._config = get_entity_config(config_entry, dp_id)

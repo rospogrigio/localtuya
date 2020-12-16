@@ -3,4 +3,7 @@ codespell==1.17.1
 flake8==3.8.3
 mypy==0.782
 pydocstyle==5.1.1
-cryptography==2.9.2
+cryptography==3.2
+pylint==2.6.0
+pylint-strict-informational==0.1
+homeassistant==2020.12.0

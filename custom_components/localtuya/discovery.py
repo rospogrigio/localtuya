@@ -54,7 +54,7 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
     def close(self):
         """Stop discovery."""
-        self.callback = None
+        self._callback = None
         for transport, _ in self._listeners:
             transport.close()
 
@@ -63,7 +63,7 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
         data = data[20:-8]
         try:
             data = decrypt_udp(data)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             data = data.decode()
 
         decoded = json.loads(data)
@@ -81,10 +81,10 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
 async def discover():
     """Discover and return devices on local network."""
-    discover = TuyaDiscovery()
+    discovery = TuyaDiscovery()
     try:
-        await discover.start()
+        await discovery.start()
         await asyncio.sleep(DEFAULT_TIMEOUT)
     finally:
-        discover.close()
-    return discover.devices
+        discovery.close()
+    return discovery.devices

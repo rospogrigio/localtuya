@@ -171,10 +171,10 @@ async def validate_input(hass: core.HomeAssistant, data):
         )
 
         detected_dps = await interface.detect_available_dps()
-    except (ConnectionRefusedError, ConnectionResetError):
-        raise CannotConnect
-    except ValueError:
-        raise InvalidAuth
+    except (ConnectionRefusedError, ConnectionResetError) as ex:
+        raise CannotConnect from ex
+    except ValueError as ex:
+        raise InvalidAuth from ex
     finally:
         if interface:
             await interface.close()
@@ -230,7 +230,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     errors["base"] = "address_in_use"
                 else:
                     errors["base"] = "discovery_failed"
-            except Exception:
+            except Exception:  # pylint: disable= broad-except
                 _LOGGER.exception("discovery failed")
                 errors["base"] = "discovery_failed"
 

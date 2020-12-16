@@ -178,7 +178,7 @@ class AESCipher:
 
     def __init__(self, key):
         """Initialize a new AESCipher."""
-        self.bs = 16
+        self.block_size = 16
         self.cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
 
     def encrypt(self, raw, use_base64=True):
@@ -195,13 +195,13 @@ class AESCipher:
         decryptor = self.cipher.decryptor()
         return self._unpad(decryptor.update(enc) + decryptor.finalize()).decode()
 
-    def _pad(self, s):
-        padnum = self.bs - len(s) % self.bs
-        return s + padnum * chr(padnum).encode()
+    def _pad(self, data):
+        padnum = self.block_size - len(data) % self.block_size
+        return data + padnum * chr(padnum).encode()
 
     @staticmethod
-    def _unpad(s):
-        return s[: -ord(s[len(s) - 1 :])]
+    def _unpad(data):
+        return data[: -ord(data[len(data) - 1 :])]
 
 
 class MessageDispatcher(ContextualLogger):
@@ -213,6 +213,7 @@ class MessageDispatcher(ContextualLogger):
 
     def __init__(self, dev_id, listener):
         """Initialize a new MessageBuffer."""
+        super().__init__()
         self.buffer = b""
         self.listeners = {}
         self.listener = listener
@@ -311,7 +312,7 @@ class TuyaListener(ABC):
         """Device updated status."""
 
     @abstractmethod
-    def disconnected(self, exc):
+    def disconnected(self):
         """Device disconnected."""
 
 
@@ -321,7 +322,7 @@ class EmptyListener(TuyaListener):
     def status_updated(self, status):
         """Device updated status."""
 
-    def disconnected(self, exc):
+    def disconnected(self):
         """Device disconnected."""
 
 
@@ -340,6 +341,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         Attributes:
             port (int): The port to connect to.
         """
+        super().__init__()
         self.loop = asyncio.get_running_loop()
         self.set_logger(_LOGGER, dev_id)
         self.id = dev_id
@@ -381,7 +383,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 except asyncio.CancelledError:
                     self.debug("Stopped heartbeat loop")
                     raise
-                except Exception as ex:
+                except Exception as ex:  # pylint: disable=broad-except
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
 
@@ -404,7 +406,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             listener = self.listener and self.listener()
             if listener is not None:
                 listener.disconnected()
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             self.exception("Failed to call disconnected callback")
 
     async def close(self):
@@ -503,8 +505,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.add_dps_to_request(range(*dps_range))
             try:
                 data = await self.status()
-            except Exception as e:
-                self.exception("Failed to get status: %s", e)
+            except Exception as ex:
+                self.exception("Failed to get status: %s", ex)
                 raise
             if "dps" in data:
                 self.dps_cache.update(data["dps"])
@@ -525,7 +527,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if not payload:
             payload = "{}"
         elif payload.startswith(b"{"):
-            payload = payload
+            pass
         elif payload.startswith(PROTOCOL_VERSION_BYTES_31):
             payload = payload[len(PROTOCOL_VERSION_BYTES_31) :]  # remove version header
             # remove (what I'm guessing, but not confirmed is) 16-bytes of MD5
@@ -591,7 +593,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 payload = PROTOCOL_33_HEADER + payload
         elif command == SET:
             payload = self.cipher.encrypt(payload)
-            preMd5String = (
+            to_hash = (
                 b"data="
                 + payload
                 + b"||lpv="
@@ -599,9 +601,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 + b"||"
                 + self.local_key
             )
-            m = md5()
-            m.update(preMd5String)
-            hexdigest = m.hexdigest()
+            hasher = md5()
+            hasher.update(to_hash)
+            hexdigest = hasher.hexdigest()
             payload = (
                 PROTOCOL_VERSION_BYTES_31
                 + hexdigest[8:][:16].encode("latin1")
