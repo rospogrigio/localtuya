@@ -65,7 +65,7 @@ async def async_setup_entry(
         # Add DPS used by this platform to the request list
         for dp_conf in dps_config_fields:
             if dp_conf in device_config:
-                tuyainterface.add_dps_to_request(device_config[dp_conf])
+                tuyainterface.dps_to_request[device_config[dp_conf]] = None
 
         entities.append(
             entity_class(
@@ -113,14 +113,14 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._config_entry = config_entry
         self._interface = None
         self._status = {}
-        self._dps_to_request = {}
+        self.dps_to_request = {}
         self._is_closing = False
         self._connect_task = None
         self.set_logger(_LOGGER, config_entry[CONF_DEVICE_ID])
 
         # This has to be done in case the device type is type_0d
         for entity in config_entry[CONF_ENTITIES]:
-            self._dps_to_request[entity[CONF_ID]] = None
+            self.dps_to_request[entity[CONF_ID]] = None
 
     @property
     def connected(self):
@@ -143,7 +143,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 float(self._config_entry[CONF_PROTOCOL_VERSION]),
                 self,
             )
-            self._interface.add_dps_to_request(self._dps_to_request)
+            self._interface.add_dps_to_request(self.dps_to_request)
 
             self.debug("Retrieving initial state")
             status = await self._interface.status()
