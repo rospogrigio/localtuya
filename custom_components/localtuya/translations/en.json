@@ -1,7 +1,8 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Device has already been configured."
+            "already_configured": "Device has already been configured.",
+            "device_updated": "Device configuration has been updated!"
         },
         "error": {
             "cannot_connect": "Cannot connect to device. Verify that address is correct and try again.",
@@ -87,7 +88,8 @@
                     "friendly_name": "Friendly Name",
                     "host": "Host",
                     "local_key": "Local key",
-                    "protocol_version": "Protocol Version"
+                    "protocol_version": "Protocol Version",
+                    "entities": "Entities (uncheck an entity to remove it)"
                 }
             },
             "entity": {

@@ -74,7 +74,7 @@ MESSAGE_END_FMT = ">2I"  # 2*uint32: crc, suffix
 PREFIX_VALUE = 0x000055AA
 SUFFIX_VALUE = 0x0000AA55
 
-HEARTBEAT_INTERVAL = 20
+HEARTBEAT_INTERVAL = 10
 
 # This is intended to match requests.json payload at
 # https://github.com/codetheweb/tuyapi :
@@ -178,7 +178,7 @@ class AESCipher:
 
     def __init__(self, key):
         """Initialize a new AESCipher."""
-        self.bs = 16
+        self.block_size = 16
         self.cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
 
     def encrypt(self, raw, use_base64=True):
@@ -195,13 +195,13 @@ class AESCipher:
         decryptor = self.cipher.decryptor()
         return self._unpad(decryptor.update(enc) + decryptor.finalize()).decode()
 
-    def _pad(self, s):
-        padnum = self.bs - len(s) % self.bs
-        return s + padnum * chr(padnum).encode()
+    def _pad(self, data):
+        padnum = self.block_size - len(data) % self.block_size
+        return data + padnum * chr(padnum).encode()
 
     @staticmethod
-    def _unpad(s):
-        return s[: -ord(s[len(s) - 1 :])]
+    def _unpad(data):
+        return data[: -ord(data[len(data) - 1 :])]
 
 
 class MessageDispatcher(ContextualLogger):
@@ -213,6 +213,7 @@ class MessageDispatcher(ContextualLogger):
 
     def __init__(self, dev_id, listener):
         """Initialize a new MessageBuffer."""
+        super().__init__()
         self.buffer = b""
         self.listeners = {}
         self.listener = listener
@@ -311,7 +312,7 @@ class TuyaListener(ABC):
         """Device updated status."""
 
     @abstractmethod
-    def disconnected(self, exc):
+    def disconnected(self):
         """Device disconnected."""
 
 
@@ -321,7 +322,7 @@ class EmptyListener(TuyaListener):
     def status_updated(self, status):
         """Device updated status."""
 
-    def disconnected(self, exc):
+    def disconnected(self):
         """Device disconnected."""
 
 
@@ -340,6 +341,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         Attributes:
             port (int): The port to connect to.
         """
+        super().__init__()
         self.loop = asyncio.get_running_loop()
         self.set_logger(_LOGGER, dev_id)
         self.id = dev_id
@@ -362,7 +364,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if "dps" in decoded_message:
                 self.dps_cache.update(decoded_message["dps"])
 
-            listener = self.listener()
+            listener = self.listener and self.listener()
             if listener is not None:
                 listener.status_updated(self.dps_cache)
 
@@ -377,12 +379,20 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             while True:
                 try:
                     await self.heartbeat()
-                except Exception as ex:
+                    await asyncio.sleep(HEARTBEAT_INTERVAL)
+                except asyncio.CancelledError:
+                    self.debug("Stopped heartbeat loop")
+                    raise
+                except asyncio.TimeoutError:
+                    self.debug("Heartbeat failed due to timeout, disconnecting")
+                    break
+                except Exception as ex:  # pylint: disable=broad-except
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
-                await asyncio.sleep(HEARTBEAT_INTERVAL)
-            self.debug("Stopped heartbeat loop")
-            self.close()
+
+            transport = self.transport
+            self.transport = None
+            transport.close()
 
         self.transport = transport
         self.on_connected.set_result(True)
@@ -396,24 +406,25 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Disconnected from device."""
         self.debug("Connection lost: %s", exc)
         try:
-            self.close()
-        except Exception:
-            self.exception("Failed to close connection")
-        finally:
-            try:
-                listener = self.listener()
-                if listener is not None:
-                    listener.disconnected(exc)
-            except Exception:
-                self.exception("Failed to call disconnected callback")
+            listener = self.listener and self.listener()
+            if listener is not None:
+                listener.disconnected()
+        except Exception:  # pylint: disable=broad-except
+            self.exception("Failed to call disconnected callback")
 
-    def close(self):
+    async def close(self):
         """Close connection and abort all outstanding listeners."""
         self.debug("Closing connection")
         if self.heartbeater is not None:
             self.heartbeater.cancel()
+            try:
+                await self.heartbeater
+            except asyncio.CancelledError:
+                pass
+            self.heartbeater = None
         if self.dispatcher is not None:
             self.dispatcher.abort()
+            self.dispatcher = None
         if self.transport is not None:
             transport = self.transport
             self.transport = None
@@ -497,8 +508,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.add_dps_to_request(range(*dps_range))
             try:
                 data = await self.status()
-            except Exception as e:
-                self.exception("Failed to get status: %s", e)
+            except Exception as ex:
+                self.exception("Failed to get status: %s", ex)
                 raise
             if "dps" in data:
                 self.dps_cache.update(data["dps"])
@@ -519,7 +530,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if not payload:
             payload = "{}"
         elif payload.startswith(b"{"):
-            payload = payload
+            pass
         elif payload.startswith(PROTOCOL_VERSION_BYTES_31):
             payload = payload[len(PROTOCOL_VERSION_BYTES_31) :]  # remove version header
             # remove (what I'm guessing, but not confirmed is) 16-bytes of MD5
@@ -572,7 +583,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         if data is not None:
             json_data["dps"] = data
-        if command_hb == 0x0D:
+        elif command_hb == 0x0D:
             json_data["dps"] = self.dps_to_request
 
         payload = json.dumps(json_data).replace(" ", "").encode("utf-8")
@@ -585,7 +596,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 payload = PROTOCOL_33_HEADER + payload
         elif command == SET:
             payload = self.cipher.encrypt(payload)
-            preMd5String = (
+            to_hash = (
                 b"data="
                 + payload
                 + b"||lpv="
@@ -593,9 +604,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 + b"||"
                 + self.local_key
             )
-            m = md5()
-            m.update(preMd5String)
-            hexdigest = m.hexdigest()
+            hasher = md5()
+            hasher.update(to_hash)
+            hexdigest = hasher.hexdigest()
             payload = (
                 PROTOCOL_VERSION_BYTES_31
                 + hexdigest[8:][:16].encode("latin1")

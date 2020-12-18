@@ -27,6 +27,9 @@ Alternatively, you can install localtuya through HACS by adding this repository.
 
 **NOTE: You must have your Tuya device's Key and ID in order to use localtuya. There are several ways to obtain the localKey depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .**
 
+
+**NOTE - Nov 2020: If you plan on integrating these devices on a network that has internet and blocking their internet access, you must block DNS requests too (to the local DNS server eg 192.168.1.1). If you only block outbound internet then the device will sit in zombie state, it will refuse / not respond to any connections with the localkey. Connect the devices first with an active internet connection, grab each device localkey and then implement the block.**
+
 Devices can be configured in two ways:
 
 # 1. YAML config files
