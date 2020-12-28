@@ -1,6 +1,7 @@
 """Platform to locally control Tuya-based cover devices."""
 import asyncio
 import logging
+import time
 from functools import partial
 
 import voluptuous as vol
@@ -60,23 +61,19 @@ def flow_schema(dps):
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     """Tuya cover device."""
 
-    def __init__(
-        self,
-        device,
-        config_entry,
-        switchid,
-        **kwargs,
-    ):
+    def __init__(self, device, config_entry, switchid, **kwargs):
         """Initialize a new LocaltuyaCover."""
-        super().__init__(device, config_entry, switchid, **kwargs)
+        super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
-        self._current_cover_position = None
+        self._current_cover_position = 50
         commands_set = DEFAULT_COMMANDS_SET
         if self.has_config(CONF_COMMANDS_SET):
             commands_set = self._config[CONF_COMMANDS_SET]
         self._open_cmd = commands_set.split("_")[0]
         self._close_cmd = commands_set.split("_")[1]
         self._stop_cmd = commands_set.split("_")[2]
+        self._timer_start = time.time()
+        self._previous_state = self._stop_cmd
         print("Initialized cover [{}]".format(self.name))
 
     @property
@@ -122,7 +119,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
-        _LOGGER.debug("Setting cover position: %r", kwargs[ATTR_POSITION])
+        self.debug("Setting cover position: %r", kwargs[ATTR_POSITION])
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_FAKE:
             newpos = float(kwargs[ATTR_POSITION])
 
@@ -130,15 +127,14 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             posdiff = abs(newpos - currpos)
             mydelay = posdiff / 50.0 * self._config[CONF_SPAN_TIME]
             if newpos > currpos:
-                _LOGGER.debug("Opening to %f: delay %f", newpos, mydelay)
+                self.debug("Opening to %f: delay %f", newpos, mydelay)
                 await self.async_open_cover()
             else:
-                _LOGGER.debug("Closing to %f: delay %f", newpos, mydelay)
+                self.debug("Closing to %f: delay %f", newpos, mydelay)
                 await self.async_close_cover()
             await asyncio.sleep(mydelay)
             await self.async_stop_cover()
-            self._current_cover_position = 50
-            _LOGGER.debug("Done")
+            self.debug("Done")
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
@@ -152,21 +148,22 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
-        _LOGGER.debug("Launching command %s to cover ", self._open_cmd)
+        self.debug("Launching command %s to cover ", self._open_cmd)
         await self._device.set_dp(self._open_cmd, self._dp_id)
 
     async def async_close_cover(self, **kwargs):
         """Close cover."""
-        _LOGGER.debug("Launching command %s to cover ", self._close_cmd)
+        self.debug("Launching command %s to cover ", self._close_cmd)
         await self._device.set_dp(self._close_cmd, self._dp_id)
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
-        _LOGGER.debug("Launching command %s to cover ", self._stop_cmd)
+        self.debug("Launching command %s to cover ", self._stop_cmd)
         await self._device.set_dp(self._stop_cmd, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""
+        self._previous_state = self._state
         self._state = self.dps(self._dp_id)
         if self._state.isupper():
             self._open_cmd = self._open_cmd.upper()
@@ -179,8 +176,29 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 self._current_cover_position = 100 - curr_pos
             else:
                 self._current_cover_position = curr_pos
-        else:
-            self._current_cover_position = 50
+        if (
+            self._config[CONF_POSITIONING_MODE] == COVER_MODE_FAKE
+            and self._state != self._previous_state
+        ):
+            if self._previous_state != self._stop_cmd:
+                # the state has changed, and the cover was moving
+                time_diff = time.time() - self._timer_start
+                pos_diff = round(time_diff / self._config[CONF_SPAN_TIME] * 50.0)
+                if self._previous_state == self._close_cmd:
+                    pos_diff = -pos_diff
+                self._current_cover_position = min(
+                    100, max(0, self._current_cover_position + pos_diff)
+                )
+
+                change = "stopped" if self._state == self._stop_cmd else "inverted"
+                self.debug(
+                    "Movement %s after %s sec., position difference %s",
+                    change,
+                    time_diff,
+                    pos_diff,
+                )
+            # store the time of the last movement change
+            self._timer_start = time.time()
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)

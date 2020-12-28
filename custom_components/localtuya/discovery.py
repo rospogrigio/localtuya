@@ -49,13 +49,13 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
             lambda: self, local_addr=("0.0.0.0", 6667)
         )
 
-        self.listeners = await asyncio.gather(listener, encrypted_listener)
+        self._listeners = await asyncio.gather(listener, encrypted_listener)
         _LOGGER.debug("Listening to broadcasts on UDP port 6666 and 6667")
 
     def close(self):
         """Stop discovery."""
-        self.callback = None
-        for transport, _ in self.listeners:
+        self._callback = None
+        for transport, _ in self._listeners:
             transport.close()
 
     def datagram_received(self, data, addr):
@@ -63,7 +63,7 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
         data = data[20:-8]
         try:
             data = decrypt_udp(data)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             data = data.decode()
 
         decoded = json.loads(data)
@@ -72,7 +72,7 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
     def device_found(self, device):
         """Discover a new device."""
         if device.get("ip") not in self.devices:
-            self.devices[device.get("ip")] = device
+            self.devices[device.get("gwId")] = device
             _LOGGER.debug("Discovered device: %s", device)
 
         if self._callback:
@@ -81,12 +81,10 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
 async def discover():
     """Discover and return devices on local network."""
-    discover = TuyaDiscovery()
+    discovery = TuyaDiscovery()
     try:
-        await discover.start()
+        await discovery.start()
         await asyncio.sleep(DEFAULT_TIMEOUT)
-    except Exception:
-        _LOGGER.exception("failed to discover devices")
     finally:
-        discover.close()
-    return discover.devices
+        discovery.close()
+    return discovery.devices

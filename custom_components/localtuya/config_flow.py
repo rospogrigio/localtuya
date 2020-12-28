@@ -1,10 +1,12 @@
 """Config flow for LocalTuya integration integration."""
+import errno
 import logging
 from importlib import import_module
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
+from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_ENTITIES,
@@ -15,10 +17,11 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 
-from . import pytuya
-from .const import (  # pylint: disable=unused-import
-    CONF_DPS_STRINGS,
+from .common import async_config_entry_by_device_id, pytuya
+from .const import CONF_DPS_STRINGS  # pylint: disable=unused-import
+from .const import (
     CONF_LOCAL_KEY,
+    CONF_PRODUCT_KEY,
     CONF_PROTOCOL_VERSION,
     DATA_DISCOVERY,
     DOMAIN,
@@ -44,14 +47,6 @@ BASIC_INFO_SCHEMA = vol.Schema(
     }
 )
 
-OPTIONS_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_FRIENDLY_NAME): str,
-        vol.Required(CONF_HOST): str,
-        vol.Required(CONF_LOCAL_KEY): str,
-        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
-    }
-)
 
 DEVICE_SCHEMA = vol.Schema(
     {
@@ -68,11 +63,37 @@ PICK_ENTITY_SCHEMA = vol.Schema(
 )
 
 
-def user_schema(devices):
+def user_schema(devices, entries):
     """Create schema for user step."""
-    devices = [f"{ip} ({dev['gwId']})" for ip, dev in devices.items()]
+    devices = {dev_id: dev["ip"] for dev_id, dev in devices.items()}
+    devices.update(
+        {
+            ent.data[CONF_DEVICE_ID]: ent.data[CONF_FRIENDLY_NAME]
+            for ent in entries
+            if ent.source != SOURCE_IMPORT
+        }
+    )
+    device_list = [f"{key} ({value})" for key, value in devices.items()]
     return vol.Schema(
-        {vol.Required(DISCOVERED_DEVICE): vol.In(devices + [CUSTOM_DEVICE])}
+        {vol.Required(DISCOVERED_DEVICE): vol.In(device_list + [CUSTOM_DEVICE])}
+    )
+
+
+def options_schema(entities):
+    """Create schema for options."""
+    entity_names = [
+        f"{entity[CONF_ID]} {entity[CONF_FRIENDLY_NAME]}" for entity in entities
+    ]
+    return vol.Schema(
+        {
+            vol.Required(CONF_FRIENDLY_NAME): str,
+            vol.Required(CONF_HOST): str,
+            vol.Required(CONF_LOCAL_KEY): str,
+            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+            vol.Required(
+                CONF_ENTITIES, description={"suggested_value": entity_names}
+            ): cv.multi_select(entity_names),
+        }
     )
 
 
@@ -169,13 +190,18 @@ async def validate_input(hass: core.HomeAssistant, data):
         )
 
         detected_dps = await interface.detect_available_dps()
-    except (ConnectionRefusedError, ConnectionResetError):
-        raise CannotConnect
-    except ValueError:
-        raise InvalidAuth
+    except (ConnectionRefusedError, ConnectionResetError) as ex:
+        raise CannotConnect from ex
+    except ValueError as ex:
+        raise InvalidAuth from ex
     finally:
         if interface:
-            interface.close()
+            await interface.close()
+
+    # Indicate an error if no datapoints found as the rest of the flow
+    # won't work in this case
+    if not detected_dps:
+        raise EmptyDpsList
 
     return dps_string_list(detected_dps)
 
@@ -202,7 +228,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.entities = []
 
     async def async_step_user(self, user_input=None):
-        """Handle initial step."""
+        """Handle the initial step."""
         errors = {}
         if user_input is not None:
             if user_input[DISCOVERED_DEVICE] != CUSTOM_DEVICE:
@@ -210,10 +236,22 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_basic_info()
 
         # Use cache if available or fallback to manual discovery
-        if DOMAIN in self.hass.data:
-            devices = self.hass.data[DOMAIN][DATA_DISCOVERY].devices
+        devices = {}
+        data = self.hass.data.get(DOMAIN)
+        if data and DATA_DISCOVERY in data:
+            devices = data[DATA_DISCOVERY].devices
         else:
-            devices = await discover()
+            try:
+                devices = await discover()
+            except OSError as ex:
+                if ex.errno == errno.EADDRINUSE:
+                    errors["base"] = "address_in_use"
+                else:
+                    errors["base"] = "discovery_failed"
+            except Exception:  # pylint: disable= broad-except
+                _LOGGER.exception("discovery failed")
+                errors["base"] = "discovery_failed"
+
         self.devices = {
             ip: dev
             for ip, dev in devices.items()
@@ -221,7 +259,9 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         }
 
         return self.async_show_form(
-            step_id="user", errors=errors, data_schema=user_schema(self.devices)
+            step_id="user",
+            errors=errors,
+            data_schema=user_schema(self.devices, self._async_current_entries()),
         )
 
     async def async_step_basic_info(self, user_input=None):
@@ -229,20 +269,35 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         if user_input is not None:
             await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
-            self._abort_if_unique_id_configured()
 
             try:
                 self.basic_info = user_input
+                if self.selected_device is not None:
+                    self.basic_info[CONF_PRODUCT_KEY] = self.devices[
+                        self.selected_device
+                    ]["productKey"]
                 self.dps_strings = await validate_input(self.hass, user_input)
                 return await self.async_step_pick_entity_type()
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
+            except EmptyDpsList:
+                errors["base"] = "empty_dps"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
 
+        # If selected device exists as a config entry, load config from it
+        if self.selected_device in self._async_current_ids():
+            entry = async_config_entry_by_device_id(self.hass, self.selected_device)
+            await self.async_set_unique_id(entry.data[CONF_DEVICE_ID])
+            self.basic_info = entry.data.copy()
+            self.dps_strings = self.basic_info.pop(CONF_DPS_STRINGS).copy()
+            self.entities = self.basic_info.pop(CONF_ENTITIES).copy()
+            return await self.async_step_pick_entity_type()
+
+        # Insert default values from discovery if present
         defaults = {}
         defaults.update(user_input or {})
         if self.selected_device is not None:
@@ -266,6 +321,10 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_DPS_STRINGS: self.dps_strings,
                     CONF_ENTITIES: self.entities,
                 }
+                entry = async_config_entry_by_device_id(self.hass, self.unique_id)
+                if entry:
+                    self.hass.config_entries.async_update_entry(entry, data=config)
+                    return self.async_abort(reason="device_updated")
                 return self.async_create_entry(
                     title=config[CONF_FRIENDLY_NAME], data=config
                 )
@@ -288,7 +347,8 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         if user_input is not None:
             already_configured = any(
-                switch[CONF_ID] == user_input[CONF_ID] for switch in self.entities
+                switch[CONF_ID] == int(user_input[CONF_ID].split(" ")[0])
+                for switch in self.entities
             )
             if not already_configured:
                 user_input[CONF_PLATFORM] = self.platform
@@ -327,13 +387,24 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         """Manage basic options."""
         device_id = self.config_entry.data[CONF_DEVICE_ID]
         if user_input is not None:
-            self.data = {
-                CONF_DEVICE_ID: device_id,
-                CONF_DPS_STRINGS: self.dps_strings,
-                CONF_ENTITIES: [],
-            }
-            self.data.update(user_input)
-            return await self.async_step_entity()
+            self.data = user_input.copy()
+            self.data.update(
+                {
+                    CONF_DEVICE_ID: device_id,
+                    CONF_DPS_STRINGS: self.dps_strings,
+                    CONF_ENTITIES: [],
+                }
+            )
+            if len(user_input[CONF_ENTITIES]) > 0:
+                entity_ids = [
+                    int(entity.split(" ")[0]) for entity in user_input[CONF_ENTITIES]
+                ]
+                self.entities = [
+                    entity
+                    for entity in self.config_entry.data[CONF_ENTITIES]
+                    if entity[CONF_ID] in entity_ids
+                ]
+                return await self.async_step_entity()
 
         # Not supported for YAML imports
         if self.config_entry.source == config_entries.SOURCE_IMPORT:
@@ -341,7 +412,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=schema_defaults(OPTIONS_SCHEMA, **self.config_entry.data),
+            data_schema=schema_defaults(
+                options_schema(self.entities), **self.config_entry.data
+            ),
             description_placeholders={"device_id": device_id},
         )
 
@@ -395,3 +468,7 @@ class CannotConnect(exceptions.HomeAssistantError):
 
 class InvalidAuth(exceptions.HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
+
+class EmptyDpsList(exceptions.HomeAssistantError):
+    """Error to indicate no datapoints found."""
