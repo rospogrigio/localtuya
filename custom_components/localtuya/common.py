@@ -221,7 +221,6 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self._dp_id = dp_id
         self._status = {}
         self.set_logger(logger, self._config_entry.data[CONF_DEVICE_ID])
-        self._stored_state = {}
 
     async def async_added_to_hass(self):
         """Subscribe localtuya events."""
@@ -231,8 +230,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         state = await self.async_get_last_state()
         if state:
-            self._stored_state = state
-            self.status_restored()
+            self.status_restored(state)
 
         def _update_handler(status):
             """Update entity state when status was updated."""
@@ -321,7 +319,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         Override in subclasses and update entity specific state.
         """
 
-    def status_restored(self):
+    def status_restored(self, stored_state):
         """Device status was restored.
 
         Override in subclasses and update entity specific state.

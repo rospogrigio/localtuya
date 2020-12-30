@@ -34,6 +34,7 @@ COVER_12_CMDS = "1_2_3"
 COVER_MODE_NONE = "none"
 COVER_MODE_POSITION = "position"
 COVER_MODE_TIMED = "timed"
+COVER_TIMEOUT_TOLERANCE = 3.0
 
 DEFAULT_COMMANDS_SET = COVER_ONOFF_CMDS
 DEFAULT_POSITIONING_MODE = COVER_MODE_NONE
@@ -158,7 +159,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             # for timed positioning, stop the cover after a full opening timespan
             # instead of waiting the internal timeout
             self.hass.async_create_task(
-                self.async_stop_after_timeout(self._config[CONF_SPAN_TIME] + 5)
+                self.async_stop_after_timeout(
+                    self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE
+                )
             )
 
     async def async_close_cover(self, **kwargs):
@@ -169,7 +172,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             # for timed positioning, stop the cover after a full opening timespan
             # instead of waiting the internal timeout
             self.hass.async_create_task(
-                self.async_stop_after_timeout(self._config[CONF_SPAN_TIME] + 5)
+                self.async_stop_after_timeout(
+                    self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE
+                )
             )
 
     async def async_stop_cover(self, **kwargs):
@@ -177,13 +182,11 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self.debug("Launching command %s to cover ", self._stop_cmd)
         await self._device.set_dp(self._stop_cmd, self._dp_id)
 
-    def status_restored(self):
+    def status_restored(self, stored_state):
         """Restore the last stored cover status."""
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_TIMED:
-            stored_pos = int(
-                self._stored_state.attributes.get("current_position", "-1")
-            )
-            if stored_pos != -1:
+            stored_pos = stored_state.attributes.get("current_position")
+            if stored_pos is not None:
                 self._current_cover_position = stored_pos
                 self.debug("Restored cover position %s", self._current_cover_position)
 
