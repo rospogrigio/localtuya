@@ -212,8 +212,11 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
     async def _async_reconnect(now):
         """Try connecting to devices not already connected to."""
-        for entry in hass.data[DOMAIN]:
-            device = entry[TUYA_DEVICE]
+        for entry_id, value in hass.data[DOMAIN].items():
+            if entry_id == DATA_DISCOVERY:
+                continue
+
+            device = value[TUYA_DEVICE]
             if not device.connected:
                 device.async_connect()
 
