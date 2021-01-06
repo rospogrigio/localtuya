@@ -88,6 +88,8 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def current_cover_position(self):
         """Return current cover position in percent."""
+        if self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE:
+            return None
         return self._current_cover_position
 
     @property
