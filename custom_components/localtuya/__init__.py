@@ -56,6 +56,7 @@ localtuya:
 """
 import asyncio
 import logging
+from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.entity_registry as er
@@ -72,6 +73,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.reload import async_integration_yaml_config
 
 from .common import TuyaDevice, async_config_entry_by_device_id
@@ -82,6 +84,8 @@ from .discovery import TuyaDiscovery
 _LOGGER = logging.getLogger(__name__)
 
 UNSUB_LISTENER = "unsub_listener"
+
+RECONNECT_INTERVAL = timedelta(seconds=60)
 
 CONFIG_SCHEMA = config_schema()
 
@@ -191,7 +195,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
             _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
 
             device = hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE]
-            device.connect()
+            device.async_connect()
 
     discovery = TuyaDiscovery(_device_discovered)
 
@@ -205,6 +209,18 @@ async def async_setup(hass: HomeAssistant, config: dict):
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _shutdown)
     except Exception:  # pylint: disable=broad-except
         _LOGGER.exception("failed to set up discovery")
+
+    async def _async_reconnect(now):
+        """Try connecting to devices not already connected to."""
+        for entry_id, value in hass.data[DOMAIN].items():
+            if entry_id == DATA_DISCOVERY:
+                continue
+
+            device = value[TUYA_DEVICE]
+            if not device.connected:
+                device.async_connect()
+
+    async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
 
     hass.helpers.service.async_register_admin_service(
         DOMAIN,
@@ -245,6 +261,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 for platform in platforms
             ]
         )
+        device.async_connect()
 
     await async_remove_orphan_entities(hass, entry)
 
