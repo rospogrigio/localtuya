@@ -71,7 +71,10 @@ class LocaltuyaSensor(LocalTuyaEntity):
         period = self._config.get(CONF_PERIOD)
         if period is not None:
             ts_now = dt_util.now()
-            if self.ts_last is not None and (ts_now - self.ts_last < timedelta(seconds=period)):
+            if (
+                self.ts_last is not None
+                and (ts_now - self.ts_last < timedelta(seconds=period))
+            ):
                 return
             self.ts_last = ts_now
 
