@@ -39,6 +39,7 @@ CONF_FAN_SPEED_MEDIUM = "fan_speed_medium"
 CONF_FAN_SPEED_HIGH = "fan_speed_high"
 
 # sensor
+CONF_PERIOD = "period"
 CONF_SCALING = "scaling"
 
 DATA_DISCOVERY = "discovery"
