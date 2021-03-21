@@ -32,13 +32,13 @@ def flow_schema(dps):
         vol.Optional(CONF_FAN_SPEED_CONTROL): vol.In(dps),
         vol.Optional(CONF_FAN_OSCILLATING_CONTROL): vol.In(dps),
         vol.Optional(CONF_FAN_SPEED_LOW, default=SPEED_LOW): vol.In(
-            [SPEED_LOW, "1", "2", "small"]
+            [SPEED_LOW, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "small"]
         ),
         vol.Optional(CONF_FAN_SPEED_MEDIUM, default=SPEED_MEDIUM): vol.In(
-            [SPEED_MEDIUM, "mid", "2", "3"]
+            [SPEED_MEDIUM, "mid", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
         ),
         vol.Optional(CONF_FAN_SPEED_HIGH, default=SPEED_HIGH): vol.In(
-            [SPEED_HIGH, "auto", "3", "4", "large"]
+            [SPEED_HIGH, "auto", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "large"]
         ),
     }
 
