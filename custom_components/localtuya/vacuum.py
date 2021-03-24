@@ -60,10 +60,10 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
     """Tuya vacuum device."""
 
     def __init__(
-        self, 
-        device, 
-        config_entry, 
-        switchid, 
+        self,
+        device,
+        config_entry,
+        switchid,
         **kwargs
     ):
         """Initialize a new LocaltuyaVacuum."""
