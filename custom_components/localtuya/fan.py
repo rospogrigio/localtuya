@@ -32,13 +32,13 @@ def flow_schema(dps):
         vol.Optional(CONF_FAN_SPEED_CONTROL): vol.In(dps),
         vol.Optional(CONF_FAN_OSCILLATING_CONTROL): vol.In(dps),
         vol.Optional(CONF_FAN_SPEED_LOW, default=SPEED_LOW): vol.In(
-            [SPEED_LOW, "1", "2"]
+            [SPEED_LOW, "1", "2", "small"]
         ),
         vol.Optional(CONF_FAN_SPEED_MEDIUM, default=SPEED_MEDIUM): vol.In(
             [SPEED_MEDIUM, "mid", "2", "3"]
         ),
         vol.Optional(CONF_FAN_SPEED_HIGH, default=SPEED_HIGH): vol.In(
-            [SPEED_HIGH, "auto", "3", "4"]
+            [SPEED_HIGH, "auto", "3", "4", "large"]
         ),
     }
 
@@ -136,7 +136,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             self._config.get(CONF_FAN_SPEED_HIGH): SPEED_HIGH,
         }
 
-        self._is_on = self.dps(self._dps_id)
+        self._is_on = self.dps(self._dp_id)
 
         if self.has_config(CONF_FAN_SPEED_CONTROL):
             self._speed = mappings.get(self.dps_conf(CONF_FAN_SPEED_CONTROL))
