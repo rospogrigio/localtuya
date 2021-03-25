@@ -10,6 +10,7 @@ from homeassistant.components.fan import (
     SPEED_MEDIUM,
     SPEED_OFF,
     SUPPORT_OSCILLATE,
+    SUPPORT_DIRECTION,
     SUPPORT_SET_SPEED,
     FanEntity,
 )
@@ -17,6 +18,7 @@ from homeassistant.components.fan import (
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_FAN_OSCILLATING_CONTROL,
+    CONF_FAN_DIRECTION,
     CONF_FAN_SPEED_CONTROL,
     CONF_FAN_SPEED_HIGH,
     CONF_FAN_SPEED_LOW,
@@ -31,6 +33,7 @@ def flow_schema(dps):
     return {
         vol.Optional(CONF_FAN_SPEED_CONTROL): vol.In(dps),
         vol.Optional(CONF_FAN_OSCILLATING_CONTROL): vol.In(dps),
+        vol.Optional(CONF_FAN_DIRECTION): vol.In(dps),
         vol.Optional(CONF_FAN_SPEED_LOW, default=SPEED_LOW): vol.In(
             [SPEED_LOW, "1", "2", "small"]
         ),
@@ -58,11 +61,17 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         self._is_on = False
         self._speed = None
         self._oscillating = None
+        self._direction = None
 
     @property
     def oscillating(self):
         """Return current oscillating status."""
         return self._oscillating
+
+    @property
+    def current_direction(self) -> str:
+        """Return current direction of the fan."""
+        return self._direction
 
     @property
     def is_on(self):
@@ -116,6 +125,13 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         )
         self.schedule_update_ha_state()
 
+    async def async_set_direction(self, direction: str) -> None:
+        """Set direction."""
+        await self._device.set_dp(
+            direction, self._config.get(CONF_FAN_DIRECTION)
+        )
+        self.schedule_update_ha_state()
+
     @property
     def supported_features(self) -> int:
         """Flag supported features."""
@@ -123,6 +139,8 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
         if self.has_config(CONF_FAN_OSCILLATING_CONTROL):
             supports |= SUPPORT_OSCILLATE
+        if self.has_config(CONF_FAN_DIRECTION):
+            supports |= SUPPORT_DIRECTION
         if self.has_config(CONF_FAN_SPEED_CONTROL):
             supports |= SUPPORT_SET_SPEED
 
@@ -151,6 +169,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
         if self.has_config(CONF_FAN_OSCILLATING_CONTROL):
             self._oscillating = self.dps_conf(CONF_FAN_OSCILLATING_CONTROL)
+
+        if self.has_config(CONF_FAN_DIRECTION):
+            self._direction = self.dps_conf(CONF_FAN_DIRECTION)
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan, flow_schema)
