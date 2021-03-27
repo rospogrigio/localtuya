@@ -127,9 +127,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     async def async_set_direction(self, direction: str) -> None:
         """Set direction."""
-        await self._device.set_dp(
-            direction, self._config.get(CONF_FAN_DIRECTION)
-        )
+        await self._device.set_dp(direction, self._config.get(CONF_FAN_DIRECTION))
         self.schedule_update_ha_state()
 
     @property
