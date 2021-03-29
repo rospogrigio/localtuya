@@ -137,11 +137,6 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         """Return the list of available fan speeds and cleaning modes."""
         return self._cleaning_modes_list + self._fan_speed_list
 
-    @property
-    def error(self):
-        """Return error message."""
-        return ""
-
     async def async_start(self, **kwargs):
         """Turn the vacuum on and start cleaning."""
         await self._device.set_dp(self._commands_set[0], self._config[CONF_COMMANDS_DP])
@@ -181,9 +176,8 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         """Locate the vacuum cleaner."""
         return None
 
-    async def async_set_fan_speed(self, **kwargs):
+    async def async_set_fan_speed(self, fan_speed, **kwargs):
         """Set the cleaning mode."""
-        fan_speed = kwargs["fan_speed"]
         if fan_speed in self._cleaning_modes_list:
             print("SET NEW CM [{}]".format(fan_speed))
             await self._device.set_dp(fan_speed, self._config[CONF_CLEANING_MODE_DP])
