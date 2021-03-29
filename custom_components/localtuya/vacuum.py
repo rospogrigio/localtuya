@@ -194,11 +194,11 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
     def status_updated(self):
         """Device status was updated."""
         state_value = str(self.dps(self._dp_id))
-        if state_value == self._config[CONF_IDLE_STATUS_VALUE]:
+        if state_value in self._config.get(CONF_IDLE_STATUS_VALUE, ""):
             self._state = STATE_IDLE
-        elif state_value == self._config[CONF_DOCKED_STATUS_VALUE]:
+        elif state_value in self._config.get(CONF_DOCKED_STATUS_VALUE, ""):
             self._state = STATE_DOCKED
-        elif state_value == self._config.get(CONF_RETURNING_STATUS_VALUE, ""):
+        elif state_value in self._config.get(CONF_RETURNING_STATUS_VALUE, ""):
             self._state = STATE_RETURNING
         else:
             self._state = STATE_CLEANING
