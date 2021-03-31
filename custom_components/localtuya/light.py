@@ -276,7 +276,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             (
                 item
                 for item in self._effect_list
-                if self._scenes.get(item, None) == data
+                if self._scenes.get(item) == data
             ),
             SCENE_CUSTOM,
         )
