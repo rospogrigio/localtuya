@@ -15,7 +15,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from . import pytuya
 from .const import (
@@ -127,7 +127,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return if connected to device."""
         return self._interface is not None
 
-    def connect(self):
+    def async_connect(self):
         """Connect to device if not already connected."""
         if not self._is_closing and self._connect_task is None and not self._interface:
             self._connect_task = asyncio.create_task(self._make_connection())
@@ -209,7 +209,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self.debug("Disconnected - waiting for discovery broadcast")
 
 
-class LocalTuyaEntity(Entity, pytuya.ContextualLogger):
+class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
     def __init__(self, device, config_entry, dp_id, logger, **kwargs):
@@ -227,6 +227,10 @@ class LocalTuyaEntity(Entity, pytuya.ContextualLogger):
         await super().async_added_to_hass()
 
         self.debug("Adding %s with configuration: %s", self.entity_id, self._config)
+
+        state = await self.async_get_last_state()
+        if state:
+            self.status_restored(state)
 
         def _update_handler(status):
             """Update entity state when status was updated."""
@@ -311,6 +315,12 @@ class LocalTuyaEntity(Entity, pytuya.ContextualLogger):
 
     def status_updated(self):
         """Device status was updated.
+
+        Override in subclasses and update entity specific state.
+        """
+
+    def status_restored(self, stored_state):
+        """Device status was restored.
 
         Override in subclasses and update entity specific state.
         """
