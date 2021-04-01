@@ -273,7 +273,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
 
     def __find_scene_by_scene_data(self, data):
         return next(
-            (item for item in self._effect_list if self._scenes[item] == data),
+            (item for item in self._effect_list if self._scenes.get(item) == data),
             SCENE_CUSTOM,
         )
 
