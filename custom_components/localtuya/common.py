@@ -145,17 +145,43 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             )
             self._interface.add_dps_to_request(self.dps_to_request)
 
-            self.debug("Retrieving initial state")
-            status = await self._interface.status()
-            if status is None:
-                raise Exception("Failed to retrieve status")
-
-            self.status_updated(status)
         except Exception:  # pylint: disable=broad-except
             self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
             if self._interface is not None:
                 await self._interface.close()
                 self._interface = None
+
+        if self._interface is not None:
+            try:
+                self.debug("Retrieving initial state")
+                status = await self._interface.status()
+                if status is None or not status:
+                    raise Exception("Failed to retrieve status")
+
+                self._interface.start_heartbeat()
+                self.status_updated(status)
+                 
+            except Exception:  # pylint: disable=broad-except
+                try:
+                    if self._interface is not None:
+                        self.debug("Initial state update failed, trying refresh command")
+                        await self._interface.refresh()
+
+                        self.debug("Refresh completed, retrying initial state")
+                        status = await self._interface.status()
+                        if status is None or not status:
+                            raise Exception("Failed to retrieve status")
+
+                        self._interface.start_heartbeat()
+                        self.status_updated(status)
+                    else:
+                        raise Exception("Interface went away")
+                except Exception:  # pylint: disable=broad-except
+                    self.exception(f"Refresh/initial status update of {self._config_entry[CONF_HOST]} failed")
+                    if self._interface is not None:
+                        await self._interface.close()
+                        self._interface = None
+
         self._connect_task = None
 
     async def close(self):
@@ -194,10 +220,14 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def status_updated(self, status):
         """Device updated status."""
-        self._status.update(status)
+        if status:
+            self._status.update(status)
 
-        signal = f"localtuya_{self._config_entry[CONF_DEVICE_ID]}"
-        async_dispatcher_send(self._hass, signal, self._status)
+            signal = f"localtuya_{self._config_entry[CONF_DEVICE_ID]}"
+            async_dispatcher_send(self._hass, signal, self._status)
+        else:
+            self.debug("Received empty status update (likely for refresh)")
+
 
     @callback
     def disconnected(self):
