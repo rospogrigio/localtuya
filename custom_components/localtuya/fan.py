@@ -38,7 +38,7 @@ def flow_schema(dps):
             [SPEED_MEDIUM, "mid", "2", "3"]
         ),
         vol.Optional(CONF_FAN_SPEED_HIGH, default=SPEED_HIGH): vol.In(
-            [SPEED_HIGH, "auto", "3", "4", "large"]
+            [SPEED_HIGH, "auto", "3", "4", "large", "big"]
         ),
     }
 
