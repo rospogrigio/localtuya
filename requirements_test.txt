@@ -4,6 +4,6 @@ flake8==3.9.1
 mypy==0.812
 pydocstyle==6.0.0
 cryptography==3.2
-pylint==2.8.1
+pylint==2.8.2
 pylint-strict-informational==0.1
 homeassistant==2021.1.4
