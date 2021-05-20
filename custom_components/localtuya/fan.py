@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based fan devices."""
+from __future__ import annotations
 import logging
 from functools import partial
 
@@ -69,7 +70,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         return self._oscillating
 
     @property
-    def current_direction(self) -> str:
+    def current_direction(self) -> str | None:
         """Return current direction of the fan."""
         return self._direction
 
