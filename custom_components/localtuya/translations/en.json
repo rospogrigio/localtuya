@@ -1,13 +1,17 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Device has already been configured."
+            "already_configured": "Device has already been configured.",
+            "device_updated": "Device configuration has been updated!"
         },
         "error": {
             "cannot_connect": "Cannot connect to device. Verify that address is correct and try again.",
             "invalid_auth": "Failed to authenticate with device. Verify that device id and local key are correct.",
             "unknown": "An unknown error occurred. See log for details.",
-            "entity_already_configured": "Entity with this ID has already been configured."
+            "entity_already_configured": "Entity with this ID has already been configured.",
+            "address_in_use": "Address used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
+            "discovery_failed": "Something failed when discovering devices. See log for details.",
+            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists."
         },
         "step": {
             "user": {
@@ -47,16 +51,16 @@
                     "voltage": "Voltage",
                     "commands_set": "Open_Close_Stop Commands Set",
                     "positioning_mode": "Positioning mode",
-                    "current_position_dp": "Current Position (when Position mode is *position*)",
-                    "set_position_dp": "Set Position (when Position Mode is *position*)",
-                    "position_inverted": "Invert 0-100 position (when Position Mode is *position*)",
-                    "span_time": "Full opening time, in secs. (when Position Mode is fake*)",
+                    "current_position_dp": "Current Position (for *position* mode only)",
+                    "set_position_dp": "Set Position (for *position* mode only)",
+                    "position_inverted": "Invert 0-100 position (for *position* mode only)",
+                    "span_time": "Full opening time, in secs. (for *timed* mode only)",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
                     "scaling": "Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
-                    "brightness": "Brightness",
+                    "brightness": "Brightness (only for white color)",
                     "brightness_lower": "Brightness Lower Value",
                     "brightness_upper": "Brightness Upper Value",
                     "color_temp": "Color Temperature",
@@ -68,7 +72,18 @@
                     "max_temperature_dp": "Max Temperature (optional)",
                     "min_temperature_dp": "Min Temperature (optional)",
                     "precision": "Precision (optional, for DPs values)",
-                    "temperature_unit": "Temperature Unit (optional)"
+                    "temperature_unit": "Temperature Unit (optional)",
+                    "color": "Color",
+                    "color_mode": "Color Mode",
+                    "color_temp_min_kelvin": "Minimum Color Temperature in K",
+                    "color_temp_max_kelvin": "Maximum Color Temperature in K",
+                    "music_mode": "Music mode available",
+                    "scene": "Scene",
+                    "fan_speed_control": "Fan Speed Control",
+                    "fan_oscillating_control": "Fan Oscillating Control",
+                    "fan_speed_low": "Fan Low Speed Setting",
+                    "fan_speed_medium": "Fan Medium Speed Setting",
+                    "fan_speed_high": "Fan High Speed Setting"
                 }
             }
         }
@@ -82,7 +97,8 @@
                     "friendly_name": "Friendly Name",
                     "host": "Host",
                     "local_key": "Local key",
-                    "protocol_version": "Protocol Version"
+                    "protocol_version": "Protocol Version",
+                    "entities": "Entities (uncheck an entity to remove it)"
                 }
             },
             "entity": {
@@ -98,14 +114,14 @@
                     "positioning_mode": "Positioning mode",
                     "current_position_dp": "Current Position (for *position* mode only)",
                     "set_position_dp": "Set Position (for *position* mode only)",
-                    "position_inverted": "Invert 0-100 position (when Position Mode is *position*)",
-                    "span_time": "Full opening time, in secs. (for *fake* mode only)",
+                    "position_inverted": "Invert 0-100 position (for *position* mode only)",
+                    "span_time": "Full opening time, in secs. (for *timed* mode only)",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
                     "scaling": "Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
-                    "brightness": "Brightness",
+                    "brightness": "Brightness (only for white color)",
                     "brightness_lower": "Brightness Lower Value",
                     "brightness_upper": "Brightness Upper Value",
                     "color_temp": "Color Temperature",
@@ -117,7 +133,18 @@
                     "max_temperature_dp": "Max Temperature (optional)",
                     "min_temperature_dp": "Min Temperature (optional)",
                     "precision": "Precision (optional, for DPs values)",
-                    "temperature_unit": "Temperature Unit (optional)"
+                    "temperature_unit": "Temperature Unit (optional)",
+                    "color": "Color",
+                    "color_mode": "Color Mode",
+                    "color_temp_min_kelvin": "Minimum Color Temperature in K",
+                    "color_temp_max_kelvin": "Maximum Color Temperature in K",
+                    "music_mode": "Music mode available",
+                    "scene": "Scene",
+                    "fan_speed_control": "Fan Speed Control",
+                    "fan_oscillating_control": "Fan Oscillating Control",
+                    "fan_speed_low": "Fan Low Speed Setting",
+                    "fan_speed_medium": "Fan Medium Speed Setting",
+                    "fan_speed_high": "Fan High Speed Setting"
                 }
             },
             "yaml_import": {
