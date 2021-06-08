@@ -1,7 +1,7 @@
 black==21.4b0
 codespell==2.0.0
 flake8==3.9.1
-mypy==0.812
+mypy==0.901
 pydocstyle==6.0.0
 cryptography==3.2
 pylint==2.8.2
