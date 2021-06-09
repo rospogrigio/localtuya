@@ -53,6 +53,11 @@ localtuya:
         current: 18 # Optional
         current_consumption: 19 # Optional
         voltage: 20 # Optional
+
+      - platform: vacuum
+        friendly_name: Device Fan
+        id: 1
+        battery_dp: 4
 """
 import asyncio
 import logging
