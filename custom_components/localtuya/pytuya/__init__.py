@@ -87,7 +87,7 @@ HEARTBEAT_INTERVAL = 10
 # length, zero padding implies could be more than one byte)
 PAYLOAD_DICT = {
     "type_0a": {
-        STATUS: {"hexByte": 0x0A, "command": {"gwId": "", "devId": ""}},
+        STATUS: {"hexByte": 0x0A, "command": {"gwId": "", "devId": "", "cid": ""}},
         SET: {"hexByte": 0x07, "command": {"devId": "", "uid": "", "t": ""}},
         HEARTBEAT: {"hexByte": 0x09, "command": {}},
     },
@@ -578,6 +578,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             json_data["devId"] = self.id
         if "uid" in json_data:
             json_data["uid"] = self.id  # still use id, no separate uid
+        if "cid" in json_data:
+            json_data["cid"] = self.id  # still use id, no separate uid
         if "t" in json_data:
             json_data["t"] = str(int(time.time()))
 
