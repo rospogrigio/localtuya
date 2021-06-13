@@ -1,0 +1,41 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  reviewers:
+  - postlund
+  - rospogrigio
+  - ultratoto14
+  assignees:
+  - postlund
+  - rospogrigio
+  - ultratoto14
+  labels:
+  - dependencies
+  ignore:
+  - dependency-name: cryptography
+    versions:
+    - "> 3.2"
+  - dependency-name: black
+    versions:
+    - 21.4b1
+  - dependency-name: pylint
+    versions:
+    - 2.6.1
+    - 2.6.2
+    - 2.7.0
+    - 2.7.1
+    - 2.7.3
+    - 2.8.0
+  - dependency-name: homeassistant
+    versions:
+    - 2021.1.5
+    - 2021.2.0
+    - 2021.2.1
+    - 2021.2.2
+    - 2021.2.3
+    - 2021.3.0
+    - 2021.3.1
