@@ -38,6 +38,9 @@ CONF_FAN_SPEED_LOW = "fan_speed_low"
 CONF_FAN_SPEED_MEDIUM = "fan_speed_medium"
 CONF_FAN_SPEED_HIGH = "fan_speed_high"
 
+# lock
+CONF_LOCK_COMMANDS_SET = "lock_commands_set"
+
 # sensor
 CONF_SCALING = "scaling"
 
@@ -46,6 +49,6 @@ DATA_DISCOVERY = "discovery"
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "cover", "fan", "light", "lock", "sensor", "switch"]
 
 TUYA_DEVICE = "tuya_device"
