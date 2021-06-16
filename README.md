@@ -54,11 +54,11 @@ localtuya:
       - platform: cover
         friendly_name: Device Cover
         id: 2
-        open_close_cmds: ["on_off","open_close"] # Optional, default: "on_off"
-        positioning_mode: ["none","position","timed"] # Optional, default: "none"
-        currpos_dps: 3 # Optional, required only for "position" mode
-        setpos_dps: 4  # Optional, required only for "position" mode
-        span_time: 25  # Full movement time: Optional, required only for "timed" mode
+        commands_set: ["on_off_stop","open_close_stop","fz_zz_stop","1_2_3"] # Optional, default: "on_off_stop"
+        positioning_mode: ["none","position","fake"] # Optional, default: "none"
+        current_position_dp: 3 # Optional, required only for "position" mode
+        set_position_dp: 4  # Optional, required only for "position" mode
+        span_time: 25  # Full movement time: Optional, required only for "fake" mode
 
       - platform: fan
         friendly_name: Device Fan
