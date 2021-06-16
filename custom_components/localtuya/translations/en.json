@@ -72,6 +72,7 @@
                     "scene": "Scene",
                     "fan_speed_control": "Fan Speed Control",
                     "fan_oscillating_control": "Fan Oscillating Control",
+                    "fan_direction": "Fan Direction",
                     "fan_speed_low": "Fan Low Speed Setting",
                     "fan_speed_medium": "Fan Medium Speed Setting",
                     "fan_speed_high": "Fan High Speed Setting"
@@ -124,6 +125,7 @@
                     "scene": "Scene",
                     "fan_speed_control": "Fan Speed Control",
                     "fan_oscillating_control": "Fan Oscillating Control",
+                    "fan_direction": "Fan Direction",
                     "fan_speed_low": "Fan Low Speed Setting",
                     "fan_speed_medium": "Fan Medium Speed Setting",
                     "fan_speed_high": "Fan High Speed Setting"
