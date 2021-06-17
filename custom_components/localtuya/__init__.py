@@ -43,6 +43,7 @@ localtuya:
       - platform: sensor
         friendly_name: Plug Voltage
         id: 20
+        period: 60 # Optional
         scaling: 0.1 # Optional
         device_class: voltage # Optional
         unit_of_measurement: "V" # Optional
