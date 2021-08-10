@@ -41,11 +41,30 @@ CONF_FAN_SPEED_HIGH = "fan_speed_high"
 # sensor
 CONF_SCALING = "scaling"
 
+# climate
+CONF_TARGET_TEMPERATURE_DP = "target_temperature_dp"
+CONF_CURRENT_TEMPERATURE_DP = "current_temperature_dp"
+CONF_TEMPERATURE_STEP = "temperature_step"
+CONF_MAX_TEMP_DP = "max_temperature_dp"
+CONF_MIN_TEMP_DP = "min_temperature_dp"
+CONF_FAN_MODE_DP = "fan_mode_dp"
+CONF_PRECISION = "precision"
+CONF_TARGET_PRECISION = "target_precision"
+CONF_HVAC_MODE_DP = "hvac_mode_dp"
+CONF_HVAC_MODE_SET = "hvac_mode_set"
+CONF_PRESET_DP = "preset_dp"
+CONF_PRESET_SET = "preset_set"
+CONF_EURISTIC_ACTION = "euristic_action"
+CONF_HVAC_ACTION_DP = "hvac_action_dp"
+CONF_HVAC_ACTION_SET = "hvac_action_set"
+CONF_ECO_DP = "eco_dp"
+CONF_ECO_VALUE = "eco_value"
+
 DATA_DISCOVERY = "discovery"
 
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "cover", "climate", "fan", "light", "sensor", "switch"]
 
 TUYA_DEVICE = "tuya_device"

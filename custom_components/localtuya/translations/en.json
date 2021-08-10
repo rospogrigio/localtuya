@@ -74,7 +74,25 @@
                     "fan_oscillating_control": "Fan Oscillating Control",
                     "fan_speed_low": "Fan Low Speed Setting",
                     "fan_speed_medium": "Fan Medium Speed Setting",
-                    "fan_speed_high": "Fan High Speed Setting"
+                    "fan_speed_high": "Fan High Speed Setting",
+                    "current_temperature_dp": "Current Temperature",
+                    "target_temperature_dp": "Target Temperature",
+                    "fan_mode_dp": "Fan Mode (optional)",
+                    "temperature_step": "Temperature Step (optional)",
+                    "max_temperature_dp": "Max Temperature (optional)",
+                    "min_temperature_dp": "Min Temperature (optional)",
+                    "precision": "Precision (optional, for DPs values)",
+                    "target_precision": "Target Precision (optional, for DPs values)",
+                    "temperature_unit": "Temperature Unit (optional)",
+                    "hvac_mode_dp": "HVAC Mode DP (optional)",
+                    "hvac_mode_set": "HVAC Mode Set (optional)",
+                    "hvac_action_dp": "HVAC Current Action DP (optional)",
+                    "hvac_action_set": "HVAC Current Action Set (optional)",
+                    "preset_dp": "Presets DP (optional)",
+                    "preset_set": "Presets Set (optional)",
+                    "eco_dp": "Eco DP (optional)",
+                    "eco_value": "Eco value (optional)",
+                    "euristic_action": "Enable euristic action (optional)"
                 }
             }
         }
@@ -126,7 +144,25 @@
                     "fan_oscillating_control": "Fan Oscillating Control",
                     "fan_speed_low": "Fan Low Speed Setting",
                     "fan_speed_medium": "Fan Medium Speed Setting",
-                    "fan_speed_high": "Fan High Speed Setting"
+                    "fan_speed_high": "Fan High Speed Setting",
+                    "current_temperature_dp": "Current Temperature",
+                    "target_temperature_dp": "Target Temperature",
+                    "fan_mode_dp": "Fan Mode (optional)",
+                    "temperature_step": "Temperature Step (optional)",
+                    "max_temperature_dp": "Max Temperature (optional)",
+                    "min_temperature_dp": "Min Temperature (optional)",
+                    "precision": "Precision (optional, for DPs values)",
+                    "target_precision": "Target Precision (optional, for DPs values)",
+                    "temperature_unit": "Temperature Unit (optional)",
+                    "hvac_mode_dp": "HVAC Mode DP (optional)",
+                    "hvac_mode_set": "HVAC Mode Set (optional)",
+                    "hvac_action_dp": "HVAC Current Action DP (optional)",
+                    "hvac_action_set": "HVAC Current Action Set (optional)",
+                    "preset_dp": "Presets DP (optional)",
+                    "preset_set": "Presets Set (optional)",
+                    "eco_dp": "Eco DP (optional)",
+                    "eco_value": "Eco value (optional)",
+                    "euristic_action": "Enable euristic action (optional)"
                 }
             },
             "yaml_import": {
