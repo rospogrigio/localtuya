@@ -79,6 +79,9 @@ HVAC_MODE_SETS = {
         HVAC_MODE_HEAT: "Manual",
         HVAC_MODE_AUTO: "Auto",
     },
+    "True/False": {
+        HVAC_MODE_HEAT: True,
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -298,7 +301,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         if hvac_mode == HVAC_MODE_OFF:
             await self._device.set_dp(False, self._dp_id)
             return
-        if not self._state:
+        if not self._state and self._conf_hvac_mode_dp != self._dp_id:
             await self._device.set_dp(True, self._dp_id)
             await asyncio.sleep(MODE_WAIT)
         await self._device.set_dp(self._conf_hvac_mode_set[hvac_mode], self._conf_hvac_mode_dp)
