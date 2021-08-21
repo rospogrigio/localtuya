@@ -69,8 +69,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][TUYA_DEVICES] = {}
 
-    device_cache = {}
-
     async def _handle_reload(service):
         """Handle reload service call."""
         _LOGGER.info("Service %s.reload called: reloading integration", DOMAIN)
@@ -102,19 +100,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
         device_id = device["gwId"]
         product_key = device["productKey"]
 
-        # If device is not in cache, check if a config entry exists
         entry = async_config_entry_by_device_id(hass, device_id)
         if entry is None:
-            return
-
-        if device_id not in device_cache:
-            if entry and device_id in entry.data[CONF_DEVICES]:
-                # Save address from config entry in cache to trigger
-                # potential update below
-                host_ip = entry.data[CONF_DEVICES][device_id][CONF_HOST]
-                device_cache[device_id] = host_ip
-
-        if device_id not in device_cache:
             return
 
         dev_entry = entry.data[CONF_DEVICES][device_id]
@@ -122,10 +109,9 @@ async def async_setup(hass: HomeAssistant, config: dict):
         new_data = entry.data.copy()
         updated = False
 
-        if device_cache[device_id] != device_ip:
+        if dev_entry[CONF_HOST] != device_ip:
             updated = True
             new_data[CONF_DEVICES][device_id][CONF_HOST] = device_ip
-            device_cache[device_id] = device_ip
 
         if dev_entry.get(CONF_PRODUCT_KEY) != product_key:
             updated = True
