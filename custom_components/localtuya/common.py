@@ -134,6 +134,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
+        """Subscribe localtuya entity events."""
         self.debug("Connecting to %s", self._config_entry[CONF_HOST])
 
         try:
@@ -154,12 +155,17 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.status_updated(status)
 
             def _new_entity_handler(entity_id):
-                self.debug("New entity %s was added to %s", entity_id, self._config_entry[CONF_HOST])
+                self.debug(
+                    "New entity %s was added to %s",
+                    entity_id,
+                    self._config_entry[CONF_HOST],
+                )
                 self._dispatch_status()
 
-            """Subscribe localtuya entity events."""
             signal = f"localtuya_entity_{self._config_entry[CONF_DEVICE_ID]}"
-            self._disconnect_task = async_dispatcher_connect(self._hass, signal, _new_entity_handler)
+            self._disconnect_task = async_dispatcher_connect(
+                self._hass, signal, _new_entity_handler
+            )
         except Exception:  # pylint: disable=broad-except
             self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
             if self._interface is not None:
@@ -236,6 +242,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self.set_logger(logger, self._config_entry.data[CONF_DEVICE_ID])
 
     async def async_added_to_hass(self):
+        """Subscribe localtuya events."""
         await super().async_added_to_hass()
 
         self.debug("Adding %s with configuration: %s", self.entity_id, self._config)
@@ -256,11 +263,10 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         signal = f"localtuya_{self._config_entry.data[CONF_DEVICE_ID]}"
 
-        """Subscribe localtuya events."""
         self.async_on_remove(
             async_dispatcher_connect(self.hass, signal, _update_handler)
         )
-        """Signal to device entity was added"""
+
         signal = f"localtuya_entity_{self._config_entry.data[CONF_DEVICE_ID]}"
         async_dispatcher_send(self.hass, signal, self.entity_id)
 
