@@ -2,6 +2,7 @@
 import logging
 import textwrap
 from functools import partial
+from math import floor
 
 import homeassistant.util.color as color_util
 import voluptuous as vol
@@ -146,11 +147,11 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS
         )
         self._upper_color_temp = self._upper_brightness
-        self._max_mired = round(
+        self._max_mired = floor(
             MIRED_TO_KELVIN_CONST
             / self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
         )
-        self._min_mired = round(
+        self._min_mired = floor(
             MIRED_TO_KELVIN_CONST
             / self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
         )
