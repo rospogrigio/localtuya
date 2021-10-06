@@ -133,15 +133,19 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
-        self.debug("Connecting to %s", self._config_entry[CONF_HOST])
+        address_params = self._config_entry[CONF_HOST].split(':')
+        host = address_params[0]
+        port = address_params[1] if len(address_params) == 2 else 6668
+        self.debug("Connecting to %s:%s", host, port)
 
         try:
             self._interface = await pytuya.connect(
-                self._config_entry[CONF_HOST],
+                host,
                 self._config_entry[CONF_DEVICE_ID],
                 self._config_entry[CONF_LOCAL_KEY],
                 float(self._config_entry[CONF_PROTOCOL_VERSION]),
                 self,
+                port
             )
             self._interface.add_dps_to_request(self.dps_to_request)
 
