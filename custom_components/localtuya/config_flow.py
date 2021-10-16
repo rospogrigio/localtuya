@@ -124,7 +124,7 @@ def dps_string_list(dps_data):
 
 def gen_dps_strings():
     """Generate list of DPS values."""
-    return [f"{dp} (value: ?)" for dp in range(1, 256)]
+    return [*(f"{dp} (value: ?)" for dp in range(1, 256)), "6V", "6A", "6W"]
 
 
 def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
@@ -150,7 +150,7 @@ def strip_dps_values(user_input, dps_strings):
     stripped = {}
     for field, value in user_input.items():
         if value in dps_strings:
-            stripped[field] = int(user_input[field].split(" ")[0])
+            stripped[field] = user_input[field].split(" ")[0]
         else:
             stripped[field] = user_input[field]
     return stripped

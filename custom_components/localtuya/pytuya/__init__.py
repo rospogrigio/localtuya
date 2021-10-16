@@ -74,6 +74,7 @@ MESSAGE_END_FMT = ">2I"  # 2*uint32: crc, suffix
 PREFIX_VALUE = 0x000055AA
 SUFFIX_VALUE = 0x0000AA55
 
+DETECT_MAX_WAIT = 20
 HEARTBEAT_INTERVAL = 10
 
 # This is intended to match requests.json payload at
@@ -500,6 +501,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # different steps due to request payload limitation (max. length = 255)
         self.dps_cache = {}
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
+        started = time.time()
 
         for dps_range in ranges:
             # dps 1 must always be sent, otherwise it might fail in case no dps is found
@@ -515,7 +517,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self.dps_cache.update(data["dps"])
 
             if self.dev_type == "type_0a":
-                return self.dps_cache
+                break
+
+        self.debug("Waiting for periodic dps")
+        await asyncio.sleep(started + DETECT_MAX_WAIT - time.time())
+
         self.debug("Detected dps: %s", self.dps_cache)
         return self.dps_cache
 
