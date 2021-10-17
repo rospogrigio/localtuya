@@ -106,6 +106,8 @@ Start by going to Configuration - Integration and pressing the "+" button to cre
 Wait for 6 seconds for the scanning of the devices in your LAN. Then, a drop-down menu will appear containing the list of detectes devices: you can
 select one of these, or manually input all the parameters.
 
+> **Note: The tuya app on your device must be closed for the following steps to work reliably.**
+
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
 If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey.
