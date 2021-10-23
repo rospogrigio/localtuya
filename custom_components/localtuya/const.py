@@ -37,6 +37,7 @@ CONF_FAN_OSCILLATING_CONTROL = "fan_oscillating_control"
 CONF_FAN_SPEED_LOW = "fan_speed_low"
 CONF_FAN_SPEED_MEDIUM = "fan_speed_medium"
 CONF_FAN_SPEED_HIGH = "fan_speed_high"
+CONF_FAN_SPEED_LIST = "fan_speed_list"
 
 # sensor
 CONF_SCALING = "scaling"
