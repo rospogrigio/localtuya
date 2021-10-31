@@ -6,8 +6,10 @@ local_key = "0123456789012345"
 msg1 = '{ "dps": { "1": 5407, "10": 0, "16": true, "18": "111111111111" } }'
 msg2 = '{ "dps": { "6": "CNEAJ5AACOw=" }, "t": 1613651573 }'
 
+
 def listener():
     pass
+
 
 @pytest.mark.asyncio
 async def test_dps_decode():
