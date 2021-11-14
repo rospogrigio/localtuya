@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_SELECT_VALUES): vol.In(dps),
+        vol.Optional(CONF_SELECT_VALUES): str,
     }
 
 
