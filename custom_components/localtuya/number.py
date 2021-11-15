@@ -105,6 +105,9 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
         except ValueError:
             self.warning("Incorrect value received: %s", raw_value)
             pass
+        except TypeError:
+            self.warning("Incorrect value received: %s, %s", raw_value, type(raw_value))
+            pass
         except OverflowError:
             self.warning("Received out of bounds value: %s", raw_value)
             pass
