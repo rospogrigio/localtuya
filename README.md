@@ -2,7 +2,7 @@
 
 A Home Assistant custom Integration for local handling of Tuya-based devices.
 
-Device status is updated receiving push updates from the device instead of polling, so status updates are extremely fast (even if manually operated).
+This custom integration updates device status via push updates instead of polling, so status updates are fast (even when manually operated).
 
 The following Tuya device types are currently supported:
 * 1 and multiple gang switches
@@ -14,13 +14,14 @@ The following Tuya device types are currently supported:
 
 Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
-This repository's development has substantially started by utilizing and merging code from NameLessJedi, mileperhour and TradeFace, and then was deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
+This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
+
 
 # Installation:
 
-Copy the localtuya folder and all of its contents into your Home Assistant's custom_components folder. This is often located inside of your /config folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at /usr/share/hassio/homeassistant. It is possible that your custom_components folder does not exist. If that is the case, create the folder in the proper location, and then copy the localtuya folder and all of its contents inside the newly created custom_components folder.
+Copy the localtuya folder and all of its contents into your Home Assistant's custom_components folder. This folder is usually inside your `/config` folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at `/usr/share/hassio/homeassistant`. You may need to create the `custom_components` folder and then copy the localtuya folder and all of its contents into it
 
-Alternatively, you can install localtuya through HACS by adding this repository.
+Alternatively, you can install localtuya through [HACS](https://hacs.xyz/) by adding this repository.
 
 
 # Usage:
@@ -28,15 +29,15 @@ Alternatively, you can install localtuya through HACS by adding this repository.
 **NOTE: You must have your Tuya device's Key and ID in order to use localtuya. There are several ways to obtain the localKey depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .**
 
 
-**NOTE - Nov 2020: If you plan on integrating these devices on a network that has internet and blocking their internet access, you must block DNS requests too (to the local DNS server eg 192.168.1.1). If you only block outbound internet then the device will sit in zombie state, it will refuse / not respond to any connections with the localkey. Connect the devices first with an active internet connection, grab each device localkey and then implement the block.**
+**NOTE - Nov 2020: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
 
 Devices can be configured in two ways:
 
-# 1. YAML config files
+# Option one: YAML config files
 
 Add the proper entry to your configuration.yaml file. Several example configurations for different device types are provided below. Make sure to save when you are finished editing configuration.yaml.
 
-```
+```yaml
 localtuya:
   - host: 192.168.1.x
     device_id: xxxxx
@@ -100,40 +101,43 @@ Note that a single device can contain several different entities. Some examples:
 
 Restart Home Assistant when finished editing.
 
-# 2. Using config flow
+# Option two: Using config flow
 
 Start by going to Configuration - Integration and pressing the "+" button to create a new Integration, then select LocalTuya in the drop-down menu.
-Wait for 6 seconds for the scanning of the devices in your LAN. Then, a drop-down menu will appear containing the list of detectes devices: you can
+Wait for 6 seconds for the scanning of the devices in your LAN. Then, a drop-down menu will appear containing the list of detected devices: you can
 select one of these, or manually input all the parameters.
 
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
-If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey.
-Once you press "Submit", the connection will be tested to check that everything works, in order to proceed.
+If you have selected one entry, you only need to input the device's Friendly Name and the localKey.
+Once you press "Submit", the connection is tested to check that everything works.
 
 ![device](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
 
-Then, it's time to add the entities: this step will take place several times. Select the entity type from the drop-down menu to set it up.
-After you have defined all the needed entities leave the "Do not add more entities" checkbox checked: this will complete the procedure.
+Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.
+After you have defined all the needed entities, leave the "Do not add more entities" checkbox checked: this will complete the procedure.
 
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
 For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
-all the avaliable DPs found on the device (with their current status!!) for an easy identification. Each entity type has different options
-to be configured, here is an example for the "switch" entity:
+all the available DPs found on the device (with their current status!!) for easy identification. Each entity type has different options
+to be configured. Here is an example for the "switch" entity:
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
 
-After all the entities have been configured, the procedure is complete, and the Device can be associated to the Area desired.
+Once you configure the entities, the procedure is complete. You can now associate the device with an Area in Home Assistant
 
 ![success](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/5-success.png)
 
 
 # Energy monitoring values
 
-Energy monitoring (voltage, current...) values can be obtained in two different ways:
-1) creating individual sensors, each one with the desired name. Note: Voltage and Consumption usually include the first decimal, so 0.1 as "scaling" parameter shall be used in order to get the correct values.
-2) accessing the voltage/current/current_consumption attributes of a switch, and then defining template sensors like this (please note that in this case the values are already divided by 10 for Voltage and Consumption):
+You can obtain Energy monitoring (voltage, current) in two different ways:
+
+1) Creating individual sensors, each one with the desired name.
+  Note: Voltage and Consumption usually include the first decimal. You will need to scale the parament by 0.1 to get the correct values.
+1) Access the voltage/current/current_consumption attributes of a switch, and define template sensors
+  Note:  these values are already divided by 10 for Voltage and Consumption
 
 ```
        sensor:
