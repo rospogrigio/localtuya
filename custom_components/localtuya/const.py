@@ -41,11 +41,14 @@ CONF_FAN_SPEED_HIGH = "fan_speed_high"
 # sensor
 CONF_SCALING = "scaling"
 
+# select
+CONF_SELECT_VALUES = "select_values"
+
 DATA_DISCOVERY = "discovery"
 
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch", "select"]
 
 TUYA_DEVICE = "tuya_device"
