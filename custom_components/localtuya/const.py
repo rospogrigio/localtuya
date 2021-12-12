@@ -1,4 +1,5 @@
 """Constants for localtuya integration."""
+from homeassistant.components.number.const import MODE_SLIDER, MODE_BOX, MODE_AUTO
 
 ATTR_CURRENT = "current"
 ATTR_CURRENT_CONSUMPTION = "current_consumption"
@@ -41,11 +42,25 @@ CONF_FAN_SPEED_HIGH = "fan_speed_high"
 # sensor
 CONF_SCALING = "scaling"
 
+# number
+CONF_MIN_VALUE = "min_value"
+CONF_MAX_VALUE = "max_value"
+CONF_VALUE_STEP = "value_step"
+CONF_CONTROL_MODE = "control_mode"
+CONF_TUYA_TYPE = "tuya_type"
+
+# These are possible types we should use for sending number to Tuya
+TUYA_TYPE_FLOAT = "FLOAT"
+TUYA_TYPE_INT = "INT"
+TUYA_TYPE_FLOAT_STRING = "FLOAT_STRING"
+TUYA_TYPE_INT_STRING = "INT_STRING"
+TUYA_TYPES = (TUYA_TYPE_FLOAT, TUYA_TYPE_FLOAT_STRING, TUYA_TYPE_INT, TUYA_TYPE_INT_STRING)
+
 DATA_DISCOVERY = "discovery"
 
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch", "number"]
 
 TUYA_DEVICE = "tuya_device"
