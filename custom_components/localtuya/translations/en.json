@@ -74,7 +74,8 @@
                     "fan_oscillating_control": "Fan Oscillating Control",
                     "fan_speed_low": "Fan Low Speed Setting",
                     "fan_speed_medium": "Fan Medium Speed Setting",
-                    "fan_speed_high": "Fan High Speed Setting"
+                    "fan_speed_high": "Fan High Speed Setting",
+                    "lock_commands_set": "Open_Close Commands Set"
                 }
             }
         }
@@ -126,7 +127,8 @@
                     "fan_oscillating_control": "Fan Oscillating Control",
                     "fan_speed_low": "Fan Low Speed Setting",
                     "fan_speed_medium": "Fan Medium Speed Setting",
-                    "fan_speed_high": "Fan High Speed Setting"
+                    "fan_speed_high": "Fan High Speed Setting",
+                    "lock_commands_set": "Open_Close Commands Set"
                 }
             },
             "yaml_import": {
