@@ -19,7 +19,29 @@ This repository's development began as code from [@NameLessJedi](https://github.
 
 # Installation:
 
-Copy the localtuya folder and all of its contents into your Home Assistant's custom_components folder. This folder is usually inside your `/config` folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at `/usr/share/hassio/homeassistant`. You may need to create the `custom_components` folder and then copy the localtuya folder and all of its contents into it
+Copy the localtuya folder and all of its contents into your Home Assistant's custom_components folder. This folder is usually inside your `/config` folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at `/usr/share/hassio/homeassistant`. You may need to create the `custom_components` folder and then copy the localtuya folder and all of its contents into it (depending on your ssh -if it's from inside Home Assistant or not- you may not need the sudo):
+In order to get to the config folder (HA Supervised):
+`cd /usr/share/hassio/homeassistant/`\
+`ls`\
+if the `custom_components` doesn't exist:
+```
+sudo mkdir custom_components
+cd custom_components
+sudo git clone https://github.com/rospogrigio/localtuya.git
+sudo mv localtuya/ localtuyaRoot
+sudo mv localtuyaRoot/custom_components/ .
+sudo rm -r localtuyaRoot
+cd localtuya
+pwd
+```
+Now you will see:\
+`/usr/share/hassio/homeassistant/custom_components/localtuya`
+
+
+
+2) **restart** Home Assistant and **clear browsing data** (in chrome you press Control+Shift+Delelete
+
+
 
 Alternatively, you can install localtuya through [HACS](https://hacs.xyz/) by adding this repository.
 
