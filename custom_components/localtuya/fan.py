@@ -21,6 +21,7 @@ from .const import (
     CONF_FAN_SPEED_HIGH,
     CONF_FAN_SPEED_LOW,
     CONF_FAN_SPEED_MEDIUM,
+    CONF_FAN_SPEED_LIST,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ def flow_schema(dps):
         vol.Optional(CONF_FAN_SPEED_HIGH, default=SPEED_HIGH): vol.In(
             [SPEED_HIGH, "auto", "3", "4", "large", "big"]
         ),
+        vol.Optional(CONF_FAN_SPEED_LIST): vol.Schema([str]),
     }
 
 
@@ -77,6 +79,8 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     @property
     def speed_list(self) -> list:
         """Get the list of available speeds."""
+        if self.has_config(CONF_FAN_SPEED_LIST):
+            return self._config.get(CONF_FAN_SPEED_LIST)
         return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
     async def async_turn_on(
