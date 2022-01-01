@@ -166,6 +166,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._disconnect_task = async_dispatcher_connect(
                 self._hass, signal, _new_entity_handler
             )
+        except OSError:
+            _LOGGER.warning(f"Could not reach {self._config_entry[CONF_HOST]}, device might be offline.")
+            if self._interface is not None:
+                await self._interface.close()
+                self._interface = None
         except Exception:  # pylint: disable=broad-except
             self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
             if self._interface is not None:
