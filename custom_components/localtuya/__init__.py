@@ -265,6 +265,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     await async_remove_orphan_entities(hass, entry)
 
+    await async_remove_orphan_entities(hass, entry)
+
     hass.async_create_task(setup_entities())
 
     return True
