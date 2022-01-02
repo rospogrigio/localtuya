@@ -16,6 +16,7 @@ CONF_COLOR = "color"
 CONF_COLOR_MODE = "color_mode"
 CONF_COLOR_TEMP_MIN_KELVIN = "color_temp_min_kelvin"
 CONF_COLOR_TEMP_MAX_KELVIN = "color_temp_max_kelvin"
+CONF_COLOR_TEMP_REVERSE = "color_temp_reverse"
 CONF_MUSIC_MODE = "music_mode"
 
 # switch
@@ -47,6 +48,15 @@ DATA_DISCOVERY = "discovery"
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = [
+    "binary_sensor",
+    "cover",
+    "fan",
+    "light",
+    "number",
+    "select",
+    "sensor",
+    "switch",
+]
 
 TUYA_DEVICE = "tuya_device"

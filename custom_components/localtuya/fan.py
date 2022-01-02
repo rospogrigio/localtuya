@@ -79,7 +79,13 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         """Get the list of available speeds."""
         return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
-    async def async_turn_on(self, speed: str = None, **kwargs) -> None:
+    async def async_turn_on(
+        self,
+        speed: str = None,
+        percentage: int = None,
+        preset_mode: str = None,
+        **kwargs,
+    ) -> None:
         """Turn on the entity."""
         await self._device.set_dp(True, self._dp_id)
         if speed is not None:

@@ -14,6 +14,7 @@ from homeassistant.const import (
     CONF_HOST,
     CONF_ID,
     CONF_PLATFORM,
+    CONF_SCAN_INTERVAL,
 )
 from homeassistant.core import callback
 
@@ -44,6 +45,7 @@ BASIC_INFO_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_DEVICE_ID): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Optional(CONF_SCAN_INTERVAL): int,
     }
 )
 
@@ -55,6 +57,7 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_LOCAL_KEY): cv.string,
         vol.Required(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Optional(CONF_SCAN_INTERVAL): int,
     }
 )
 
@@ -90,6 +93,7 @@ def options_schema(entities):
             vol.Required(CONF_HOST): str,
             vol.Required(CONF_LOCAL_KEY): str,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+            vol.Optional(CONF_SCAN_INTERVAL): int,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
