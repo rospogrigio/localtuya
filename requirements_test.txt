@@ -3,10 +3,10 @@ codespell==2.0.0
 flake8==3.9.2
 mypy==0.901
 pydocstyle==6.1.1
-cryptography==3.2
+cryptography==3.3.2
 pylint==2.8.2
 pylint-strict-informational==0.1
+homeassistant==2021.7.1
 pytest==6.2.3
 pytest-asyncio==0.15.1
 pytest-timeout==1.4.2
-homeassistant==2021.1.4

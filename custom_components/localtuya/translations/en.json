@@ -29,7 +29,8 @@
                     "host": "Host",
                     "device_id": "Device ID",
                     "local_key": "Local key",
-                    "protocol_version": "Protocol Version"
+                    "protocol_version": "Protocol Version",
+                    "scan_interval": "Scan interval (seconds, only when not updating automatically)"
                 }
             },
             "pick_entity_type": {
@@ -64,17 +65,21 @@
                     "brightness_lower": "Brightness Lower Value",
                     "brightness_upper": "Brightness Upper Value",
                     "color_temp": "Color Temperature",
+                    "color_temp_reverse": "Color Temperature Reverse",
                     "color": "Color",
                     "color_mode": "Color Mode",
                     "color_temp_min_kelvin": "Minimum Color Temperature in K",
                     "color_temp_max_kelvin": "Maximum Color Temperature in K",
                     "music_mode": "Music mode available",
                     "scene": "Scene",
-                    "fan_speed_control": "Fan Speed Control",
-                    "fan_oscillating_control": "Fan Oscillating Control",
-                    "fan_speed_low": "Fan Low Speed Setting",
-                    "fan_speed_medium": "Fan Medium Speed Setting",
-                    "fan_speed_high": "Fan High Speed Setting"
+                    "fan_speed_control": "Fan Speed Control dps",
+                    "fan_oscillating_control": "Fan Oscillating Control dps",
+                    "fan_speed_min": "minimum fan speed integer",
+                    "fan_speed_max": "maximum fan speed integer",
+                    "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
+                    "fan_direction":"fan direction dps",
+                    "fan_direction_forward": "forward dps string",
+                    "fan_direction_reverse": "reverse dps string"
                 }
             }
         }
@@ -89,6 +94,7 @@
                     "host": "Host",
                     "local_key": "Local key",
                     "protocol_version": "Protocol Version",
+                    "scan_interval": "Scan interval (seconds, only when not updating automatically)",
                     "entities": "Entities (uncheck an entity to remove it)"
                 }
             },
@@ -116,17 +122,21 @@
                     "brightness_lower": "Brightness Lower Value",
                     "brightness_upper": "Brightness Upper Value",
                     "color_temp": "Color Temperature",
+                    "color_temp_reverse": "Color Temperature Reverse",
                     "color": "Color",
                     "color_mode": "Color Mode",
                     "color_temp_min_kelvin": "Minimum Color Temperature in K",
                     "color_temp_max_kelvin": "Maximum Color Temperature in K",
                     "music_mode": "Music mode available",
                     "scene": "Scene",
-                    "fan_speed_control": "Fan Speed Control",
-                    "fan_oscillating_control": "Fan Oscillating Control",
-                    "fan_speed_low": "Fan Low Speed Setting",
-                    "fan_speed_medium": "Fan Medium Speed Setting",
-                    "fan_speed_high": "Fan High Speed Setting"
+                    "fan_speed_control": "Fan Speed Control dps",
+                    "fan_oscillating_control": "Fan Oscillating Control dps",
+                    "fan_speed_min": "minimum fan speed integer",
+                    "fan_speed_max": "maximum fan speed integer",
+                    "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
+                    "fan_direction":"fan direction dps",
+                    "fan_direction_forward": "forward dps string",
+                    "fan_direction_reverse": "reverse dps string"
                 }
             },
             "yaml_import": {

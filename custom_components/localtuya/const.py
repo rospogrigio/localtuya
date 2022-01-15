@@ -16,6 +16,7 @@ CONF_COLOR = "color"
 CONF_COLOR_MODE = "color_mode"
 CONF_COLOR_TEMP_MIN_KELVIN = "color_temp_min_kelvin"
 CONF_COLOR_TEMP_MAX_KELVIN = "color_temp_max_kelvin"
+CONF_COLOR_TEMP_REVERSE = "color_temp_reverse"
 CONF_MUSIC_MODE = "music_mode"
 
 # switch
@@ -34,9 +35,12 @@ CONF_SPAN_TIME = "span_time"
 # fan
 CONF_FAN_SPEED_CONTROL = "fan_speed_control"
 CONF_FAN_OSCILLATING_CONTROL = "fan_oscillating_control"
-CONF_FAN_SPEED_LOW = "fan_speed_low"
-CONF_FAN_SPEED_MEDIUM = "fan_speed_medium"
-CONF_FAN_SPEED_HIGH = "fan_speed_high"
+CONF_FAN_SPEED_MIN = "fan_speed_min"
+CONF_FAN_SPEED_MAX = "fan_speed_max"
+CONF_FAN_ORDERED_LIST = "fan_speed_ordered_list"
+CONF_FAN_DIRECTION = "fan_direction"
+CONF_FAN_DIRECTION_FWD = "fan_direction_forward"
+CONF_FAN_DIRECTION_REV = "fan_direction_reverse"
 
 # sensor
 CONF_SCALING = "scaling"
@@ -46,6 +50,15 @@ DATA_DISCOVERY = "discovery"
 DOMAIN = "localtuya"
 
 # Platforms in this list must support config flows
-PLATFORMS = ["binary_sensor", "cover", "fan", "light", "sensor", "switch"]
+PLATFORMS = [
+    "binary_sensor",
+    "cover",
+    "fan",
+    "light",
+    "number",
+    "select",
+    "sensor",
+    "switch",
+]
 
 TUYA_DEVICE = "tuya_device"

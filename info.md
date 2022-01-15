@@ -43,6 +43,8 @@ localtuya:
     local_key: xxxxx
     friendly_name: Tuya Device
     protocol_version: "3.3"
+    scan_interval: # optional, only needed if energy monitoring values are not updating
+      seconds: 30 # Values less than 10 seconds may cause stability issues
     entities:
       - platform: binary_sensor
         friendly_name: Plug Status
@@ -66,7 +68,18 @@ localtuya:
 
       - platform: light
         friendly_name: Device Light
-        id: 4
+        id: 4 # Usually 1 or 20
+        color_mode: 21 # Optional, usually 2 or 21, default: "none"
+        brightness: 22 # Optional, usually 3 or 22, default: "none"
+        color_temp: 23 # Optional, usually 4 or 23, default: "none"
+        color_temp_reverse: false # Optional, default: false
+        color: 24 # Optional, usually 5 (RGB_HSV) or 24 (HSV), default: "none"
+        brightness_lower: 29 # Optional, usually 0 or 29, default: 29
+        brightness_upper: 1000 # Optional, usually 255 or 1000, default: 1000
+        color_temp_min_kelvin: 2700 # Optional, default: 2700
+        color_temp_max_kelvin: 6500 # Optional, default: 6500
+        scene: 25 # Optional, usually 6 (RGB_HSV) or 25 (HSV), default: "none"
+        music_mode: False # Optional, some use internal mic, others, phone mic. Only internal mic is supported, default: "False"
 
       - platform: sensor
         friendly_name: Plug Voltage
@@ -98,9 +111,12 @@ select one of these, or manually input all the parameters.
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
 If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey. 
-Once you press "Submit", the connection will be tested to check that everything works, in order to proceed.
 
-![device](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
+Setting the scan interval is optional, only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
+
+Once you press "Submit", the connection is tested to check that everything works.
+
+![image](https://user-images.githubusercontent.com/1082213/146664103-ac40319e-f934-4933-90cf-2beaff1e6bac.png)
 
 Then, it's time to add the entities: this step will take place several times. Select the entity type from the drop-down menu to set it up.
 After you have defined all the needed entities leave the "Do not add more entities" checkbox checked: this will complete the procedure.
@@ -122,7 +138,8 @@ After all the entities have been configured, the procedure is complete, and the 
 
 Energy monitoring (voltage, current...) values can be obtained in two different ways:
 1) creating individual sensors, each one with the desired name. Note: Voltage and Consumption usually include the first decimal, so 0.1 as "scaling" parameter shall be used in order to get the correct values.
-2) accessing the voltage/current/current_consumption attributes of a switch, and then defining template sensors like this (please note that in this case the values are already divided by 10 for Voltage and Consumption):
+2) accessing the voltage/current/current_consumption attributes of a switch, and then defining template sensors like this (please note that in this case the values are already divided by 10 for Voltage and Consumption)
+3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
 ```   
        sensor:
