@@ -35,13 +35,34 @@ CONF_SPAN_TIME = "span_time"
 # fan
 CONF_FAN_SPEED_CONTROL = "fan_speed_control"
 CONF_FAN_OSCILLATING_CONTROL = "fan_oscillating_control"
-CONF_FAN_SPEED_LOW = "fan_speed_low"
-CONF_FAN_SPEED_MEDIUM = "fan_speed_medium"
-CONF_FAN_SPEED_HIGH = "fan_speed_high"
+CONF_FAN_SPEED_MIN = "fan_speed_min"
+CONF_FAN_SPEED_MAX = "fan_speed_max"
+CONF_FAN_ORDERED_LIST = "fan_speed_ordered_list"
+CONF_FAN_DIRECTION = "fan_direction"
+CONF_FAN_DIRECTION_FWD = "fan_direction_forward"
+CONF_FAN_DIRECTION_REV = "fan_direction_reverse"
 
 # sensor
 CONF_PERIOD = "period"
 CONF_SCALING = "scaling"
+
+# climate
+CONF_TARGET_TEMPERATURE_DP = "target_temperature_dp"
+CONF_CURRENT_TEMPERATURE_DP = "current_temperature_dp"
+CONF_TEMPERATURE_STEP = "temperature_step"
+CONF_MAX_TEMP_DP = "max_temperature_dp"
+CONF_MIN_TEMP_DP = "min_temperature_dp"
+CONF_PRECISION = "precision"
+CONF_TARGET_PRECISION = "target_precision"
+CONF_HVAC_MODE_DP = "hvac_mode_dp"
+CONF_HVAC_MODE_SET = "hvac_mode_set"
+CONF_PRESET_DP = "preset_dp"
+CONF_PRESET_SET = "preset_set"
+CONF_HEURISTIC_ACTION = "heuristic_action"
+CONF_HVAC_ACTION_DP = "hvac_action_dp"
+CONF_HVAC_ACTION_SET = "hvac_action_set"
+CONF_ECO_DP = "eco_dp"
+CONF_ECO_VALUE = "eco_value"
 
 DATA_DISCOVERY = "discovery"
 
@@ -50,6 +71,7 @@ DOMAIN = "localtuya"
 # Platforms in this list must support config flows
 PLATFORMS = [
     "binary_sensor",
+    "climate",
     "cover",
     "fan",
     "light",
