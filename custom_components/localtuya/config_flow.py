@@ -3,6 +3,8 @@ import errno
 import logging
 from importlib import import_module
 
+from sqlalchemy import true
+
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
@@ -47,6 +49,8 @@ BASIC_INFO_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_DEVICE_ID): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Optional(CONF_IS_GATEWAY): cv.boolean,
+        vol.Optional(CONF_PARENT_GATEWAY): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL): int,
     }
 )
@@ -58,10 +62,10 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
         vol.Optional(CONF_SCAN_INTERVAL): int,
-        vol.Optional(CONF_IS_GATEWAY): cv.boolean,
-        vol.Optional(CONF_PARENT_GATEWAY): cv.string,
         vol.Optional(CONF_HOST): cv.string,
         vol.Optional(CONF_LOCAL_KEY): cv.string,
+        vol.Optional(CONF_IS_GATEWAY): cv.boolean,
+        vol.Optional(CONF_PARENT_GATEWAY): cv.string,
     },
 )
 
@@ -98,6 +102,7 @@ def options_schema(entities):
             vol.Required(CONF_LOCAL_KEY): str,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
             vol.Optional(CONF_SCAN_INTERVAL): int,
+            vol.Optional(CONF_IS_GATEWAY, default=False): cv.boolean,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
@@ -169,7 +174,9 @@ def validate_config_schema(config):
     for device in config:
         if device.get(CONF_PARENT_GATEWAY):
             if device.get(CONF_IS_GATEWAY):
-                raise vol.Invalid("Sub-device declared as gateway device at the same time")
+                raise vol.Invalid(
+                    "Sub-device declared as gateway device at the same time"
+                )
         else:
             if not device.get(CONF_HOST):
                 raise vol.Invalid("Host not specified")
@@ -190,9 +197,7 @@ def config_schema():
                 cv.ensure_list,
                 [
                     DEVICE_SCHEMA.extend(
-                        {
-                            vol.Optional(CONF_ENTITIES): [vol.Any(*entity_schemas)]
-                        },
+                        {vol.Optional(CONF_ENTITIES): [vol.Any(*entity_schemas)]},
                     ),
                 ],
                 validate_config_schema,

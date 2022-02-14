@@ -30,7 +30,9 @@
                     "device_id": "Device ID",
                     "local_key": "Local key",
                     "protocol_version": "Protocol Version",
-                    "scan_interval": "Scan interval (seconds, only when not updating automatically)"
+                    "scan_interval": "Scan interval (seconds, only when not updating automatically)",
+                    "is_gateway": "Zigbee Gateway",
+                    "parent_gateway": "Parent Gateway"
                 }
             },
             "pick_entity_type": {
