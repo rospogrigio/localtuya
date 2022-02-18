@@ -48,7 +48,7 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         return self._state
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return device state attributes."""
         attrs = {}
         if self.has_config(CONF_CURRENT):

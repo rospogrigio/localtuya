@@ -53,6 +53,20 @@ localtuya:
         current: 18 # Optional
         current_consumption: 19 # Optional
         voltage: 20 # Optional
+
+      - platform: vacuum
+        friendly_name: Vacuum
+        id: 28
+        idle_status_value: "standby,sleep"
+        returning_status_value: "docking"
+        docked_status_value: "charging,chargecompleted"
+        battery_dp: 14
+        mode_dp: 27
+        modes: "smart,standby,chargego,wall_follow,spiral,single"
+        fan_speed_dp: 30
+        fan_speeds: "low,normal,high"
+        clean_time_dp: 33
+        clean_area_dp: 32
 """
 import asyncio
 import logging

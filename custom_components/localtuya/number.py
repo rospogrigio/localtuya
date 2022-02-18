@@ -4,10 +4,7 @@ from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.number import DOMAIN, NumberEntity
-from homeassistant.const import (
-    CONF_DEVICE_CLASS,
-    STATE_UNKNOWN,
-)
+from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
 
 from .common import LocalTuyaEntity, async_setup_entry
 

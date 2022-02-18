@@ -43,6 +43,8 @@ localtuya:
     local_key: xxxxx
     friendly_name: Tuya Device
     protocol_version: "3.3"
+    scan_interval: # optional, only needed if energy monitoring values are not updating
+      seconds: 30 # Values less than 10 seconds may cause stability issues
     entities:
       - platform: binary_sensor
         friendly_name: Plug Status
@@ -109,9 +111,12 @@ select one of these, or manually input all the parameters.
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
 If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey. 
-Once you press "Submit", the connection will be tested to check that everything works, in order to proceed.
 
-![device](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
+Setting the scan interval is optional, only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
+
+Once you press "Submit", the connection is tested to check that everything works.
+
+![image](https://user-images.githubusercontent.com/1082213/146664103-ac40319e-f934-4933-90cf-2beaff1e6bac.png)
 
 Then, it's time to add the entities: this step will take place several times. Select the entity type from the drop-down menu to set it up.
 After you have defined all the needed entities leave the "Do not add more entities" checkbox checked: this will complete the procedure.
@@ -133,7 +138,8 @@ After all the entities have been configured, the procedure is complete, and the 
 
 Energy monitoring (voltage, current...) values can be obtained in two different ways:
 1) creating individual sensors, each one with the desired name. Note: Voltage and Consumption usually include the first decimal, so 0.1 as "scaling" parameter shall be used in order to get the correct values.
-2) accessing the voltage/current/current_consumption attributes of a switch, and then defining template sensors like this (please note that in this case the values are already divided by 10 for Voltage and Consumption):
+2) accessing the voltage/current/current_consumption attributes of a switch, and then defining template sensors like this (please note that in this case the values are already divided by 10 for Voltage and Consumption)
+3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
 ```   
        sensor:
