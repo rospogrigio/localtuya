@@ -1,4 +1,4 @@
-<!-- Name your PR well - [Docs, Bug, Feature, Refactoring] (My title here) -->
+<!-- Name your PR well - [Docs, Bug, Feature, Refactoring] (My title here). Hint - if documentation only, use [ci skip] -->
 
 <!-- Describe in one or two sentences the component or area you are improving -->
 
