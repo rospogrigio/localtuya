@@ -67,10 +67,10 @@ localtuya:
         friendly_name: Device Fan
         id: 3 # dps for on/off state
         fan_direction: 4 # Optional, dps for fan direction
-        fan_direction_fwd: forward # String for the forward direction
-        fan_direction_rev: reverse # String for the reverse direction
-        fan_ordered_list: low,medium,high,auto # Optional, If this is used it will not use the min and max integers.
-        fan_oscilating_control: 4 # Optional, dps for fan osciallation
+        fan_direction_forward: forward # String for the forward direction
+        fan_direction_reverse: reverse # String for the reverse direction
+        fan_speed_ordered_list: low,medium,high,auto # Optional, If this is used it will not use the min and max integers.
+        fan_oscillating_control: 4 # Optional, dps for fan oscillation
         fan_speed_control: 3 # Optional, if ordered list not used, dps for speed control
         fan_speed_min: 1 # Optional, if ordered list not used, minimum integer for speed range
         fan_speed_max: 10 # Optional, if ordered list not used, maximum integer for speed range
