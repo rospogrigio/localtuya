@@ -43,8 +43,7 @@ localtuya:
     local_key: xxxxx
     friendly_name: Tuya Device
     protocol_version: "3.3"
-    scan_interval: # optional, only needed if energy monitoring values are not updating
-      seconds: 30 # Values less than 10 seconds may cause stability issues
+    scan_interval: 30 # optional, only needed if energy monitoring values are not updating. values less than 10 seconds may cause stability issues 
     entities:
       - platform: binary_sensor
         friendly_name: Plug Status
