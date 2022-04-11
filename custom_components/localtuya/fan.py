@@ -5,10 +5,6 @@ from functools import partial
 import voluptuous as vol
 from homeassistant.components.fan import (
     DOMAIN,
-    SPEED_HIGH,
-    SPEED_LOW,
-    SPEED_MEDIUM,
-    SPEED_OFF,
     SUPPORT_OSCILLATE,
     SUPPORT_SET_SPEED,
     FanEntity,
@@ -21,6 +17,10 @@ from .const import (
     CONF_FAN_SPEED_HIGH,
     CONF_FAN_SPEED_LOW,
     CONF_FAN_SPEED_MEDIUM,
+    FAN_SPEED_HIGH,
+    FAN_SPEED_LOW,
+    FAN_SPEED_MEDIUM,
+    FAN_SPEED_OFF,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,14 +31,14 @@ def flow_schema(dps):
     return {
         vol.Optional(CONF_FAN_SPEED_CONTROL): vol.In(dps),
         vol.Optional(CONF_FAN_OSCILLATING_CONTROL): vol.In(dps),
-        vol.Optional(CONF_FAN_SPEED_LOW, default=SPEED_LOW): vol.In(
-            [SPEED_LOW, "1", "2", "small"]
+        vol.Optional(CONF_FAN_SPEED_LOW, default=FAN_SPEED_LOW): vol.In(
+            [FAN_SPEED_LOW, "1", "2", "small"]
         ),
-        vol.Optional(CONF_FAN_SPEED_MEDIUM, default=SPEED_MEDIUM): vol.In(
-            [SPEED_MEDIUM, "mid", "2", "3"]
+        vol.Optional(CONF_FAN_SPEED_MEDIUM, default=FAN_SPEED_MEDIUM): vol.In(
+            [FAN_SPEED_MEDIUM, "mid", "2", "3"]
         ),
-        vol.Optional(CONF_FAN_SPEED_HIGH, default=SPEED_HIGH): vol.In(
-            [SPEED_HIGH, "auto", "3", "4", "large", "big"]
+        vol.Optional(CONF_FAN_SPEED_HIGH, default=FAN_SPEED_HIGH): vol.In(
+            [FAN_SPEED_HIGH, "auto", "3", "4", "large", "big"]
         ),
     }
 
@@ -77,7 +77,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     @property
     def speed_list(self) -> list:
         """Get the list of available speeds."""
-        return [SPEED_OFF, SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
+        return [FAN_SPEED_OFF, FAN_SPEED_LOW, FAN_SPEED_MEDIUM, FAN_SPEED_HIGH]
 
     async def async_turn_on(
         self,
@@ -101,12 +101,12 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     async def async_set_speed(self, speed: str) -> None:
         """Set the speed of the fan."""
         mapping = {
-            SPEED_LOW: self._config.get(CONF_FAN_SPEED_LOW),
-            SPEED_MEDIUM: self._config.get(CONF_FAN_SPEED_MEDIUM),
-            SPEED_HIGH: self._config.get(CONF_FAN_SPEED_HIGH),
+            FAN_SPEED_LOW: self._config.get(CONF_FAN_SPEED_LOW),
+            FAN_SPEED_MEDIUM: self._config.get(CONF_FAN_SPEED_MEDIUM),
+            FAN_SPEED_HIGH: self._config.get(CONF_FAN_SPEED_HIGH),
         }
 
-        if speed == SPEED_OFF:
+        if speed == FAN_SPEED_OFF:
             await self._device.set_dp(False, self._dp_id)
         else:
             await self._device.set_dp(
@@ -137,9 +137,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     def status_updated(self):
         """Get state of Tuya fan."""
         mappings = {
-            self._config.get(CONF_FAN_SPEED_LOW): SPEED_LOW,
-            self._config.get(CONF_FAN_SPEED_MEDIUM): SPEED_MEDIUM,
-            self._config.get(CONF_FAN_SPEED_HIGH): SPEED_HIGH,
+            self._config.get(CONF_FAN_SPEED_LOW): FAN_SPEED_LOW,
+            self._config.get(CONF_FAN_SPEED_MEDIUM): FAN_SPEED_MEDIUM,
+            self._config.get(CONF_FAN_SPEED_HIGH): FAN_SPEED_HIGH,
         }
 
         self._is_on = self.dps(self._dp_id)

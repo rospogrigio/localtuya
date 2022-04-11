@@ -32,6 +32,10 @@ CONF_POSITION_INVERTED = "position_inverted"
 CONF_SPAN_TIME = "span_time"
 
 # fan
+FAN_SPEED_HIGH = "high"
+FAN_SPEED_LOW = "low"
+FAN_SPEED_MEDIUM = "medium"
+FAN_SPEED_OFF = "off"
 CONF_FAN_SPEED_CONTROL = "fan_speed_control"
 CONF_FAN_OSCILLATING_CONTROL = "fan_oscillating_control"
 CONF_FAN_SPEED_LOW = "fan_speed_low"
