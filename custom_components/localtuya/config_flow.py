@@ -24,6 +24,8 @@ from .const import (
     CONF_LOCAL_KEY,
     CONF_PRODUCT_KEY,
     CONF_PROTOCOL_VERSION,
+    CONF_IS_GATEWAY,
+    CONF_PARENT_GATEWAY,
     DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
@@ -36,7 +38,10 @@ PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_PLATFORMS = "no_additional_platforms"
 DISCOVERED_DEVICE = "discovered_device"
 
-CUSTOM_DEVICE = "..."
+CUSTOM_DEVICE = "(manual)"
+CUSTOM_SUB_DEVICE = "(sub-device)"
+
+FLOW_DP = "data_point"
 
 BASIC_INFO_SCHEMA = vol.Schema(
     {
@@ -45,24 +50,30 @@ BASIC_INFO_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_DEVICE_ID): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Optional(CONF_IS_GATEWAY): cv.boolean,
         vol.Optional(CONF_SCAN_INTERVAL): int,
     }
 )
 
-
 DEVICE_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_HOST): cv.string,
         vol.Required(CONF_DEVICE_ID): cv.string,
-        vol.Required(CONF_LOCAL_KEY): cv.string,
         vol.Required(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
         vol.Optional(CONF_SCAN_INTERVAL): int,
-    }
+        vol.Optional(CONF_HOST): cv.string,
+        vol.Optional(CONF_LOCAL_KEY): cv.string,
+        vol.Optional(CONF_IS_GATEWAY): cv.boolean,
+        vol.Optional(CONF_PARENT_GATEWAY): cv.string,
+    },
 )
 
 PICK_ENTITY_SCHEMA = vol.Schema(
     {vol.Required(PLATFORM_TO_ADD, default=PLATFORMS[0]): vol.In(PLATFORMS)}
+)
+
+DATA_POINT_SCHEMA = vol.Schema(
+    {vol.Required(FLOW_DP): int}
 )
 
 
@@ -78,7 +89,19 @@ def user_schema(devices, entries):
     )
     device_list = [f"{key} ({value})" for key, value in devices.items()]
     return vol.Schema(
-        {vol.Required(DISCOVERED_DEVICE): vol.In(device_list + [CUSTOM_DEVICE])}
+        {vol.Required(DISCOVERED_DEVICE): vol.In(device_list + [CUSTOM_DEVICE, CUSTOM_SUB_DEVICE])}
+    )
+
+
+def sub_device_schema(devices):
+    """Create schema for sub-device step."""
+    device_list = [f"{device['device_id']} ({device['friendly_name']})" for device in devices]
+    return vol.Schema(
+        {
+            vol.Required(CONF_PARENT_GATEWAY): vol.In(device_list),
+            vol.Required(CONF_FRIENDLY_NAME): cv.string,
+            vol.Required(CONF_DEVICE_ID): cv.string,
+        },
     )
 
 
@@ -94,6 +117,7 @@ def options_schema(entities):
             vol.Required(CONF_LOCAL_KEY): str,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
             vol.Optional(CONF_SCAN_INTERVAL): int,
+            vol.Optional(CONF_IS_GATEWAY, default=False): cv.boolean,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
@@ -160,6 +184,23 @@ def strip_dps_values(user_input, dps_strings):
     return stripped
 
 
+def validate_config_schema(config):
+    """Valid configuration schema to ensure proper values have been declared"""
+    for device in config:
+        if device.get(CONF_PARENT_GATEWAY):
+            if device.get(CONF_IS_GATEWAY):
+                raise vol.Invalid(
+                    "Sub-device declared as gateway device at the same time"
+                )
+        else:
+            if not device.get(CONF_HOST):
+                raise vol.Invalid("Host not specified")
+            elif not device.get(CONF_LOCAL_KEY):
+                raise vol.Invalid("Local key not specified")
+
+    return config
+
+
 def config_schema():
     """Build schema used for setting up component."""
     entity_schemas = [
@@ -171,9 +212,10 @@ def config_schema():
                 cv.ensure_list,
                 [
                     DEVICE_SCHEMA.extend(
-                        {vol.Required(CONF_ENTITIES): [vol.Any(*entity_schemas)]}
-                    )
+                        {vol.Optional(CONF_ENTITIES): [vol.Any(*entity_schemas)]},
+                    ),
                 ],
+                validate_config_schema,
             )
         },
         extra=vol.ALLOW_EXTRA,
@@ -186,14 +228,28 @@ async def validate_input(hass: core.HomeAssistant, data):
 
     interface = None
     try:
-        interface = await pytuya.connect(
-            data[CONF_HOST],
-            data[CONF_DEVICE_ID],
-            data[CONF_LOCAL_KEY],
-            float(data[CONF_PROTOCOL_VERSION]),
-        )
+        if data.get(CONF_PARENT_GATEWAY):
+            parent_dev = async_config_entry_by_device_id(hass, data[CONF_PARENT_GATEWAY])
+            interface = await pytuya.connect(
+                parent_dev.data[CONF_HOST],
+                parent_dev.data[CONF_DEVICE_ID],
+                parent_dev.data[CONF_LOCAL_KEY],
+                float(parent_dev.data[CONF_PROTOCOL_VERSION]),
+                is_gateway=True
+            )
 
-        detected_dps = await interface.detect_available_dps()
+            interface.add_sub_device(data[CONF_DEVICE_ID])
+            detected_dps = await interface.detect_available_dps(data[CONF_DEVICE_ID])
+
+        else:
+            interface = await pytuya.connect(
+                data[CONF_HOST],
+                data[CONF_DEVICE_ID],
+                data[CONF_LOCAL_KEY],
+                float(data[CONF_PROTOCOL_VERSION]),
+            )
+
+            detected_dps = await interface.detect_available_dps()
     except (ConnectionRefusedError, ConnectionResetError) as ex:
         raise CannotConnect from ex
     except ValueError as ex:
@@ -235,6 +291,9 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors = {}
         if user_input is not None:
+            if user_input[DISCOVERED_DEVICE] == CUSTOM_SUB_DEVICE:
+                return await self.async_step_basic_sub_device_info()
+
             if user_input[DISCOVERED_DEVICE] != CUSTOM_DEVICE:
                 self.selected_device = user_input[DISCOVERED_DEVICE].split(" ")[0]
             return await self.async_step_basic_info()
@@ -272,14 +331,18 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle input of basic info."""
         errors = {}
         if user_input is not None:
-            await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
-
-            try:
+            if user_input == FLOW_DP:
+                if self.dps_strings:
+                    return await self.async_step_pick_entity_type()
+            else:
+                await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
                 self.basic_info = user_input
                 if self.selected_device is not None:
                     self.basic_info[CONF_PRODUCT_KEY] = self.devices[
                         self.selected_device
                     ]["productKey"]
+
+            try:
                 self.dps_strings = await validate_input(self.hass, user_input)
                 return await self.async_step_pick_entity_type()
             except CannotConnect:
@@ -287,7 +350,16 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
             except EmptyDpsList:
-                errors["base"] = "empty_dps"
+                if self.basic_info[CONF_IS_GATEWAY]: # Gateways don't have dps
+                    entry = async_config_entry_by_device_id(self.hass, self.unique_id)
+                    if entry:
+                        self.hass.config_entries.async_update_entry(entry, data=user_input)
+                        return self.async_abort(reason="device_updated")
+                    return self.async_create_entry(
+                        title=user_input[CONF_FRIENDLY_NAME], data=user_input
+                    )
+                else:
+                    return await self.async_step_add_dp()
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
@@ -313,6 +385,49 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="basic_info",
             data_schema=schema_defaults(BASIC_INFO_SCHEMA, **defaults),
+            errors=errors,
+        )
+
+    async def async_step_basic_sub_device_info(self, user_input=None):
+        """Handle input of basic sub-device info."""
+        errors = {}
+        if user_input is not None:
+            if user_input == FLOW_DP:
+                if self.dps_strings:
+                    return await self.async_step_pick_entity_type()
+            else:
+                await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
+                # Take only the device ID
+                user_input[CONF_PARENT_GATEWAY] = user_input[CONF_PARENT_GATEWAY].split(" ")[0]
+                user_input[CONF_PROTOCOL_VERSION] = "3.3"
+                self.basic_info = user_input
+
+            try:
+                self.dps_strings = await validate_input(self.hass, user_input)
+                return await self.async_step_pick_entity_type()
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except EmptyDpsList:
+                return await self.async_step_add_dp()
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
+
+        # Populate list of gateways to choose from
+        current_entries = self.hass.config_entries.async_entries(DOMAIN)
+        devices = [
+            entry.data for entry in current_entries
+            if entry.data.get("is_gateway")
+        ]
+
+        if len(devices) <= 0:
+            errors["base"] = "no_gateway_added"
+
+        return self.async_show_form(
+            step_id="basic_sub_device_info",
+            data_schema=sub_device_schema(devices),
             errors=errors,
         )
 
@@ -368,6 +483,27 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"platform": self.platform},
         )
 
+    async def async_step_add_dp(self, user_input=None):
+        """Handle adding a new data point"""
+        errors = {}
+        if user_input is not None:
+            if user_input.get(FLOW_DP) == 0:
+                if self.basic_info.get(CONF_PARENT_GATEWAY):
+                    return await self.async_step_basic_sub_device_info(FLOW_DP)
+                else:
+                    return await self.async_step_basic_info(FLOW_DP)
+            else:
+                dp_str = str(user_input[FLOW_DP]) + " (value: Custom)"
+                if dp_str not in self.dps_strings:
+                    self.dps_strings.append(dp_str)
+                return await self.async_step_add_dp()
+
+        return self.async_show_form(
+            step_id="add_dp",
+            data_schema=DATA_POINT_SCHEMA,
+            errors=errors,
+        )
+
     async def async_step_import(self, user_input):
         """Handle import from YAML."""
         await self.async_set_unique_id(user_input[CONF_DEVICE_ID])
@@ -384,7 +520,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize localtuya options flow."""
         self.config_entry = config_entry
         self.dps_strings = config_entry.data.get(CONF_DPS_STRINGS, gen_dps_strings())
-        self.entities = config_entry.data[CONF_ENTITIES]
+        if not config_entry.data.get(CONF_IS_GATEWAY):
+            self.entities = config_entry.data[CONF_ENTITIES]
         self.data = None
 
     async def async_step_init(self, user_input=None):

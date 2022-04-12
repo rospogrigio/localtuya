@@ -11,6 +11,7 @@ The following Tuya device types are currently supported:
 * Covers
 * Fans
 * Climates (soon)
+* Zigbee and Bluetooth gateways and their attached devices
 
 Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
@@ -57,10 +58,10 @@ localtuya:
       - platform: cover
         friendly_name: Device Cover
         id: 2
-        open_close_cmds: ["on_off","open_close"] # Optional, default: "on_off"
+        commands_set: ["on_off_stop","open_close_stop","fz_zz_stop","1_2_3"] # Optional, default: "on_off"
         positioning_mode: ["none","position","timed"] # Optional, default: "none"
-        currpos_dps: 3 # Optional, required only for "position" mode
-        setpos_dps: 4  # Optional, required only for "position" mode
+        current_position_dp: 3 # Optional, required only for "position" mode
+        set_position_dp: 4  # Optional, required only for "position" mode
         span_time: 25  # Full movement time: Optional, required only for "timed" mode
 
       - platform: fan
@@ -104,6 +105,44 @@ localtuya:
         current: 18 # Optional
         current_consumption: 19 # Optional
         voltage: 20 # Optional
+  
+  # Below are examples of configuring devices under a gateway
+  # Zigbee or Bluetooth gateway
+  - host: 192.168.1.x
+    device_id: xxxxxabcd
+    local_key: xxxxx
+    friendly_name: Tuya Gateway
+    protocol_version: "3.3"
+    is_gateway: true # This tells it is to be treated as a gateway and skip adding entities
+
+  # Devices under a gateway
+  # Other than differences on the device itself (ie. no host and local_key), the rest is the same
+  #   as a WiFi device
+  - parent_gateway: xxxxabcd # This tells it is a sub-device dependent on a parent gateway
+    device_id: xxxx1234 # The cid of sub-device
+    friendly_name: Tuya Zigbee Switch
+    entities:
+      - platform: switch
+        friendly_name: Tuya Zigbee Switch Entity 1
+        id: 1
+      - platform: switch
+        friendly_name: Tuya Zigbee Switch Entity 2
+        id: 2
+
+  - parent_gateway: xxxxabcd
+    device_id: xxxx5678
+    friendly_name: Tuya Zigbee PIR Sensor
+    entities:
+      - platform: binary_sensor
+        friendly_name: Motion Sensor
+        id: 1
+        device_class: motion
+        state_on: pir
+        state_off: none
+      - platform: sensor
+        friendly_name: Sensor Battery
+        id: 4
+        device_class: battery
 ```
 
 Note that a single device can contain several different entities. Some examples:
