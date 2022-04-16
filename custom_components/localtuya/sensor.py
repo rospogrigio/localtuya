@@ -47,7 +47,7 @@ class LocaltuyaSensor(LocalTuyaEntity, SensorEntity):
     def state(self):
         """Return sensor state."""
         return self._state
-    
+
     @property
     def state_class(self):
         """Return longterm statistics."""
