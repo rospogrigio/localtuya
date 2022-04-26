@@ -196,7 +196,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         return self._precision
 
     @property
-    def target_recision(self):
+    def target_precision(self):
         """Return the precision of the target."""
         return self._target_precision
 
