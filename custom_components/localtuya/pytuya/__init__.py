@@ -79,7 +79,10 @@ SUFFIX_VALUE = 0x0000AA55
 HEARTBEAT_INTERVAL = 10
 
 # DPS that are known to be safe to use with update_dps (0x12) command
-UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
+UPDATE_DPS_WHITELIST = [
+    4, 5, 6,   # Light (Wi-Fi)
+    18, 19, 20 # Socket (Wi-Fi)
+]  
 
 # This is intended to match requests.json payload at
 # https://github.com/codetheweb/tuyapi :
