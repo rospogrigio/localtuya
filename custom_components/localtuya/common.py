@@ -150,14 +150,41 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self,
             )
             self._interface.add_dps_to_request(self.dps_to_request)
+        except Exception:  # pylint: disable=broad-except
+            self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
+            if self._interface is not None:
+                await self._interface.close()
+                self._interface = None
 
-            self.debug("Retrieving initial state")
-            status = await self._interface.status()
-            if status is None:
-                raise Exception("Failed to retrieve status")
+        if self._interface is not None:
+            try:
+                self.debug("Retrieving initial state")
+                status = await self._interface.status()
+                if status is None:
+                    raise Exception("Failed to retrieve status")
 
-            self.status_updated(status)
+                self._interface.start_heartbeat()
+                self.status_updated(status)
 
+            except Exception:  # pylint: disable=broad-except
+                try:
+                    self.debug("Initial state update failed, trying reset command")
+                    await self._interface.reset()
+
+                    self.debug("Update completed, retrying initial state")
+                    status = await self._interface.status()
+                    if status is None or not status:
+                        raise Exception("Failed to retrieve status")
+
+                    self._interface.start_heartbeat()
+                    self.status_updated(status)
+                except Exception as e:  # pylint: disable=broad-except
+                    self.exception(f"Initial status update of {self._config_entry[CONF_HOST]} failed: {e}")
+                    if self._interface is not None:
+                        await self._interface.close()
+                        self._interface = None
+
+        if self._interface is not None:
             def _new_entity_handler(entity_id):
                 self.debug(
                     "New entity %s was added to %s",
@@ -180,11 +207,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                     self._async_refresh,
                     timedelta(seconds=self._config_entry[CONF_SCAN_INTERVAL]),
                 )
-        except Exception:  # pylint: disable=broad-except
-            self.exception(f"Connect to {self._config_entry[CONF_HOST]} failed")
-            if self._interface is not None:
-                await self._interface.close()
-                self._interface = None
+        
         self._connect_task = None
 
     async def _async_refresh(self, _now):

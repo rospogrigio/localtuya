@@ -62,6 +62,7 @@ TuyaMessage = namedtuple("TuyaMessage", "seqno cmd retcode payload crc")
 SET = "set"
 STATUS = "status"
 HEARTBEAT = "heartbeat"
+RESET = "reset"
 UPDATEDPS = "updatedps"  # Request refresh of DPS
 
 PROTOCOL_VERSION_BYTES_31 = b"3.1"
@@ -79,10 +80,7 @@ SUFFIX_VALUE = 0x0000AA55
 HEARTBEAT_INTERVAL = 10
 
 # DPS that are known to be safe to use with update_dps (0x12) command
-UPDATE_DPS_WHITELIST = [
-    4, 5, 6,   # Light (Wi-Fi)
-    18, 19, 20 # Socket (Wi-Fi)
-]  
+UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
 
 # This is intended to match requests.json payload at
 # https://github.com/codetheweb/tuyapi :
@@ -99,6 +97,7 @@ PAYLOAD_DICT = {
         SET: {"hexByte": 0x07, "command": {"devId": "", "uid": "", "t": ""}},
         HEARTBEAT: {"hexByte": 0x09, "command": {}},
         UPDATEDPS: {"hexByte": 0x12, "command": {"dpId": [18, 19, 20]}},
+        RESET: {"hexByte": 0x12, "command": {"gwId": "", "devId": "", "uid": "", "t": "", "dpId": [4, 5, 6, 18, 19, 20]}},
     },
     "type_0d": {
         STATUS: {"hexByte": 0x0D, "command": {"devId": "", "uid": "", "t": ""}},
@@ -220,6 +219,7 @@ class MessageDispatcher(ContextualLogger):
     # Heartbeats always respond with sequence number 0, so they can't be waited for like
     # other messages. This is a hack to allow waiting for heartbeats.
     HEARTBEAT_SEQNO = -100
+    RESET_SEQNO = -101
 
     def __init__(self, dev_id, listener):
         """Initialize a new MessageBuffer."""
@@ -304,9 +304,19 @@ class MessageDispatcher(ContextualLogger):
                 sem.release()
         elif msg.cmd == 0x12:
             self.debug("Got normal updatedps response")
+            if self.RESET_SEQNO in self.listeners:
+                sem = self.listeners[self.RESET_SEQNO]
+                self.listeners[self.RESET_SEQNO] = msg
+                sem.release()
         elif msg.cmd == 0x08:
-            self.debug("Got status update")
-            self.listener(msg)
+            if self.RESET_SEQNO in self.listeners:
+                self.debug("Got reset status update")
+                sem = self.listeners[self.RESET_SEQNO]
+                self.listeners[self.RESET_SEQNO] = msg
+                sem.release()
+            else:
+                self.debug("Got status update")
+                self.listener(msg)
         else:
             self.debug(
                 "Got message type %d for unknown listener %d: %s",
@@ -385,6 +395,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     def connection_made(self, transport):
         """Did connect to the device."""
 
+        self.transport = transport
+        self.on_connected.set_result(True)
+
+    def start_heartbeat(self):
         async def heartbeat_loop():
             """Continuously send heart beat updates."""
             self.debug("Started heartbeat loop")
@@ -405,9 +419,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             transport = self.transport
             self.transport = None
             transport.close()
-
-        self.transport = transport
-        self.on_connected.set_result(True)
+        
         self.heartbeater = self.loop.create_task(heartbeat_loop())
 
     def data_received(self, data):
@@ -452,12 +464,13 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         payload = self._generate_payload(command, dps)
         dev_type = self.dev_type
 
-        # Wait for special sequence number if heartbeat
-        seqno = (
-            MessageDispatcher.HEARTBEAT_SEQNO
-            if command == HEARTBEAT
-            else (self.seqno - 1)
-        )
+         # Wait for special sequence number if heartbeat or reset
+        seqno = (self.seqno - 1)
+        
+        if command == HEARTBEAT:
+            seqno = MessageDispatcher.HEARTBEAT_SEQNO
+        elif command == RESET:
+            seqno = MessageDispatcher.RESET_SEQNO
 
         self.transport.write(payload)
         msg = await self.dispatcher.wait_for(seqno)
@@ -489,6 +502,15 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     async def heartbeat(self):
         """Send a heartbeat message."""
         return await self.exchange(HEARTBEAT)
+
+    async def reset(self):
+        """Send a reset message (3.3 only)."""
+        if self.version == 3.3:
+            self.dev_type = "type_0a"
+            self.debug("reset switching to dev_type %s", self.dev_type)
+            return await self.exchange(RESET)
+        else:
+            return True
 
     async def update_dps(self, dps=None):
         """
