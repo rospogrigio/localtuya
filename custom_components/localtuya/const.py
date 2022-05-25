@@ -43,6 +43,7 @@ CONF_FAN_DIRECTION_FWD = "fan_direction_forward"
 CONF_FAN_DIRECTION_REV = "fan_direction_reverse"
 
 # sensor
+CONF_PERIOD = "period"
 CONF_SCALING = "scaling"
 
 # climate

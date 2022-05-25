@@ -58,6 +58,7 @@
                     "span_time": "Full opening time, in secs. (for *timed* mode only)",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
+                    "period": "Update Period",
                     "scaling": "Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
