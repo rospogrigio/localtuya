@@ -173,26 +173,15 @@ async def async_setup(hass: HomeAssistant, config: dict):
         device_id = device["gwId"]
         product_key = device["productKey"]
 
-        # If device is not in cache, check if a config entry exists
-        if device_id not in device_cache:
-            entry = async_config_entry_by_device_id(hass, device_id)
-            if entry:
-                # Save address from config entry in cache to trigger
-                # potential update below
-                device_cache[device_id] = entry.data[CONF_HOST]
-
-        if device_id not in device_cache:
-            return
-
         entry = async_config_entry_by_device_id(hass, device_id)
         if entry is None:
             return
 
-        updates = {}
+        # If device is not in cache, add it.
+        if device_id not in device_cache:
+            device_cache[device_id] = entry.data[CONF_HOST]
 
-        if device_cache[device_id] != device_ip:
-            updates[CONF_HOST] = device_ip
-            device_cache[device_id] = device_ip
+        updates = {}
 
         if entry.data.get(CONF_PRODUCT_KEY) != product_key:
             updates[CONF_PRODUCT_KEY] = product_key
