@@ -11,7 +11,7 @@ from homeassistant.const import (
 )
 
 from .common import LocalTuyaEntity, async_setup_entry
-from .const import CONF_SCALING
+from .const import CONF_SCALING, CONF_BASE_VALUE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +23,9 @@ def flow_schema(dps):
     return {
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): str,
         vol.Optional(CONF_DEVICE_CLASS): vol.In(DEVICE_CLASSES),
+        vol.Optional(CONF_BASE_VALUE): vol.All(
+            vol.Coerce(float), vol.Range(min=-1000000.0, max=1000000.0)
+        ),
         vol.Optional(CONF_SCALING): vol.All(
             vol.Coerce(float), vol.Range(min=-1000000.0, max=1000000.0)
         ),
@@ -60,11 +63,37 @@ class LocaltuyaSensor(LocalTuyaEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        state = self.dps(self._dp_id)
-        scale_factor = self._config.get(CONF_SCALING)
-        if scale_factor is not None and isinstance(state, (int, float)):
-            state = round(state * scale_factor, DEFAULT_PRECISION)
-        self._state = state
+        self._state = self.scale_if_possible(self.dps(self._dp_id))
 
+    def scale_if_possible(self, state):
+        """Scales and adjusts with base original value"""
+        state_numeric = None
+        if isinstance(state, (int, float)):
+            state_numeric = state
+        elif isinstance(state, str):
+            try:
+                state_numeric = int(state)
+            except OverflowError:
+                pass
+            except ValueError:
+                try:
+                    state_numeric = float(state)
+                except OverflowError:
+                    pass
+                except ValueError:
+                    pass
+
+        if state_numeric is None:
+            return state
+
+        scale_factor = self._config.get(CONF_SCALING)
+        if scale_factor is not None:
+            state_numeric *= scale_factor
+
+        base_value = self._config.get(CONF_BASE_VALUE)
+        if base_value is not None:
+            state_numeric += base_value
+
+        return round(state_numeric, DEFAULT_PRECISION)
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSensor, flow_schema)

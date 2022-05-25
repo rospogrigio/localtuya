@@ -44,6 +44,7 @@ CONF_FAN_DIRECTION_REV = "fan_direction_reverse"
 
 # sensor
 CONF_SCALING = "scaling"
+CONF_BASE_VALUE = "base_value"
 
 # climate
 CONF_TARGET_TEMPERATURE_DP = "target_temperature_dp"
