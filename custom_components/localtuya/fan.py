@@ -221,7 +221,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             )
             if current_speed is not None:
                 self._percentage = ordered_list_item_to_percentage(
-                    self._ordered_list, current_speed
+                    self._ordered_list, str(current_speed)
                 )
 
         else:
