@@ -312,7 +312,7 @@ async def update_listener(hass, config_entry):
 
 async def async_remove_orphan_entities(hass, entry):
     """Remove entities associated with config entry that has been removed."""
-    ent_reg = await er.async_get_registry(hass)
+    ent_reg = er.async_get(hass)
     entities = {
         int(ent.unique_id.split("_")[-1]): ent.entity_id
         for ent in er.async_entries_for_config_entry(ent_reg, entry.entry_id)
