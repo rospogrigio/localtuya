@@ -6,7 +6,7 @@
 
 A Home Assistant custom Integration for local handling of Tuya-based devices.
 
-This custom integration updates device status via push updates instead of polling, so status updates are fast (even when manually operated).
+This custom integration updates device status via pushing updates instead of polling, so status updates are fast (even when manually operated).
 The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
 
 
@@ -46,7 +46,7 @@ For manual installation, copy the localtuya folder and all of its contents into 
 # Adding the Integration
 
 
-**NOTE: starting from v.4.0.0, configuration using YAML files is no longer supported. The integration can be configured only using the config flow.**
+**NOTE: starting from v4.0.0, configuration using YAML files is no longer supported. The integration can only be configured using the config flow.**
 
 
 To start configuring the integration, just press the "+ADD INTEGRATION" button in the Settings - Integrations page, and select LocalTuya from the drop-down menu.
@@ -130,9 +130,9 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
 
 1) Creating individual sensors, each one with the desired name.
   Note: Voltage and Consumption usually include the first decimal. You will need to scale the parament by 0.1 to get the correct values.
-1) Access the voltage/current/current_consumption attributes of a switch, and define template sensors
+2) Access the voltage/current/current_consumption attributes of a switch, and define template sensors
   Note:  these values are already divided by 10 for Voltage and Consumption
-1) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
+3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
 ```
        sensor:

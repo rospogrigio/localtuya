@@ -74,10 +74,6 @@ async def async_setup_entry(
 
         if len(entities_to_setup) > 0:
 
-            if dev_id not in hass.data[DOMAIN][TUYA_DEVICES]:
-                print("STRANO: {}".format(hass.data[DOMAIN][TUYA_DEVICES]))
-                return
-
             tuyainterface = hass.data[DOMAIN][TUYA_DEVICES][dev_id]
 
             dps_config_fields = list(get_dps_for_platform(flow_schema))

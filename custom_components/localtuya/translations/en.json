@@ -24,7 +24,8 @@
                     "client_id": "Client ID",
                     "client_secret": "Secret",
                     "user_id": "User ID",
-                    "user_name": "Username"
+                    "user_name": "Username",
+                    "no_cloud": "Do not configure a Cloud API account"
                 }
             }
         }
@@ -54,7 +55,7 @@
                 "title": "LocalTuya Configuration",
                 "description": "Please select the desired action.",
                 "data": {
-                    "add_device": "AAAAA a new device",
+                    "add_device": "Add a new device",
                     "edit_device": "Edit a device",
                     "setup_cloud": "Reconfigure Cloud API account"
                 }
@@ -71,6 +72,18 @@
                 "description": "Pick the configured device you wish to edit.",
                 "data": {
                     "selected_device": "Configured Devices"
+                }
+            },
+            "cloud_setup": {
+                "title": "Cloud API account configuration",
+                "description": "Input the credentials for Tuya Cloud API.",
+                "data": {
+                    "region": "API server region",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Do not configure Cloud API account"
                 }
             },
             "configure_device": {

@@ -117,8 +117,7 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
 
         self._fan_speed = ""
         self._cleaning_mode = ""
-
-        print("Initialized vacuum [{}]".format(self.name))
+        _LOGGER.debug("Initialized vacuum [%s]", self.name)
 
     @property
     def supported_features(self):

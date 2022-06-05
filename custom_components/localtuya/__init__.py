@@ -65,6 +65,7 @@ SERVICE_SET_DP_SCHEMA = vol.Schema(
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][TUYA_DEVICES] = {}
 
     device_cache = {}
 
@@ -193,9 +194,9 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             )
             new_data = {}
             new_data[CONF_REGION] = "eu"
-            new_data[CONF_CLIENT_ID] = "xxx"
-            new_data[CONF_CLIENT_SECRET] = "xxx"
-            new_data[CONF_USER_ID] = "xxx"
+            new_data[CONF_CLIENT_ID] = ""
+            new_data[CONF_CLIENT_SECRET] = ""
+            new_data[CONF_USER_ID] = ""
             new_data[CONF_USERNAME] = DOMAIN
             new_data[CONF_DEVICES] = {
                 config_entry.data[CONF_DEVICE_ID]: config_entry.data.copy()
@@ -303,7 +304,7 @@ async def async_remove_config_entry_device(
     """Remove a config entry from a device."""
     dev_id = list(device_entry.identifiers)[0][1].split("_")[-1]
 
-    ent_reg = await er.async_get_registry(hass)
+    ent_reg = er.async_get(hass)
     entities = {
         ent.unique_id: ent.entity_id
         for ent in er.async_entries_for_config_entry(ent_reg, config_entry.entry_id)
@@ -337,7 +338,11 @@ async def async_remove_config_entry_device(
 async def async_remove_orphan_entities(hass, entry):
     """Remove entities associated with config entry that has been removed."""
     return
+<<<<<<< HEAD
     ent_reg = await er.async_get_registry(hass)
+=======
+    ent_reg = er.async_get(hass)
+>>>>>>> rospogrigio/localtuya_4.0
     entities = {
         ent.unique_id: ent.entity_id
         for ent in er.async_entries_for_config_entry(ent_reg, entry.entry_id)

@@ -3,9 +3,12 @@ import functools
 import hashlib
 import hmac
 import json
+import logging
 import time
 
 import requests
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # Signature algorithm.
@@ -55,7 +58,7 @@ class TuyaCloudApi:
             + "\n/"
             + url.split("//", 1)[-1].split("/", 1)[-1]  # Url
         )
-        # print("PAYLOAD: {}".format(payload))
+        # _LOGGER.debug("PAYLOAD: %s", payload)
         return payload
 
     async def async_make_request(self, method, url, body=None, headers={}):
@@ -70,7 +73,7 @@ class TuyaCloudApi:
             "sign_method": "HMAC-SHA256",
         }
         full_url = self._base_url + url
-        # print("\n" + method + ": [{}]".format(full_url))
+        # _LOGGER.debug("\n" + method + ": [%s]", full_url)
 
         if method == "GET":
             func = functools.partial(
@@ -83,7 +86,7 @@ class TuyaCloudApi:
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
             )
-            # print("BODY: [{}]".format(body))
+            # _LOGGER.debug("BODY: [%s]", body)
         elif method == "PUT":
             func = functools.partial(
                 requests.put,
@@ -121,14 +124,14 @@ class TuyaCloudApi:
 
         r_json = resp.json()
         if not r_json["success"]:
-            # print(
-            #     "Request failed, reply is {}".format(
-            #         json.dumps(r_json, indent=2, ensure_ascii=False)
-            #     )
+            # _LOGGER.debug(
+            #     "Request failed, reply is %s",
+            #     json.dumps(r_json, indent=2, ensure_ascii=False)
             # )
             return f"Error {r_json['code']}: {r_json['msg']}"
 
         self.device_list = {dev["id"]: dev for dev in r_json["result"]}
         # print("DEV__LIST: {}".format(self.device_list))
+        # _LOGGER.debug("DEV_LIST: %s", self.device_list)
 
         return "ok"

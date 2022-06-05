@@ -176,7 +176,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
-        print("Initialized climate [{}]".format(self.name))
+        _LOGGER.debug("Initialized climate [%s]", self.name)
 
     @property
     def supported_features(self):
