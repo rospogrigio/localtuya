@@ -338,11 +338,7 @@ async def async_remove_config_entry_device(
 async def async_remove_orphan_entities(hass, entry):
     """Remove entities associated with config entry that has been removed."""
     return
-<<<<<<< HEAD
-    ent_reg = await er.async_get_registry(hass)
-=======
     ent_reg = er.async_get(hass)
->>>>>>> rospogrigio/localtuya_4.0
     entities = {
         ent.unique_id: ent.entity_id
         for ent in er.async_entries_for_config_entry(ent_reg, entry.entry_id)
