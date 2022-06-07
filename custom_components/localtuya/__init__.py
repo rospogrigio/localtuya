@@ -130,8 +130,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
     hass.data.setdefault(DOMAIN, {})
 
-    device_cache = {}
-
     async def _handle_reload(service):
         """Handle reload service call."""
         config = await async_integration_yaml_config(hass, DOMAIN)
@@ -173,26 +171,14 @@ async def async_setup(hass: HomeAssistant, config: dict):
         device_id = device["gwId"]
         product_key = device["productKey"]
 
-        # If device is not in cache, check if a config entry exists
-        if device_id not in device_cache:
-            entry = async_config_entry_by_device_id(hass, device_id)
-            if entry:
-                # Save address from config entry in cache to trigger
-                # potential update below
-                device_cache[device_id] = entry.data[CONF_HOST]
-
-        if device_id not in device_cache:
-            return
-
         entry = async_config_entry_by_device_id(hass, device_id)
         if entry is None:
             return
 
         updates = {}
 
-        if device_cache[device_id] != device_ip:
+        if entry.data[CONF_HOST] != device_ip:
             updates[CONF_HOST] = device_ip
-            device_cache[device_id] = device_ip
 
         if entry.data.get(CONF_PRODUCT_KEY) != product_key:
             updates[CONF_PRODUCT_KEY] = product_key
@@ -297,12 +283,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
     )
 
-    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
-    await hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE].close()
     if unload_ok:
+        hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+        await hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE].close()
         hass.data[DOMAIN].pop(entry.entry_id)
 
-    return True
+    return unload_ok
 
 
 async def update_listener(hass, config_entry):
