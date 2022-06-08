@@ -18,6 +18,7 @@ CONF_COLOR_TEMP_MIN_KELVIN = "color_temp_min_kelvin"
 CONF_COLOR_TEMP_MAX_KELVIN = "color_temp_max_kelvin"
 CONF_COLOR_TEMP_REVERSE = "color_temp_reverse"
 CONF_MUSIC_MODE = "music_mode"
+CONF_LYTMI_MODES = "lytmi_modes"
 
 # switch
 CONF_CURRENT = "current"
