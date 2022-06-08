@@ -595,9 +595,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             if "dps" in data and "6" in data["dps"] and len(data["dps"]["6"]) == 12:
                 val = base64.b64decode(data["dps"]["6"])
-                data["dps"]["6V"] = int.from_bytes(val[0:2], "big")
-                data["dps"]["6A"] = int.from_bytes(val[2:5], "big")
-                data["dps"]["6W"] = int.from_bytes(val[5:8], "big") * 10
+                data["dps"]["6001"] = int.from_bytes(val[2:5], "big")
+                data["dps"]["6002"] = int.from_bytes(val[5:8], "big") * 10
+                data["dps"]["6003"] = int.from_bytes(val[0:2], "big")
                 del data["dps"]["6"]
         except binascii.Error:
             pass

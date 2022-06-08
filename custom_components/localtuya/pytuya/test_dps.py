@@ -19,4 +19,4 @@ async def test_dps_decode():
     assert res['dps'] == {'1': 5407, '10': 0, '16': True, '18': '111111111111'}
 
     res = proto._decode_payload(bytes(MSG2, "utf-8"))
-    assert res['dps'] == {'6V': 2257, '6A': 10128, '6W': 22840}
+    assert res['dps'] == {'6001': 10128, '6002': 22840, '6003': 2257}
