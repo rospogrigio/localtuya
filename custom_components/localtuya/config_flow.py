@@ -128,7 +128,7 @@ def dps_string_list(dps_data):
 
 def gen_dps_strings():
     """Generate list of DPS values."""
-    return [f"{dp} (value: ?)" for dp in range(1, 256)]
+    return [*(f"{dp} (value: ?)" for dp in range(1, 256)), 6001, 6002, 6003]
 
 
 def platform_schema(platform, dps_strings, allow_id=True, yaml=False):

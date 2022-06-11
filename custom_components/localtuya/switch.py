@@ -55,10 +55,10 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
             attrs[ATTR_CURRENT] = self.dps(self._config[CONF_CURRENT])
         if self.has_config(CONF_CURRENT_CONSUMPTION):
             attrs[ATTR_CURRENT_CONSUMPTION] = (
-                self.dps(self._config[CONF_CURRENT_CONSUMPTION]) / 10
+                self.dps(self._config[CONF_CURRENT_CONSUMPTION], 0.1)
             )
         if self.has_config(CONF_VOLTAGE):
-            attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE]) / 10
+            attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE], 0.1)
         return attrs
 
     async def async_turn_on(self, **kwargs):

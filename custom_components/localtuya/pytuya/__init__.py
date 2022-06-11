@@ -76,6 +76,7 @@ MESSAGE_END_FMT = ">2I"  # 2*uint32: crc, suffix
 PREFIX_VALUE = 0x000055AA
 SUFFIX_VALUE = 0x0000AA55
 
+DETECT_MAX_WAIT = 20
 HEARTBEAT_INTERVAL = 10
 
 # DPS that are known to be safe to use with update_dps (0x12) command
@@ -529,6 +530,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # different steps due to request payload limitation (max. length = 255)
         self.dps_cache = {}
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
+        started = time.time()
 
         for dps_range in ranges:
             # dps 1 must always be sent, otherwise it might fail in case no dps is found
@@ -544,7 +546,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self.dps_cache.update(data["dps"])
 
             if self.dev_type == "type_0a":
-                return self.dps_cache
+                break
+
+        self.debug("Waiting for periodic dps")
+        await asyncio.sleep(started + DETECT_MAX_WAIT - time.time())
+
         self.debug("Detected dps: %s", self.dps_cache)
         return self.dps_cache
 
@@ -585,7 +591,18 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if not isinstance(payload, str):
             payload = payload.decode()
         self.debug("Decrypted payload: %s", payload)
-        return json.loads(payload)
+        data = json.loads(payload)
+        try:
+            if "dps" in data and "6" in data["dps"] and len(data["dps"]["6"]) == 12:
+                val = base64.b64decode(data["dps"]["6"])
+                data["dps"]["6001"] = int.from_bytes(val[2:5], "big")
+                data["dps"]["6002"] = int.from_bytes(val[5:8], "big") * 10
+                data["dps"]["6003"] = int.from_bytes(val[0:2], "big")
+                del data["dps"]["6"]
+        except binascii.Error:
+            pass
+
+        return data
 
     def _generate_payload(self, command, data=None):
         """
