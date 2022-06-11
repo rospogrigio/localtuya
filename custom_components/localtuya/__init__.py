@@ -54,6 +54,20 @@ localtuya:
         current_consumption: 19 # Optional
         voltage: 20 # Optional
 
+      - platform: number
+        friendly_name: Power Level
+        id: 106
+        min_value: 1 # Optional
+        max_value: 9
+        step_value: 1 # Optional
+        dp_data_type: int # Optional default to float
+
+      - platform: select
+        friendly_name: Power On State
+        id: 38
+        select_options: 0;1;2
+        select_options_friendly: Off;On;Remember last state
+
       - platform: vacuum
         friendly_name: Vacuum
         id: 28

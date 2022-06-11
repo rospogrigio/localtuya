@@ -92,7 +92,7 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        state = self.dps(self._dp_id)
+        state = str(self.dps(self._dp_id))
         self._state_friendly = self._display_options[self._valid_options.index(state)]
         self._state = state
 

@@ -15,7 +15,7 @@ The following Tuya device types are currently supported:
 * Fans
 * Climates (soon)
 
-Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices. 
+Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
 This repository's development has substantially started by utilizing and merging code from NameLessJedi, mileperhour and TradeFace, and then was deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
 
@@ -36,7 +36,7 @@ Devices can be configured in two ways:
 
 Add the proper entry to your configuration.yaml file. Several example configurations for different device types are provided below. Make sure to save when you are finished editing configuration.yaml.
 
-```
+```yaml
 localtuya:
   - host: 192.168.1.x
     device_id: xxxxx
@@ -61,7 +61,7 @@ localtuya:
         currpos_dps: 3 # Optional, required only for "position" mode
         setpos_dps: 4  # Optional, required only for "position" mode
         span_time: 25  # Full movement time: Optional, required only for "timed" mode
-        
+
       - platform: fan
         friendly_name: Device Fan
         id: 3
@@ -94,8 +94,22 @@ localtuya:
         current: 18 # Optional
         current_consumption: 19 # Optional
         voltage: 20 # Optional
+
+      - platform: number
+        friendly_name: Power Level
+        id: 106
+        min_value: 1 # Optional
+        max_value: 9
+        step_value: 1 # Optional
+        dp_data_type: int # Optional default to float
+
+      - platform: select
+        friendly_name: Power On State
+        id: 38
+        select_options: 0;1;2
+        select_options_friendly: Off;On;Remember last state
 ```
-   
+
 Note that a single device can contain several different entities. Some examples:
 - a cover device might have 1 (or many) cover entities, plus a switch to control backlight
 - a multi-gang switch will contain several switch entities, one for each gang controlled
@@ -105,12 +119,12 @@ Restart Home Assistant when finished editing.
 # 2. Using config flow
 
 Start by going to Configuration - Integration and pressing the "+" button to create a new Integration, then select LocalTuya in the drop-down menu.
-Wait for 6 seconds for the scanning of the devices in your LAN. Then, a drop-down menu will appear containing the list of detectes devices: you can 
+Wait for 6 seconds for the scanning of the devices in your LAN. Then, a drop-down menu will appear containing the list of detectes devices: you can
 select one of these, or manually input all the parameters.
 
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
-If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey. 
+If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey.
 
 Setting the scan interval is optional, only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
@@ -123,8 +137,8 @@ After you have defined all the needed entities leave the "Do not add more entiti
 
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
-For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing 
-all the avaliable DPs found on the device (with their current status!!) for an easy identification. Each entity type has different options 
+For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
+all the avaliable DPs found on the device (with their current status!!) for an easy identification. Each entity type has different options
 to be configured, here is an example for the "switch" entity:
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
@@ -141,23 +155,23 @@ Energy monitoring (voltage, current...) values can be obtained in two different 
 2) accessing the voltage/current/current_consumption attributes of a switch, and then defining template sensors like this (please note that in this case the values are already divided by 10 for Voltage and Consumption)
 3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
-```   
+```yaml
        sensor:
          - platform: template
            sensors:
              tuya-sw01_voltage:
                value_template: >-
                  {{ states.switch.sw01.attributes.voltage }}
-               unit_of_measurement: 'V' 
+               unit_of_measurement: 'V'
              tuya-sw01_current:
-               value_template: >-     
+               value_template: >-
                  {{ states.switch.sw01.attributes.current }}
-               unit_of_measurement: 'mA'      
+               unit_of_measurement: 'mA'
              tuya-sw01_current_consumption:
                value_template: >-
                  {{ states.switch.sw01.attributes.current_consumption }}
-               unit_of_measurement: 'W' 
-```   
+               unit_of_measurement: 'W'
+```
 
 # Notes:
 
@@ -165,9 +179,9 @@ Energy monitoring (voltage, current...) values can be obtained in two different 
 
 # To-do list:
 
-* Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-. 
+* Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-.
       Ideas: Use: https://www.home-assistant.io/components/integration/ and https://www.home-assistant.io/components/utility_meter/
-   
+
 * Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
 
 # Thanks to:

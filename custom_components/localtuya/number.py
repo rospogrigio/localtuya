@@ -1,6 +1,7 @@
 """Platform to present any Tuya DP as a number."""
 import logging
 from functools import partial
+import typing
 
 import voluptuous as vol
 from homeassistant.components.number import DOMAIN, NumberEntity
@@ -12,9 +13,23 @@ _LOGGER = logging.getLogger(__name__)
 
 CONF_MIN_VALUE = "min_value"
 CONF_MAX_VALUE = "max_value"
+CONF_STEP_VALUE = "step_value"
+CONF_DP_DTYPE = "dp_data_type"  # it could be float int str
 
 DEFAULT_MIN = 0
 DEFAULT_MAX = 100000
+DEFAULT_STEP = 1
+DEFAULT_DP_DTYPE = "float"
+
+DTYPE_MAPPER = {
+    "str": str,
+    "float": float,
+    "int": int,
+}
+
+POSSIBLE_DP_DTYPE: list[typing.Literal["str", "int", "float"]] = list(
+    DTYPE_MAPPER.keys()
+)
 
 
 def flow_schema(dps):
@@ -27,6 +42,13 @@ def flow_schema(dps):
         vol.Required(CONF_MAX_VALUE, default=DEFAULT_MAX): vol.All(
             vol.Coerce(float),
             vol.Range(min=-1000000.0, max=1000000.0),
+        ),
+        vol.Optional(CONF_STEP_VALUE, default=DEFAULT_STEP): vol.All(
+            vol.Coerce(float),
+            vol.Range(min=-1000000.0, max=1000000.0),
+        ),
+        vol.Optional(CONF_DP_DTYPE, default=DEFAULT_DP_DTYPE): vol.In(
+            POSSIBLE_DP_DTYPE
         ),
     }
 
@@ -49,7 +71,14 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
         if CONF_MIN_VALUE in self._config:
             self._min_value = self._config.get(CONF_MIN_VALUE)
 
+        if (step_value := self._config.get(CONF_STEP_VALUE, None)) is not None:
+            self._attr_step = step_value
+
         self._max_value = self._config.get(CONF_MAX_VALUE)
+
+        self.dp_dtype_class: typing.Union[
+            type[str], type[float], type[int]
+        ] = DTYPE_MAPPER[self._config.get(CONF_DP_DTYPE)]
 
     @property
     def value(self) -> float:
@@ -73,7 +102,8 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
 
     async def async_set_value(self, value: float) -> None:
         """Update the current value."""
-        await self._device.set_dp(value, self._dp_id)
+        casted_value = self.dp_dtype_class(value)
+        await self._device.set_dp(casted_value, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""
