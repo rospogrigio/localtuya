@@ -1,13 +1,45 @@
 """Constants for localtuya integration."""
 
+DOMAIN = "localtuya"
+
+DATA_DISCOVERY = "discovery"
+DATA_CLOUD = "cloud_data"
+
+# Platforms in this list must support config flows
+PLATFORMS = [
+    "binary_sensor",
+    "climate",
+    "cover",
+    "fan",
+    "light",
+    "number",
+    "select",
+    "sensor",
+    "switch",
+    "vacuum",
+]
+
+TUYA_DEVICES = "tuya_devices"
+
 ATTR_CURRENT = "current"
 ATTR_CURRENT_CONSUMPTION = "current_consumption"
 ATTR_VOLTAGE = "voltage"
+ATTR_UPDATED_AT = "updated_at"
 
+# config flow
 CONF_LOCAL_KEY = "local_key"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
+CONF_MODEL = "model"
 CONF_PRODUCT_KEY = "product_key"
+CONF_PRODUCT_NAME = "product_name"
+CONF_USER_ID = "user_id"
+
+CONF_ACTION = "action"
+CONF_ADD_DEVICE = "add_device"
+CONF_EDIT_DEVICE = "edit_device"
+CONF_SETUP_CLOUD = "setup_cloud"
+CONF_NO_CLOUD = "no_cloud"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -81,23 +113,3 @@ CONF_FAULT_DP = "fault_dp"
 CONF_PAUSED_STATE = "paused_state"
 CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
-
-DATA_DISCOVERY = "discovery"
-
-DOMAIN = "localtuya"
-
-# Platforms in this list must support config flows
-PLATFORMS = [
-    "binary_sensor",
-    "climate",
-    "cover",
-    "fan",
-    "light",
-    "number",
-    "select",
-    "sensor",
-    "switch",
-    "vacuum",
-]
-
-TUYA_DEVICE = "tuya_device"

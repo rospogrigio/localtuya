@@ -11,18 +11,18 @@ from homeassistant.components.climate import (
     ClimateEntity,
 )
 from homeassistant.components.climate.const import (
+    CURRENT_HVAC_HEAT,
+    CURRENT_HVAC_IDLE,
     HVAC_MODE_AUTO,
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
+    PRESET_AWAY,
+    PRESET_ECO,
+    PRESET_HOME,
+    PRESET_NONE,
     SUPPORT_PRESET_MODE,
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_TARGET_TEMPERATURE_RANGE,
-    CURRENT_HVAC_IDLE,
-    CURRENT_HVAC_HEAT,
-    PRESET_NONE,
-    PRESET_ECO,
-    PRESET_AWAY,
-    PRESET_HOME,
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
@@ -37,21 +37,21 @@ from homeassistant.const import (
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_CURRENT_TEMPERATURE_DP,
-    CONF_MAX_TEMP_DP,
-    CONF_MIN_TEMP_DP,
-    CONF_PRECISION,
-    CONF_TARGET_PRECISION,
-    CONF_TARGET_TEMPERATURE_DP,
-    CONF_TEMPERATURE_STEP,
-    CONF_HVAC_MODE_DP,
-    CONF_HVAC_MODE_SET,
+    CONF_ECO_DP,
+    CONF_ECO_VALUE,
     CONF_HEURISTIC_ACTION,
     CONF_HVAC_ACTION_DP,
     CONF_HVAC_ACTION_SET,
-    CONF_ECO_DP,
-    CONF_ECO_VALUE,
+    CONF_HVAC_MODE_DP,
+    CONF_HVAC_MODE_SET,
+    CONF_MAX_TEMP_DP,
+    CONF_MIN_TEMP_DP,
+    CONF_PRECISION,
     CONF_PRESET_DP,
     CONF_PRESET_SET,
+    CONF_TARGET_PRECISION,
+    CONF_TARGET_TEMPERATURE_DP,
+    CONF_TEMPERATURE_STEP,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -176,7 +176,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
-        print("Initialized climate [{}]".format(self.name))
+        _LOGGER.debug("Initialized climate [%s]", self.name)
 
     @property
     def supported_features(self):
