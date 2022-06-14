@@ -1,5 +1,5 @@
 reload:
-  description: Reload localtuya and re-process yaml configuration.
+  description: Reload localtuya and reconnect to all devices.
 
 set_dp:
   description: Change the value of a datapoint (DP)

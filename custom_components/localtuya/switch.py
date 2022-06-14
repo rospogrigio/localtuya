@@ -40,7 +40,7 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         """Initialize the Tuya switch."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
-        print("Initialized switch [{}]".format(self.name))
+        _LOGGER.debug("Initialized switch [%s]", self.name)
 
     @property
     def is_on(self):
