@@ -114,7 +114,7 @@
                     "id": "ID",
                     "friendly_name": "Nome amichevole",
                     "current": "Corrente",
-                    "current_consumption": "Consumo di corrente",
+                    "current_consumption": "Potenza",
                     "voltage": "Tensione",
                     "commands_set": "Set di comandi Aperto_Chiuso_Stop",
                     "positioning_mode": "Modalità di posizionamento",
