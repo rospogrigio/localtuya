@@ -2,30 +2,30 @@
     "config": {
         "abort": {
             "already_configured": "Il dispositivo è già stato configurato.",
-            "device_updated": "La configurazione del dispositivo è stata aggiornata!"
+            "device_updated": "La configurazione del dispositivo è stata aggiornata."
         },
         "error": {
-            "authentication_failed": "Impossibile effettuare l'autenticazione.\n{msg}",
-            "cannot_connect": "Impossibile connettersi al dispositivo. Verificare che quell'indirizzo è corretto e riprova.",
+            "authentication_failed": "Autenticazione fallita. Errore:\n{msg}",
+            "cannot_connect": "Impossibile connettersi al dispositivo. Verifica che l'indirizzo sia corretto e riprova.",
             "device_list_failed": "Impossibile recuperare l'elenco dei dispositivi.\n{msg}",
-            "invalid_auth": "Impossibile autenticare con il dispositivo. Verificare che l'ID dispositivo e la chiave locale siano corretti.",
-            "unknown": "Si è verificato un errore sconosciuto.Vedi registro per i dettagli.",
-            "entity_already_configured": "L'entità con questo ID è già stata configurata.",
-            "address_in_use": "L'indirizzo utilizzato per la scoperta è già in uso. Assicurarsi che nessun'altra applicazione lo stia utilizzando (porta TCP 6668).",
-            "discovery_failed": "Qualcosa è fallito quando si scopre i dispositivi.Vedi registro per i dettagli.",
-            "empty_dps": "La connessione al dispositivo è riuscito ma non sono stati trovati i punti dati, riprova. Crea un nuovo problema e includi i registri di debug se il problema persiste."
+            "invalid_auth": "Impossibile autenticarsi con il dispositivo. Verificare che device_id e local_key siano corretti.",
+            "unknown": "Si è verificato un errore sconosciuto. Vedere registro per i dettagli.",
+            "entity_already_configured": "L'entity con questo ID è già stata configurata.",
+            "address_in_use": "L'indirizzo utilizzato per il discovery è già in uso. Assicurarsi che nessun'altra applicazione lo stia utilizzando (porta TCP 6668).",
+            "discovery_failed": "Qualcosa è fallito nella discovery dei dispositivi. Vedi registro per i dettagli.",
+            "empty_dps": "La connessione al dispositivo è riuscita ma non sono stati trovati i datapoint, riprova. Crea un nuovo Issue e includi i log di debug se il problema persiste."
         },
         "step": {
             "user": {
-                "title": "Configurazione dell'account API cloud",
-                "description": "Inserisci le credenziali per l'API cloud Tuya.",
+                "title": "Configurazione dell'account Cloud API",
+                "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
                 "data": {
                     "region": "Regione del server API",
                     "client_id": "Client ID",
                     "client_secret": "Secret",
-                    "user_id": "ID utente",
+                    "user_id": "User ID",
                     "user_name": "Username",
-                    "no_cloud": "Non configurare un account API cloud"
+                    "no_cloud": "Non configurare un account Cloud API"
                 }
             }
         }
@@ -33,23 +33,23 @@
     "options": {
         "abort": {
             "already_configured": "Il dispositivo è già stato configurato.",
-            "device_success": "Dispositivo {dev_name} con successo {action}."
+            "device_success": "Dispositivo {dev_name} {action} con successo."
         },
         "error": {
-            "authentication_failed": "Impossibile autenticare.\n{msg}",
-            "cannot_connect": "Impossibile connettersi al dispositivo. Verificare che quell'indirizzo è corretto e riprova.",
+            "authentication_failed": "Autenticazione fallita. Errore:\n{msg}",
+            "cannot_connect": "Impossibile connettersi al dispositivo. Verifica che l'indirizzo sia corretto e riprova.",
             "device_list_failed": "Impossibile recuperare l'elenco dei dispositivi.\n{msg}",
-            "invalid_auth": "Impossibile autenticare con il dispositivo.Verificare che l'ID dispositivo e la chiave locale siano corretti.",
-            "unknown": "Si è verificato un errore sconosciuto. Vedi registro per i dettagli.",
-            "entity_already_configured": "L'entità con questo ID è già stata configurata.",
-            "address_in_use": "L'indirizzo utilizzato per la scoperta è già in uso. Assicurarsi che nessun'altra applicazione lo stia utilizzando (porta TCP 6668).",
-            "discovery_failed": "Qualcosa è fallito quando si scopre i dispositivi. Vedi registro per i dettagli.",
-            "empty_dps": "La connessione al dispositivo è riuscita ma non sono stati trovati i punti dati, riprova. Crea un nuovo problema e includi i registri di debug se il problema persiste."
+            "invalid_auth": "Impossibile autenticarsi con il dispositivo. Verificare che device_id e local_key siano corretti.",
+            "unknown": "Si è verificato un errore sconosciuto. Vedere registro per i dettagli.",
+            "entity_already_configured": "L'entity con questo ID è già stata configurata.",
+            "address_in_use": "L'indirizzo utilizzato per il discovery è già in uso. Assicurarsi che nessun'altra applicazione lo stia utilizzando (porta TCP 6668).",
+            "discovery_failed": "Qualcosa è fallito nella discovery dei dispositivi. Vedi registro per i dettagli.",
+            "empty_dps": "La connessione al dispositivo è riuscita ma non sono stati trovati i datapoint, riprova. Crea un nuovo Issue e includi i log di debug se il problema persiste."
         },
         "step": {
             "yaml_import": {
                 "title": "Non supportato",
-                "description": "Le opzioni non possono essere modificate quando configurate tramite YAML."
+                "description": "Le impostazioni non possono essere configurate tramite file YAML."
             },
             "init": {
                 "title": "Configurazione LocalTuya",
@@ -57,37 +57,37 @@
                 "data": {
                     "add_device": "Aggiungi un nuovo dispositivo",
                     "edit_device": "Modifica un dispositivo",
-                    "setup_cloud": "Riconfigurare l'account API cloud"
+                    "setup_cloud": "Riconfigurare l'account Cloud API"
                 }
             },
             "add_device": {
                 "title": "Aggiungi un nuovo dispositivo",
-                "description": "Scegli uno dei dispositivi scoperti automaticamente o `...` per aggiungere manualmente un dispositivo.",
+                "description": "Scegli uno dei dispositivi trovati automaticamente o `...` per aggiungere manualmente un dispositivo.",
                 "data": {
-                    "selected_device": "Dispositivi scoperti"
+                    "selected_device": "Dispositivi trovati"
                 }
             },
             "edit_device": {
-                "title": "Modifica un nuovo dispositivo",
+                "title": "Modifica un dispositivo",
                 "description": "Scegli il dispositivo configurato che si desidera modificare.",
                 "data": {
                     "selected_device": "Dispositivi configurati"
                 }
             },
             "cloud_setup": {
-                "title": "Configurazione dell'account API cloud",
-                "description": "Inserisci le credenziali per l'API cloud Tuya.",
+                "title": "Configurazione dell'account Cloud API",
+                "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
                 "data": {
                     "region": "Regione del server API",
                     "client_id": "Client ID",
                     "client_secret": "Secret",
-                    "user_id": "ID utente",
-                    "user_name": "Nome utente",
-                    "no_cloud": "Non configurare l'account API cloud"
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Non configurare l'account Cloud API"
                 }
             },
             "configure_device": {
-                "title": "Configura il tuo dispositivo",
+                "title": "Configura il dispositivo",
                 "description": "Compila i dettagli del dispositivo {for_device}.",
                 "data": {
                     "friendly_name": "Nome",
@@ -96,91 +96,91 @@
                     "local_key": "Chiave locale",
                     "protocol_version": "Versione del protocollo",
                     "scan_interval": "Intervallo di scansione (secondi, solo quando non si aggiorna automaticamente)",
-                    "entities": "Entità (deseleziona un'entità per rimuoverla)"
+                    "entities": "Entities (deseleziona un'entity per rimuoverla)"
                 }
             },
             "pick_entity_type": {
-                "title": "Selezione del tipo di entità",
-                "description": "Scegli il tipo di entità che desideri aggiungere.",
+                "title": "Selezione del tipo di entity",
+                "description": "Scegli il tipo di entity che desideri aggiungere.",
                 "data": {
                     "platform_to_add": "piattaforma",
-                    "no_additional_entities": "Non aggiungere più entità"
+                    "no_additional_entities": "Non aggiungere altre entity"
                 }
             },
             "configure_entity": {
-                "title": "Configurare entità",
+                "title": "Configurare entity",
                 "description": "Compila i dettagli per {entity} con tipo `{platform}`.Tutte le impostazioni ad eccezione di `id` possono essere modificate dalla pagina delle opzioni in seguito.",
                 "data": {
                     "id": "ID",
                     "friendly_name": "Nome amichevole",
-                    "current": "Attuale",
-                    "current_consumption": "Consumo attuale",
-                    "voltage": "Volaggio",
+                    "current": "Corrente",
+                    "current_consumption": "Consumo di corrente",
+                    "voltage": "Tensione",
                     "commands_set": "Set di comandi Aperto_Chiuso_Stop",
                     "positioning_mode": "Modalità di posizionamento",
-                    "current_position_dp": "Posizione corrente (solo per la modalità *posizione*)",
+                    "current_position_dp": "Posizione attuale (solo per la modalità *posizione*)",
                     "set_position_dp": "Imposta posizione (solo per modalità *posizione*)",
                     "position_inverted": "Inverti posizione 0-100 (solo per modalità *posizione*)",
-                    "span_time": "Orario di apertura totale, in sec. (solo per modalità *a tempo*)",
+                    "span_time": "Tempo di apertura totale, in sec. (solo per modalità *a tempo*)",
                     "unit_of_measurement": "Unità di misura",
                     "device_class": "Classe del dispositivo",
                     "scaling": "Fattore di scala",
-                    "state_on": "Valore acceso",
-                    "state_off": "Valore spento",
+                    "state_on": "Valore di ON",
+                    "state_off": "Valore di OFF",
                     "powergo_dp": "Potenza DP (di solito 25 o 2)",
                     "idle_status_value": "Stato di inattività (separato da virgole)",
-                    "returning_status_value": "Stato di ritorno",
-                    "docked_status_value": "Stato ancorato (separato da virgole)",
-                    "fault_dp": "Guasto DP (di solito 11)",
-                    "battery_dp": "Stato batteria DP (di solito 14)",
-                    "mode_dp": "Modalità DP (di solito 27)",
+                    "returning_status_value": "Stato di ritorno alla base",
+                    "docked_status_value": "Stato di tornato alla base (separato da virgole)",
+                    "fault_dp": "DP di guasto (di solito 11)",
+                    "battery_dp": "DP di stato batteria (di solito 14)",
+                    "mode_dp": "DP di modalità (di solito 27)",
                     "modes": "Elenco delle modalità",
                     "return_mode": "Ritorno in modalità home",
-                    "fan_speed_dp": "Velocità della ventola DP (di solito 30)",
-                    "fan_speeds": "Elenco delle velocità della ventola (separato da virgola)",
-                    "clean_time_dp": "Tempo di pulizia DP (di solito 33)",
-                    "clean_area_dp": "Area pulita dp (di solito 32)",
-                    "clean_record_dp": "Record pulito dp (di solito 34)",
-                    "locate_dp": "Individua DP (di solito 31)",
-                    "paused_state": "Pausa Stato (pausa, pausa, ecc.)",
-                    "stop_status": "Stampa Stato",
+                    "fan_speed_dp": "DP di velocità del ventilatore (di solito 30)",
+                    "fan_speeds": "DP di elenco delle velocità del ventilatore (separato da virgola)",
+                    "clean_time_dp": "DP di tempo di pulizia (di solito 33)",
+                    "clean_area_dp": "DP di area pulita (di solito 32)",
+                    "clean_record_dp": "DP di record delle pulizie (di solito 34)",
+                    "locate_dp": "DP di individuazione (di solito 31)",
+                    "paused_state": "Stato di pausa (pausa, pausa, ecc.)",
+                    "stop_status": "Stato di stop",
                     "brightness": "Luminosità (solo per il colore bianco)",
-                    "brightness_lower": "Luminosità valore inferiore",
-                    "brightness_upper": "Valore superiore della luminosità",
+                    "brightness_lower": "Limite inferiore per la luminosità",
+                    "brightness_upper": "Limite superiore per la luminosità",
                     "color_temp": "Temperatura di colore",
-                    "color_temp_reverse": "Temperatura del colore inverso",
+                    "color_temp_reverse": "Temperatura di colore invertita",
                     "color": "Colore",
                     "color_mode": "Modalità colore",
-                    "color_temp_min_kelvin": "Temperatura del colore minima in K",
-                    "color_temp_max_kelvin": "Temperatura di colore massima in k",
+                    "color_temp_min_kelvin": "Minima temperatura di colore in K",
+                    "color_temp_max_kelvin": "Massima temperatura di colore in k",
                     "music_mode": "Modalità musicale disponibile",
                     "scene": "Scena",
-                    "select_options": "Voci valide, voci separate da una vigola (;)",
+                    "select_options": "Opzioni valide, voci separate da una vigola (;)",
                     "select_options_friendly": "Opzioni intuitive, voci separate da una virgola",
-                    "fan_speed_control": "DPPS controlli di velocità della ventola",
-                    "fan_oscillating_control": "DPS di controllo oscillante per la ventola",
-                    "fan_speed_min": "Velocità della ventola minima intero",
-                    "fan_speed_max": "intero di velocità della ventola massima",
-                    "fan_speed_ordered_list": "Elenco delle modalità di velocità della ventola (sovrascrive velocità min/max)",
-                    "fan_direction":"Dennificazione del fan DPS",
-                    "fan_direction_forward": "stringa DPS in avanti",
-                    "fan_direction_reverse": "Stringa DPS inversa",
-                    "current_temperature_dp": "Temperatura di corrente",
+                    "fan_speed_control": "DP di controllo di velocità del ventilatore",
+                    "fan_oscillating_control": "DP di controllo dell'oscillazione del ventilatore",
+                    "fan_speed_min": "Velocità del ventilatore minima",
+                    "fan_speed_max": "Velocità del ventilatore massima",
+                    "fan_speed_ordered_list": "Elenco delle modalità di velocità del ventilatore (sovrascrive velocità min/max)",
+                    "fan_direction":"DP di direzione del ventilatore",
+                    "fan_direction_forward": "Stringa del DP per avanti",
+                    "fan_direction_reverse": "Stringa del DP per indietro",
+                    "current_temperature_dp": "Temperatura attuale",
                     "target_temperature_dp": "Temperatura target",
-                    "temperature_step": "Passaggio di temperatura (facoltativo)",
+                    "temperature_step": "Intervalli di temperatura (facoltativo)",
                     "max_temperature_dp": "Temperatura massima (opzionale)",
-                    "min_temperature_dp": "Temperatura min (opzionale)",
-                    "precision": "Precision (opzionale, per valori DPS)",
-                    "target_precision": "PRECISIONE TARGET (opzionale, per valori DPS)",
+                    "min_temperature_dp": "Temperatura minima (opzionale)",
+                    "precision": "Precisione (opzionale, per valori DP)",
+                    "target_precision": "Precisione del target (opzionale, per valori DP)",
                     "temperature_unit": "Unità di temperatura (opzionale)",
-                    "hvac_mode_dp": "Modalità HVAC DP (opzionale)",
-                    "hvac_mode_set": "Set di modalità HVAC (opzionale)",
-                    "hvac_action_dp": "Azione corrente HVAC DP (opzionale)",
-                    "hvac_action_set": "Set di azione corrente HVAC (opzionale)",
+                    "hvac_mode_dp": "Modalità HVAC attuale (opzionale)",
+                    "hvac_mode_set": "Impostazione modalità HVAC (opzionale)",
+                    "hvac_action_dp": "Azione HVAC attuale (opzionale)",
+                    "hvac_action_set": "Impostazione azione HVAC (opzionale)",
                     "preset_dp": "Preset DP (opzionale)",
                     "preset_set": "Set di preset (opzionale)",
-                    "eco_dp": "Eco DP (opzionale)",
-                    "eco_value": "Valore ecologico (opzionale)",
+                    "eco_dp": "DP per Eco (opzionale)",
+                    "eco_value": "Valore Eco (opzionale)",
                     "heuristic_action": "Abilita azione euristica (opzionale)"
                 }
             }
