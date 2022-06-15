@@ -12,16 +12,13 @@
         },
         "step": {
             "user": {
-                "title": "Add Tuya device",
-                "description": "Fill in the basic details and pick device type. The name entered here will be used to identify the integration itself (as seen in the `Integrations` page). You will name each sub-device in the following steps.",
+                "title": "Main Configuration",
+                "description": "Input the credentials for Tuya Cloud API.",
                 "data": {
-                    "name": "Name",
-                    "host": "Host",
-                    "device_id": "Device ID",
-                    "local_key": "Local key",
-                    "protocol_version": "Protocol Version",
-                    "scan_interval": "Scan interval (seconds, only when not updating automatically)",
-                    "device_type": "Device type"
+                    "region": "API server region",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID"
                 }
             },
             "power_outlet": {
@@ -36,6 +33,99 @@
                     "voltage": "Voltage",
                     "add_another_switch": "Add another switch"
                 }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "LocalTuya Configuration",
+                "description": "Please select the desired actionSSSS.",
+                "data": {
+                    "add_device": "Add a new device",
+                    "edit_device": "Edit a device",
+                    "delete_device": "Delete a device",
+                    "setup_cloud": "Reconfigure Cloud API account"
+                }
+            },
+            "entity": {
+                "title": "Entity Configuration",
+                "description": "Editing entity with DPS `{id}` and platform `{platform}`.",
+                "data": {
+                    "id": "ID",
+                    "friendly_name": "Friendly name",
+                    "current": "Current",
+                    "current_consumption": "Current Consumption",
+                    "voltage": "Voltage",
+                    "commands_set": "Open_Close_Stop Commands Set",
+                    "positioning_mode": "Positioning mode",
+                    "current_position_dp": "Current Position (for *position* mode only)",
+                    "set_position_dp": "Set Position (for *position* mode only)",
+                    "position_inverted": "Invert 0-100 position (for *position* mode only)",
+                    "span_time": "Full opening time, in secs. (for *timed* mode only)",
+                    "unit_of_measurement": "Unit of Measurement",
+                    "device_class": "Device Class",
+                    "scaling": "Scaling Factor",
+                    "state_on": "On Value",
+                    "state_off": "Off Value",
+                    "powergo_dp": "Power DP (Usually 25 or 2)",
+                    "idle_status_value": "Idle Status (comma-separated)",
+                    "returning_status_value": "Returning Status",
+                    "docked_status_value": "Docked Status (comma-separated)",
+                    "fault_dp": "Fault DP (Usually 11)",
+                    "battery_dp": "Battery status DP (Usually 14)",
+                    "mode_dp": "Mode DP (Usually 27)",
+                    "modes": "Modes list",
+                    "return_mode": "Return home mode",
+                    "fan_speed_dp": "Fan speeds DP (Usually 30)",
+                    "fan_speeds": "Fan speeds list (comma-separated)",
+                    "clean_time_dp": "Clean Time DP (Usually 33)",
+                    "clean_area_dp": "Clean Area DP (Usually 32)",
+                    "clean_record_dp": "Clean Record DP (Usually 34)",
+                    "locate_dp": "Locate DP (Usually 31)",
+                    "paused_state": "Pause state (pause, paused, etc)",
+                    "stop_status": "Stop status",
+                    "brightness": "Brightness (only for white color)",
+                    "brightness_lower": "Brightness Lower Value",
+                    "brightness_upper": "Brightness Upper Value",
+                    "color_temp": "Color Temperature",
+                    "color_temp_reverse": "Color Temperature Reverse",
+                    "color": "Color",
+                    "color_mode": "Color Mode",
+                    "color_temp_min_kelvin": "Minimum Color Temperature in K",
+                    "color_temp_max_kelvin": "Maximum Color Temperature in K",
+                    "music_mode": "Music mode available",
+                    "scene": "Scene",
+                    "fan_speed_control": "Fan Speed Control dps",
+                    "fan_oscillating_control": "Fan Oscillating Control dps",
+                    "fan_speed_min": "minimum fan speed integer",
+                    "fan_speed_max": "maximum fan speed integer",
+                    "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
+                    "fan_direction":"fan direction dps",
+                    "fan_direction_forward": "forward dps string",
+                    "fan_direction_reverse": "reverse dps string",
+                    "current_temperature_dp": "Current Temperature",
+                    "target_temperature_dp": "Target Temperature",
+                    "temperature_step": "Temperature Step (optional)",
+                    "max_temperature_dp": "Max Temperature (optional)",
+                    "min_temperature_dp": "Min Temperature (optional)",
+                    "precision": "Precision (optional, for DPs values)",
+                    "target_precision": "Target Precision (optional, for DPs values)",
+                    "temperature_unit": "Temperature Unit (optional)",
+                    "hvac_mode_dp": "HVAC Mode DP (optional)",
+                    "hvac_mode_set": "HVAC Mode Set (optional)",
+                    "hvac_action_dp": "HVAC Current Action DP (optional)",
+                    "hvac_action_set": "HVAC Current Action Set (optional)",
+                    "preset_dp": "Presets DP (optional)",
+                    "preset_set": "Presets Set (optional)",
+                    "eco_dp": "Eco DP (optional)",
+                    "eco_value": "Eco value (optional)",
+                    "heuristic_action": "Enable heuristic action (optional)"
+                }
+            },
+            "yaml_import": {
+                "title": "Not Supported",
+                "description": "Options cannot be edited when configured via YAML."
             }
         }
     },

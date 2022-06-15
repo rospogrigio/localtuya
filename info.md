@@ -5,159 +5,163 @@
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
 A Home Assistant custom Integration for local handling of Tuya-based devices.
-Device status is updated receiving push updates from the device instead of polling, so status updates are extremely fast (even if manually operated).
+
+This custom integration updates device status via pushing updates instead of polling, so status updates are fast (even when manually operated).
+The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
+
+
+**NOTE: The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed.**
+
 
 The following Tuya device types are currently supported:
-* 1 and multiple gang switches
-* Wi-Fi smart plugs (including those with additional USB plugs)
+* Switches
 * Lights
 * Covers
 * Fans
-* Climates (soon)
+* Climates
+* Vacuums
 
-Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices. 
+Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
-This repository's development has substantially started by utilizing and merging code from NameLessJedi, mileperhour and TradeFace, and then was deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
+> **Currently, only Tuya protocols 3.1 and 3.3 are supported (3.4 is not).**
+
+This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
+
 
 # Installation:
 
-Copy the localtuya folder and all of its contents into your Home Assistant's custom_components folder. This is often located inside of your /config folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at /usr/share/hassio/homeassistant. It is possible that your custom_components folder does not exist. If that is the case, create the folder in the proper location, and then copy the localtuya folder and all of its contents inside the newly created custom_components folder.
+The easiest way, if you are using [HACS](https://hacs.xyz/), is to install LocalTuya through HACS.
 
-Alternatively, you can install localtuya through HACS by adding this repository.
+For manual installation, copy the localtuya folder and all of its contents into your Home Assistant's custom_components folder. This folder is usually inside your `/config` folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at `/usr/share/hassio/homeassistant`. You may need to create the `custom_components` folder and then copy the localtuya folder and all of its contents into it.
 
 
 # Usage:
 
-**NOTE: You must have your Tuya device's Key and ID in order to use localtuya. There are several ways to obtain the localKey depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .**
+**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .**
 
-Devices can be configured in two ways:
 
-# 1. YAML config files
+**NOTE 2: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
 
-Add the proper entry to your configuration.yaml file. Several example configurations for different device types are provided below. Make sure to save when you are finished editing configuration.yaml.
 
-```
-localtuya:
-  - host: 192.168.1.x
-    device_id: xxxxx
-    local_key: xxxxx
-    friendly_name: Tuya Device
-    protocol_version: "3.3"
-    scan_interval: # optional, only needed if energy monitoring values are not updating
-      seconds: 30 # Values less than 10 seconds may cause stability issues
-    entities:
-      - platform: binary_sensor
-        friendly_name: Plug Status
-        id: 1
-        device_class: power
-        state_on: "true" # Optional
-        state_off: "false" # Optional
+# Adding the Integration
 
-      - platform: cover
-        friendly_name: Device Cover
-        id: 2
-        open_close_cmds: ["on_off","open_close"] # Optional, default: "on_off"
-        positioning_mode: ["none","position","timed"] # Optional, default: "none"
-        currpos_dps: 3 # Optional, required only for "position" mode
-        setpos_dps: 4  # Optional, required only for "position" mode
-        span_time: 25  # Full movement time: Optional, required only for "timed" mode
-        
-      - platform: fan
-        friendly_name: Device Fan
-        id: 3
 
-      - platform: light
-        friendly_name: Device Light
-        id: 4 # Usually 1 or 20
-        color_mode: 21 # Optional, usually 2 or 21, default: "none"
-        brightness: 22 # Optional, usually 3 or 22, default: "none"
-        color_temp: 23 # Optional, usually 4 or 23, default: "none"
-        color_temp_reverse: false # Optional, default: false
-        color: 24 # Optional, usually 5 (RGB_HSV) or 24 (HSV), default: "none"
-        brightness_lower: 29 # Optional, usually 0 or 29, default: 29
-        brightness_upper: 1000 # Optional, usually 255 or 1000, default: 1000
-        color_temp_min_kelvin: 2700 # Optional, default: 2700
-        color_temp_max_kelvin: 6500 # Optional, default: 6500
-        scene: 25 # Optional, usually 6 (RGB_HSV) or 25 (HSV), default: "none"
-        music_mode: False # Optional, some use internal mic, others, phone mic. Only internal mic is supported, default: "False"
+**NOTE: starting from v4.0.0, configuration using YAML files is no longer supported. The integration can only be configured using the config flow.**
 
-      - platform: sensor
-        friendly_name: Plug Voltage
-        id: 20
-        scaling: 0.1 # Optional
-        device_class: voltage # Optional
-        unit_of_measurement: "V" # Optional
 
-      - platform: switch
-        friendly_name: Plug
-        id: 1
-        current: 18 # Optional
-        current_consumption: 19 # Optional
-        voltage: 20 # Optional
-```
-   
-Note that a single device can contain several different entities. Some examples:
-- a cover device might have 1 (or many) cover entities, plus a switch to control backlight
-- a multi-gang switch will contain several switch entities, one for each gang controlled
+To start configuring the integration, just press the "+ADD INTEGRATION" button in the Settings - Integrations page, and select LocalTuya from the drop-down menu.
+The Cloud API configuration page will appear, requesting to input your Tuya IoT Platform account credentials:
 
-Restart Home Assistant when finished editing.
+![cloud_setup](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/9-cloud_setup.png)
 
-# 2. Using config flow
+To setup a Tuya IoT Platform account and setup a project in it, refer to the instructions for the official Tuya integration:
+https://www.home-assistant.io/integrations/tuya/
+The place to find the Client ID and Secret is described in this link (in the ["Get Authorization Key"](https://www.home-assistant.io/integrations/tuya/#get-authorization-key) paragraph), while the User ID can be found in the "Link Tuya App Account" subtab within the Cloud project:
 
-Start by going to Configuration - Integration and pressing the "+" button to create a new Integration, then select LocalTuya in the drop-down menu.
-Wait for 6 seconds for the scanning of the devices in your LAN. Then, a drop-down menu will appear containing the list of detectes devices: you can 
-select one of these, or manually input all the parameters.
+![user_id.png](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/8-user_id.png)
+
+> **Note: as stated in the above link, if you already have an account and an IoT project, make sure that it was created after May 25, 2021 (due to changes introduced in the cloud for Tuya 2.0). Otherwise, you need to create a new project. See the following screenshot for where to check your project creation date:**
+
+![project_date](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/6-project_date.png)
+
+After pressing the Submit button, the first setup is complete and the Integration will be added. 
+
+> **Note: it is not mandatory to input the Cloud API credentials: you can choose to tick the "Do not configure a Cloud API account" button, and the Integration will be added anyway.**
+
+After the Integration has been set up, devices can be added and configured pressing the Configure button in the Integrations page:
+
+![integration_configure](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/10-integration_configure.png)
+
+
+# Integration Configuration menu
+
+The configuration menu is the following:
+
+![config_menu](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/11-config_menu.png)
+
+From this menu, you can select the "Reconfigure Cloud API account" to edit your Tuya Cloud credentials and settings, in case they have changed or if the integration was migrated from v.3.x.x versions.
+
+You can then proceed Adding or Editing your Tuya devices.
+
+# Adding/editing a device
+
+If you select to "Add or Edit a device", a drop-down menu will appear containing the list of detected devices (using auto-discovery if adding was selected, or the list of already configured devices if editing was selected): you can select one of these, or manually input all the parameters selecting the "..." option.
+
+> **Note: The tuya app on your device must be closed for the following steps to work reliably.**
+
 
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
-If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey. 
+If you have selected one entry, you only need to input the device's Friendly Name and localKey. These values will be automatically retrieved if you have configured your Cloud API account, otherwise you will need to input them manually.
 
-Setting the scan interval is optional, only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
+Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
 Once you press "Submit", the connection is tested to check that everything works.
 
 ![image](https://user-images.githubusercontent.com/1082213/146664103-ac40319e-f934-4933-90cf-2beaff1e6bac.png)
 
-Then, it's time to add the entities: this step will take place several times. Select the entity type from the drop-down menu to set it up.
-After you have defined all the needed entities leave the "Do not add more entities" checkbox checked: this will complete the procedure.
+
+Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.
+After you have defined all the needed entities, leave the "Do not add more entities" checkbox checked: this will complete the procedure.
 
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
-For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing 
-all the avaliable DPs found on the device (with their current status!!) for an easy identification. Each entity type has different options 
-to be configured, here is an example for the "switch" entity:
+For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
+all the available DPs found on the device (with their current status!!) for easy identification. Each entity type has different options
+to be configured. Here is an example for the "switch" entity:
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
 
-After all the entities have been configured, the procedure is complete, and the Device can be associated to the Area desired.
+Once you configure the entities, the procedure is complete. You can now associate the device with an Area in Home Assistant
 
 ![success](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/5-success.png)
 
 
+# Migration from LocalTuya v.3.x.x
+
+If you upgrade LocalTuya from v3.x.x or older, the config entry will automatically be migrated to the new setup. Everything should work as it did before the upgrade, apart from the fact that in the Integration tab you will see just one LocalTuya integration (showing the number of devices and entities configured) instead of several Integrations grouped within the LocalTuya Box. This will happen both if the old configuration was done using YAML files and with the config flow. Once migrated, you can just input your Tuya IoT account credentials to enable the support for the Cloud API (and benefit from the local_key retrieval and auto-update): see [Configuration menu](https://github.com/rospogrigio/localtuya#integration-configuration-menu).
+
+If you had configured LocalTuya using YAML files, you can delete all its references from within the YAML files because they will no longer be considered so they might bring confusion (only the logger configuration part needs to be kept, of course, see [Debugging](https://github.com/rospogrigio/localtuya#debugging) ).
+
+
 # Energy monitoring values
 
-Energy monitoring (voltage, current...) values can be obtained in two different ways:
-1) creating individual sensors, each one with the desired name. Note: Voltage and Consumption usually include the first decimal, so 0.1 as "scaling" parameter shall be used in order to get the correct values.
-2) accessing the voltage/current/current_consumption attributes of a switch, and then defining template sensors like this (please note that in this case the values are already divided by 10 for Voltage and Consumption)
+You can obtain Energy monitoring (voltage, current) in two different ways:
+
+1) Creating individual sensors, each one with the desired name.
+  Note: Voltage and Consumption usually include the first decimal. You will need to scale the parament by 0.1 to get the correct values.
+2) Access the voltage/current/current_consumption attributes of a switch, and define template sensors
+  Note:  these values are already divided by 10 for Voltage and Consumption
 3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
-```   
+```
        sensor:
          - platform: template
            sensors:
              tuya-sw01_voltage:
                value_template: >-
                  {{ states.switch.sw01.attributes.voltage }}
-               unit_of_measurement: 'V' 
+               unit_of_measurement: 'V'
              tuya-sw01_current:
-               value_template: >-     
+               value_template: >-
                  {{ states.switch.sw01.attributes.current }}
-               unit_of_measurement: 'mA'      
+               unit_of_measurement: 'mA'
              tuya-sw01_current_consumption:
                value_template: >-
                  {{ states.switch.sw01.attributes.current_consumption }}
-               unit_of_measurement: 'W' 
-```   
+               unit_of_measurement: 'W'
+```
+
+# Debugging
+
+Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
+
+```yaml
+logger:
+  default: warning
+  logs:
+    custom_components.localtuya: debug
+```
 
 # Notes:
 
@@ -165,10 +169,12 @@ Energy monitoring (voltage, current...) values can be obtained in two different 
 
 # To-do list:
 
-* Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-. 
+* Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-.
       Ideas: Use: https://www.home-assistant.io/components/integration/ and https://www.home-assistant.io/components/utility_meter/
-   
+
 * Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
+
+* Support devices that use Tuya protocol v.3.4
 
 # Thanks to:
 
@@ -179,3 +185,6 @@ TradeFace, for being the only one to provide the correct code for communication 
 sean6541, for the working (standard) Python Handler for Tuya devices.
 
 postlund, for the ideas, for coding 95% of the refactoring and boosting the quality of this repo to levels hard to imagine (by me, at least) and teaching me A LOT of how things work in Home Assistant.
+
+<a href="https://www.buymeacoffee.com/rospogrigio" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+<a href="https://paypal.me/rospogrigio" target="_blank"><img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_37x23.jpg" border="0" alt="PayPal Logo" style="height: auto !important;width: auto !important;"></a>
