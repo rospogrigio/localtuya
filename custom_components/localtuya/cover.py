@@ -110,9 +110,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE:
             return None
 
-        if self._current_cover_position == 0:
+        if self._current_cover_position <= 50:
             return True
-        if self._current_cover_position == 100:
+        if self._current_cover_position > 50:
             return False
         return None
 
