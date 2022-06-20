@@ -259,24 +259,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
-    async def setup_entities(dev_id):
-        dev_entry = entry.data[CONF_DEVICES][dev_id]
-        device = TuyaDevice(hass, entry, dev_id)
-        hass.data[DOMAIN][TUYA_DEVICES][dev_id] = device
+    async def setup_entities(device_ids):
+        platforms = set()
+        for dev_id in device_ids:
+            entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
+            platforms = platforms.union(
+                set(entity[CONF_PLATFORM] for entity in entities)
+            )
+            hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
-        platforms = set(entity[CONF_PLATFORM] for entity in dev_entry[CONF_ENTITIES])
         await asyncio.gather(
             *[
                 hass.config_entries.async_forward_entry_setup(entry, platform)
                 for platform in platforms
             ]
         )
-        device.async_connect()
+
+        for dev_id in device_ids:
+            hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
 
         await async_remove_orphan_entities(hass, entry)
 
-    for dev_id in entry.data[CONF_DEVICES]:
-        hass.async_create_task(setup_entities(dev_id))
+    hass.async_create_task(setup_entities(entry.data[CONF_DEVICES].keys()))
 
     unsub_listener = entry.add_update_listener(update_listener)
     hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
