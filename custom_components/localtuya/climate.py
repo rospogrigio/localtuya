@@ -17,6 +17,7 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
     PRESET_AWAY,
+    PRESET_BOOST,
     PRESET_ECO,
     PRESET_HOME,
     PRESET_NONE,
