@@ -21,6 +21,7 @@ from homeassistant.components.climate.const import (
     PRESET_ECO,
     PRESET_HOME,
     PRESET_NONE,
+    PRESET_SLEEP,
     SUPPORT_PRESET_MODE,
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_TARGET_TEMPERATURE_RANGE,
@@ -101,7 +102,7 @@ PRESET_SETS = {
     "low/high/anti-frost": {
         PRESET_AWAY: "af",
         PRESET_BOOST: "high",
-        PRESET_HOME: "low",
+        PRESET_SLEEP: "low",
     },
 }
 
