@@ -97,6 +97,11 @@ PRESET_SETS = {
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
     },
+    "low/high/anti-frost": {
+        PRESET_AWAY: "af",
+        PRESET_BOOST: "high",
+        PRESET_HOME: "low",
+    },
 }
 
 TEMPERATURE_CELSIUS = "celsius"
