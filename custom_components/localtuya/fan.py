@@ -71,7 +71,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             self._config.get(CONF_FAN_SPEED_MIN),
             self._config.get(CONF_FAN_SPEED_MAX),
         )
-        self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split(",")
+        self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split("[ ,]+")
         self._ordered_list_mode = None
 
         if isinstance(self._ordered_list, list) and len(self._ordered_list) > 1:
