@@ -1,0 +1,190 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Il dispositivo è già stato configurato.",
+            "device_updated": "La configurazione del dispositivo è stata aggiornata."
+        },
+        "error": {
+            "authentication_failed": "Autenticazione fallita. Errore:\n{msg}",
+            "cannot_connect": "Impossibile connettersi al dispositivo. Verifica che l'indirizzo sia corretto e riprova.",
+            "device_list_failed": "Impossibile recuperare l'elenco dei dispositivi.\n{msg}",
+            "invalid_auth": "Impossibile autenticarsi con il dispositivo. Verificare che device_id e local_key siano corretti.",
+            "unknown": "Si è verificato un errore sconosciuto. Vedere registro per i dettagli.",
+            "entity_already_configured": "L'entity con questo ID è già stata configurata.",
+            "address_in_use": "L'indirizzo utilizzato per il discovery è già in uso. Assicurarsi che nessun'altra applicazione lo stia utilizzando (porta TCP 6668).",
+            "discovery_failed": "Qualcosa è fallito nella discovery dei dispositivi. Vedi registro per i dettagli.",
+            "empty_dps": "La connessione al dispositivo è riuscita ma non sono stati trovati i datapoint, riprova. Crea un nuovo Issue e includi i log di debug se il problema persiste."
+        },
+        "step": {
+            "user": {
+                "title": "Configurazione dell'account Cloud API",
+                "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
+                "data": {
+                    "region": "Regione del server API",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Non configurare un account Cloud API"
+                }
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "Il dispositivo è già stato configurato.",
+            "device_success": "Dispositivo {dev_name} {action} con successo."
+        },
+        "error": {
+            "authentication_failed": "Autenticazione fallita. Errore:\n{msg}",
+            "cannot_connect": "Impossibile connettersi al dispositivo. Verifica che l'indirizzo sia corretto e riprova.",
+            "device_list_failed": "Impossibile recuperare l'elenco dei dispositivi.\n{msg}",
+            "invalid_auth": "Impossibile autenticarsi con il dispositivo. Verificare che device_id e local_key siano corretti.",
+            "unknown": "Si è verificato un errore sconosciuto. Vedere registro per i dettagli.",
+            "entity_already_configured": "L'entity con questo ID è già stata configurata.",
+            "address_in_use": "L'indirizzo utilizzato per il discovery è già in uso. Assicurarsi che nessun'altra applicazione lo stia utilizzando (porta TCP 6668).",
+            "discovery_failed": "Qualcosa è fallito nella discovery dei dispositivi. Vedi registro per i dettagli.",
+            "empty_dps": "La connessione al dispositivo è riuscita ma non sono stati trovati i datapoint, riprova. Crea un nuovo Issue e includi i log di debug se il problema persiste."
+        },
+        "step": {
+            "yaml_import": {
+                "title": "Non supportato",
+                "description": "Le impostazioni non possono essere configurate tramite file YAML."
+            },
+            "init": {
+                "title": "Configurazione LocalTuya",
+                "description": "Seleziona l'azione desiderata.",
+                "data": {
+                    "add_device": "Aggiungi un nuovo dispositivo",
+                    "edit_device": "Modifica un dispositivo",
+                    "setup_cloud": "Riconfigurare l'account Cloud API"
+                }
+            },
+            "add_device": {
+                "title": "Aggiungi un nuovo dispositivo",
+                "description": "Scegli uno dei dispositivi trovati automaticamente o `...` per aggiungere manualmente un dispositivo.",
+                "data": {
+                    "selected_device": "Dispositivi trovati"
+                }
+            },
+            "edit_device": {
+                "title": "Modifica un dispositivo",
+                "description": "Scegli il dispositivo configurato che si desidera modificare.",
+                "data": {
+                    "selected_device": "Dispositivi configurati"
+                }
+            },
+            "cloud_setup": {
+                "title": "Configurazione dell'account Cloud API",
+                "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
+                "data": {
+                    "region": "Regione del server API",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Non configurare l'account Cloud API"
+                }
+            },
+            "configure_device": {
+                "title": "Configura il dispositivo",
+                "description": "Compila i dettagli del dispositivo {for_device}.",
+                "data": {
+                    "friendly_name": "Nome",
+                    "host": "Host",
+                    "device_id": "ID del dispositivo",
+                    "local_key": "Chiave locale",
+                    "protocol_version": "Versione del protocollo",
+                    "scan_interval": "Intervallo di scansione (secondi, solo quando non si aggiorna automaticamente)",
+                    "entities": "Entities (deseleziona un'entity per rimuoverla)"
+                }
+            },
+            "pick_entity_type": {
+                "title": "Selezione del tipo di entity",
+                "description": "Scegli il tipo di entity che desideri aggiungere.",
+                "data": {
+                    "platform_to_add": "piattaforma",
+                    "no_additional_entities": "Non aggiungere altre entity"
+                }
+            },
+            "configure_entity": {
+                "title": "Configurare entity",
+                "description": "Compila i dettagli per {entity} con tipo `{platform}`.Tutte le impostazioni ad eccezione di `id` possono essere modificate dalla pagina delle opzioni in seguito.",
+                "data": {
+                    "id": "ID",
+                    "friendly_name": "Nome amichevole",
+                    "current": "Corrente",
+                    "current_consumption": "Potenza",
+                    "voltage": "Tensione",
+                    "commands_set": "Set di comandi Aperto_Chiuso_Stop",
+                    "positioning_mode": "Modalità di posizionamento",
+                    "current_position_dp": "Posizione attuale (solo per la modalità *posizione*)",
+                    "set_position_dp": "Imposta posizione (solo per modalità *posizione*)",
+                    "position_inverted": "Inverti posizione 0-100 (solo per modalità *posizione*)",
+                    "span_time": "Tempo di apertura totale, in sec. (solo per modalità *a tempo*)",
+                    "unit_of_measurement": "Unità di misura",
+                    "device_class": "Classe del dispositivo",
+                    "scaling": "Fattore di scala",
+                    "state_on": "Valore di ON",
+                    "state_off": "Valore di OFF",
+                    "powergo_dp": "Potenza DP (di solito 25 o 2)",
+                    "idle_status_value": "Stato di inattività (separato da virgole)",
+                    "returning_status_value": "Stato di ritorno alla base",
+                    "docked_status_value": "Stato di tornato alla base (separato da virgole)",
+                    "fault_dp": "DP di guasto (di solito 11)",
+                    "battery_dp": "DP di stato batteria (di solito 14)",
+                    "mode_dp": "DP di modalità (di solito 27)",
+                    "modes": "Elenco delle modalità",
+                    "return_mode": "Ritorno in modalità home",
+                    "fan_speed_dp": "DP di velocità del ventilatore (di solito 30)",
+                    "fan_speeds": "DP di elenco delle velocità del ventilatore (separato da virgola)",
+                    "clean_time_dp": "DP di tempo di pulizia (di solito 33)",
+                    "clean_area_dp": "DP di area pulita (di solito 32)",
+                    "clean_record_dp": "DP di record delle pulizie (di solito 34)",
+                    "locate_dp": "DP di individuazione (di solito 31)",
+                    "paused_state": "Stato di pausa (pausa, pausa, ecc.)",
+                    "stop_status": "Stato di stop",
+                    "brightness": "Luminosità (solo per il colore bianco)",
+                    "brightness_lower": "Limite inferiore per la luminosità",
+                    "brightness_upper": "Limite superiore per la luminosità",
+                    "color_temp": "Temperatura di colore",
+                    "color_temp_reverse": "Temperatura di colore invertita",
+                    "color": "Colore",
+                    "color_mode": "Modalità colore",
+                    "color_temp_min_kelvin": "Minima temperatura di colore in K",
+                    "color_temp_max_kelvin": "Massima temperatura di colore in k",
+                    "music_mode": "Modalità musicale disponibile",
+                    "scene": "Scena",
+                    "select_options": "Opzioni valide, voci separate da una vigola (;)",
+                    "select_options_friendly": "Opzioni intuitive, voci separate da una virgola",
+                    "fan_speed_control": "DP di controllo di velocità del ventilatore",
+                    "fan_oscillating_control": "DP di controllo dell'oscillazione del ventilatore",
+                    "fan_speed_min": "Velocità del ventilatore minima",
+                    "fan_speed_max": "Velocità del ventilatore massima",
+                    "fan_speed_ordered_list": "Elenco delle modalità di velocità del ventilatore (sovrascrive velocità min/max)",
+                    "fan_direction":"DP di direzione del ventilatore",
+                    "fan_direction_forward": "Stringa del DP per avanti",
+                    "fan_direction_reverse": "Stringa del DP per indietro",
+                    "current_temperature_dp": "Temperatura attuale",
+                    "target_temperature_dp": "Temperatura target",
+                    "temperature_step": "Intervalli di temperatura (facoltativo)",
+                    "max_temperature_dp": "Temperatura massima (opzionale)",
+                    "min_temperature_dp": "Temperatura minima (opzionale)",
+                    "precision": "Precisione (opzionale, per valori DP)",
+                    "target_precision": "Precisione del target (opzionale, per valori DP)",
+                    "temperature_unit": "Unità di temperatura (opzionale)",
+                    "hvac_mode_dp": "Modalità HVAC attuale (opzionale)",
+                    "hvac_mode_set": "Impostazione modalità HVAC (opzionale)",
+                    "hvac_action_dp": "Azione HVAC attuale (opzionale)",
+                    "hvac_action_set": "Impostazione azione HVAC (opzionale)",
+                    "preset_dp": "Preset DP (opzionale)",
+                    "preset_set": "Set di preset (opzionale)",
+                    "eco_dp": "DP per Eco (opzionale)",
+                    "eco_value": "Valore Eco (opzionale)",
+                    "heuristic_action": "Abilita azione euristica (opzionale)"
+                }
+            }
+        }
+    },
+    "title": "LocalTuya"
+}

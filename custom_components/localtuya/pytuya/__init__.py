@@ -110,7 +110,7 @@ GATEWAY_PAYLOAD_DICT = {
     # TYPE_0A should never be used with gateways
     DEV_TYPE_0D: {
         ACTION_STATUS: {"hexByte": COMMAND_DP_QUERY_NEW, "command": {"cid": ""}},
-        ACTION_SET: {"hexByte": COMMAND_CONTROL_NEW, "command": {"cid": "", "ctype": 0}},
+        ACTION_SET: {"hexByte": COMMAND_CONTROL_NEW, "command": {"cid": "", "t": ""}},
         ACTION_HEARTBEAT: {"hexByte": COMMAND_HEARTBEAT, "command": {}},
     },
 }
@@ -189,21 +189,6 @@ def pack_message(msg):
     buffer += struct.pack(MESSAGE_END_FMT, binascii.crc32(buffer), SUFFIX_VALUE)
 
     return buffer
-
-# Commented out by knifehandz 2022/02/13
-# Seems this function is no longer used
-#
-# def unpack_message(data):
-#     """Unpack bytes into a TuyaMessage."""
-#     header_len = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
-#     end_len = struct.calcsize(MESSAGE_END_FMT)
-#
-#     _, seqno, cmd, _, retcode = struct.unpack(
-#         MESSAGE_RECV_HEADER_FMT, data[:header_len]
-#     )
-#     payload = data[header_len:-end_len]
-#     crc, _ = struct.unpack(MESSAGE_END_FMT, data[-end_len:])
-#     return TuyaMessage(seqno, cmd, retcode, payload, crc)
 
 
 class AESCipher:

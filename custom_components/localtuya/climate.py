@@ -11,18 +11,18 @@ from homeassistant.components.climate import (
     ClimateEntity,
 )
 from homeassistant.components.climate.const import (
+    CURRENT_HVAC_HEAT,
+    CURRENT_HVAC_IDLE,
     HVAC_MODE_AUTO,
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
+    PRESET_AWAY,
+    PRESET_ECO,
+    PRESET_HOME,
+    PRESET_NONE,
     SUPPORT_PRESET_MODE,
     SUPPORT_TARGET_TEMPERATURE,
     SUPPORT_TARGET_TEMPERATURE_RANGE,
-    CURRENT_HVAC_IDLE,
-    CURRENT_HVAC_HEAT,
-    PRESET_NONE,
-    PRESET_ECO,
-    PRESET_AWAY,
-    PRESET_HOME,
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
@@ -37,23 +37,21 @@ from homeassistant.const import (
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_CURRENT_TEMPERATURE_DP,
-    CONF_TEMP_MAX,
-    CONF_TEMP_MIN,
-    CONF_MAX_TEMP_DP,
-    CONF_MIN_TEMP_DP,
-    CONF_PRECISION,
-    CONF_TARGET_PRECISION,
-    CONF_TARGET_TEMPERATURE_DP,
-    CONF_TEMPERATURE_STEP,
-    CONF_HVAC_MODE_DP,
-    CONF_HVAC_MODE_SET,
+    CONF_ECO_DP,
+    CONF_ECO_VALUE,
     CONF_HEURISTIC_ACTION,
     CONF_HVAC_ACTION_DP,
     CONF_HVAC_ACTION_SET,
-    CONF_ECO_DP,
-    CONF_ECO_VALUE,
+    CONF_HVAC_MODE_DP,
+    CONF_HVAC_MODE_SET,
+    CONF_MAX_TEMP_DP,
+    CONF_MIN_TEMP_DP,
+    CONF_PRECISION,
     CONF_PRESET_DP,
     CONF_PRESET_SET,
+    CONF_TARGET_PRECISION,
+    CONF_TARGET_TEMPERATURE_DP,
+    CONF_TEMPERATURE_STEP,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -118,8 +116,6 @@ def flow_schema(dps):
         vol.Optional(CONF_TEMPERATURE_STEP): vol.In(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
-        vol.Optional(CONF_TEMP_MIN, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
-        vol.Optional(CONF_TEMP_MAX, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
         vol.Optional(CONF_MAX_TEMP_DP): vol.In(dps),
         vol.Optional(CONF_MIN_TEMP_DP): vol.In(dps),
         vol.Optional(CONF_PRECISION): vol.In(
@@ -180,7 +176,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
-        print("Initialized climate [{}]".format(self.name))
+        _LOGGER.debug("Initialized climate [%s]", self.name)
 
     @property
     def supported_features(self):
@@ -339,14 +335,14 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return the minimum temperature."""
         if self.has_config(CONF_MIN_TEMP_DP):
             return self.dps_conf(CONF_MIN_TEMP_DP)
-        return self._config[CONF_TEMP_MIN]
+        return DEFAULT_MIN_TEMP
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
         if self.has_config(CONF_MAX_TEMP_DP):
             return self.dps_conf(CONF_MAX_TEMP_DP)
-        return self._config[CONF_TEMP_MAX]
+        return DEFAULT_MAX_TEMP
 
     def status_updated(self):
         """Device status was updated."""
