@@ -2,6 +2,7 @@
 import errno
 import logging
 import time
+import copy
 from importlib import import_module
 
 import homeassistant.helpers.config_validation as cv
@@ -83,13 +84,13 @@ CLOUD_SETUP_SCHEMA = vol.Schema(
 
 CONFIGURE_DEVICE_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_FRIENDLY_NAME): str,
-        vol.Required(CONF_LOCAL_KEY): str,
-        vol.Required(CONF_HOST): str,
-        vol.Required(CONF_DEVICE_ID): str,
+        vol.Required(CONF_FRIENDLY_NAME): cv.string,
+        vol.Required(CONF_LOCAL_KEY): cv.string,
+        vol.Required(CONF_HOST): cv.string,
+        vol.Required(CONF_DEVICE_ID): cv.string,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
-        vol.Optional(CONF_GATEWAY_DEVICE_ID): str,
-        vol.Optional(CONF_CLIENT_ID): str,
+        vol.Optional(CONF_GATEWAY_DEVICE_ID): cv.string,
+        vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL): int,
     }
 )
@@ -434,14 +435,14 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
             return await self.async_step_configure_device()
 
-        self.discovered_devices = {}
+        discovered_devices = {}
         data = self.hass.data.get(DOMAIN)
 
         if data and DATA_DISCOVERY in data:
-            self.discovered_devices = data[DATA_DISCOVERY].devices
+            discovered_devices = copy.deepcopy(data[DATA_DISCOVERY].devices)
         else:
             try:
-                self.discovered_devices = await discover()
+                discovered_devices = await discover()
             except OSError as ex:
                 if ex.errno == errno.EADDRINUSE:
                     errors["base"] = "address_in_use"
@@ -463,17 +464,20 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         devices = {}
         for dev_id, dev in data[DATA_CLOUD].device_list.items():
             if dev_id not in self.config_entry.data[CONF_DEVICES]:
-                if dev_id in self.discovered_devices:
-                    devices[dev_id] = self.discovered_devices[dev_id]["ip"]
+                if dev_id in discovered_devices:
+                    devices[dev_id] = discovered_devices[dev_id]["ip"]
                 elif dev['local_key'] in gateways:
                     gateway_id = gateways[dev['local_key']]
                     # this device uses the gateway api for communication
-                    self.discovered_devices[dev_id] = self.discovered_devices[gateway_id]
-                    self.discovered_devices[dev_id][CONF_GATEWAY_DEVICE_ID] = self.discovered_devices[dev_id]['gwId']
-                    self.discovered_devices[dev_id]['gwId'] = dev_id
+                    discovered_devices[dev_id] = discovered_devices[gateway_id].copy()
+                    discovered_devices[dev_id][CONF_GATEWAY_DEVICE_ID] = discovered_devices[gateway_id]['gwId']
+                    devices[dev_id] = discovered_devices[gateway_id]["ip"]
                     # this should be the mac address of the sub device
-                    self.discovered_devices[dev_id][CONF_CLIENT_ID] = dev['node_id']
-                    devices[dev_id] = self.discovered_devices[dev_id]["ip"]
+                    discovered_devices[dev_id][CONF_CLIENT_ID] = dev['node_id']
+                    # keep the original device id in the gwId
+                    discovered_devices[dev_id]['gwId'] = dev_id
+
+        self.discovered_devices = discovered_devices
 
         return self.async_show_form(
             step_id="add_device",
@@ -574,8 +578,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 defaults[CONF_HOST] = device.get("ip")
                 defaults[CONF_DEVICE_ID] = device.get("gwId")
                 defaults[CONF_PROTOCOL_VERSION] = device.get("version")
-                defaults[CONF_GATEWAY_DEVICE_ID] = device.get(CONF_GATEWAY_DEVICE_ID)
-                defaults[CONF_CLIENT_ID] = device.get(CONF_CLIENT_ID)
+                defaults[CONF_GATEWAY_DEVICE_ID] = device.get(CONF_GATEWAY_DEVICE_ID, "")
+                defaults[CONF_CLIENT_ID] = device.get(CONF_CLIENT_ID, "")
                 cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
                 if dev_id in cloud_devs:
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
