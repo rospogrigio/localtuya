@@ -103,6 +103,7 @@
                     "protocol_version": "Protocol Version",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
 <<<<<<< HEAD
+<<<<<<< HEAD
                     "is_gateway": "Is Gateway"
                 }
             },
@@ -116,6 +117,11 @@
 =======
                     "entities": "Entities (uncheck an entity to remove it)"
 >>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
+=======
+                    "entities": "Entities (uncheck an entity to remove it)",
+                    "manual_dps_strings": "Manual DPS to add (separated by commas ',') - used when detection is not working (optional)",
+                    "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)"
+>>>>>>> pr/4
                 }
             },
             "pick_entity_type": {
@@ -200,7 +206,12 @@
                     "preset_set": "Presets Set (optional)",
                     "eco_dp": "Eco DP (optional)",
                     "eco_value": "Eco value (optional)",
-                    "heuristic_action": "Enable heuristic action (optional)"
+                    "heuristic_action": "Enable heuristic action (optional)",
+                    "dps_default_value": "Default value when un-initialised (optional)",
+                    "restore_on_reconnect": "Restore the last set value in HomeAssistant after a lost connection",
+                    "min_value": "Minimum Value",
+                    "max_value": "Maximum Value",
+                    "step_size": "Minimum increment between numbers"
                 }
             },
             "add_dp": {

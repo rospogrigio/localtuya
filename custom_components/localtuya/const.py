@@ -39,12 +39,19 @@ CONF_PARENT_GATEWAY = "parent_gateway"
 CONF_PRODUCT_NAME = "product_name"
 CONF_USER_ID = "user_id"
 
+
 CONF_ACTION = "action"
 CONF_ADD_DEVICE = "add_device"
 CONF_EDIT_DEVICE = "edit_device"
 CONF_SETUP_CLOUD = "setup_cloud"
 CONF_NO_CLOUD = "no_cloud"
+<<<<<<< HEAD
 >>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
+=======
+CONF_MANUAL_DPS = "manual_dps_strings"
+CONF_DEFAULT_VALUE = "dps_default_value"
+CONF_RESET_DPIDS = "reset_dpids"
+>>>>>>> pr/4
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -119,6 +126,7 @@ CONF_PAUSED_STATE = "paused_state"
 CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 DATA_DISCOVERY = "discovery"
 
@@ -154,3 +162,18 @@ SUB_DEVICE_RECONNECT_INTERVAL = 300
 TUYA_DEVICE = "tuya_device"
 =======
 >>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
+=======
+
+# number
+CONF_MIN_VALUE = "min_value"
+CONF_MAX_VALUE = "max_value"
+CONF_STEPSIZE_VALUE = "step_size"
+
+# select
+CONF_OPTIONS = "select_options"
+CONF_OPTIONS_FRIENDLY = "select_options_friendly"
+
+# States
+ATTR_STATE = "raw_state"
+CONF_RESTORE_ON_RECONNECT = "restore_on_reconnect"
+>>>>>>> pr/4
