@@ -22,13 +22,10 @@ The following Tuya device types are currently supported:
 * Vacuums
 
 Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
-<<<<<<< HEAD
-=======
 
 > **Currently, only Tuya protocols 3.1 and 3.3 are supported (3.4 is not).**
 
 This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 
 # Installation:
@@ -46,59 +43,14 @@ For manual installation, copy the localtuya folder and all of its contents into 
 **NOTE 2: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
 
 
-<<<<<<< HEAD
-```
-localtuya:
-  - host: 192.168.1.x
-    device_id: xxxxx
-    local_key: xxxxx
-    friendly_name: Tuya Device
-    protocol_version: "3.3"
-    scan_interval: 30 # optional, only needed if energy monitoring values are not updating, Values less than 10 seconds may cause stability issues
-    entities:
-      - platform: binary_sensor
-        friendly_name: Plug Status
-        id: 1
-        device_class: power
-        state_on: "true" # Optional
-        state_off: "false" # Optional
-
-      - platform: cover
-        friendly_name: Device Cover
-        id: 2
-        open_close_cmds: ["on_off","open_close"] # Optional, default: "on_off"
-        positioning_mode: ["none","position","timed"] # Optional, default: "none"
-        current_position_dp: 3 # Optional, required only for "position" mode
-        set_position_dp: 4  # Optional, required only for "position" mode
-        span_time: 25  # Full movement time: Optional, required only for "timed" mode
-
-      - platform: fan
-        friendly_name: Device Fan
-        id: 3
-=======
 # Adding the Integration
 
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 **NOTE: starting from v4.0.0, configuration using YAML files is no longer supported. The integration can only be configured using the config flow.**
 
 
-<<<<<<< HEAD
-      - platform: switch
-        friendly_name: Plug
-        id: 1
-        current: 18 # Optional
-        current_consumption: 19 # Optional
-        voltage: 20 # Optional
-```
-
-Note that a single device can contain several different entities. Some examples:
-- a cover device might have 1 (or many) cover entities, plus a switch to control backlight
-- a multi-gang switch will contain several switch entities, one for each gang controlled
-=======
 To start configuring the integration, just press the "+ADD INTEGRATION" button in the Settings - Integrations page, and select LocalTuya from the drop-down menu.
 The Cloud API configuration page will appear, requesting to input your Tuya IoT Platform account credentials:
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 ![cloud_setup](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/9-cloud_setup.png)
 
@@ -137,20 +89,10 @@ If you select to "Add or Edit a device", a drop-down menu will appear containing
 
 > **Note: The tuya app on your device must be closed for the following steps to work reliably.**
 
-<<<<<<< HEAD
-Start by going to Configuration - Integration and pressing the "+" button to create a new Integration, then select LocalTuya in the drop-down menu.
-Wait for 6 seconds for the scanning of the devices in your LAN. Then, a drop-down menu will appear containing the list of detectes devices: you can
-select one of these, or manually input all the parameters.
-
-![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
-
-If you have selected one entry, you just have to input the Friendly Name of the Device, and the localKey.
-=======
 
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
 If you have selected one entry, you only need to input the device's Friendly Name and localKey. These values will be automatically retrieved if you have configured your Cloud API account, otherwise you will need to input them manually.
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
@@ -165,13 +107,8 @@ After you have defined all the needed entities, leave the "Do not add more entit
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
 For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
-<<<<<<< HEAD
-all the avaliable DPs found on the device (with their current status!!) for an easy identification. Each entity type has different options
-to be configured, here is an example for the "switch" entity:
-=======
 all the available DPs found on the device (with their current status!!) for easy identification. Each entity type has different options
 to be configured. Here is an example for the "switch" entity:
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
 
@@ -214,8 +151,6 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
                  {{ states.switch.sw01.attributes.current_consumption }}
                unit_of_measurement: 'W'
 ```
-<<<<<<< HEAD
-=======
 
 # Debugging
 
@@ -227,7 +162,6 @@ logger:
   logs:
     custom_components.localtuya: debug
 ```
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 # Notes:
 

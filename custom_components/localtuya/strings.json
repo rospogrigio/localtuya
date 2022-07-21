@@ -15,22 +15,10 @@
                 "title": "Main Configuration",
                 "description": "Input the credentials for Tuya Cloud API.",
                 "data": {
-<<<<<<< HEAD
-                    "name": "Name",
-                    "host": "Host",
-                    "device_id": "Device ID",
-                    "local_key": "Local key",
-                    "protocol_version": "Protocol Version",
-                    "scan_interval": "Scan interval (seconds, only when not updating automatically)",
-                    "device_type": "Device type",
-                    "is_gateway": "Zigbee Gateway",
-                    "parent_gateway": "Parent Gateway"
-=======
                     "region": "API server region",
                     "client_id": "Client ID",
                     "client_secret": "Secret",
                     "user_id": "User ID"
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
                 }
             },
             "power_outlet": {

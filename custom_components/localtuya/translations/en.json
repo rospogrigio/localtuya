@@ -13,18 +13,12 @@
             "entity_already_configured": "Entity with this ID has already been configured.",
             "address_in_use": "Address used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
             "discovery_failed": "Something failed when discovering devices. See log for details.",
-            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists.",
-            "no_gateway_added": "No gateways have been added."
+            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists."
         },
         "step": {
             "user": {
-<<<<<<< HEAD
-                "title": "Device Discovery",
-                "description": "Pick one of the automatically discovered devices, (manual) to manually add a device, or (sub-device) to add a sub-device under a gateway.",
-=======
                 "title": "Cloud API account configuration",
                 "description": "Input the credentials for Tuya Cloud API.",
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
                 "data": {
                     "region": "API server region",
                     "client_id": "Client ID",
@@ -102,26 +96,9 @@
                     "local_key": "Local key",
                     "protocol_version": "Protocol Version",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    "is_gateway": "Is Gateway"
-                }
-            },
-            "basic_sub_device_info": {
-                "title": "Add Tuya sub-device",
-                "description": "Fill in the basic sub-device details. The name entered here will be used to identify the integration itself (as seen in the `Integrations` page). You will add entities and give them names in the following steps.",
-                "data": {
-                    "friendly_name": "Name",
-                    "parent_gateway": "Parent Gateway",
-                    "device_id": "Device ID (CID)"
-=======
-                    "entities": "Entities (uncheck an entity to remove it)"
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
-=======
                     "entities": "Entities (uncheck an entity to remove it)",
                     "manual_dps_strings": "Manual DPS to add (separated by commas ',') - used when detection is not working (optional)",
                     "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)"
->>>>>>> pr/4
                 }
             },
             "pick_entity_type": {
@@ -212,13 +189,6 @@
                     "min_value": "Minimum Value",
                     "max_value": "Maximum Value",
                     "step_size": "Minimum increment between numbers"
-                }
-            },
-            "add_dp": {
-                "title": "Add Data Point",
-                "description": "Data point detection failed. Type in a number to add a data point, or 0 to finish or cancel.",
-                "data": {
-                    "data_point": "Data point"
                 }
             }
         }

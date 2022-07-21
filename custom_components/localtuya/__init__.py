@@ -1,79 +1,4 @@
-<<<<<<< HEAD
-"""The LocalTuya integration integration.
-
-Sample YAML config with all supported entity types (default values
-are pre-filled for optional fields):
-
-localtuya:
-  - host: 192.168.1.x
-    device_id: xxxxx
-    local_key: xxxxx # Optional
-    friendly_name: Tuya Device
-    protocol_version: "3.3"
-    is_gateway: false # Optional
-    parent_gateway: xxxxx # Optional
-    entities: # Optional
-      - platform: binary_sensor
-        friendly_name: Plug Status
-        id: 1
-        device_class: power
-        state_on: "true" # Optional
-        state_off: "false" # Optional
-
-      - platform: cover
-        friendly_name: Device Cover
-        id: 2
-        commands_set: # Optional, default: "on_off_stop"
-            ["on_off_stop","open_close_stop","fz_zz_stop","1_2_3"]
-        positioning_mode: ["none","position","timed"] # Optional, default: "none"
-        currpos_dp: 3 # Optional, required only for "position" mode
-        setpos_dp: 4  # Optional, required only for "position" mode
-        position_inverted: [True,False] # Optional, default: False
-        span_time: 25 # Full movement time: Optional, required only for "timed" mode
-
-      - platform: fan
-        friendly_name: Device Fan
-        id: 3
-
-      - platform: light
-        friendly_name: Device Light
-        id: 4
-        brightness: 20
-        brightness_lower: 29 # Optional
-        brightness_upper: 1000 # Optional
-        color_temp: 21
-
-      - platform: sensor
-        friendly_name: Plug Voltage
-        id: 20
-        scaling: 0.1 # Optional
-        device_class: voltage # Optional
-        unit_of_measurement: "V" # Optional
-
-      - platform: switch
-        friendly_name: Plug
-        id: 1
-        current: 18 # Optional
-        current_consumption: 19 # Optional
-        voltage: 20 # Optional
-
-      - platform: vacuum
-        friendly_name: Vacuum
-        id: 28
-        idle_status_value: "standby,sleep"
-        returning_status_value: "docking"
-        docked_status_value: "charging,chargecompleted"
-        battery_dp: 14
-        mode_dp: 27
-        modes: "smart,standby,chargego,wall_follow,spiral,single"
-        fan_speed_dp: 30
-        fan_speeds: "low,normal,high"
-        clean_time_dp: 33
-        clean_area_dp: 32
-"""
-=======
 """The LocalTuya integration."""
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 import asyncio
 import logging
 import time
@@ -102,22 +27,6 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
 
-<<<<<<< HEAD
-from .common import (
-    TuyaDevice,
-    TuyaGatewayDevice,
-    TuyaSubDevice,
-    async_config_entry_by_device_id,
-)
-from .config_flow import config_schema
-from .const import (
-    CONF_PRODUCT_KEY,
-    CONF_IS_GATEWAY,
-    CONF_PARENT_GATEWAY,
-    DATA_DISCOVERY,
-    DOMAIN,
-    TUYA_DEVICE,
-=======
 from .cloud_api import TuyaCloudApi
 from .common import TuyaDevice, async_config_entry_by_device_id
 from .config_flow import ENTRIES_VERSION, config_schema
@@ -130,7 +39,6 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
     TUYA_DEVICES,
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 )
 from .discovery import TuyaDiscovery
 
@@ -331,14 +239,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
         return
 
-<<<<<<< HEAD
-    if entry.data.get(CONF_IS_GATEWAY):
-        device = TuyaGatewayDevice(hass, entry.data)
-    elif not entry.data.get(CONF_IS_GATEWAY) and entry.data.get(CONF_PARENT_GATEWAY):
-        device = TuyaSubDevice(hass, entry.data)
-    else:
-        device = TuyaDevice(hass, entry.data)
-=======
     region = entry.data[CONF_REGION]
     client_id = entry.data[CONF_CLIENT_ID]
     secret = entry.data[CONF_CLIENT_SECRET]
@@ -358,7 +258,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER.info("Cloud API connection succeeded.")
         res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
     async def setup_entities(device_ids):
         platforms = set()
@@ -369,21 +268,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             )
             hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
-<<<<<<< HEAD
-    if not entry.data.get(CONF_IS_GATEWAY):
-
-        async def setup_entities():
-            platforms = set(
-                entity[CONF_PLATFORM] for entity in entry.data[CONF_ENTITIES]
-            )
-            await asyncio.gather(
-                *[
-                    hass.config_entries.async_forward_entry_setup(entry, platform)
-                    for platform in platforms
-                ]
-            )
-            device.async_connect()
-=======
         await asyncio.gather(
             *[
                 hass.config_entries.async_forward_entry_setup(entry, platform)
@@ -400,27 +284,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     unsub_listener = entry.add_update_listener(update_listener)
     hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
-        await async_remove_orphan_entities(hass, entry)
-        hass.async_create_task(setup_entities())
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
-<<<<<<< HEAD
-    if not entry.data.get(CONF_IS_GATEWAY):
-        unload_ok = all(
-            await asyncio.gather(
-                *[
-                    hass.config_entries.async_forward_entry_unload(entry, component)
-                    for component in set(
-                        entity[CONF_PLATFORM] for entity in entry.data[CONF_ENTITIES]
-                    )
-                ]
-            )
-=======
     platforms = {}
 
     for dev_id, dev_entry in entry.data[CONF_DEVICES].items():
@@ -433,15 +302,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
                 hass.config_entries.async_forward_entry_unload(entry, component)
                 for component in platforms
             ]
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
         )
+    )
 
-<<<<<<< HEAD
-        hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
-        await hass.data[DOMAIN][entry.entry_id][TUYA_DEVICE].close()
-        if unload_ok:
-            hass.data[DOMAIN].pop(entry.entry_id)
-=======
     hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
     for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
         if device.connected:
@@ -449,7 +312,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     if unload_ok:
         hass.data[DOMAIN][TUYA_DEVICES] = {}
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
     return True
 

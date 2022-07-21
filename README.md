@@ -14,13 +14,8 @@ The following Tuya device types are currently supported:
 * Lights
 * Covers
 * Fans
-<<<<<<< HEAD
-* Climates (soon)
-* Zigbee and Bluetooth gateways and their attached devices
-=======
 * Climates
 * Vacuums
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
@@ -41,109 +36,13 @@ For manual installation, copy the localtuya folder and all of its contents into 
 **NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md  or https://pypi.org/project/tinytuya/.**
 
 
-<<<<<<< HEAD
-**NOTE - Nov 2020: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
-
-Devices can be configured in two ways:
-
-# Option one: YAML config files
-
-Add the proper entry to your configuration.yaml file. Several example configurations for different device types are provided below. Make sure to save when you are finished editing configuration.yaml.
-
-```yaml
-localtuya:
-  - host: 192.168.1.x
-    device_id: xxxxx
-    local_key: xxxxx
-    friendly_name: Tuya Device
-    protocol_version: "3.3"
-    scan_interval: # optional, only needed if energy monitoring values are not updating
-      seconds: 30 # Values less than 10 seconds may cause stability issues
-    entities:
-      - platform: binary_sensor
-        friendly_name: Plug Status
-        id: 1
-        device_class: power
-        state_on: "true" # Optional
-        state_off: "false" # Optional
-
-      - platform: cover
-        friendly_name: Device Cover
-        id: 2
-        commands_set: ["on_off_stop","open_close_stop","fz_zz_stop","1_2_3"] # Optional, default: "on_off"
-        positioning_mode: ["none","position","timed"] # Optional, default: "none"
-        current_position_dp: 3 # Optional, required only for "position" mode
-        set_position_dp: 4  # Optional, required only for "position" mode
-        span_time: 25  # Full movement time: Optional, required only for "timed" mode
-
-      - platform: fan
-        friendly_name: Device Fan
-        id: 3 # dps for on/off state
-        fan_direction: 4 # Optional, dps for fan direction
-        fan_direction_fwd: forward # String for the forward direction
-        fan_direction_rev: reverse # String for the reverse direction
-        fan_ordered_list: low,medium,high,auto # Optional, If this is used it will not use the min and max integers.
-        fan_oscilating_control: 4 # Optional, dps for fan osciallation
-        fan_speed_control: 3 # Optional, if ordered list not used, dps for speed control
-        fan_speed_min: 1 # Optional, if ordered list not used, minimum integer for speed range
-        fan_speed_max: 10 # Optional, if ordered list not used, maximum integer for speed range
-=======
 **NOTE 2: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 
 # Adding the Integration
 
 
-<<<<<<< HEAD
-      - platform: switch
-        friendly_name: Plug
-        id: 1
-        current: 18 # Optional
-        current_consumption: 19 # Optional
-        voltage: 20 # Optional
-  
-  # Below are examples of configuring devices under a gateway
-  # Zigbee or Bluetooth gateway
-  - host: 192.168.1.x
-    device_id: xxxxxabcd
-    local_key: xxxxx
-    friendly_name: Tuya Gateway
-    protocol_version: "3.3"
-    is_gateway: true # This tells it is to be treated as a gateway and skip adding entities
-
-  # Devices under a gateway
-  # Other than differences on the device itself (ie. no host and local_key), the rest is the same
-  #   as a WiFi device
-  - parent_gateway: xxxxabcd # This tells it is a sub-device dependent on a parent gateway
-    device_id: xxxx1234 # The cid of sub-device
-    friendly_name: Tuya Zigbee Switch
-    entities:
-      - platform: switch
-        friendly_name: Tuya Zigbee Switch Entity 1
-        id: 1
-      - platform: switch
-        friendly_name: Tuya Zigbee Switch Entity 2
-        id: 2
-
-  - parent_gateway: xxxxabcd
-    device_id: xxxx5678
-    friendly_name: Tuya Zigbee PIR Sensor
-    entities:
-      - platform: binary_sensor
-        friendly_name: Motion Sensor
-        id: 1
-        device_class: motion
-        state_on: pir
-        state_off: none
-      - platform: sensor
-        friendly_name: Sensor Battery
-        id: 4
-        device_class: battery
-```
-=======
 **NOTE: starting from v4.0.0, configuration using YAML files is no longer supported. The integration can only be configured using the config flow.**
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
 
 
 To start configuring the integration, just press the "+ADD INTEGRATION" button in the Settings - Integrations page, and select LocalTuya from the drop-down menu.

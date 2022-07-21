@@ -32,10 +32,6 @@ CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
 CONF_MODEL = "model"
 CONF_PRODUCT_KEY = "product_key"
-<<<<<<< HEAD
-CONF_IS_GATEWAY = "is_gateway"
-CONF_PARENT_GATEWAY = "parent_gateway"
-=======
 CONF_PRODUCT_NAME = "product_name"
 CONF_USER_ID = "user_id"
 
@@ -45,13 +41,9 @@ CONF_ADD_DEVICE = "add_device"
 CONF_EDIT_DEVICE = "edit_device"
 CONF_SETUP_CLOUD = "setup_cloud"
 CONF_NO_CLOUD = "no_cloud"
-<<<<<<< HEAD
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
-=======
 CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
->>>>>>> pr/4
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -125,44 +117,6 @@ CONF_FAULT_DP = "fault_dp"
 CONF_PAUSED_STATE = "paused_state"
 CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-DATA_DISCOVERY = "discovery"
-
-DOMAIN = "localtuya"
-
-# Platforms in this list must support config flows
-PLATFORMS = [
-    "binary_sensor",
-    "climate",
-    "cover",
-    "fan",
-    "light",
-    "number",
-    "select",
-    "sensor",
-    "switch",
-    "vacuum",
-]
-
-# gateway & sub-device
-GW_REQ_ADD = "request_add"
-GW_REQ_REMOVE = "request_remove"
-GW_REQ_STATUS = "request_status"
-GW_REQ_SET_DP = "request_set_dp"
-GW_REQ_SET_DPS = "request_set_dps"
-GW_EVT_STATUS_UPDATED = "event_status_updated"
-GW_EVT_CONNECTED = "event_connected"
-GW_EVT_DISCONNECTED = "event_disconnected"
-
-# timeouts for gateway & sub-device retry tasks
-SUB_DEVICE_RECONNECT_INTERVAL = 300
-
-TUYA_DEVICE = "tuya_device"
-=======
->>>>>>> 54dbc3a3591bb47b6d8fe3c1b3038489e2ba8d5b
-=======
 
 # number
 CONF_MIN_VALUE = "min_value"
@@ -176,4 +130,3 @@ CONF_OPTIONS_FRIENDLY = "select_options_friendly"
 # States
 ATTR_STATE = "raw_state"
 CONF_RESTORE_ON_RECONNECT = "restore_on_reconnect"
->>>>>>> pr/4
