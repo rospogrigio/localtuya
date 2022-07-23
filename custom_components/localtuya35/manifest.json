@@ -1,0 +1,12 @@
+{
+  "domain": "localtuya35",
+  "name": "LocalTuya integration",
+  "version": "3.5.1",
+  "documentation": "https://github.com/myhomeiot/localtuya35",
+  "dependencies": [],
+  "codeowners": ["myhomeiot"],
+  "issue_tracker": "https://github.com/myhomeiot/localtuya35/issues",
+  "requirements": [],
+  "config_flow": true,
+  "iot_class": "local_push"
+}
