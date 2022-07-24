@@ -240,7 +240,7 @@ async def validate_input(hass: core.HomeAssistant, data):
         )
 
         detected_dps = await interface.detect_available_dps()
-    except (ConnectionRefusedError, ConnectionResetError) as ex:
+    except (ConnectionRefusedError, ConnectionResetError, asyncio.exceptions.TimeoutError) as ex:
         raise CannotConnect from ex
     except ValueError as ex:
         raise InvalidAuth from ex
