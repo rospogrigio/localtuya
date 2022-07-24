@@ -244,7 +244,7 @@ async def validate_input(hass: core.HomeAssistant, data):
         raise CannotConnect from ex
     except ValueError as ex:
         raise InvalidAuth from ex
-    except OSError as ex
+    except OSError as ex:
         raise CannotConnect from ex
     finally:
         if interface:
