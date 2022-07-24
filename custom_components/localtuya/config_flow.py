@@ -2,6 +2,7 @@
 import errno
 import logging
 import time
+import asyncio
 from importlib import import_module
 
 import homeassistant.helpers.config_validation as cv
