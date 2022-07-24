@@ -33,7 +33,7 @@ For manual installation, copy the localtuya folder and all of its contents into 
 
 # Usage:
 
-**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .**
+**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md  or https://pypi.org/project/tinytuya/.**
 
 
 **NOTE 2: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
@@ -62,7 +62,7 @@ The place to find the Client ID and Secret is described in this link (in the ["G
 
 After pressing the Submit button, the first setup is complete and the Integration will be added. 
 
-> **Note: it is not mandatory to configure the Cloud API account: you can choose to leave the default "xxx" values, and the Integration will be added anyway.**
+> **Note: it is not mandatory to input the Cloud API credentials: you can choose to tick the "Do not configure a Cloud API account" button, and the Integration will be added anyway.**
 
 After the Integration has been set up, devices can be added and configured pressing the Configure button in the Integrations page:
 
@@ -130,7 +130,7 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
   Note:  these values are already divided by 10 for Voltage and Consumption
 3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
-```
+```yaml
        sensor:
          - platform: template
            sensors:

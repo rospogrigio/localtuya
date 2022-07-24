@@ -35,6 +35,7 @@ from .const import (
     CONF_EDIT_DEVICE,
     CONF_LOCAL_KEY,
     CONF_MODEL,
+    CONF_NO_CLOUD,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
     CONF_SETUP_CLOUD,
@@ -47,6 +48,8 @@ from .const import (
 from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
+
+ENTRIES_VERSION = 2
 
 PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"
@@ -69,10 +72,11 @@ CONFIGURE_SCHEMA = vol.Schema(
 CLOUD_SETUP_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_REGION, default="eu"): vol.In(["eu", "us", "cn", "in"]),
-        vol.Required(CONF_CLIENT_ID): cv.string,
-        vol.Required(CONF_CLIENT_SECRET): cv.string,
-        vol.Required(CONF_USER_ID): cv.string,
+        vol.Optional(CONF_CLIENT_ID): cv.string,
+        vol.Optional(CONF_CLIENT_SECRET): cv.string,
+        vol.Optional(CONF_USER_ID): cv.string,
         vol.Optional(CONF_USERNAME, default=DOMAIN): cv.string,
+        vol.Required(CONF_NO_CLOUD, default=False): bool,
     }
 )
 
@@ -279,7 +283,7 @@ async def attempt_cloud_connection(hass, user_input):
 class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for LocalTuya integration."""
 
-    VERSION = 2
+    VERSION = ENTRIES_VERSION
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @staticmethod
@@ -296,9 +300,14 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         placeholders = {}
         if user_input is not None:
+            if user_input.get(CONF_NO_CLOUD):
+                for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
+                    user_input[i] = ""
+                return await self._create_entry(user_input)
+
             cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
 
-            if len(res) == 0:
+            if not res:
                 return await self._create_entry(user_input)
             errors["base"] = res["reason"]
             placeholders = {"msg": res["msg"]}
@@ -315,8 +324,8 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _create_entry(self, user_input):
         """Register new entry."""
-        if self._async_current_entries():
-            return self.async_abort(reason="already_configured")
+        # if self._async_current_entries():
+        #     return self.async_abort(reason="already_configured")
 
         await self.async_set_unique_id(user_input.get(CONF_USER_ID))
         user_input[CONF_DEVICES] = {}
@@ -370,9 +379,22 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         placeholders = {}
         if user_input is not None:
+            if user_input.get(CONF_NO_CLOUD):
+                new_data = self.config_entry.data.copy()
+                new_data.update(user_input)
+                for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
+                    new_data[i] = ""
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    data=new_data,
+                )
+                return self.async_create_entry(
+                    title=new_data.get(CONF_USERNAME), data={}
+                )
+
             cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
 
-            if len(res) == 0:
+            if not res:
                 new_data = self.config_entry.data.copy()
                 new_data.update(user_input)
                 cloud_devs = cloud_api.device_list
@@ -394,6 +416,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         defaults = self.config_entry.data.copy()
         defaults.update(user_input or {})
+        defaults[CONF_NO_CLOUD] = False
 
         return self.async_show_form(
             step_id="cloud_setup",
@@ -490,12 +513,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     self.device_data.update(
                         {
                             CONF_DEVICE_ID: dev_id,
-                            CONF_MODEL: self.device_data[CONF_MODEL],
                             CONF_DPS_STRINGS: self.dps_strings,
                             CONF_ENTITIES: [],
                         }
                     )
-                    if len(user_input[CONF_ENTITIES]) > 0:
+                    if user_input[CONF_ENTITIES]:
                         entity_ids = [
                             int(entity.split(":")[0])
                             for entity in user_input[CONF_ENTITIES]

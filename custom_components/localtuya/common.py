@@ -72,7 +72,7 @@ async def async_setup_entry(
             if entity[CONF_PLATFORM] == domain
         ]
 
-        if len(entities_to_setup) > 0:
+        if entities_to_setup:
 
             tuyainterface = hass.data[DOMAIN][TUYA_DEVICES][dev_id]
 

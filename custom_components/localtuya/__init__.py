@@ -29,9 +29,10 @@ from homeassistant.helpers.event import async_track_time_interval
 
 from .cloud_api import TuyaCloudApi
 from .common import TuyaDevice, async_config_entry_by_device_id
-from .config_flow import config_schema
+from .config_flow import ENTRIES_VERSION, config_schema
 from .const import (
     ATTR_UPDATED_AT,
+    CONF_NO_CLOUD,
     CONF_PRODUCT_KEY,
     CONF_USER_ID,
     DATA_CLOUD,
@@ -183,10 +184,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_migrate_entry(hass, config_entry: ConfigEntry):
     """Migrate old entries merging all of them in one."""
-    new_version = 2
+    new_version = ENTRIES_VERSION
+    stored_entries = hass.config_entries.async_entries(DOMAIN)
     if config_entry.version == 1:
         _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
-        stored_entries = hass.config_entries.async_entries(DOMAIN)
 
         if config_entry.entry_id == stored_entries[0].entry_id:
             _LOGGER.debug(
@@ -198,6 +199,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             new_data[CONF_CLIENT_SECRET] = ""
             new_data[CONF_USER_ID] = ""
             new_data[CONF_USERNAME] = DOMAIN
+            new_data[CONF_NO_CLOUD] = True
             new_data[CONF_DEVICES] = {
                 config_entry.data[CONF_DEVICE_ID]: config_entry.data.copy()
             }
@@ -223,6 +225,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
         config_entry.entry_id,
         new_version,
     )
+
     return True
 
 
@@ -231,37 +234,59 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     unsub_listener = entry.add_update_listener(update_listener)
     hass.data[DOMAIN][UNSUB_LISTENER] = unsub_listener
     hass.data[DOMAIN][TUYA_DEVICES] = {}
+    if entry.version < ENTRIES_VERSION:
+        _LOGGER.debug(
+            "Skipping setup for entry %s since its version (%s) is old",
+            entry.entry_id,
+            entry.version,
+        )
+        return
 
     region = entry.data[CONF_REGION]
     client_id = entry.data[CONF_CLIENT_ID]
     secret = entry.data[CONF_CLIENT_SECRET]
     user_id = entry.data[CONF_USER_ID]
     tuya_api = TuyaCloudApi(hass, region, client_id, secret, user_id)
-    res = await tuya_api.async_get_access_token()
-    if res != "ok":
-        _LOGGER.error("Cloud API connection failed: %s", res)
-    _LOGGER.info("Cloud API connection succeeded.")
-    res = await tuya_api.async_get_devices_list()
+    no_cloud = True
+    if CONF_NO_CLOUD in entry.data:
+        no_cloud = entry.data.get(CONF_NO_CLOUD)
+    if no_cloud:
+        _LOGGER.info("Cloud API account not configured.")
+        # wait 1 second to make sure possible migration has finished
+        await asyncio.sleep(1)
+    else:
+        res = await tuya_api.async_get_access_token()
+        if res != "ok":
+            _LOGGER.error("Cloud API connection failed: %s", res)
+        _LOGGER.info("Cloud API connection succeeded.")
+        res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
-    async def setup_entities(dev_id):
-        dev_entry = entry.data[CONF_DEVICES][dev_id]
-        device = TuyaDevice(hass, entry, dev_id)
-        hass.data[DOMAIN][TUYA_DEVICES][dev_id] = device
+    async def setup_entities(device_ids):
+        platforms = set()
+        for dev_id in device_ids:
+            entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
+            platforms = platforms.union(
+                set(entity[CONF_PLATFORM] for entity in entities)
+            )
+            hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
-        platforms = set(entity[CONF_PLATFORM] for entity in dev_entry[CONF_ENTITIES])
         await asyncio.gather(
             *[
                 hass.config_entries.async_forward_entry_setup(entry, platform)
                 for platform in platforms
             ]
         )
-        device.async_connect()
+
+        for dev_id in device_ids:
+            hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
 
         await async_remove_orphan_entities(hass, entry)
 
-    for dev_id in entry.data[CONF_DEVICES]:
-        hass.async_create_task(setup_entities(dev_id))
+    hass.async_create_task(setup_entities(entry.data[CONF_DEVICES].keys()))
+
+    unsub_listener = entry.add_update_listener(update_listener)
+    hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
 
     return True
 
@@ -269,11 +294,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
     platforms = {}
-
-    hass.data[DOMAIN][UNSUB_LISTENER]()
-    for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
-        if device.connected:
-            await device.close()
 
     for dev_id, dev_entry in entry.data[CONF_DEVICES].items():
         for entity in dev_entry[CONF_ENTITIES]:
@@ -287,6 +307,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
             ]
         )
     )
+
+    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+    for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
+        if device.connected:
+            await device.close()
+
     if unload_ok:
         hass.data[DOMAIN][TUYA_DEVICES] = {}
 

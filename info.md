@@ -66,7 +66,7 @@ The place to find the Client ID and Secret is described in this link (in the ["G
 
 After pressing the Submit button, the first setup is complete and the Integration will be added. 
 
-> **Note: it is not mandatory to configure the Cloud API account: you can choose to leave the default "xxx" values, and the Integration will be added anyway.**
+> **Note: it is not mandatory to input the Cloud API credentials: you can choose to tick the "Do not configure a Cloud API account" button, and the Integration will be added anyway.**
 
 After the Integration has been set up, devices can be added and configured pressing the Configure button in the Integrations page:
 

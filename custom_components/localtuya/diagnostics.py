@@ -1,8 +1,8 @@
 """Diagnostics support for LocalTuya."""
 from __future__ import annotations
-import logging
-import copy
 
+import copy
+import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
