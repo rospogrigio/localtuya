@@ -39,6 +39,7 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
     TUYA_DEVICES,
+    CONF_GATEWAY_DEVICE_ID,
 )
 from .discovery import TuyaDiscovery
 
@@ -261,12 +262,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     async def setup_entities(device_ids):
         platforms = set()
+        sub_devices = []
         for dev_id in device_ids:
             entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
             platforms = platforms.union(
                 set(entity[CONF_PLATFORM] for entity in entities)
             )
-            hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
+            device = TuyaDevice(hass, entry, dev_id)
+            hass.data[DOMAIN][TUYA_DEVICES][dev_id] = device
+            if device.gateway_device_id:
+                sub_devices.append(device)
+        # at this point, the gateway should have been created,
+        # and we can register the sub-device
+        for sub_device in sub_devices:
+            sub_device.register_in_gateway()
 
         await asyncio.gather(
             *[

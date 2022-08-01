@@ -122,7 +122,7 @@ PAYLOAD_DICT = {
         ACTION_UPDATEDPS: {"hexByte": COMMAND_UPDATE_DPS, "command": {"dpId": [18, 19, 20]}},
     },
     DEV_TYPE_0D: {
-        ACTION_STATUS: {"hexByte": COMMAND_CONTROL_NEW, "command": {"devId": "", "uid": "", "t": ""}},
+        ACTION_STATUS: {"hexByte": COMMAND_DP_QUERY_NEW, "command": {"gwId": "", "devId": "", "uid": ""}},
         ACTION_SET: {"hexByte": COMMAND_SET, "command": {"devId": "", "uid": "", "t": ""}},
         ACTION_HEARTBEAT: {"hexByte": COMMAND_HEARTBEAT, "command": {}},
         ACTION_UPDATEDPS: {"hexByte": COMMAND_UPDATE_DPS, "command": {"dpId": [18, 19, 20]}},
@@ -377,7 +377,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.local_key = local_key.encode("latin1")
         self.version = protocol_version
         self.dev_type = DEV_TYPE_0D if is_gateway else DEV_TYPE_0A
-        self.dps_to_request = {}
+        self.dps_to_request = {"_default": {}}
         self.cipher = AESCipher(self.local_key)
         self.seqno = 0
         self.transport = None
@@ -385,8 +385,14 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.dispatcher = self._setup_dispatcher()
         self.on_connected = on_connected
         self.heartbeater = None
-        self.dps_cache = {}
+        self.dps_cache = {"_default": {}}
         self.sub_devices = []
+
+    def _parse_cid(self, cid):
+        if cid:
+            if cid not in self.sub_devices:
+                raise Exception("Unexpected sub-device cid", cid)
+        return cid or '_default'
 
     def _setup_dispatcher(self):
         """Sets up message dispatcher for this pytuya instance"""
@@ -399,7 +405,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         listener = self.listener and self.listener()
         if listener is not None:
-            listener.status_updated(self.dps_cache)
+            device = decoded_message.get('cid', '_default')
+            listener.status_updated({device: self.dps_cache[device]})
 
     def connection_made(self, transport):
         """Did connect to the device."""
@@ -504,20 +511,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def status(self, cid=None):
         """Return device status."""
-        if self.is_gateway:
-            if not cid:
-                raise Exception("Sub-device cid not specified for gateway")
-            if cid not in self.sub_devices:
-                raise Exception("Unexpected sub-device cid", cid)
-
-            status = await self.exchange(ACTION_STATUS, cid=cid)
-            if not status:  # Happens when there's an error in decoding
-                return None
-        else:
-            status = await self.exchange(ACTION_STATUS)
-
+        device = self._parse_cid(cid)
+        status = await self.exchange(ACTION_STATUS, cid=cid)
+        if not status:  # Happens when there's an error in decoding
+            return None
         self._update_dps_cache(status)
-        return self.dps_cache
+        return {device: self.dps_cache[device]}
 
     async def heartbeat(self):
         """Send a heartbeat message."""
@@ -552,20 +551,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             value: new value for the dps index
             cid: Client ID of sub-device
         """
-        if self.is_gateway:
-            if not cid:
-                raise Exception("Sub-device cid not specified for gateway")
-            if cid not in self.sub_devices:
-                raise Exception("Unexpected sub-device cid", cid)
+        self._parse_cid(cid)
         return await self.exchange(ACTION_SET, {str(dp_index): value}, cid)
 
     async def set_dps(self, dps, cid=None):
         """Set values for a set of datapoints."""
-        if self.is_gateway:
-            if not cid:
-                raise Exception("Sub-device cid not specified for gateway")
-            if cid not in self.sub_devices:
-                raise Exception("Unexpected sub-device cid", cid)
+        self._parse_cid(cid)
         return await self.exchange(ACTION_SET, dps, cid)
 
     async def detect_available_dps(self, cid=None):
@@ -575,67 +566,33 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # list of available dps experience shows that the dps available are usually
         # in the ranges [1-25] and [100-110] need to split the bruteforcing in
         # different steps due to request payload limitation (max. length = 255)
-
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
+        device = self._parse_cid(cid)
+        self.dps_cache[device] = {}
 
-        if self.is_gateway:
-            if not cid:
-                raise Exception("Sub-device cid not specified for gateway")
-            if cid not in self.sub_devices:
-                raise Exception("Unexpected sub-device cid", cid)
+        for dps_range in ranges:
+            # dps 1 must always be sent, otherwise it might fail in case no dps is found
+            # in the requested range
+            self.dps_to_request[device] = {"1": None}
+            self.add_dps_to_request(range(*dps_range), cid)
+            try:
+                status = await self.status(cid)
+                self._update_dps_cache(status)
+            except Exception as ex:
+                self.exception("Failed to get status for %s: %s", device, ex)
+                raise
 
-            self.dps_cache[cid] = {}
+            self.debug("Detected dps for %s: %s", device, self.dps_cache[device])
 
-            for dps_range in ranges:
-                # dps 1 must always be sent, otherwise it might fail in case no dps is found
-                # in the requested range
-                self.dps_to_request[cid] = {"1": None}
-                self.add_dps_to_request(range(*dps_range), cid)
-                try:
-                    status = await self.status(cid)
-                    self._update_dps_cache(status)
-                except Exception as ex:
-                    self.exception("Failed to get status for cid %s: %s", cid, ex)
-                    raise
-
-                self.debug("Detected dps for cid %s: %s", cid, self.dps_cache[cid])
-
-            return self.dps_cache[cid]
-
-        else:
-            self.dps_cache = {}
-
-            for dps_range in ranges:
-                # dps 1 must always be sent, otherwise it might fail in case no dps is found
-                # in the requested range
-                self.dps_to_request = {"1": None}
-                self.add_dps_to_request(range(*dps_range))
-                try:
-                    status = await self.status()
-                    self._update_dps_cache(status)
-                except Exception as ex:
-                    self.exception("Failed to get status: %s", ex)
-                    raise
-
-            return self.dps_cache
+        return self.dps_cache[device]
 
     def add_dps_to_request(self, dp_indicies, cid=None):
         """Add a datapoint (DP) to be included in requests."""
-        if self.is_gateway:
-            if not cid:
-                raise Exception("Sub-device cid not specified for gateway")
-            if cid not in self.sub_devices:
-                raise Exception("Unexpected sub-device cid", cid)
-
-            if isinstance(dp_indicies, int):
-                self.dps_to_request[cid][str(dp_indicies)] = None
-            else:
-                self.dps_to_request[cid].update({str(index): None for index in dp_indicies})
+        device = self._parse_cid(cid)
+        if isinstance(dp_indicies, int):
+            self.dps_to_request[device][str(dp_indicies)] = None
         else:
-            if isinstance(dp_indicies, int):
-                self.dps_to_request[str(dp_indicies)] = None
-            else:
-                self.dps_to_request.update({str(index): None for index in dp_indicies})
+            self.dps_to_request[device].update({str(index): None for index in dp_indicies})
 
     def add_sub_device(self, cid):
         """Add a sub-device for a gateway device"""
@@ -701,10 +658,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             cid(str, optional): The sub-device CID to send
         """
 
-        if self.is_gateway:
+        if cid:
             if command != ACTION_HEARTBEAT:
-                if not cid:
-                    raise Exception("Sub-device cid not specified for gateway")
                 if cid not in self.sub_devices:
                     raise Exception("Unexpected sub-device cid", cid)
 
@@ -736,7 +691,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if cid:
                 json_data["dps"] = self.dps_to_request[cid]
             else:
-                json_data["dps"] = self.dps_to_request
+                json_data["dps"] = self.dps_to_request['_default']
 
         payload = json.dumps(json_data).replace(" ", "").encode("utf-8")
         self.debug("Send payload: %s", payload)
@@ -777,17 +732,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Updates dps status cache"""
         if not status or "dps" not in status:
             return
-
-        if self.is_gateway:
-            cid = status["cid"]
-            if cid not in self.sub_devices:
-                self.info("Sub-device status update ignored because cid %s is not added", cid)
-                self.dps_cache["last_updated_cid"] = ""
-            else:
-                self.dps_cache["last_updated_cid"] = cid
-                self.dps_cache[cid].update(status["dps"])
-        else:
-            self.dps_cache.update(status["dps"])
+        device = status.get("cid", "_default")
+        self.dps_cache[device].update(status["dps"])
 
     def __repr__(self):
         """Return internal string representation of object."""
