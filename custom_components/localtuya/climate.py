@@ -72,6 +72,10 @@ HVAC_MODE_SETS = {
     "True/False": {
         HVAC_MODE_HEAT: True,
     },
+    "1/0": {
+        HVAC_MODE_HEAT: "1",
+        HVAC_MODE_AUTO: "0",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
