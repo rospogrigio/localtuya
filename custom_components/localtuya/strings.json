@@ -120,7 +120,14 @@
                     "preset_set": "Presets Set (optional)",
                     "eco_dp": "Eco DP (optional)",
                     "eco_value": "Eco value (optional)",
-                    "heuristic_action": "Enable heuristic action (optional)"
+                    "heuristic_action": "Enable heuristic action (optional)",
+                    "wh_mode_dp": "Water heater mode DP (usually 4)",
+                    "wh_eco_value": "Energy efficient mode (usually ECO)",
+                    "wh_electric_value": "Electric only mode (usually ELEMENT)",
+                    "wh_gas_value": "Gas only mode (optional)",
+                    "wh_heat_pump_value": "Heat pump only mode (usually STANDARD)",
+                    "wh_high_demand_value": "High demand mode when water heater is undersized (usually HYBRID)",
+                    "wh_performance_value": "High performance mode (usually HYBRID1)"
                 }
             },
             "yaml_import": {
