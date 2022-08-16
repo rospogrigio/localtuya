@@ -144,13 +144,13 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
                 if operation_mode != self._attr_current_operation:
                     _LOGGER.debug(
                         "Changing operation mode. Tuya: [%s]. HA: [%s]",
-                        (op_mode_tuya, operation_mode)
+                        op_mode_tuya, operation_mode
                     )
                     await self._device.set_dp(op_mode_tuya, self._conf_mode_dp)
         else:
             _LOGGER.error(
                 "Invalid operation mode. Tuya: [%s]. HA: [%s].",
-                (op_mode_tuya, operation_mode)
+                op_mode_tuya, operation_mode
             )
 
     def status_updated(self):
@@ -196,10 +196,9 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
                 self._attr_current_operation = STATE_OFF
             else:
                 _LOGGER.debug(
-                    "Device status updated. Tuya: [%s]. HA: [%s]", (
-                        self.dps_conf(CONF_MODE_DP),
-                        self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]
-                    )
+                    "Device status updated. Tuya: [%s]. HA: [%s]",
+                    self.dps_conf(CONF_MODE_DP),
+                    self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]
                 )
                 self._attr_current_operation = \
                     self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]
