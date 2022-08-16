@@ -112,16 +112,12 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         self._attr_operation_list = list(self.TUYA_STATE_TO_HA.values())
         _LOGGER.debug("Initialized water heater [%s]", self.name)
 
-    """Reference for properties and methods:
-       https://developers.home-assistant.io/docs/core/entity/water-heater
-    """
+    # Reference for properties and methods:
+    # https://developers.home-assistant.io/docs/core/entity/water-heater
 
     @property
     def supported_features(self):
-        """Flag supported features. Only OPERATION_MODE is supported at the moment.
-           TARGET_TEMPERATURE has been disabled based on safety guidance
-           from Aquatech Heat Pumps for the Hydrotherm DYNAMIC/X8.
-        """
+        """Flag supported features. Only OPERATION_MODE is supported at the moment."""
         return WaterHeaterEntityFeature.OPERATION_MODE
 
     @property
@@ -200,9 +196,10 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
                 self._attr_current_operation = STATE_OFF
             else:
                 _LOGGER.debug(
-                    "Device status updated. Tuya: [%s]. HA: [%s]",
-                    (self.dps_conf(CONF_MODE_DP),
-                    self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)])
+                    "Device status updated. Tuya: [%s]. HA: [%s]", (
+                        self.dps_conf(CONF_MODE_DP),
+                        self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]
+                    )
                 )
                 self._attr_current_operation = \
                     self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]
