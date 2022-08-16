@@ -1,5 +1,4 @@
 """Platform to locally control Tuya-based water heater devices."""
-import asyncio
 import logging
 from functools import partial
 
@@ -17,9 +16,7 @@ from homeassistant.components.water_heater import (
 )
 
 from homeassistant.const import (
-    ATTR_TEMPERATURE,
     STATE_OFF,
-    STATE_ON,    
     CONF_TEMPERATURE_UNIT,
     PRECISION_HALVES,
     PRECISION_TENTHS,
@@ -47,6 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_PRECISION = PRECISION_WHOLE
 
+
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
@@ -67,6 +65,7 @@ def flow_schema(dps):
         ),
     }
 
+
 class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
     """Tuya water heater device."""
 
@@ -81,32 +80,40 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._attr_temperature_unit = self._config.get(CONF_TEMPERATURE_UNIT)
         self._precision = self._config.get(CONF_PRECISION, DEFAULT_PRECISION)
-        self._conf_attr_current_temperature_dp = self._config.get(CONF_CURRENT_TEMPERATURE_DP)
-        self._conf_attr_target_temperature_dp = self._config.get(CONF_TARGET_TEMPERATURE_DP)
+        self._conf_attr_current_temperature_dp = \
+            self._config.get(CONF_CURRENT_TEMPERATURE_DP)
+        self._conf_attr_target_temperature_dp = \
+            self._config.get(CONF_TARGET_TEMPERATURE_DP)
         self._conf_mode_dp = self._config.get(CONF_MODE_DP)
         self.TUYA_STATE_TO_HA = {}
         if (self._config.get(CONF_MODE_ECO_VALUE) is not None):
-            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_ECO_VALUE)] = STATE_ECO
+            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_ECO_VALUE)] = \
+                STATE_ECO
         if (self._config.get(CONF_MODE_ELECTRIC_VALUE) is not None):
-            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_ELECTRIC_VALUE)] = STATE_ELECTRIC
+            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_ELECTRIC_VALUE)] = \
+                STATE_ELECTRIC
         if (self._config.get(CONF_MODE_GAS_VALUE) is not None):
-            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_GAS_VALUE)] = STATE_GAS
+            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_GAS_VALUE)] = \
+                STATE_GAS
         if (self._config.get(CONF_MODE_HEAT_PUMP_VALUE) is not None):
-            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_HEAT_PUMP_VALUE)] = STATE_HEAT_PUMP
+            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_HEAT_PUMP_VALUE)] = \
+                STATE_HEAT_PUMP
         if (self._config.get(CONF_MODE_HIGH_DEMAND_VALUE) is not None):
-            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_HIGH_DEMAND_VALUE)] = STATE_HIGH_DEMAND
+            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_HIGH_DEMAND_VALUE)] = \
+                STATE_HIGH_DEMAND
         if (self._config.get(CONF_MODE_PERFORMANCE_VALUE) is not None):
-            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_PERFORMANCE_VALUE)] = STATE_PERFORMANCE
+            self.TUYA_STATE_TO_HA[self._config.get(CONF_MODE_PERFORMANCE_VALUE)] = \
+                STATE_PERFORMANCE
         self.TUYA_STATE_TO_HA[STATE_OFF] = STATE_OFF
         self.HA_STATE_TO_TUYA = {}
-        self.HA_STATE_TO_TUYA = {value: key for key, value in self.TUYA_STATE_TO_HA.items()}
+        self.HA_STATE_TO_TUYA = {
+            value: key for key, value in self.TUYA_STATE_TO_HA.items()
+        }
         self._attr_operation_list = list(self.TUYA_STATE_TO_HA.values())
         _LOGGER.debug("Initialized water heater [%s]", self.name)
 
     """Reference for properties and methods:
        https://developers.home-assistant.io/docs/core/entity/water-heater
-       Property methods that already work haven't been duplicated:
-       https://github.com/home-assistant/core/blob/dev/homeassistant/components/water_heater/__init__.py
     """
 
     @property
@@ -131,16 +138,24 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
                     _LOGGER.debug("Switching off device.")
                     await self._device.set_dp(False, self._dp_id)
                 else:
-                    _LOGGER.debug("Ignoring request to switch off device that's already switched off. Doing nothing.")
+                    _LOGGER.debug(
+                        "Ignoring request to switch off device that's already off."
+                    )
             else:
                 if self._attr_current_operation == STATE_OFF:
                     _LOGGER.debug("Switching on device.")
                     await self._device.set_dp(True, self._dp_id)
                 if operation_mode != self._attr_current_operation:
-                    _LOGGER.debug("Changing operation mode. Tuya: [%s]. HA: [%s]", (op_mode_tuya, operation_mode))
+                    _LOGGER.debug(
+                        "Changing operation mode. Tuya: [%s]. HA: [%s]",
+                        (op_mode_tuya, operation_mode)
+                    )
                     await self._device.set_dp(op_mode_tuya, self._conf_mode_dp)
         else:
-            _LOGGER.error("Invalid operation mode. Tuya: [%s]. HA: [%s].", (op_mode_tuya, operation_mode))
+            _LOGGER.error(
+                "Invalid operation mode. Tuya: [%s]. HA: [%s].",
+                (op_mode_tuya, operation_mode)
+            )
 
     def status_updated(self):
         """Device status was updated."""
@@ -151,8 +166,12 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
             _LOGGER.error("CONF_CURRENT_TEMPERATURE_DP value is invalid [None].")
             self._attr_current_temperature = None
         else:
-            _LOGGER.debug("Device status updated. Raw current temperature value: [%s]", self.dps_conf(CONF_CURRENT_TEMPERATURE_DP))
-            self._attr_current_temperature = self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
+            _LOGGER.debug(
+                "Device status updated. Raw current temperature value: [%s]",
+                self.dps_conf(CONF_CURRENT_TEMPERATURE_DP)
+            )
+            self._attr_current_temperature = \
+                self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
 
         if not self.has_config(CONF_TARGET_TEMPERATURE_DP):
             _LOGGER.error("CONF_TARGET_TEMPERATURE_DP is not set.")
@@ -161,21 +180,37 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
             _LOGGER.error("CONF_TARGET_TEMPERATURE_DP value is invalid [None].")
             self._attr_target_temperature = None
         else:
-            _LOGGER.debug("Device status updated. Raw target temperature value: [%s]", self.dps_conf(CONF_TARGET_TEMPERATURE_DP))
-            self._attr_target_temperature = self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._precision
+            _LOGGER.debug(
+                "Device status updated. Raw target temperature value: [%s]",
+                self.dps_conf(CONF_TARGET_TEMPERATURE_DP)
+            )
+            self._attr_target_temperature = \
+                self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._precision
 
         if self.dps(self._dp_id):
             if not self.has_config(CONF_MODE_DP):
-                _LOGGER.error("CONF_MODE_DP is not set. Returning STATE_OFF as a default state.")
+                _LOGGER.error(
+                    "CONF_MODE_DP is not set. Defaulting to STATE_OFF."
+                )
                 self._attr_current_operation = STATE_OFF
             elif self.dps_conf(CONF_MODE_DP) is None:
-                _LOGGER.error("No value available for CONF_MODE_DP. Returning STATE_OFF as a default state.")
+                _LOGGER.error(
+                    "CONF_MODE_DP has no value. Defaulting to STATE_OFF."
+                )
                 self._attr_current_operation = STATE_OFF
             else:
-                _LOGGER.debug("Device status updated. Tuya: [%s]. HA: [%s]", (self.dps_conf(CONF_MODE_DP), self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]))
-                self._attr_current_operation = self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]
+                _LOGGER.debug(
+                    "Device status updated. Tuya: [%s]. HA: [%s]",
+                    (self.dps_conf(CONF_MODE_DP),
+                    self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)])
+                )
+                self._attr_current_operation = \
+                    self.TUYA_STATE_TO_HA[self.dps_conf(CONF_MODE_DP)]
         else:
             _LOGGER.debug("Device was switched off. Device status updated.")
             self._attr_current_operation = STATE_OFF
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaWaterHeater, flow_schema)
+
+async_setup_entry = partial(
+    async_setup_entry, DOMAIN, LocalTuyaWaterHeater, flow_schema
+)
