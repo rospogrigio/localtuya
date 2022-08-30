@@ -230,23 +230,24 @@ async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect."""
     detected_dps = {}
 
-    interface = None
-    try:
-        interface = await pytuya.connect(
-            data[CONF_HOST],
-            data[CONF_DEVICE_ID],
-            data[CONF_LOCAL_KEY],
-            float(data[CONF_PROTOCOL_VERSION]),
-        )
+    if CONF_DEVICE_ID in data:
+        interface = None
+        try:
+            interface = await pytuya.connect(
+                data[CONF_HOST],
+                data[CONF_DEVICE_ID],
+                data[CONF_LOCAL_KEY],
+                float(data[CONF_PROTOCOL_VERSION]),
+            )
 
-        detected_dps = await interface.detect_available_dps()
-    except (ConnectionRefusedError, ConnectionResetError) as ex:
-        raise CannotConnect from ex
-    except ValueError as ex:
-        raise InvalidAuth from ex
-    finally:
-        if interface:
-            await interface.close()
+            detected_dps = await interface.detect_available_dps()
+        except (ConnectionRefusedError, ConnectionResetError) as ex:
+            raise CannotConnect from ex
+        except ValueError as ex:
+            raise InvalidAuth from ex
+        finally:
+            if interface:
+                await interface.close()
 
     # Indicate an error if no datapoints found as the rest of the flow
     # won't work in this case
