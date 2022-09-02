@@ -2,6 +2,7 @@
 import errno
 import logging
 import time
+import asyncio
 from importlib import import_module
 
 import homeassistant.helpers.config_validation as cv
@@ -240,10 +241,12 @@ async def validate_input(hass: core.HomeAssistant, data):
         )
 
         detected_dps = await interface.detect_available_dps()
-    except (ConnectionRefusedError, ConnectionResetError) as ex:
+    except (ConnectionRefusedError, ConnectionResetError, asyncio.exceptions.TimeoutError) as ex:
         raise CannotConnect from ex
     except ValueError as ex:
         raise InvalidAuth from ex
+    except OSError as ex:
+        raise CannotConnect from ex
     finally:
         if interface:
             await interface.close()
