@@ -23,7 +23,7 @@
             },
             "power_outlet": {
                 "title": "Add subswitch",
-		"description": "You are about to add subswitch number `{number}`. If you want to add another, tick `Add another switch` before continuing.",
+		        "description": "You are about to add subswitch number `{number}`. If you want to add another, tick `Add another switch` before continuing.",
                 "data": {
                     "id": "ID",
                     "name": "Name",

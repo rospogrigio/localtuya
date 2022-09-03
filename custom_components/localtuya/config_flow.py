@@ -42,6 +42,7 @@ from .const import (
     CONF_SETUP_CLOUD,
     CONF_USER_ID,
     CONF_GATEWAY_DEVICE_ID,
+    CONF_IS_GATEWAY,
     DATA_CLOUD,
     DATA_DISCOVERY,
     DOMAIN,
@@ -92,6 +93,7 @@ CONFIGURE_DEVICE_SCHEMA = vol.Schema(
         vol.Optional(CONF_GATEWAY_DEVICE_ID): cv.string,
         vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_SCAN_INTERVAL): int,
+        vol.Optional(CONF_IS_GATEWAY): cv.boolean,
     }
 )
 
@@ -226,18 +228,26 @@ def config_schema():
 
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect."""
+
     interface = None
     try:
+        device_id = data.get(CONF_GATEWAY_DEVICE_ID)
+        if not device_id or device_id == "":
+            device_id = data[CONF_DEVICE_ID]
+
         interface = await pytuya.connect(
             data[CONF_HOST],
-            data.get(CONF_GATEWAY_DEVICE_ID, data[CONF_DEVICE_ID]),
+            device_id,
             data[CONF_LOCAL_KEY],
             float(data[CONF_PROTOCOL_VERSION]),
-            is_gateway=True if data.get(CONF_CLIENT_ID) else False,
+            is_gateway=data.get(CONF_IS_GATEWAY) or data.get(CONF_CLIENT_ID),
         )
         if data.get(CONF_CLIENT_ID):
             interface.add_sub_device(data[CONF_CLIENT_ID])
-        detected_dps = await interface.detect_available_dps(cid=data.get(CONF_CLIENT_ID))
+
+        # Do not detect DPS for gateways
+        if not data.get(CONF_IS_GATEWAY):
+            detected_dps = await interface.detect_available_dps(cid=data.get(CONF_CLIENT_ID))
     except (ConnectionRefusedError, ConnectionResetError) as ex:
         raise CannotConnect from ex
     except ValueError as ex:
@@ -247,11 +257,14 @@ async def validate_input(hass: core.HomeAssistant, data):
             await interface.close()
 
     # Indicate an error if no datapoints found as the rest of the flow
-    # won't work in this case
-    if not detected_dps:
-        raise EmptyDpsList
+    # won't work in this case, except for gateways as they have no DPS
+    if data.get(CONF_IS_GATEWAY):
+        return
+    else:
+        if not detected_dps:
+            raise EmptyDpsList
 
-    return dps_string_list(detected_dps)
+        return dps_string_list(detected_dps)
 
 
 async def attempt_cloud_connection(hass, user_input):
@@ -519,6 +532,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 self.device_data = user_input.copy()
+
                 if dev_id is not None:
                     cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
                     if dev_id in cloud_devs:
@@ -546,8 +560,14 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         ]
                         return await self.async_step_configure_entity()
 
-                self.dps_strings = await validate_input(self.hass, user_input)
-                return await self.async_step_pick_entity_type()
+                # Skip DPS assignment & entity addition if we're adding a gateway
+                if self.device_data.get(CONF_IS_GATEWAY):
+                    await validate_input(self.hass, self.device_data)
+                    return await self.async_step_pick_entity_type({ NO_ADDITIONAL_ENTITIES: True })
+                else:
+                    self.dps_strings = await validate_input(self.hass, self.device_data)
+                    return await self.async_step_pick_entity_type()
+
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:

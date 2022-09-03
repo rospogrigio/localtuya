@@ -97,7 +97,8 @@
                     "protocol_version": "Protocol Version",
                     "gateway_device_id": "Gateway device ID",
                     "client_id": "Mac Address of the gateway sub-device",
-                    "scan_interval": "Scan interval (seconds, only when not updating automatically)"
+                    "scan_interval": "Scan interval (seconds, only when not updating automatically)",
+                    "is_gateway": "This is a gateway (Zigbee / Bluetooth)"
                 }
             },
             "pick_entity_type": {

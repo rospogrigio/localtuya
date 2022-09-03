@@ -33,6 +33,7 @@ from .const import (
     DOMAIN,
     TUYA_DEVICES,
     CONF_GATEWAY_DEVICE_ID,
+    CONF_IS_GATEWAY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -143,6 +144,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         # handling sub-devices
         self._connected = False
+        self.is_gateway = self._dev_config_entry.get(CONF_IS_GATEWAY, False)
         self.gateway_device_id = self._dev_config_entry.get(CONF_GATEWAY_DEVICE_ID)
         self.cid = self._dev_config_entry.get(CONF_CLIENT_ID)
         self.gateway_device = None
@@ -179,11 +181,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         else:
             return await pytuya.connect(
                 self._dev_config_entry[CONF_HOST],
-                self._dev_config_entry.get(self.device_id),
+                self.device_id,
                 self._local_key,
                 float(self._dev_config_entry[CONF_PROTOCOL_VERSION]),
                 listener=self,
-                is_gateway=True if self.sub_devices else False,
+                is_gateway=self.is_gateway,
             )
 
     async def _make_connection(self):
@@ -195,14 +197,17 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             if self.cid:
                 self._interface.add_sub_device(self.cid)
 
-            self._interface.add_dps_to_request(self.dps_to_request, cid=self.cid)
+            # Query initial state except for gateways
+            if not self.is_gateway:
+                self._interface.add_dps_to_request(self.dps_to_request, cid=self.cid)
 
-            self.debug("Retrieving initial state")
-            status = await self._interface.status(cid=self.cid)
-            if status is None:
-                raise Exception("Failed to retrieve status")
+                self.debug("Retrieving initial state")
+                status = await self._interface.status(cid=self.cid)
+                if status is None:
+                    raise Exception("Failed to retrieve status")
 
-            self.status_updated(status)
+                self.status_updated(status)
+
             self._connected = True
 
             if self._disconnect_task is not None:
