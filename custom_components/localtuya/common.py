@@ -158,7 +158,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     def connected(self):
         """Return if connected to device."""
         if self.gateway_device:
-            return self.gateway_device.connected()
+            return self.gateway_device.connected
         else:
             return self._interface is not None
 
