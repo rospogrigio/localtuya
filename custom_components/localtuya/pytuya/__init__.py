@@ -608,6 +608,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if not self.is_gateway:
             raise Exception("Attempt to add sub-device to a non-gateway device")
 
+        if cid in self.sub_devices:
+            return
+
         self.sub_devices.append(cid)
         self.dps_to_request[cid] = {}
         self.dps_cache[cid] = {}
@@ -616,6 +619,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Removes a sub-device for a gateway device"""
         if not self.is_gateway:
             raise Exception("Attempt to remove sub-device from a non-gateway device")
+
+        if cid not in self.sub_devices:
+            return
 
         self.sub_devices.remove(cid)
         del self.dps_to_request[cid]
