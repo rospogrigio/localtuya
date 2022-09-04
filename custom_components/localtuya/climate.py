@@ -12,9 +12,11 @@ from homeassistant.components.climate import (
 )
 from homeassistant.components.climate.const import (
     CURRENT_HVAC_HEAT,
+    CURRENT_HVAC_COOL,
     CURRENT_HVAC_IDLE,
     HVAC_MODE_AUTO,
     HVAC_MODE_HEAT,
+    HVAC_MODE_COOL,
     HVAC_MODE_OFF,
     PRESET_AWAY,
     PRESET_ECO,
@@ -59,18 +61,24 @@ _LOGGER = logging.getLogger(__name__)
 HVAC_MODE_SETS = {
     "manual/auto": {
         HVAC_MODE_HEAT: "manual",
+        HVAC_MODE_COOL: "manual",
         HVAC_MODE_AUTO: "auto",
     },
     "Manual/Auto": {
         HVAC_MODE_HEAT: "Manual",
+        HVAC_MODE_COOL: "Manual",
         HVAC_MODE_AUTO: "Auto",
     },
     "Manual/Program": {
         HVAC_MODE_HEAT: "Manual",
+        HVAC_MODE_COOL: "Manual",
         HVAC_MODE_AUTO: "Program",
     },
     "True/False": {
         HVAC_MODE_HEAT: True,
+    },
+    "True/False (Cool)": {
+        HVAC_MODE_COOL: True,
     },
     "1/0": {
         HVAC_MODE_HEAT: "1",
@@ -80,16 +88,22 @@ HVAC_MODE_SETS = {
 HVAC_ACTION_SETS = {
     "True/False": {
         CURRENT_HVAC_HEAT: True,
+        CURRENT_HVAC_COOL: True,
         CURRENT_HVAC_IDLE: False,
     },
     "open/close": {
         CURRENT_HVAC_HEAT: "open",
+        CURRENT_HVAC_COOL: "open",
         CURRENT_HVAC_IDLE: "close",
     },
     "heating/no_heating": {
         CURRENT_HVAC_HEAT: "heating",
         CURRENT_HVAC_IDLE: "no_heating",
     },
+    "cooling/no_cooling": {
+        CURRENT_HVAC_COOL: "cooling",
+        CURRENT_HVAC_IDLE: "no_cooling",
+    },    
     "Heat/Warming": {
         CURRENT_HVAC_HEAT: "Heat",
         CURRENT_HVAC_IDLE: "Warming",
@@ -243,6 +257,23 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 ):
                     if self._hvac_action == CURRENT_HVAC_HEAT:
                         self._hvac_action = CURRENT_HVAC_HEAT
+                    if self._hvac_action == CURRENT_HVAC_IDLE:
+                        self._hvac_action = CURRENT_HVAC_IDLE
+                if (
+                    self._current_temperature + self._precision
+                ) > self._target_temperature:
+                    self._hvac_action = CURRENT_HVAC_IDLE
+            return self._hvac_action
+            if self._hvac_mode == HVAC_MODE_COOL:
+                if self._current_temperature < (
+                    self._target_temperature - self._precision
+                ):
+                    self._hvac_action = CURRENT_HVAC_COOL
+                if self._current_temperature == (
+                    self._target_temperature - self._precision
+                ):
+                    if self._hvac_action == CURRENT_HVAC_COOL:
+                        self._hvac_action = CURRENT_HVAC_COOL
                     if self._hvac_action == CURRENT_HVAC_IDLE:
                         self._hvac_action = CURRENT_HVAC_IDLE
                 if (
