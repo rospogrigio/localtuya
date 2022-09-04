@@ -401,6 +401,14 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     def _status_update(self, msg):
         """Handle status updates"""
         decoded_message = self._decode_payload(msg.payload)
+
+        # This could happen if not all Zigbee sub-devices have been
+        # added to a gateway
+        if self.is_gateway:
+            cid = decoded_message.get("cid")
+            if cid not in self.sub_devices:
+                return
+
         self._update_dps_cache(decoded_message)
 
         listener = self.listener and self.listener()
