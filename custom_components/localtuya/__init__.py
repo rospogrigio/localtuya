@@ -19,12 +19,14 @@ from homeassistant.const import (
     CONF_PLATFORM,
     CONF_REGION,
     CONF_USERNAME,
+    CONF_FRIENDLY_NAME,
+    CONF_MODEL,
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.device_registry import DeviceEntry
+from homeassistant.helpers import device_registry
 from homeassistant.helpers.event import async_track_time_interval
 
 from .cloud_api import TuyaCloudApi
@@ -40,6 +42,8 @@ from .const import (
     DOMAIN,
     TUYA_DEVICES,
     CONF_GATEWAY_DEVICE_ID,
+    CONF_IS_GATEWAY,
+    CONF_PROTOCOL_VERSION,
 )
 from .discovery import TuyaDiscovery
 
@@ -264,12 +268,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         platforms = set()
         sub_devices = []
         for dev_id in device_ids:
-            entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
+            device_entry = entry.data[CONF_DEVICES][dev_id]
+            entities = device_entry[CONF_ENTITIES]
             platforms = platforms.union(
                 set(entity[CONF_PLATFORM] for entity in entities)
             )
             device = TuyaDevice(hass, entry, dev_id)
             hass.data[DOMAIN][TUYA_DEVICES][dev_id] = device
+
+            # Register gateway device manually to HA
+            if device_entry.get(CONF_IS_GATEWAY, False):
+                dr = device_registry.async_get(hass)
+                dr.async_get_or_create(
+                    config_entry_id=entry.entry_id,
+                    identifiers={(DOMAIN, f"local_{dev_id}")},
+                    name=device_entry[CONF_FRIENDLY_NAME],
+                    manufacturer="Tuya",
+                    model=f"{device_entry[CONF_MODEL]} ({dev_id})",
+                    sw_version=device_entry[CONF_PROTOCOL_VERSION],
+                )
+
             if device.gateway_device_id:
                 sub_devices.append(device)
         # at this point, the gateway should have been created,
@@ -331,7 +349,7 @@ async def update_listener(hass, config_entry):
 
 
 async def async_remove_config_entry_device(
-    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
+    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: device_registry.DeviceEntry
 ) -> bool:
     """Remove a config entry from a device."""
     dev_id = list(device_entry.identifiers)[0][1].split("_")[-1]

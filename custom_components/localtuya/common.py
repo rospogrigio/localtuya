@@ -141,10 +141,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._unsub_interval = None
         self._local_key = self._dev_config_entry[CONF_LOCAL_KEY]
         self.set_logger(_LOGGER, self.device_id)
+        self.is_gateway = self._dev_config_entry.get(CONF_IS_GATEWAY, False)
 
         # handling sub-devices
         self._connected = False
-        self.is_gateway = self._dev_config_entry.get(CONF_IS_GATEWAY, False)
         self.gateway_device_id = self._dev_config_entry.get(CONF_GATEWAY_DEVICE_ID)
         self.cid = self._dev_config_entry.get(CONF_CLIENT_ID)
         self.gateway_device = None
@@ -158,7 +158,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     def connected(self):
         """Return if connected to device."""
         if self.gateway_device:
-            return self._connected
+            return self.gateway_device.connected()
         else:
             return self._interface is not None
 
