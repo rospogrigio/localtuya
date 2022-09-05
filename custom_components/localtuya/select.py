@@ -4,14 +4,19 @@ from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.select import DOMAIN, SelectEntity
-from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
+from homeassistant.const import (
+    CONF_DEVICE_CLASS,
+    STATE_UNKNOWN,
+)
 
 from .common import LocalTuyaEntity, async_setup_entry
 
-_LOGGER = logging.getLogger(__name__)
-
-CONF_OPTIONS = "select_options"
-CONF_OPTIONS_FRIENDLY = "select_options_friendly"
+from .const import (
+    CONF_OPTIONS,
+    CONF_OPTIONS_FRIENDLY,
+    CONF_DEFAULT_VALUE,
+    CONF_RESTORE_ON_RECONNECT,
+)
 
 
 def flow_schema(dps):
@@ -19,7 +24,12 @@ def flow_schema(dps):
     return {
         vol.Required(CONF_OPTIONS): str,
         vol.Optional(CONF_OPTIONS_FRIENDLY): str,
+        vol.Optional(CONF_DEFAULT_VALUE): str,
+        vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
     }
+
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
@@ -92,9 +102,24 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
 
     def status_updated(self):
         """Device status was updated."""
+        super().status_updated()
+
         state = self.dps(self._dp_id)
-        self._state_friendly = self._display_options[self._valid_options.index(state)]
-        self._state = state
+
+        # Check that received status update for this entity.
+        if state is not None:
+            try:
+                self._state_friendly = self._display_options[
+                    self._valid_options.index(state)
+                ]
+            except Exception:  # pylint: disable=broad-except
+                # Friendly value couldn't be mapped
+                self._state_friendly = state
+
+    # Default value is the first option
+    def entity_default_value(self):
+        """Return the first option as the default value for this entity type."""
+        return self._valid_options[0]
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSelect, flow_schema)
