@@ -138,9 +138,8 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
                 await self.async_turn_on()
             if self._use_ordered_list:
                 await self._device.set_dp(
-                    str(
-                        percentage_to_ordered_list_item(self._ordered_list, percentage)
-                    ),
+                    percentage_to_ordered_list_item(self._ordered_list, percentage)
+                    ,
                     self._config.get(CONF_FAN_SPEED_CONTROL),
                 )
                 _LOGGER.debug(
@@ -151,10 +150,8 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
             else:
                 await self._device.set_dp(
-                    str(
-                        math.ceil(
-                            percentage_to_ranged_value(self._speed_range, percentage)
-                        )
+                    math.ceil(
+                        percentage_to_ranged_value(self._speed_range, percentage)
                     ),
                     self._config.get(CONF_FAN_SPEED_CONTROL),
                 )
