@@ -10,8 +10,8 @@ from .common import LocalTuyaEntity, async_setup_entry
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_MIN_VALUE = "min_value"
-CONF_MAX_VALUE = "max_value"
+CONF_MIN_VALUE = "native_min_value"
+CONF_MAX_VALUE = "native_max_value"
 
 DEFAULT_MIN = 0
 DEFAULT_MAX = 100000
@@ -52,17 +52,17 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
         self._max_value = self._config.get(CONF_MAX_VALUE)
 
     @property
-    def value(self) -> float:
+    def native_value(self) -> float:
         """Return sensor state."""
         return self._state
 
     @property
-    def min_value(self) -> float:
+    def native_min_value(self) -> float:
         """Return the minimum value."""
         return self._min_value
 
     @property
-    def max_value(self) -> float:
+    def native_max_value(self) -> float:
         """Return the maximum value."""
         return self._max_value
 
@@ -71,7 +71,7 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
         """Return the class of this device."""
         return self._config.get(CONF_DEVICE_CLASS)
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
         await self._device.set_dp(value, self._dp_id)
 
