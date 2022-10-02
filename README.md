@@ -92,9 +92,13 @@ If you have selected one entry, you only need to input the device's Friendly Nam
 
 Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
+Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration.
+
+Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). The DPids will vary between devices, but typically "18,19,20" is used (and will be the default if none specified). If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
+
 Once you press "Submit", the connection is tested to check that everything works.
 
-![image](https://user-images.githubusercontent.com/1082213/146664103-ac40319e-f934-4933-90cf-2beaff1e6bac.png)
+![image](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
 
 
 Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.

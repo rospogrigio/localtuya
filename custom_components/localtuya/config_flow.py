@@ -38,12 +38,14 @@ from .const import (
     CONF_NO_CLOUD,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
+    CONF_RESET_DPIDS,
     CONF_SETUP_CLOUD,
     CONF_USER_ID,
     DATA_CLOUD,
     DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
+    CONF_MANUAL_DPS,
 )
 from .discovery import discover
 
@@ -88,6 +90,8 @@ CONFIGURE_DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_DEVICE_ID): str,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
         vol.Optional(CONF_SCAN_INTERVAL): int,
+        vol.Optional(CONF_MANUAL_DPS): str,
+        vol.Optional(CONF_RESET_DPIDS): str,
     }
 )
 
@@ -99,6 +103,8 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
         vol.Optional(CONF_SCAN_INTERVAL): int,
+        vol.Optional(CONF_MANUAL_DPS): cv.string,
+        vol.Optional(CONF_RESET_DPIDS): str,
     }
 )
 
@@ -140,6 +146,8 @@ def options_schema(entities):
             vol.Required(CONF_LOCAL_KEY): str,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
             vol.Optional(CONF_SCAN_INTERVAL): int,
+            vol.Optional(CONF_MANUAL_DPS): str,
+            vol.Optional(CONF_RESET_DPIDS): str,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
@@ -231,6 +239,8 @@ async def validate_input(hass: core.HomeAssistant, data):
     detected_dps = {}
 
     interface = None
+
+    reset_ids = None
     try:
         interface = await pytuya.connect(
             data[CONF_HOST],
@@ -239,7 +249,42 @@ async def validate_input(hass: core.HomeAssistant, data):
             float(data[CONF_PROTOCOL_VERSION]),
         )
 
-        detected_dps = await interface.detect_available_dps()
+        try:
+            detected_dps = await interface.detect_available_dps()
+        except Exception:  # pylint: disable=broad-except
+            try:
+                _LOGGER.debug("Initial state update failed, trying reset command")
+                if CONF_RESET_DPIDS in data:
+                    reset_ids_str = data[CONF_RESET_DPIDS].split(",")
+                    reset_ids = []
+                    for reset_id in reset_ids_str:
+                        reset_ids.append(int(reset_id.strip()))
+                    _LOGGER.debug(
+                        "Reset DPIDs configured: %s (%s)",
+                        data[CONF_RESET_DPIDS],
+                        reset_ids,
+                    )
+                await interface.reset(reset_ids)
+                detected_dps = await interface.detect_available_dps()
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.debug("No DPS able to be detected")
+                detected_dps = {}
+
+        # if manual DPs are set, merge these.
+        _LOGGER.debug("Detected DPS: %s", detected_dps)
+        if CONF_MANUAL_DPS in data:
+
+            manual_dps_list = [dps.strip() for dps in data[CONF_MANUAL_DPS].split(",")]
+            _LOGGER.debug(
+                "Manual DPS Setting: %s (%s)", data[CONF_MANUAL_DPS], manual_dps_list
+            )
+            # merge the lists
+            for new_dps in manual_dps_list + (reset_ids or []):
+                # If the DPS not in the detected dps list, then add with a
+                # default value indicating that it has been manually added
+                if new_dps not in detected_dps:
+                    detected_dps[new_dps] = -1
+
     except (ConnectionRefusedError, ConnectionResetError) as ex:
         raise CannotConnect from ex
     except ValueError as ex:
@@ -252,6 +297,8 @@ async def validate_input(hass: core.HomeAssistant, data):
     # won't work in this case
     if not detected_dps:
         raise EmptyDpsList
+
+    _LOGGER.debug("Total DPS: %s", detected_dps)
 
     return dps_string_list(detected_dps)
 

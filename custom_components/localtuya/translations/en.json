@@ -96,7 +96,9 @@
                     "local_key": "Local key",
                     "protocol_version": "Protocol Version",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
-                    "entities": "Entities (uncheck an entity to remove it)"
+                    "entities": "Entities (uncheck an entity to remove it)",
+                    "manual_dps_strings": "Manual DPS to add (separated by commas ',') - used when detection is not working (optional)",
+                    "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)"
                 }
             },
             "pick_entity_type": {
@@ -165,6 +167,7 @@
                     "fan_direction":"fan direction dps",
                     "fan_direction_forward": "forward dps string",
                     "fan_direction_reverse": "reverse dps string",
+                    "fan_dps_type": "DP value type",
                     "current_temperature_dp": "Current Temperature",
                     "target_temperature_dp": "Target Temperature",
                     "temperature_step": "Temperature Step (optional)",
@@ -181,7 +184,12 @@
                     "preset_set": "Presets Set (optional)",
                     "eco_dp": "Eco DP (optional)",
                     "eco_value": "Eco value (optional)",
-                    "heuristic_action": "Enable heuristic action (optional)"
+                    "heuristic_action": "Enable heuristic action (optional)",
+                    "dps_default_value": "Default value when un-initialised (optional)",
+                    "restore_on_reconnect": "Restore the last set value in HomeAssistant after a lost connection",
+                    "min_value": "Minimum Value",
+                    "max_value": "Maximum Value",
+                    "step_size": "Minimum increment between numbers"
                 }
             }
         }
