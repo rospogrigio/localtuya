@@ -105,7 +105,7 @@ PRESET_SETS = {
     "low/high/anti-frost": {
         PRESET_AWAY: "af",
         PRESET_BOOST: "high",
-        PRESET_SLEEP: "low",
+        PRESET_HOME: "low",
     },
 }
 
