@@ -94,6 +94,10 @@ HVAC_ACTION_SETS = {
         CURRENT_HVAC_HEAT: "Heat",
         CURRENT_HVAC_IDLE: "Warming",
     },
+    "1/0": {
+        HVAC_MODE_HEAT: "1",
+        HVAC_MODE_IDLE: "0",
+    },
 }
 PRESET_SETS = {
     "Manual/Holiday/Program": {
