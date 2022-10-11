@@ -36,6 +36,7 @@ from .const import (
     ATTR_STATE,
     CONF_RESTORE_ON_RECONNECT,
     CONF_RESET_DPIDS,
+    CONF_PASSIVE_ENTITY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -208,20 +209,23 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
             except Exception as ex:  # pylint: disable=broad-except
                 try:
-                    self.debug(
-                        "Initial state update failed, trying reset command "
-                        + "for DP IDs: %s",
-                        self._default_reset_dpids,
-                    )
-                    await self._interface.reset(self._default_reset_dpids)
+                    if (self._default_reset_dpids is not None) and (
+                        len(self._default_reset_dpids) > 0
+                    ):
+                        self.debug(
+                            "Initial state update failed, trying reset command "
+                            + "for DP IDs: %s",
+                            self._default_reset_dpids,
+                        )
+                        await self._interface.reset(self._default_reset_dpids)
 
-                    self.debug("Update completed, retrying initial state")
-                    status = await self._interface.status()
-                    if status is None or not status:
-                        raise Exception("Failed to retrieve status") from ex
+                        self.debug("Update completed, retrying initial state")
+                        status = await self._interface.status()
+                        if status is None or not status:
+                            raise Exception("Failed to retrieve status") from ex
 
-                    self._interface.start_heartbeat()
-                    self.status_updated(status)
+                        self._interface.start_heartbeat()
+                        self.status_updated(status)
 
                 except UnicodeDecodeError as e:  # pylint: disable=broad-except
                     self.exception(
@@ -371,6 +375,9 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         # Default value is available to be provided by Platform entities if required
         self._default_value = self._config.get(CONF_DEFAULT_VALUE)
+
+        # Determine whether is a passive entity
+        self._is_passive_entity = self._config.get(CONF_PASSIVE_ENTITY) or False
 
         """ Restore on connect setting is available to be provided by Platform entities
         if required"""
@@ -552,10 +559,13 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         Which indicates a DPS that needs to be set before it starts returning
         status.
         """
-        if not self.restore_on_reconnect and (str(self._dp_id) in self._status):
+        if (not self.restore_on_reconnect) and (
+            (str(self._dp_id) in self._status) or (not self._is_passive_entity)
+        ):
             self.debug(
-                "Entity %s (DP %d) - Not restoring as restore on reconnect is  \
-                disabled for this entity and the entity has an initial status",
+                "Entity %s (DP %d) - Not restoring as restore on reconnect is "
+                + "disabled for this entity and the entity has an initial status "
+                + "or it is not a passive entity",
                 self.name,
                 self._dp_id,
             )
@@ -572,8 +582,12 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         # If no current or saved state, then use the default value
         if restore_state is None:
-            self.debug("No last restored state - using default")
-            restore_state = self.default_value()
+            if self._is_passive_entity:
+                self.debug("No last restored state - using default")
+                restore_state = self.default_value()
+            else:
+                self.debug("Not a passive entity and no state found - aborting restore")
+                return
 
         self.debug(
             "Entity %s (DP %d) - Restoring state: %s",
