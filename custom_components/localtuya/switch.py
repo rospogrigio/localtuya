@@ -10,9 +10,12 @@ from .const import (
     ATTR_CURRENT,
     ATTR_CURRENT_CONSUMPTION,
     ATTR_VOLTAGE,
+    ATTR_STATE,
     CONF_CURRENT,
     CONF_CURRENT_CONSUMPTION,
     CONF_VOLTAGE,
+    CONF_DEFAULT_VALUE,
+    CONF_RESTORE_ON_RECONNECT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,6 +27,8 @@ def flow_schema(dps):
         vol.Optional(CONF_CURRENT): vol.In(dps),
         vol.Optional(CONF_CURRENT_CONSUMPTION): vol.In(dps),
         vol.Optional(CONF_VOLTAGE): vol.In(dps),
+        vol.Optional(CONF_DEFAULT_VALUE): str,
+        vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
     }
 
 
@@ -59,6 +64,12 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
             )
         if self.has_config(CONF_VOLTAGE):
             attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE]) / 10
+
+        # Store the state
+        if self._state is not None:
+            attrs[ATTR_STATE] = self._state
+        elif self._last_state is not None:
+            attrs[ATTR_STATE] = self._last_state
         return attrs
 
     async def async_turn_on(self, **kwargs):
@@ -69,9 +80,10 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         """Turn Tuya switch off."""
         await self._device.set_dp(False, self._dp_id)
 
-    def status_updated(self):
-        """Device status was updated."""
-        self._state = self.dps(self._dp_id)
+    # Default value is the "OFF" state
+    def entity_default_value(self):
+        """Return False as the defaualt value for this entity type."""
+        return False
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSwitch, flow_schema)
