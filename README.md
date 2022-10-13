@@ -92,9 +92,9 @@ If you have selected one entry, you only need to input the device's Friendly Nam
 
 Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
-Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration.
+Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration. **Note: Any DPS added using this option will have a -1 value during setup.** 
 
-Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). The DPids will vary between devices, but typically "18,19,20" is used (and will be the default if none specified). If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
+Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used. If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
 
 Once you press "Submit", the connection is tested to check that everything works.
 
@@ -107,8 +107,11 @@ After you have defined all the needed entities, leave the "Do not add more entit
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
 For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
-all the available DPs found on the device (with their current status!!) for easy identification. Each entity type has different options
-to be configured. Here is an example for the "switch" entity:
+all the available DPs found on the device (with their current status!!) for easy identification. 
+
+**Note: If your device requires an LocalTuya to send an initialisation value to the entity for it to work, this can be configured (in supported entities) through the 'Passive entity' option. Optionally you can specify the initialisation value to be sent**
+
+Each entity type has different options to be configured. Here is an example for the "switch" entity:
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
 
@@ -170,7 +173,7 @@ logger:
 # To-do list:
 
 * Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-.
-      Ideas: Use: https://www.home-assistant.io/components/integration/ and https://www.home-assistant.io/components/utility_meter/
+      Ideas: Use: https://www.home-assistant.io/integrations/integration/ and https://www.home-assistant.io/integrations/utility_meter/
 
 * Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
 

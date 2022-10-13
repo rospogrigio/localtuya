@@ -16,6 +16,7 @@ from .const import (
     CONF_VOLTAGE,
     CONF_DEFAULT_VALUE,
     CONF_RESTORE_ON_RECONNECT,
+    CONF_PASSIVE_ENTITY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,8 +28,9 @@ def flow_schema(dps):
         vol.Optional(CONF_CURRENT): vol.In(dps),
         vol.Optional(CONF_CURRENT_CONSUMPTION): vol.In(dps),
         vol.Optional(CONF_VOLTAGE): vol.In(dps),
-        vol.Optional(CONF_DEFAULT_VALUE): str,
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
+        vol.Required(CONF_PASSIVE_ENTITY): bool,
+        vol.Optional(CONF_DEFAULT_VALUE): str,
     }
 
 
@@ -82,7 +84,7 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
 
     # Default value is the "OFF" state
     def entity_default_value(self):
-        """Return False as the defaualt value for this entity type."""
+        """Return False as the default value for this entity type."""
         return False
 
 
