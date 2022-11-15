@@ -12,20 +12,21 @@ Maintained by: postlund
 For more information see https://github.com/clach04/python-tuya
 
 Classes
-   TuyaInterface(dev_id, address, local_key=None)
+   TuyaProtocol(dev_id, local_key, protocol_version, on_connected, listener)
        dev_id (str): Device ID e.g. 01234567891234567890
-       address (str): Device Network IP Address e.g. 10.0.1.99
-       local_key (str, optional): The encryption key. Defaults to None.
+       local_key (str): The encryption key, obtainable via iot.tuya.com
+       protocol_version (float): The protocol version (3.1 or 3.3).
+       on_connected (object): Callback when connected.
+       listener (object): Listener for events such as status updates.
 
 Functions
-   json = status()          # returns json payload
-   set_version(version)     #  3.1 [default] or 3.3
-   detect_available_dps()   # returns a list of available dps provided by the device
-   update_dps(dps)          # sends update dps command
+   json = status()               # returns json payload for current dps status
+   detect_available_dps()        # returns a list of available dps provided by the device
+   update_dps(dps)               # sends update dps command
    add_dps_to_request(dp_index)  # adds dp_index to the list of dps used by the
-                                  # device (to be queried in the payload)
-   set_dp(on, dp_index)   # Set value of any dps index.
-
+                                 # device (to be queried in the payload)
+   set_dp(on, dp_index)     # Set value of any dps index
+   set_dps(dps)             # Set values of a set of dps
 
 Credits
  * TuyaAPI https://github.com/codetheweb/tuyapi by codetheweb and blackrozes
@@ -57,7 +58,7 @@ __author__ = "postlund"
 
 _LOGGER = logging.getLogger(__name__)
 
-TuyaMessage = namedtuple("TuyaMessage", "seqno cmd retcode payload crc")
+TuyaMessage = namedtuple("TuyaMessage", "seqno cmd retcode payload crc crcpassed")
 
 SET = "set"
 STATUS = "status"
@@ -188,7 +189,7 @@ def unpack_message(data):
     )
     payload = data[header_len:-end_len]
     crc, _ = struct.unpack(MESSAGE_END_FMT, data[-end_len:])
-    return TuyaMessage(seqno, cmd, retcode, payload, crc)
+    return TuyaMessage(seqno, cmd, retcode, payload, crc, False)
 
 
 class AESCipher:
@@ -269,7 +270,7 @@ class MessageDispatcher(ContextualLogger):
         header_len = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
 
         while self.buffer:
-            # Check if enough data for measage header
+            # Check if enough data for message header
             if len(self.buffer) < header_len:
                 break
 
@@ -294,8 +295,12 @@ class MessageDispatcher(ContextualLogger):
                 self.buffer[payload_start + payload_length : payload_start + length],
             )
 
+            # CRC calculated from prefix to end of payload
+            crc_calc = binascii.crc32(self.buffer[:header_len + payload_length])
+
             self.buffer = self.buffer[header_len - 4 + length :]
-            self._dispatch(TuyaMessage(seqno, cmd, retcode, payload, crc))
+
+            self._dispatch(TuyaMessage(seqno, cmd, retcode, payload, crc, crc == crc_calc))
 
     def _dispatch(self, msg):
         """Dispatch a message to someone that is listening."""
@@ -488,7 +493,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.debug("Wait was aborted for seqno %d", seqno)
             return None
 
-        # TODO: Verify stuff, e.g. CRC sequence number?
+        if not msg.crcpassed:
+            self.debug("CRC for sequence number %d failed, resending command %s", seqno, command)
+            return await self.exchange(command, dps)
+
         payload = self._decode_payload(msg.payload)
 
         # Perform a new exchange (once) if we switched device type
