@@ -25,7 +25,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 
-from .cloud_api import TuyaCloudApi
+from .cloud_api_iot import TuyaCloudApi
 from .common import pytuya
 from .const import (
     ATTR_UPDATED_AT,
