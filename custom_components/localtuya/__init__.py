@@ -27,7 +27,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
 
-from .cloud_api import TuyaCloudApi
+from .cloud_api_iot import TuyaCloudApi
 from .common import TuyaDevice, async_config_entry_by_device_id
 from .config_flow import ENTRIES_VERSION, config_schema
 from .const import (
