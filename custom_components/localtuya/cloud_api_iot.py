@@ -1,4 +1,4 @@
-"""Class to perform requests to Tuya Cloud APIs."""
+"""Cloud API implementation for Tuya IoT Platform API."""
 import functools
 import hashlib
 import hmac
@@ -8,11 +8,14 @@ import time
 
 import requests
 
+from . import CLOUD_TYPE_IOT
+from .cloud_api import CloudApi
+
 _LOGGER = logging.getLogger(__name__)
 
 
 # Signature algorithm.
-def calc_sign(msg, key):
+def _calc_sign(msg, key):
     """Calculate signature for request."""
     sign = (
         hmac.new(
@@ -26,20 +29,21 @@ def calc_sign(msg, key):
     return sign
 
 
-class TuyaCloudApi:
-    """Class to send API calls."""
+class TuyaCloudApiIoT(CloudApi):
+    """Class to send API calls via the Tuya IoT Platform API."""
 
     def __init__(self, hass, region_code, client_id, secret, user_id):
         """Initialize the class."""
+        super().__init__(CLOUD_TYPE_IOT)
+
         self._hass = hass
         self._base_url = f"https://openapi.tuya{region_code}.com"
         self._client_id = client_id
         self._secret = secret
         self._user_id = user_id
         self._access_token = ""
-        self.device_list = {}
 
-    def generate_payload(self, method, timestamp, url, headers, body=None):
+    def _generate_payload(self, method, timestamp, url, headers, body=None):
         """Generate signed payload for requests."""
         payload = self._client_id + self._access_token + timestamp
 
@@ -61,14 +65,16 @@ class TuyaCloudApi:
         # _LOGGER.debug("PAYLOAD: %s", payload)
         return payload
 
-    async def async_make_request(self, method, url, body=None, headers={}):
+    async def _async_make_request(self, method, url, body=None, headers=None):
         """Perform requests."""
+        if headers is None:
+            headers = {}
         timestamp = str(int(time.time() * 1000))
-        payload = self.generate_payload(method, timestamp, url, headers, body)
+        payload = self._generate_payload(method, timestamp, url, headers, body)
         default_par = {
             "client_id": self._client_id,
             "access_token": self._access_token,
-            "sign": calc_sign(payload, self._secret),
+            "sign": _calc_sign(payload, self._secret),
             "t": timestamp,
             "sign_method": "HMAC-SHA256",
         }
@@ -99,7 +105,7 @@ class TuyaCloudApi:
         # r = json.dumps(r.json(), indent=2, ensure_ascii=False) # Beautify the format
         return resp
 
-    async def async_get_access_token(self):
+    async def _async_authenticate(self):
         """Obtain a valid access token."""
         try:
             resp = await self.async_make_request("GET", "/v1.0/token?grant_type=1")
@@ -116,9 +122,9 @@ class TuyaCloudApi:
         self._access_token = resp.json()["result"]["access_token"]
         return "ok"
 
-    async def async_get_devices_list(self):
+    async def _async_fetch_device_list(self):
         """Obtain the list of devices associated to a user."""
-        resp = await self.async_make_request(
+        resp = await self._async_make_request(
             "GET", url=f"/v1.0/users/{self._user_id}/devices"
         )
 
@@ -133,7 +139,7 @@ class TuyaCloudApi:
             # )
             return f"Error {r_json['code']}: {r_json['msg']}"
 
-        self.device_list = {dev["id"]: dev for dev in r_json["result"]}
-        # _LOGGER.debug("DEV_LIST: %s", self.device_list)
+        self._device_list = {dev["id"]: dev for dev in r_json["result"]}
+        # _LOGGER.debug("DEV_LIST: %s", self._device_list)
 
         return "ok"
