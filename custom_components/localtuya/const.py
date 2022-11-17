@@ -26,6 +26,12 @@ ATTR_CURRENT_CONSUMPTION = "current_consumption"
 ATTR_VOLTAGE = "voltage"
 ATTR_UPDATED_AT = "updated_at"
 
+# Cloud types
+CLOUD_TYPE_IOT = "iot"
+CLOUD_TYPE_OEM_LEDVANCE = "oem_ledvance"
+CLOUD_TYPE_OEM_GENERIC = "oem_generic"
+CLOUD_TYPE_NONE = "no_cloud"
+
 # config flow
 CONF_LOCAL_KEY = "local_key"
 CONF_ENABLE_DEBUG = "enable_debug"
@@ -38,11 +44,13 @@ CONF_USER_ID = "user_id"
 CONF_ENABLE_ADD_ENTITIES = "add_entities"
 
 
-CONF_ACTION = "action"
 CONF_ADD_DEVICE = "add_device"
 CONF_EDIT_DEVICE = "edit_device"
 CONF_SETUP_CLOUD = "setup_cloud"
 CONF_NO_CLOUD = "no_cloud"
+CONF_CLOUD_TYPE = "cloud_type"
+CONF_OEM_EMAIL = "oem_email"
+CONF_OEM_PASSWORD = "oem_password"
 CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"

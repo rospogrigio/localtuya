@@ -282,7 +282,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     async def update_local_key(self):
         """Retrieve updated local_key from Cloud API and update the config_entry."""
         dev_id = self._dev_config_entry[CONF_DEVICE_ID]
-        await self._hass.data[DOMAIN][DATA_CLOUD].async_get_devices_list()
+        await self._hass.data[DOMAIN][DATA_CLOUD].async_fetch_device_list()
         cloud_devs = self._hass.data[DOMAIN][DATA_CLOUD].device_list
         if dev_id in cloud_devs:
             self._local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)

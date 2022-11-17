@@ -7,7 +7,7 @@
 A Home Assistant custom Integration for local handling of Tuya-based devices.
 
 This custom integration updates device status via pushing updates instead of polling, so status updates are fast (even when manually operated).
-The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
+The integration supports various Tuya Cloud APIs (Tuya IoT Platform, Tuya OEM Ledvance and generic Tuya OEM) for the retrieval of info and of the local_keys of the devices.
 
 
 **NOTE: The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed.**
@@ -37,7 +37,7 @@ For manual installation, copy the localtuya folder and all of its contents into 
 
 # Usage:
 
-**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .**
+**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md  or https://pypi.org/project/tinytuya/.**
 
 
 **NOTE 2: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
@@ -50,9 +50,20 @@ For manual installation, copy the localtuya folder and all of its contents into 
 
 
 To start configuring the integration, just press the "+ADD INTEGRATION" button in the Settings - Integrations page, and select LocalTuya from the drop-down menu.
-The Cloud API configuration page will appear, requesting to input your Tuya IoT Platform account credentials:
+
+## Cloud API type selection
+
+The Cloud API type selection page will appear, prompting you to choose the type of cloud connection to use.
+
+> **Note: if you don't want to use a cloud connection simply choose "Do not configure a Cloud API account", and the Integration will be added anyway.**
 
 ![cloud_setup](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/9-cloud_setup.png)
+
+### Tuya IoT Platform
+
+This cloud connection type uses the official Tuya IoT Platform API. Input your Tuya IoT Platform account credentials:
+
+![cloud_iot](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/12-cloud_out.png)
 
 To setup a Tuya IoT Platform account and setup a project in it, refer to the instructions for the official Tuya integration:
 https://www.home-assistant.io/integrations/tuya/
@@ -66,7 +77,19 @@ The place to find the Client ID and Secret is described in this link (in the ["G
 
 After pressing the Submit button, the first setup is complete and the Integration will be added. 
 
-> **Note: it is not mandatory to input the Cloud API credentials: you can choose to tick the "Do not configure a Cloud API account" button, and the Integration will be added anyway.**
+### Tuya OEM Ledvance
+
+This cloud connection type uses a non-public Tuya OEM API that allows you to obtain the local keys by using your Ledvance app account. The integration mimics a Tuya mobile app, so you may get a notification about login from another device.
+
+![cloud_oem_ledvance.png](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/13-cloud_oem_ledvance.png)
+
+### Tuya OEM generic
+
+This cloud connection type uses a non-public Tuya OEM API that allows you to obtain the local keys by using your generic Tuya-based app account. The integration mimics a Tuya mobile app, so you may get a notification about login from another device.
+
+Unlike the Ledvance variant, you also need to provide the client ID and secret that are embedded in your mobile app. There are guides online on how you can extract them.
+
+![cloud_oem_generic.png](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/14-cloud_oem_generic.png)
 
 After the Integration has been set up, devices can be added and configured pressing the Configure button in the Integrations page:
 
@@ -96,13 +119,14 @@ If you have selected one entry, you only need to input the device's Friendly Nam
 
 Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
-Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration.
+Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration. **Note: Any DPS added using this option will have a -1 value during setup.** 
 
-Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). The DPids will vary between devices, but typically "18,19,20" is used (and will be the default if none specified). If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
+Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used. If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
 
 Once you press "Submit", the connection is tested to check that everything works.
 
 ![image](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
+
 
 Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.
 After you have defined all the needed entities, leave the "Do not add more entities" checkbox checked: this will complete the procedure.
@@ -110,8 +134,11 @@ After you have defined all the needed entities, leave the "Do not add more entit
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
 For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
-all the available DPs found on the device (with their current status!!) for easy identification. Each entity type has different options
-to be configured. Here is an example for the "switch" entity:
+all the available DPs found on the device (with their current status!!) for easy identification. 
+
+**Note: If your device requires an LocalTuya to send an initialisation value to the entity for it to work, this can be configured (in supported entities) through the 'Passive entity' option. Optionally you can specify the initialisation value to be sent**
+
+Each entity type has different options to be configured. Here is an example for the "switch" entity:
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
 
@@ -137,7 +164,7 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
   Note:  these values are already divided by 10 for Voltage and Consumption
 3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
-```
+```yaml
        sensor:
          - platform: template
            sensors:
