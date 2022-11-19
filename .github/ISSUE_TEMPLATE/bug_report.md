@@ -28,6 +28,7 @@ assignees: ''
 - Home Assistant Core version: <!-- Configuration => Info --> 
 - [] Are you using the Home Assistant Tuya Cloud component ? <!-- if yes, put a x between the two [] => [x] -->
 - [] Are you using the Tuya App in parallel ? <!-- if yes, put a x between the two [] => [x] -->
+- [] Is the device disconnected/blocked from the internet ? <!-- if yes, put a x between the two [] => [x] -->
 
 ## Steps to reproduce
 <!--
@@ -52,7 +53,7 @@ assignees: ''
   You can also try to qualify your device using the procedure described https://github.com/rospogrigio/localtuya/wiki/Qualifying-a-device
 -->
 
-## Provide Home Assistant taceback/logs
+## Provide Home Assistant traceback/logs
 <!--
   Provide traces if they are relevant. If the problem is reproducible, try to set the log level to debug for this component at least:
   In Dev Tools => Services:
