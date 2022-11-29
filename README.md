@@ -138,21 +138,23 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
 3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
 ```yaml
-       sensor:
-         - platform: template
-           sensors:
-             tuya-sw01_voltage:
-               value_template: >-
-                 {{ states.switch.sw01.attributes.voltage }}
-               unit_of_measurement: 'V'
-             tuya-sw01_current:
-               value_template: >-
-                 {{ states.switch.sw01.attributes.current }}
-               unit_of_measurement: 'mA'
-             tuya-sw01_current_consumption:
-               value_template: >-
-                 {{ states.switch.sw01.attributes.current_consumption }}
-               unit_of_measurement: 'W'
+template:
+  - sensor:
+      - name: Tuya Switch Voltage
+        unique_id: tuya_switch_voltage
+        state: >-
+          {{ state_attr('switch.tuya_switch', 'voltage') }}
+        unit_of_measurement: 'V'
+      - name: Tuya Switch Current
+        unique_id: tuya_switch_current
+        state: >-
+          {{ state_attr('switch.tuya_switch', 'current') }}
+        unit_of_measurement: 'mA'
+      - name: Tuya Switch Current Consumption
+        unique_id: tuya_switch_current_consumption
+        state: >-
+          {{ state_attr('switch.tuya_switch', 'current_consumption') }}
+        unit_of_measurement: 'W'
 ```
 
 # Debugging
