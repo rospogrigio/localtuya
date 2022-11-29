@@ -4,19 +4,15 @@ from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.select import DOMAIN, SelectEntity
-from homeassistant.const import (
-    CONF_DEVICE_CLASS,
-    STATE_UNKNOWN,
-)
+from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
 
 from .common import LocalTuyaEntity, async_setup_entry
-
 from .const import (
+    CONF_DEFAULT_VALUE,
     CONF_OPTIONS,
     CONF_OPTIONS_FRIENDLY,
-    CONF_DEFAULT_VALUE,
-    CONF_RESTORE_ON_RECONNECT,
     CONF_PASSIVE_ENTITY,
+    CONF_RESTORE_ON_RECONNECT,
 )
 
 
