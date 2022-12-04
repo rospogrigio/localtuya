@@ -9,14 +9,14 @@ from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     ATTR_CURRENT,
     ATTR_CURRENT_CONSUMPTION,
-    ATTR_VOLTAGE,
     ATTR_STATE,
+    ATTR_VOLTAGE,
     CONF_CURRENT,
     CONF_CURRENT_CONSUMPTION,
-    CONF_VOLTAGE,
     CONF_DEFAULT_VALUE,
-    CONF_RESTORE_ON_RECONNECT,
     CONF_PASSIVE_ENTITY,
+    CONF_RESTORE_ON_RECONNECT,
+    CONF_VOLTAGE,
 )
 
 _LOGGER = logging.getLogger(__name__)
