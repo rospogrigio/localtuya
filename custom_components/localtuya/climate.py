@@ -339,12 +339,12 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
-        if preset_mode == PRESET_ECO:
+        if self.has_config(CONF_ECO_VALUE) and preset_mode == PRESET_ECO:
             await self._device.set_dp(LocaltuyaClimate.convert_value(
                 self._conf_eco_value, self._conf_eco_format),
                 self._conf_eco_dp)
             return
-        elif preset_mode == PRESET_NONE:
+        elif self.has_config(CONF_NONE_VALUE) and preset_mode == PRESET_NONE:
             # set the none also for the DP Eco
             await self._device.set_dp(LocaltuyaClimate.convert_value(
                 self._conf_none_value, self._conf_eco_format),
