@@ -221,7 +221,7 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             await hass.config_entries.async_remove(config_entry.entry_id)
 
     _LOGGER.info(
-        "Entry %s successfully migrated to version %s",
+        "Entry %s successfully migrated to version %s.",
         config_entry.entry_id,
         new_version,
     )
@@ -255,7 +255,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         res = await tuya_api.async_get_access_token()
         if res != "ok":
             _LOGGER.error("Cloud API connection failed: %s", res)
-        _LOGGER.info("Cloud API connection succeeded")
+        _LOGGER.info("Cloud API connection succeeded.")
         res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
@@ -353,7 +353,7 @@ async def async_remove_config_entry_device(
         data=new_data,
     )
 
-    _LOGGER.info("Device %s removed", dev_id)
+    _LOGGER.info("Device %s removed.", dev_id)
 
     return True
 
