@@ -349,6 +349,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
             await self._device.set_dp(LocaltuyaClimate.convert_value(
                 self._conf_none_value, self._conf_eco_format),
                 self._conf_eco_dp)
+            return
         await self._device.set_dp(
             self._conf_preset_set[preset_mode], self._conf_preset_dp
         )
