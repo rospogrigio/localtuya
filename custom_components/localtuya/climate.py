@@ -38,9 +38,8 @@ from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_CURRENT_TEMPERATURE_DP,
     CONF_ECO_DP,
-    CONF_ECO_VALUE,
     CONF_ECO_FORMAT,
-    CONF_NONE_VALUE,
+    CONF_ECO_VALUE,
     CONF_HEURISTIC_ACTION,
     CONF_HVAC_ACTION_DP,
     CONF_HVAC_ACTION_SET,
@@ -48,6 +47,7 @@ from .const import (
     CONF_HVAC_MODE_SET,
     CONF_MAX_TEMP_DP,
     CONF_MIN_TEMP_DP,
+    CONF_NONE_VALUE,
     CONF_PRECISION,
     CONF_PRESET_DP,
     CONF_PRESET_SET,
@@ -155,11 +155,11 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     """Tuya climate device."""
 
     def __init__(
-            self,
-            device,
-            config_entry,
-            switchid,
-            **kwargs,
+        self,
+        device,
+        config_entry,
+        switchid,
+        **kwargs,
     ):
         """Initialize a new LocaltuyaClimate."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
@@ -218,8 +218,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     def temperature_unit(self):
         """Return the unit of measurement used by the platform."""
         if (
-                self._config.get(CONF_TEMPERATURE_UNIT, DEFAULT_TEMPERATURE_UNIT)
-                == TEMPERATURE_FAHRENHEIT
+            self._config.get(CONF_TEMPERATURE_UNIT, DEFAULT_TEMPERATURE_UNIT)
+            == TEMPERATURE_FAHRENHEIT
         ):
             return TEMP_FAHRENHEIT
         return TEMP_CELSIUS
@@ -245,18 +245,18 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         if self._config.get(CONF_HEURISTIC_ACTION, False):
             if self._hvac_mode == HVAC_MODE_HEAT:
                 if self._current_temperature < (
-                        self._target_temperature - self._precision
+                    self._target_temperature - self._precision
                 ):
                     self._hvac_action = CURRENT_HVAC_HEAT
                 if self._current_temperature == (
-                        self._target_temperature - self._precision
+                    self._target_temperature - self._precision
                 ):
                     if self._hvac_action == CURRENT_HVAC_HEAT:
                         self._hvac_action = CURRENT_HVAC_HEAT
                     if self._hvac_action == CURRENT_HVAC_IDLE:
                         self._hvac_action = CURRENT_HVAC_IDLE
                 if (
-                        self._current_temperature + self._precision
+                    self._current_temperature + self._precision
                 ) > self._target_temperature:
                     self._hvac_action = CURRENT_HVAC_IDLE
             return self._hvac_action
@@ -340,15 +340,21 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
         if self.has_config(CONF_ECO_VALUE) and preset_mode == PRESET_ECO:
-            await self._device.set_dp(LocaltuyaClimate.convert_value(
-                self._conf_eco_value, self._conf_eco_format),
-                self._conf_eco_dp)
+            await self._device.set_dp(
+                LocaltuyaClimate.convert_value(
+                    self._conf_eco_value, self._conf_eco_format
+                ),
+                self._conf_eco_dp,
+            )
             return
         elif self.has_config(CONF_NONE_VALUE) and preset_mode == PRESET_NONE:
             # set the none also for the DP Eco
-            await self._device.set_dp(LocaltuyaClimate.convert_value(
-                self._conf_none_value, self._conf_eco_format),
-                self._conf_eco_dp)
+            await self._device.set_dp(
+                LocaltuyaClimate.convert_value(
+                    self._conf_none_value, self._conf_eco_format
+                ),
+                self._conf_eco_dp,
+            )
             return
         await self._device.set_dp(
             self._conf_preset_set[preset_mode], self._conf_preset_dp
@@ -374,25 +380,25 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
             self._target_temperature = (
-                    self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
+                self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
             )
 
         if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
             self._current_temperature = (
-                    self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
+                self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
             )
 
         if self._has_presets:
-            if (
-                    self.has_config(CONF_ECO_DP)
-                    and self.dps_conf(CONF_ECO_DP) == LocaltuyaClimate.convert_value(
-                self._conf_eco_value, self._conf_eco_format)
+            if self.has_config(CONF_ECO_DP) and self.dps_conf(
+                CONF_ECO_DP
+            ) == LocaltuyaClimate.convert_value(
+                self._conf_eco_value, self._conf_eco_format
             ):
                 self._preset_mode = PRESET_ECO
-            elif (
-                    self.has_config(CONF_ECO_DP)
-                    and self.dps_conf(CONF_ECO_DP) == LocaltuyaClimate.convert_value(
-                self._conf_none_value, self._conf_eco_format)
+            elif self.has_config(CONF_ECO_DP) and self.dps_conf(
+                CONF_ECO_DP
+            ) == LocaltuyaClimate.convert_value(
+                self._conf_none_value, self._conf_eco_format
             ):
                 self._preset_mode = PRESET_NONE
             else:
