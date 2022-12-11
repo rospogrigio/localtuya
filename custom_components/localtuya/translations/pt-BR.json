@@ -131,6 +131,7 @@
                     "idle_status_value": "Status ocioso (separado por vírgula)",
                     "returning_status_value": "Status de retorno",
                     "docked_status_value": "Status encaixado (separado por vírgula)",
+                    "error_status_value": "Status de erro (separado por vírgula)",
                     "fault_dp": "Falha DP (Geralmente 11)",
                     "battery_dp": "Status da bateria DP (normalmente 14)",
                     "mode_dp": "Modo DP (Geralmente 27)",

@@ -30,6 +30,7 @@ from .const import (
     CONF_CLEAN_RECORD_DP,
     CONF_CLEAN_TIME_DP,
     CONF_DOCKED_STATUS_VALUE,
+    CONF_ERROR_STATUS_VALUE,
     CONF_FAN_SPEED_DP,
     CONF_FAN_SPEEDS,
     CONF_FAULT_DP,
@@ -69,6 +70,7 @@ def flow_schema(dps):
         vol.Required(CONF_IDLE_STATUS_VALUE, default=DEFAULT_IDLE_STATUS): str,
         vol.Required(CONF_POWERGO_DP): vol.In(dps),
         vol.Required(CONF_DOCKED_STATUS_VALUE, default=DEFAULT_DOCKED_STATUS): str,
+        vol.Optional(CONF_ERROR_STATUS_VALUE): str,
         vol.Optional(
             CONF_RETURNING_STATUS_VALUE, default=DEFAULT_RETURNING_STATUS
         ): str,
@@ -110,6 +112,10 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         self._docked_status_list = []
         if self.has_config(CONF_DOCKED_STATUS_VALUE):
             self._docked_status_list = self._config[CONF_DOCKED_STATUS_VALUE].split(",")
+
+        self._error_status_list = []
+        if self.has_config(CONF_ERROR_STATUS_VALUE):
+            self._error_status_list = self._config[CONF_ERROR_STATUS_VALUE].split(",")
 
         self._fan_speed_list = []
         if self.has_config(CONF_FAN_SPEEDS):
@@ -219,6 +225,8 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
             self._state = STATE_IDLE
         elif state_value in self._docked_status_list:
             self._state = STATE_DOCKED
+        elif state_value in self._error_status_list:
+            self._state = STATE_ERROR
         elif state_value == self._config[CONF_RETURNING_STATUS_VALUE]:
             self._state = STATE_RETURNING
         elif state_value == self._config[CONF_PAUSED_STATE]:
