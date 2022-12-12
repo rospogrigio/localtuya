@@ -11,7 +11,7 @@
             "invalid_auth": "Falha ao autenticar com o dispositivo. Verifique se o ID do dispositivo e a chave local estão corretos.",
             "unknown": "Ocorreu um erro desconhecido. Consulte o registro para obter detalhes.",
             "entity_already_configured": "A entidade com este ID já foi configurada.",
-            "address_in_use": "AddresO endereço usado para descoberta já está em uso. Certifique-se de que nenhum outro aplicativo o esteja usando (porta TCP 6668).s used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
+            "address_in_use": "O endereço usado para descoberta já está em uso. Certifique-se de que nenhum outro aplicativo o esteja usando (porta TCP 6668)",
             "discovery_failed": "Algo falhou ao descobrir dispositivos. Consulte o registro para obter detalhes.",
             "empty_dps": "A conexão com o dispositivo foi bem-sucedida, mas nenhum ponto de dados foi encontrado. Tente novamente. Crie um novo issue e inclua os logs de depuração se o problema persistir."
         },
