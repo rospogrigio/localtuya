@@ -98,12 +98,21 @@ HVAC_ACTION_SETS = {
         CURRENT_HVAC_HEAT: "Heat",
         CURRENT_HVAC_IDLE: "Warming",
     },
+    "heating/warming": {
+        CURRENT_HVAC_HEAT: "heating",
+        CURRENT_HVAC_IDLE: "warming",
+    },
 }
 PRESET_SETS = {
     "Manual/Holiday/Program": {
         PRESET_AWAY: "Holiday",
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
+    },
+    "smart/holiday/hold": {
+        PRESET_AWAY: "holiday",
+        PRESET_HOME: "smart",
+        PRESET_NONE: "hold",
     },
 }
 
