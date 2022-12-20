@@ -248,24 +248,24 @@ async def validate_input(hass: core.HomeAssistant, data):
             data[CONF_LOCAL_KEY],
             float(data[CONF_PROTOCOL_VERSION]),
         )
-
+        if CONF_RESET_DPIDS in data:
+            reset_ids_str = data[CONF_RESET_DPIDS].split(",")
+            reset_ids = []
+            for reset_id in reset_ids_str:
+                reset_ids.append(int(reset_id.strip()))
+            _LOGGER.debug(
+                "Reset DPIDs configured: %s (%s)",
+                data[CONF_RESET_DPIDS],
+                reset_ids,
+            )
         try:
             detected_dps = await interface.detect_available_dps()
         except Exception:  # pylint: disable=broad-except
             try:
                 _LOGGER.debug("Initial state update failed, trying reset command")
-                if CONF_RESET_DPIDS in data:
-                    reset_ids_str = data[CONF_RESET_DPIDS].split(",")
-                    reset_ids = []
-                    for reset_id in reset_ids_str:
-                        reset_ids.append(int(reset_id.strip()))
-                    _LOGGER.debug(
-                        "Reset DPIDs configured: %s (%s)",
-                        data[CONF_RESET_DPIDS],
-                        reset_ids,
-                    )
-                await interface.reset(reset_ids)
-                detected_dps = await interface.detect_available_dps()
+                if len(reset_ids) > 0:
+                    await interface.reset(reset_ids)
+                    detected_dps = await interface.detect_available_dps()
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.debug("No DPS able to be detected")
                 detected_dps = {}
@@ -282,7 +282,7 @@ async def validate_input(hass: core.HomeAssistant, data):
             for new_dps in manual_dps_list + (reset_ids or []):
                 # If the DPS not in the detected dps list, then add with a
                 # default value indicating that it has been manually added
-                if new_dps not in detected_dps:
+                if str(new_dps) not in detected_dps:
                     detected_dps[new_dps] = -1
 
     except (ConnectionRefusedError, ConnectionResetError) as ex:
