@@ -173,7 +173,7 @@ logger:
 # To-do list:
 
 * Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-.
-      Ideas: Use: https://www.home-assistant.io/components/integration/ and https://www.home-assistant.io/components/utility_meter/
+      Ideas: Use: https://www.home-assistant.io/integrations/integration/ and https://www.home-assistant.io/integrations/utility_meter/
 
 * Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
 
