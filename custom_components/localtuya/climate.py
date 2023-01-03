@@ -65,6 +65,10 @@ HVAC_MODE_SETS = {
         HVAC_MODE_HEAT: "Manual",
         HVAC_MODE_AUTO: "Auto",
     },
+    "MANUAL/AUTO": {
+        HVAC_MODE_HEAT: "MANUAL",
+        HVAC_MODE_AUTO: "AUTO",
+    },
     "Manual/Program": {
         HVAC_MODE_HEAT: "Manual",
         HVAC_MODE_AUTO: "Program",
@@ -97,6 +101,10 @@ HVAC_ACTION_SETS = {
     "Heat/Warming": {
         CURRENT_HVAC_HEAT: "Heat",
         CURRENT_HVAC_IDLE: "Warming",
+    },
+    "heating/warming": {
+        CURRENT_HVAC_HEAT: "heating",
+        CURRENT_HVAC_IDLE: "warming",
     },
 }
 PRESET_SETS = {
