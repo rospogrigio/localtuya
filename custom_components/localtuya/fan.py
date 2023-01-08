@@ -60,11 +60,11 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         self,
         device,
         config_entry,
-        fanid,
+        config_entity,
         **kwargs,
     ):
         """Initialize the entity."""
-        super().__init__(device, config_entry, fanid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._is_on = False
         self._oscillating = None
         self._direction = None

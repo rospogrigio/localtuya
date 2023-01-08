@@ -2,6 +2,7 @@
 import errno
 import logging
 import time
+import re
 from importlib import import_module
 
 import homeassistant.helpers.config_validation as cv
@@ -46,6 +47,8 @@ from .const import (
     DOMAIN,
     PLATFORMS,
     CONF_MANUAL_DPS,
+    CONF_BYTES_RANGE,
+    CONF_ADD_ENTITIES,
 )
 from .discovery import discover
 
@@ -136,9 +139,17 @@ def devices_schema(discovered_devices, cloud_devices_list, add_custom_device=Tru
 
 def options_schema(entities):
     """Create schema for options."""
-    entity_names = [
-        f"{entity[CONF_ID]}: {entity[CONF_FRIENDLY_NAME]}" for entity in entities
-    ]
+    entity_names = []
+    for entity in entities:
+        if CONF_BYTES_RANGE in entity and entity[CONF_BYTES_RANGE]:
+           range_replaced = entity[CONF_BYTES_RANGE].replace(":",",")
+           entity_names.append(f"{entity[CONF_ID]}:{range_replaced}: {entity[CONF_FRIENDLY_NAME]}")    
+        else:
+           entity_names.append(f"{entity[CONF_ID]}: {entity[CONF_FRIENDLY_NAME]}")
+#    entity_names.append("add: Add new")
+#    entity_names = [
+#        f"{entity[CONF_ID]}: {entity[CONF_FRIENDLY_NAME]}" for entity in entities
+#    ]
     return vol.Schema(
         {
             vol.Required(CONF_FRIENDLY_NAME): str,
@@ -151,6 +162,7 @@ def options_schema(entities):
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
+            vol.Required(CONF_ADD_ENTITIES): bool,
         }
     )
 
@@ -172,6 +184,8 @@ def schema_defaults(schema, dps_list=None, **defaults):
 
         if field.schema in defaults:
             field.default = vol.default_factory(defaults[field])
+        if field == CONF_ADD_ENTITIES:
+            field.default = vol.default_factory(False)
     return copy
 
 
@@ -400,6 +414,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         self.selected_device = None
         self.editing_device = False
         self.device_data = None
+        self.add_entity = False
         self.dps_strings = []
         self.selected_platform = None
         self.discovered_devices = {}
@@ -565,16 +580,30 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         }
                     )
                     if user_input[CONF_ENTITIES]:
-                        entity_ids = [
-                            int(entity.split(":")[0])
-                            for entity in user_input[CONF_ENTITIES]
-                        ]
                         device_config = self.config_entry.data[CONF_DEVICES][dev_id]
-                        self.entities = [
-                            entity
-                            for entity in device_config[CONF_ENTITIES]
-                            if entity[CONF_ID] in entity_ids
-                        ]
+                        self.entities = []
+                        for entity in device_config[CONF_ENTITIES]:
+                            if CONF_BYTES_RANGE in entity and entity[CONF_BYTES_RANGE]:
+                                range_replaced = entity[CONF_BYTES_RANGE].replace(":",",")
+                                check_entity_id = f"{entity[CONF_ID]}:{range_replaced}: "
+                            else:
+                                check_entity_id = f"{entity[CONF_ID]}: "
+                            for user_entity in user_input[CONF_ENTITIES]:
+                                if check_entity_id == user_entity[:len(check_entity_id)]:
+                                     self.entities.append(entity)
+                                     break
+                        if CONF_ADD_ENTITIES in user_input and user_input[CONF_ADD_ENTITIES]:
+                            self.add_entity = True
+#                        entity_ids = [
+#                            int(entity.split(":")[0])
+#                            for entity in user_input[CONF_ENTITIES]
+#                        ]
+#                        device_config = self.config_entry.data[CONF_DEVICES][dev_id]
+#                        self.entities = [
+#                            entity
+#                            for entity in device_config[CONF_ENTITIES]
+#                            if entity[CONF_ID] in entity_ids
+#                        ]
                         return await self.async_step_configure_entity()
 
                 self.dps_strings = await validate_input(self.hass, user_input)
@@ -614,7 +643,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             schema = schema_defaults(CONFIGURE_DEVICE_SCHEMA, **defaults)
 
             placeholders = {"for_device": ""}
-
         return self.async_show_form(
             step_id="configure_device",
             data_schema=schema,
@@ -631,9 +659,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     CONF_DPS_STRINGS: self.dps_strings,
                     CONF_ENTITIES: self.entities,
                 }
-
                 dev_id = self.device_data.get(CONF_DEVICE_ID)
-                if dev_id in self.config_entry.data[CONF_DEVICES]:
+                if not self.add_entity and dev_id in self.config_entry.data[CONF_DEVICES]:
                     self.hass.config_entries.async_update_entry(
                         self.config_entry, data=config
                     )
@@ -670,12 +697,15 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
     def available_dps_strings(self):
         """Return list of DPs use by the device's entities."""
-        available_dps = []
-        used_dps = [str(entity[CONF_ID]) for entity in self.entities]
-        for dp_string in self.dps_strings:
-            dp = dp_string.split(" ")[0]
-            if dp not in used_dps:
-                available_dps.append(dp_string)
+        if self.selected_platform == "sensor":
+            available_dps = [dp_string for dp_string in self.dps_strings]
+        else:
+            available_dps = []
+            used_dps = [str(entity[CONF_ID]) for entity in self.entities]
+            for dp_string in self.dps_strings:
+                dp = dp_string.split(" ")[0]
+                if dp not in used_dps:
+                    available_dps.append(dp_string)
         return available_dps
 
     async def async_step_entity(self, user_input=None):
@@ -714,8 +744,17 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         """Manage entity settings."""
         errors = {}
         if user_input is not None:
+            if CONF_BYTES_RANGE in user_input and user_input[CONF_BYTES_RANGE] and not re.match("^[0123456789]:[1234]$", user_input[CONF_BYTES_RANGE]):
+                return self.async_abort(
+                    reason="input_value_error",
+                    description_placeholders={
+                        "value": user_input[CONF_BYTES_RANGE],
+                        "field": CONF_BYTES_RANGE,
+                    },
+                )
+
             if self.editing_device:
-                entity = strip_dps_values(user_input, self.dps_strings)
+                entity = strip_dps_values(user_input, self.dps_strings) 
                 entity[CONF_ID] = self.current_entity[CONF_ID]
                 entity[CONF_PLATFORM] = self.current_entity[CONF_PLATFORM]
                 self.device_data[CONF_ENTITIES].append(entity)
@@ -726,7 +765,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     new_data = self.config_entry.data.copy()
                     entry_id = self.config_entry.entry_id
                     # removing entities from registry (they will be recreated)
-                    ent_reg = await er.async_get_registry(self.hass)
+                    #ent_reg = await er.async_get_registry(self.hass)
+                    ent_reg = er.async_get(self.hass)
                     reg_entities = {
                         ent.unique_id: ent.entity_id
                         for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
@@ -741,6 +781,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         self.config_entry,
                         data=new_data,
                     )
+                    if self.add_entity:
+                        self.editing_device = False
+                        return await self.async_step_pick_entity_type()
+
                     return self.async_create_entry(title="", data={})
             else:
                 user_input[CONF_PLATFORM] = self.selected_platform

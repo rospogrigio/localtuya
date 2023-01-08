@@ -62,9 +62,9 @@ def flow_schema(dps):
 class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     """Tuya cover device."""
 
-    def __init__(self, device, config_entry, switchid, **kwargs):
+    def __init__(self, device, config_entry, config_entity, **kwargs):
         """Initialize a new LocaltuyaCover."""
-        super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         commands_set = DEFAULT_COMMANDS_SET
         if self.has_config(CONF_COMMANDS_SET):
             commands_set = self._config[CONF_COMMANDS_SET]
