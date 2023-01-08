@@ -1,6 +1,5 @@
 """Code shared between all platforms."""
 import asyncio
-import json.decoder
 import logging
 import time
 from datetime import timedelta
@@ -26,19 +25,19 @@ from homeassistant.helpers.restore_state import RestoreEntity
 
 from . import pytuya
 from .const import (
-    ATTR_STATE,
     ATTR_UPDATED_AT,
-    CONF_DEFAULT_VALUE,
-    CONF_ENABLE_DEBUG,
     CONF_LOCAL_KEY,
     CONF_MODEL,
-    CONF_PASSIVE_ENTITY,
     CONF_PROTOCOL_VERSION,
-    CONF_RESET_DPIDS,
-    CONF_RESTORE_ON_RECONNECT,
     DATA_CLOUD,
     DOMAIN,
     TUYA_DEVICES,
+    CONF_DEFAULT_VALUE,
+    ATTR_STATE,
+    CONF_RESTORE_ON_RECONNECT,
+    CONF_RESET_DPIDS,
+    CONF_PASSIVE_ENTITY,
+    CONF_BYTES_RANGE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -96,7 +95,7 @@ async def async_setup_entry(
                     entity_class(
                         tuyainterface,
                         dev_entry,
-                        entity_config[CONF_ID],
+                        entity_config,
                     )
                 )
     # Once the entities have been created, add to the TuyaDevice instance
@@ -109,15 +108,6 @@ def get_dps_for_platform(flow_schema):
     for key, value in flow_schema(None).items():
         if hasattr(value, "container") and value.container is None:
             yield key.schema
-
-
-def get_entity_config(config_entry, dp_id):
-    """Return entity config for a given DPS id."""
-    for entity in config_entry[CONF_ENTITIES]:
-        if entity[CONF_ID] == dp_id:
-            return entity
-    raise Exception(f"missing entity config for id {dp_id}")
-
 
 @callback
 def async_config_entry_by_device_id(hass, device_id):
@@ -177,13 +167,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
     def async_connect(self):
         """Connect to device if not already connected."""
-        # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
         if not self._is_closing and self._connect_task is None and not self._interface:
             self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
-        self.info("Trying to connect to %s...", self._dev_config_entry[CONF_HOST])
+        self.debug("Connecting to %s", self._dev_config_entry[CONF_HOST])
 
         try:
             self._interface = await pytuya.connect(
@@ -191,30 +180,27 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._dev_config_entry[CONF_DEVICE_ID],
                 self._local_key,
                 float(self._dev_config_entry[CONF_PROTOCOL_VERSION]),
-                self._dev_config_entry.get(CONF_ENABLE_DEBUG, False),
                 self,
             )
             self._interface.add_dps_to_request(self.dps_to_request)
-        except Exception as ex:  # pylint: disable=broad-except
-            self.warning(
-                f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s", ex
-            )
+        except Exception:  # pylint: disable=broad-except
+            self.exception(f"Connect to {self._dev_config_entry[CONF_HOST]} failed")
             if self._interface is not None:
                 await self._interface.close()
                 self._interface = None
 
         if self._interface is not None:
             try:
+                self.debug("Retrieving initial state")
+                status = await self._interface.status()
+                if status is None:
+                    raise Exception("Failed to retrieve status")
+
+                self._interface.start_heartbeat()
+                self.status_updated(status)
+
+            except Exception as ex:  # pylint: disable=broad-except
                 try:
-                    self.debug("Retrieving initial state")
-                    status = await self._interface.status()
-                    if status is None:
-                        raise Exception("Failed to retrieve status")
-
-                    self._interface.start_heartbeat()
-                    self.status_updated(status)
-
-                except Exception as ex:
                     if (self._default_reset_dpids is not None) and (
                         len(self._default_reset_dpids) > 0
                     ):
@@ -232,19 +218,26 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
                         self._interface.start_heartbeat()
                         self.status_updated(status)
-                    else:
-                        self.error("Initial state update failed, giving up: %r", ex)
-                        if self._interface is not None:
-                            await self._interface.close()
-                            self._interface = None
 
-            except (UnicodeDecodeError, json.decoder.JSONDecodeError) as ex:
-                self.warning("Initial state update failed (%s), trying key update", ex)
-                await self.update_local_key()
+                except UnicodeDecodeError as e:  # pylint: disable=broad-except
+                    self.exception(
+                        f"Connect to {self._dev_config_entry[CONF_HOST]} failed: %s",
+                        type(e),
+                    )
+                    if self._interface is not None:
+                        await self._interface.close()
+                        self._interface = None
 
-                if self._interface is not None:
-                    await self._interface.close()
-                    self._interface = None
+                except Exception as e:  # pylint: disable=broad-except
+                    self.exception(
+                        f"Connect to {self._dev_config_entry[CONF_HOST]} failed"
+                    )
+                    if "json.decode" in str(type(e)):
+                        await self.update_local_key()
+
+                    if self._interface is not None:
+                        await self._interface.close()
+                        self._interface = None
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
@@ -267,15 +260,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
             if (
                 CONF_SCAN_INTERVAL in self._dev_config_entry
-                and int(self._dev_config_entry[CONF_SCAN_INTERVAL]) > 0
+                and self._dev_config_entry[CONF_SCAN_INTERVAL] > 0
             ):
                 self._unsub_interval = async_track_time_interval(
                     self._hass,
                     self._async_refresh,
-                    timedelta(seconds=int(self._dev_config_entry[CONF_SCAN_INTERVAL])),
+                    timedelta(seconds=self._dev_config_entry[CONF_SCAN_INTERVAL]),
                 )
-
-            self.info(f"Successfully connected to {self._dev_config_entry[CONF_HOST]}")
 
         self._connect_task = None
 
@@ -309,7 +300,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             await self._interface.close()
         if self._disconnect_task is not None:
             self._disconnect_task()
-        self.info(
+        self.debug(
             "Closed connection with device %s.",
             self._dev_config_entry[CONF_FRIENDLY_NAME],
         )
@@ -357,23 +348,19 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._unsub_interval()
             self._unsub_interval = None
         self._interface = None
-
-        if self._connect_task is not None:
-            self._connect_task.cancel()
-            self._connect_task = None
-        self.warning("Disconnected - waiting for discovery broadcast")
+        self.debug("Disconnected - waiting for discovery broadcast")
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
-    def __init__(self, device, config_entry, dp_id, logger, **kwargs):
+    def __init__(self, device, config_entry, config_entity, logger, **kwargs):
         """Initialize the Tuya entity."""
         super().__init__()
         self._device = device
         self._dev_config_entry = config_entry
-        self._config = get_entity_config(config_entry, dp_id)
-        self._dp_id = dp_id
+        self._config = config_entity
+        self._dp_id = config_entity[CONF_ID]
         self._status = {}
         self._state = None
         self._last_state = None
@@ -466,7 +453,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def unique_id(self):
         """Return unique device identifier."""
-        return f"local_{self._dev_config_entry[CONF_DEVICE_ID]}_{self._dp_id}"
+        if CONF_BYTES_RANGE in self._config and self._config[CONF_BYTES_RANGE]:
+            bytes_range = self._config[CONF_BYTES_RANGE].replace(":","")
+            return f"local_{self._dev_config_entry[CONF_DEVICE_ID]}_{self._dp_id}_{bytes_range}"
+        else:
+            return f"local_{self._dev_config_entry[CONF_DEVICE_ID]}_{self._dp_id}"
 
     def has_config(self, attr):
         """Return if a config parameter has a valid value."""

@@ -41,11 +41,11 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         self,
         device,
         config_entry,
-        switchid,
+        config_entity,
         **kwargs,
     ):
         """Initialize the Tuya switch."""
-        super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._state = None
         _LOGGER.debug("Initialized switch [%s]", self.name)
 

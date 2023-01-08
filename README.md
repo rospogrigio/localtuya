@@ -1,3 +1,15 @@
+Differences:
+
+**For sensors:**
+* Allowed to use the same DP many times for sensors (this is need if one DP contain more then on values, for example, 3 phase circuit breakers and counters)
+* Decode of Base64 encoded payload support
+* Binary payload segmentation and decode support
+* Round decimals support
+
+**Config flow:**
+* Refactoring to allow changes for sensors
+* Added possibility to add new entities for existing device without delete them
+
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
 A Home Assistant custom Integration for local handling of Tuya-based devices.

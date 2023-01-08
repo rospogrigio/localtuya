@@ -51,11 +51,11 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
         self,
         device,
         config_entry,
-        sensorid,
+        config_entity,
         **kwargs,
     ):
         """Initialize the Tuya sensor."""
-        super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._state = STATE_UNKNOWN
 
         self._min_value = DEFAULT_MIN
