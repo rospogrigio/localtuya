@@ -162,7 +162,7 @@
                     "fan_speed_min": "Velocidade mínima do ventilador inteiro",
                     "fan_speed_max": "Velocidade máxima do ventilador inteiro",
                     "fan_speed_ordered_list": "Lista de modos de velocidade do ventilador (substitui a velocidade min/max)",
-                    "fan_direction":"Direção do ventilador dps",
+                    "fan_direction": "Direção do ventilador dps",
                     "fan_direction_forward": "Seqüência de dps para frente",
                     "fan_direction_reverse": "String dps reversa",
                     "current_temperature_dp": "Temperatura atual",
@@ -181,7 +181,10 @@
                     "preset_set": "Conjunto de predefinições (opcional)",
                     "eco_dp": "Eco DP (opcional)",
                     "eco_value": "Valor eco (opcional)",
-                    "heuristic_action": "Ativar ação heurística (opcional)"
+                    "heuristic_action": "Ativar ação heurística (opcional)",
+                    "ir_pronto_code": "Código Pronto do botão",
+                    "ir_button_name": "Nome do botão",
+                    "ir_dp_id": "DP Utilizado para disparar o sinal"
                 }
             }
         }

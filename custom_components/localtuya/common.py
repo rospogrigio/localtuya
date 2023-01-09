@@ -133,6 +133,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     def __init__(self, hass, config_entry, dev_id):
         """Initialize the cache."""
         super().__init__()
+        
         self._hass = hass
         self._config_entry = config_entry
         self._dev_config_entry = config_entry.data[CONF_DEVICES][dev_id].copy()
@@ -157,7 +158,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         # This has to be done in case the device type is type_0d
         for entity in self._dev_config_entry[CONF_ENTITIES]:
-            self.dps_to_request[entity[CONF_ID]] = None
+            self.dps_to_request[entity[CONF_ID]] = None        
 
     def add_entities(self, entities):
         """Set the entities associated with this device."""
@@ -200,9 +201,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._interface is not None:
             try:
                 self.debug("Retrieving initial state")
-                status = await self._interface.status()
-                if status is None:
-                    raise Exception("Failed to retrieve status")
+                if hasattr(self, "_bypass_status") and self._bypass_status:
+                    status = self._default_status
+                else:
+                    status = await self._interface.status()
+                    if status is None:
+                        raise Exception("Failed to retrieve status")
 
                 self._interface.start_heartbeat()
                 self.status_updated(status)
@@ -398,15 +402,21 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         def _update_handler(status):
             """Update entity state when status was updated."""
-            if status is None:
-                status = {}
-            if self._status != status:
-                self._status = status.copy()
-                if status:
-                    self.status_updated()
-
-                # Update HA
+            if hasattr(self, "_bypass_status") and self._bypass_status:
+                status = self._default_status
+                
+                self.status_updated()
                 self.schedule_update_ha_state()
+            else:
+                if status is None:
+                    status = {}
+                if self._status != status:
+                    self._status = status.copy()
+                    if status:
+                        self.status_updated()
+
+                    # Update HA
+                    self.schedule_update_ha_state()
 
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
 

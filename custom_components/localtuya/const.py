@@ -8,11 +8,12 @@ DATA_CLOUD = "cloud_data"
 # Platforms in this list must support config flows
 PLATFORMS = [
     "binary_sensor",
+    "button",
     "climate",
     "cover",
     "fan",
     "light",
-    "number",
+    "number",    
     "select",
     "sensor",
     "switch",
@@ -128,6 +129,11 @@ CONF_STEPSIZE_VALUE = "step_size"
 # select
 CONF_OPTIONS = "select_options"
 CONF_OPTIONS_FRIENDLY = "select_options_friendly"
+
+# IR Button
+CONF_IR_BUTTON = "ir_pronto_code"
+CONF_IR_BUTTON_FRIENDLY = "ir_button_name"
+CONF_IR_DP_ID = "ir_dp_id"
 
 # States
 ATTR_STATE = "raw_state"

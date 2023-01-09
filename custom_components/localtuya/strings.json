@@ -23,7 +23,7 @@
             },
             "power_outlet": {
                 "title": "Add subswitch",
-		"description": "You are about to add subswitch number `{number}`. If you want to add another, tick `Add another switch` before continuing.",
+                "description": "You are about to add subswitch number `{number}`. If you want to add another, tick `Add another switch` before continuing.",
                 "data": {
                     "id": "ID",
                     "name": "Name",
@@ -101,10 +101,10 @@
                     "fan_speed_min": "minimum fan speed integer",
                     "fan_speed_max": "maximum fan speed integer",
                     "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
-                    "fan_direction":"fan direction dps",
+                    "fan_direction": "fan direction dps",
                     "fan_direction_forward": "forward dps string",
                     "fan_direction_reverse": "reverse dps string",
-		    "fan_dps_type": "DP value type",
+                    "fan_dps_type": "DP value type",
                     "current_temperature_dp": "Current Temperature",
                     "target_temperature_dp": "Target Temperature",
                     "temperature_step": "Temperature Step (optional)",
@@ -126,7 +126,10 @@
                     "restore_on_reconnect": "Restore the last set value in HomeAssistant after a lost connection",
                     "min_value": "Minimum Value",
                     "max_value": "Maximum Value",
-                    "step_size": "Minimum increment between numbers"
+                    "step_size": "Minimum increment between numbers",
+                    "ir_pronto_code": "Button Code in Pronto format",
+                    "ir_button_name": "User Friendly button name",
+                    "ir_dp_id": "DP Id used to fire IR Signal"
                 }
             },
             "yaml_import": {

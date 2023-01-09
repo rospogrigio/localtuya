@@ -162,7 +162,7 @@
                     "fan_speed_min": "Velocità del ventilatore minima",
                     "fan_speed_max": "Velocità del ventilatore massima",
                     "fan_speed_ordered_list": "Elenco delle modalità di velocità del ventilatore (sovrascrive velocità min/max)",
-                    "fan_direction":"DP di direzione del ventilatore",
+                    "fan_direction": "DP di direzione del ventilatore",
                     "fan_direction_forward": "Stringa del DP per avanti",
                     "fan_direction_reverse": "Stringa del DP per indietro",
                     "current_temperature_dp": "Temperatura attuale",
@@ -181,7 +181,10 @@
                     "preset_set": "Set di preset (opzionale)",
                     "eco_dp": "DP per Eco (opzionale)",
                     "eco_value": "Valore Eco (opzionale)",
-                    "heuristic_action": "Abilita azione euristica (opzionale)"
+                    "heuristic_action": "Abilita azione euristica (opzionale)",
+                    "ir_pronto_code": "Codice pulsante in formato Pronto",
+                    "ir_button_name": "Nome pulsante intuitivo",
+                    "ir_dp_id": "ID DP utilizzato per attivare il segnale IR"
                 }
             }
         }

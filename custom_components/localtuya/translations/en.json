@@ -164,7 +164,7 @@
                     "fan_speed_min": "minimum fan speed integer",
                     "fan_speed_max": "maximum fan speed integer",
                     "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
-                    "fan_direction":"fan direction dps",
+                    "fan_direction": "fan direction dps",
                     "fan_direction_forward": "forward dps string",
                     "fan_direction_reverse": "reverse dps string",
                     "fan_dps_type": "DP value type",
@@ -190,7 +190,10 @@
                     "min_value": "Minimum Value",
                     "max_value": "Maximum Value",
                     "step_size": "Minimum increment between numbers",
-                    "is_passive_entity": "Passive entity - requires integration to send initialisation value"
+                    "is_passive_entity": "Passive entity - requires integration to send initialisation value",
+                    "ir_pronto_code": "Button Code in Pronto format",
+                    "ir_button_name": "User Friendly button name",
+                    "ir_dp_id": "DP Id used to fire IR Signal"
                 }
             }
         }
