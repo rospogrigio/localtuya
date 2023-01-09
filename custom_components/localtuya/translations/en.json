@@ -34,7 +34,8 @@
         "abort": {
             "already_configured": "Device has already been configured.",
             "device_success": "Device {dev_name} successfully {action}.",
-            "input_value_error": "Wrong Value {value} in field {field}"
+            "input_value_error": "Wrong Value {value} in field {field}",
+            "sensor_uid_error": "Sensor {value} already exists. Edit existing or delete it before add."
         },
         "error": {
             "authentication_failed": "Failed to authenticate.\n{msg}",
