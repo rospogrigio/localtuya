@@ -787,6 +787,16 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
                     return self.async_create_entry(title="", data={})
             else:
+                if CONF_BYTES_RANGE in user_input and user_input[CONF_BYTES_RANGE]:
+                    user_conf_id = int(user_input[CONF_ID].split(" ")[0])
+                    for check_entity in self.device_data[CONF_ENTITIES]:
+                        if check_entity[CONF_ID] == user_conf_id and check_entity[CONF_BYTES_RANGE] ==  user_input[CONF_BYTES_RANGE]:
+                            return self.async_abort(
+                                reason="sensor_uid_error",
+                                description_placeholders={
+                                    "value": str(user_conf_id)+" ("+user_input[CONF_BYTES_RANGE]+")",
+                                },
+                            )
                 user_input[CONF_PLATFORM] = self.selected_platform
                 self.entities.append(strip_dps_values(user_input, self.dps_strings))
                 # new entity added. Let's check if there are more left...
