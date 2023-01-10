@@ -25,18 +25,18 @@ from homeassistant.helpers.restore_state import RestoreEntity
 
 from . import pytuya
 from .const import (
+    ATTR_STATE,
     ATTR_UPDATED_AT,
+    CONF_DEFAULT_VALUE,
     CONF_LOCAL_KEY,
     CONF_MODEL,
+    CONF_PASSIVE_ENTITY,
     CONF_PROTOCOL_VERSION,
+    CONF_RESET_DPIDS,
+    CONF_RESTORE_ON_RECONNECT,
     DATA_CLOUD,
     DOMAIN,
     TUYA_DEVICES,
-    CONF_DEFAULT_VALUE,
-    ATTR_STATE,
-    CONF_RESTORE_ON_RECONNECT,
-    CONF_RESET_DPIDS,
-    CONF_PASSIVE_ENTITY,
 )
 
 _LOGGER = logging.getLogger(__name__)

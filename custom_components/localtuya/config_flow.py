@@ -34,6 +34,7 @@ from .const import (
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
     CONF_LOCAL_KEY,
+    CONF_MANUAL_DPS,
     CONF_MODEL,
     CONF_NO_CLOUD,
     CONF_PRODUCT_NAME,
@@ -45,7 +46,6 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
-    CONF_MANUAL_DPS,
 )
 from .discovery import discover
 
@@ -564,6 +564,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_ENTITIES: [],
                         }
                     )
+                    if len(user_input[CONF_ENTITIES]) == 0:
+                        return self.async_abort(
+                            reason="no_entities",
+                            description_placeholders={},
+                        )
                     if user_input[CONF_ENTITIES]:
                         entity_ids = [
                             int(entity.split(":")[0])
