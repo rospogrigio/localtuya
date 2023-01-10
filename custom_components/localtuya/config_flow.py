@@ -564,6 +564,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_ENTITIES: [],
                         }
                     )
+                    if len(user_input[CONF_ENTITIES]) == 0:
+                        return self.async_abort(
+                            reason="no_entities",
+                            description_placeholders={},
+                        )
                     if user_input[CONF_ENTITIES]:
                         entity_ids = [
                             int(entity.split(":")[0])
