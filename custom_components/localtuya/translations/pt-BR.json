@@ -33,7 +33,8 @@
     "options": {
         "abort": {
             "already_configured": "O dispositivo já foi configurado.",
-            "device_success": "Dispositivo {dev_name} {action} com sucesso."
+            "device_success": "Dispositivo {dev_name} {action} com sucesso.",
+            "no_entities": "Não é possível remover todas as entidades de um dispositivo.\nSe você deseja excluir um dispositivo, insira-o no menu Dispositivos, clique nos 3 pontos no quadro 'Informações do dispositivo' e pressione o botão Excluir."
         },
         "error": {
             "authentication_failed": "Falha ao autenticar.\n{msg}",
