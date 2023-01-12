@@ -206,6 +206,18 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 if status is None:
                     raise Exception("Failed to retrieve status")
 
+                # When a Feit/Tuya RGBW light strip loses power, the initial state
+                # returned here is missing the color value. If HASS didn't also
+                # lose power, it's ok since it retains the last value. But if it
+                # does, later calls to __is_color_rgb_encoded() in light.py fail
+                # (e.g. when changing strip color in the UI) with "Failed to call
+                # service light/turn_on -> TypeError: object of type 'NoneType'
+                # has no len()". This can be fixed by supplying a synthetic value
+                # (although it won't match the real strip's value until HASS
+                # changes the color again).
+                if "24" not in status:
+                    status["24"] = "000003e80111"
+
                 self._interface.start_heartbeat()
                 self.status_updated(status)
 
