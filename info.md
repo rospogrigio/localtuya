@@ -23,7 +23,7 @@ The following Tuya device types are currently supported:
 
 Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
-> **Currently, only Tuya protocols 3.1 and 3.3 are supported (3.4 is not).**
+> **Currently, Tuya protocols from 3.1 to 3.4 are supported.**
 
 This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
 
@@ -164,7 +164,10 @@ logger:
   default: warning
   logs:
     custom_components.localtuya: debug
+    custom_components.localtuya.pytuya: debug
 ```
+
+Then, edit the device that is showing problems and check the "Enable debugging for this device" button.
 
 # Notes:
 
@@ -177,15 +180,15 @@ logger:
 
 * Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
 
-* Support devices that use Tuya protocol v.3.4
-
 # Thanks to:
 
 NameLessJedi https://github.com/NameLessJedi/localtuya-homeassistant and mileperhour https://github.com/mileperhour/localtuya-homeassistant being the major sources of inspiration, and whose code for switches is substantially unchanged.
 
-TradeFace, for being the only one to provide the correct code for communication with the cover (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): https://github.com/TradeFace/tuya/
+TradeFace, for being the only one to provide the correct code for communication with the type_0d devices (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): https://github.com/TradeFace/tuya/
 
 sean6541, for the working (standard) Python Handler for Tuya devices.
+
+jasonacox, for the TinyTuya project from where I could import the code to communicate with devices using protocol 3.4.
 
 postlund, for the ideas, for coding 95% of the refactoring and boosting the quality of this repo to levels hard to imagine (by me, at least) and teaching me A LOT of how things work in Home Assistant.
 
