@@ -176,7 +176,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
     def async_connect(self):
         """Connect to device if not already connected."""
-        if not self._is_closing and self._connect_task is None and not self._interface:
+        if not self._is_closing and (self._connect_task is None or self._connect_task.done()) and not self._interface:
             self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
