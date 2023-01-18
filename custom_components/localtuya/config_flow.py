@@ -140,7 +140,7 @@ def options_schema(entities):
                 ["3.1", "3.2", "3.3", "3.4"]
             ),
             vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
-            vol.Optional(CONF_SCAN_INTERVAL): cv.string,
+            vol.Optional(CONF_SCAN_INTERVAL): int,
             vol.Optional(CONF_MANUAL_DPS): cv.string,
             vol.Optional(CONF_RESET_DPIDS): cv.string,
             vol.Required(

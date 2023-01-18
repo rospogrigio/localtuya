@@ -268,15 +268,19 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._hass, signal, _new_entity_handler
             )
 
-            if (
-                CONF_SCAN_INTERVAL in self._dev_config_entry
-                and self._dev_config_entry[CONF_SCAN_INTERVAL] > 0
-            ):
-                self._unsub_interval = async_track_time_interval(
-                    self._hass,
-                    self._async_refresh,
-                    timedelta(seconds=self._dev_config_entry[CONF_SCAN_INTERVAL]),
-                )
+            if (CONF_SCAN_INTERVAL in self._dev_config_entry):
+                try:
+                    scan_interval = int(self._dev_config_entry[CONF_SCAN_INTERVAL])
+                    self._unsub_interval = async_track_time_interval(
+                        self._hass,
+                        self._async_refresh,
+                        timedelta(seconds=scan_interval),
+                    )
+                except:
+                    self.debug(
+                        "Scan interval must be integer %s.",
+                        self._dev_config_entry[CONF_SCAN_INTERVAL],
+                    )
 
         self._connect_task = None
 
