@@ -270,7 +270,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
             if (
                 CONF_SCAN_INTERVAL in self._dev_config_entry
-                and self._dev_config_entry[CONF_SCAN_INTERVAL] > 0
+                and int(self._dev_config_entry[CONF_SCAN_INTERVAL]) > 0
             ):
                 self._unsub_interval = async_track_time_interval(
                     self._hass,
