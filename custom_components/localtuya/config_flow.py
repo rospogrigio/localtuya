@@ -34,7 +34,9 @@ from .const import (
     CONF_ADD_DEVICE,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
+    CONF_ENABLE_DEBUG,
     CONF_LOCAL_KEY,
+    CONF_MANUAL_DPS,
     CONF_MODEL,
     CONF_NO_CLOUD,
     CONF_PRODUCT_NAME,
@@ -46,7 +48,6 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
-    CONF_MANUAL_DPS,
 )
 from .discovery import discover
 
@@ -83,26 +84,17 @@ CLOUD_SETUP_SCHEMA = vol.Schema(
     }
 )
 
-CONFIGURE_DEVICE_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_FRIENDLY_NAME): str,
-        vol.Required(CONF_LOCAL_KEY): str,
-        vol.Required(CONF_HOST): str,
-        vol.Required(CONF_DEVICE_ID): str,
-        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
-        vol.Optional(CONF_SCAN_INTERVAL): int,
-        vol.Optional(CONF_MANUAL_DPS): str,
-        vol.Optional(CONF_RESET_DPIDS): str,
-    }
-)
 
 DEVICE_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_HOST): cv.string,
         vol.Required(CONF_DEVICE_ID): cv.string,
         vol.Required(CONF_LOCAL_KEY): cv.string,
-        vol.Required(CONF_FRIENDLY_NAME): cv.string,
-        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
+        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
+            ["3.1", "3.2", "3.3", "3.4"]
+        ),
+        vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
         vol.Optional(CONF_SCAN_INTERVAL): int,
         vol.Optional(CONF_MANUAL_DPS): cv.string,
         vol.Optional(CONF_RESET_DPIDS): str,
@@ -142,13 +134,16 @@ def options_schema(entities):
     ]
     return vol.Schema(
         {
-            vol.Required(CONF_FRIENDLY_NAME): str,
-            vol.Required(CONF_HOST): str,
-            vol.Required(CONF_LOCAL_KEY): str,
-            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(["3.1", "3.3"]),
-            vol.Optional(CONF_SCAN_INTERVAL): int,
-            vol.Optional(CONF_MANUAL_DPS): str,
-            vol.Optional(CONF_RESET_DPIDS): str,
+            vol.Required(CONF_FRIENDLY_NAME): cv.string,
+            vol.Required(CONF_HOST): cv.string,
+            vol.Required(CONF_LOCAL_KEY): cv.string,
+            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
+                ["3.1", "3.2", "3.3", "3.4"]
+            ),
+            vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
+            vol.Optional(CONF_SCAN_INTERVAL): cv.string,
+            vol.Optional(CONF_MANUAL_DPS): cv.string,
+            vol.Optional(CONF_RESET_DPIDS): cv.string,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
@@ -248,25 +243,26 @@ async def validate_input(hass: core.HomeAssistant, data):
             data[CONF_DEVICE_ID],
             data[CONF_LOCAL_KEY],
             float(data[CONF_PROTOCOL_VERSION]),
+            data[CONF_ENABLE_DEBUG],
         )
-
+        if CONF_RESET_DPIDS in data:
+            reset_ids_str = data[CONF_RESET_DPIDS].split(",")
+            reset_ids = []
+            for reset_id in reset_ids_str:
+                reset_ids.append(int(reset_id.strip()))
+            _LOGGER.debug(
+                "Reset DPIDs configured: %s (%s)",
+                data[CONF_RESET_DPIDS],
+                reset_ids,
+            )
         try:
             detected_dps = await interface.detect_available_dps()
         except Exception:  # pylint: disable=broad-except
             try:
                 _LOGGER.debug("Initial state update failed, trying reset command")
-                if CONF_RESET_DPIDS in data:
-                    reset_ids_str = data[CONF_RESET_DPIDS].split(",")
-                    reset_ids = []
-                    for reset_id in reset_ids_str:
-                        reset_ids.append(int(reset_id.strip()))
-                    _LOGGER.debug(
-                        "Reset DPIDs configured: %s (%s)",
-                        data[CONF_RESET_DPIDS],
-                        reset_ids,
-                    )
-                await interface.reset(reset_ids)
-                detected_dps = await interface.detect_available_dps()
+                if len(reset_ids) > 0:
+                    await interface.reset(reset_ids)
+                    detected_dps = await interface.detect_available_dps()
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.debug("No DPS able to be detected")
                 detected_dps = {}
@@ -283,7 +279,7 @@ async def validate_input(hass: core.HomeAssistant, data):
             for new_dps in manual_dps_list + (reset_ids or []):
                 # If the DPS not in the detected dps list, then add with a
                 # default value indicating that it has been manually added
-                if new_dps not in detected_dps:
+                if str(new_dps) not in detected_dps:
                     detected_dps[new_dps] = -1
 
     except (ConnectionRefusedError, ConnectionResetError) as ex:
@@ -567,6 +563,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_ENTITIES: [],
                         }
                     )
+                    if len(user_input[CONF_ENTITIES]) == 0:
+                        return self.async_abort(
+                            reason="no_entities",
+                            description_placeholders={},
+                        )
                     if user_input[CONF_ENTITIES]:
                         entity_ids = [
                             int(entity.split(":")[0])
@@ -614,7 +615,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 if dev_id in cloud_devs:
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
                     defaults[CONF_FRIENDLY_NAME] = cloud_devs[dev_id].get(CONF_NAME)
-            schema = schema_defaults(CONFIGURE_DEVICE_SCHEMA, **defaults)
+            schema = schema_defaults(DEVICE_SCHEMA, **defaults)
 
             placeholders = {"for_device": ""}
 
