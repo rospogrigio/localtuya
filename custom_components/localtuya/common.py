@@ -275,7 +275,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._unsub_interval = async_track_time_interval(
                     self._hass,
                     self._async_refresh,
-                    timedelta(seconds=self._dev_config_entry[CONF_SCAN_INTERVAL]),
+                    timedelta(seconds=int(self._dev_config_entry[CONF_SCAN_INTERVAL])),
                 )
 
         self._connect_task = None
