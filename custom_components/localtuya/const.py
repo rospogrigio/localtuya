@@ -125,6 +125,7 @@ CONF_STOP_STATUS = "stop_status"
 CONF_MIN_VALUE = "min_value"
 CONF_MAX_VALUE = "max_value"
 CONF_STEPSIZE_VALUE = "step_size"
+CONF_VALUE_TYPE = "value_type"
 
 # select
 CONF_OPTIONS = "select_options"
