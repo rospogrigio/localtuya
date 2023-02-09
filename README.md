@@ -132,27 +132,35 @@ If you had configured LocalTuya using YAML files, you can delete all its referen
 You can obtain Energy monitoring (voltage, current) in two different ways:
 
 1) Creating individual sensors, each one with the desired name.
-  Note: Voltage and Consumption usually include the first decimal. You will need to scale the parament by 0.1 to get the correct values.
+  Note: Voltage and Consumption usually include the first decimal. You will need to scale the parameter by 0.1 to get the correct values.
 2) Access the voltage/current/current_consumption attributes of a switch, and define template sensors
   Note:  these values are already divided by 10 for Voltage and Consumption
 3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
 ```yaml
-       sensor:
-         - platform: template
-           sensors:
-             tuya-sw01_voltage:
-               value_template: >-
-                 {{ states.switch.sw01.attributes.voltage }}
-               unit_of_measurement: 'V'
-             tuya-sw01_current:
-               value_template: >-
-                 {{ states.switch.sw01.attributes.current }}
-               unit_of_measurement: 'mA'
-             tuya-sw01_current_consumption:
-               value_template: >-
-                 {{ states.switch.sw01.attributes.current_consumption }}
-               unit_of_measurement: 'W'
+     template:
+       - sensor:
+         - name: Wifi Plug 1 Voltage
+           unique_id: tuya-wifi_plug_1_voltage
+           state: >-
+             {{ states.switch.wifi_plug_1.attributes.voltage }}
+           state_class: measurement
+           device_class: voltage
+           unit_of_measurement: 'V'
+         - name: Wifi Plug 1 Current
+           unique_id: tuya-wifi_plug_1_current
+           state: >-
+             {{ states.switch.wifi_plug_1.attributes.current / 1000 }}
+           state_class: measurement
+           device_class: current
+           unit_of_measurement: 'A'
+         - name: Wifi Plug 1 Power
+           unique_id: tuya-wifi_plug_1_current_consumption
+           state: >-
+             {{ states.switch.wifi_plug_1.attributes.current_consumption }}
+           state_class: measurement
+           device_class: power
+           unit_of_measurement: 'W'
 ```
 
 # Debugging
