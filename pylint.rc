@@ -176,7 +176,8 @@ disable=line-too-long,
         dangerous-default-value,
         unreachable,
         unnecessary-pass,
-		broad-except
+        broad-except,
+        raise-missing-from
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
