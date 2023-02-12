@@ -28,6 +28,7 @@ from .const import (
     ATTR_STATE,
     ATTR_UPDATED_AT,
     CONF_DEFAULT_VALUE,
+    CONF_ENABLE_DEBUG,
     CONF_LOCAL_KEY,
     CONF_MODEL,
     CONF_PASSIVE_ENTITY,
@@ -188,6 +189,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._dev_config_entry[CONF_DEVICE_ID],
                 self._local_key,
                 float(self._dev_config_entry[CONF_PROTOCOL_VERSION]),
+                self._dev_config_entry.get(CONF_ENABLE_DEBUG, False),
                 self,
             )
             self._interface.add_dps_to_request(self.dps_to_request)
