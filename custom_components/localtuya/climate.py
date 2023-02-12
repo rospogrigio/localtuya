@@ -39,6 +39,8 @@ from .const import (
     CONF_CURRENT_TEMPERATURE_DP,
     CONF_ECO_DP,
     CONF_ECO_VALUE,
+    CONF_ECO_FORMAT,
+    CONF_NONE_VALUE,
     CONF_HEURISTIC_ACTION,
     CONF_HVAC_ACTION_DP,
     CONF_HVAC_ACTION_SET,
@@ -135,6 +137,8 @@ def flow_schema(dps):
         vol.Optional(CONF_HVAC_ACTION_SET): vol.In(list(HVAC_ACTION_SETS.keys())),
         vol.Optional(CONF_ECO_DP): vol.In(dps),
         vol.Optional(CONF_ECO_VALUE): str,
+        vol.Optional(CONF_ECO_FORMAT, default="str"): vol.In(["str", "bool", "int"]),
+        vol.Optional(CONF_NONE_VALUE): str,
         vol.Optional(CONF_PRESET_DP): vol.In(dps),
         vol.Optional(CONF_PRESET_SET): vol.In(list(PRESET_SETS.keys())),
         vol.Optional(CONF_TEMPERATURE_UNIT): vol.In(
@@ -151,11 +155,11 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     """Tuya climate device."""
 
     def __init__(
-        self,
-        device,
-        config_entry,
-        switchid,
-        **kwargs,
+            self,
+            device,
+            config_entry,
+            switchid,
+            **kwargs,
     ):
         """Initialize a new LocaltuyaClimate."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
@@ -181,6 +185,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         )
         self._conf_eco_dp = self._config.get(CONF_ECO_DP)
         self._conf_eco_value = self._config.get(CONF_ECO_VALUE, "ECO")
+        self._conf_eco_format = self._config.get(CONF_ECO_FORMAT, "str")
+        self._conf_none_value = self._config.get(CONF_NONE_VALUE, "NONE")
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
@@ -212,8 +218,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     def temperature_unit(self):
         """Return the unit of measurement used by the platform."""
         if (
-            self._config.get(CONF_TEMPERATURE_UNIT, DEFAULT_TEMPERATURE_UNIT)
-            == TEMPERATURE_FAHRENHEIT
+                self._config.get(CONF_TEMPERATURE_UNIT, DEFAULT_TEMPERATURE_UNIT)
+                == TEMPERATURE_FAHRENHEIT
         ):
             return TEMP_FAHRENHEIT
         return TEMP_CELSIUS
@@ -239,18 +245,18 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         if self._config.get(CONF_HEURISTIC_ACTION, False):
             if self._hvac_mode == HVAC_MODE_HEAT:
                 if self._current_temperature < (
-                    self._target_temperature - self._precision
+                        self._target_temperature - self._precision
                 ):
                     self._hvac_action = CURRENT_HVAC_HEAT
                 if self._current_temperature == (
-                    self._target_temperature - self._precision
+                        self._target_temperature - self._precision
                 ):
                     if self._hvac_action == CURRENT_HVAC_HEAT:
                         self._hvac_action = CURRENT_HVAC_HEAT
                     if self._hvac_action == CURRENT_HVAC_IDLE:
                         self._hvac_action = CURRENT_HVAC_IDLE
                 if (
-                    self._current_temperature + self._precision
+                        self._current_temperature + self._precision
                 ) > self._target_temperature:
                     self._hvac_action = CURRENT_HVAC_IDLE
             return self._hvac_action
@@ -269,6 +275,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         presets = list(self._conf_preset_set)
         if self._conf_eco_dp:
             presets.append(PRESET_ECO)
+        if PRESET_NONE not in self._conf_preset_set:
+            presets.append(PRESET_NONE)
         return presets
 
     @property
@@ -332,8 +340,15 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
         if preset_mode == PRESET_ECO:
-            await self._device.set_dp(self._conf_eco_value, self._conf_eco_dp)
+            await self._device.set_dp(LocaltuyaClimate.convert_value(
+                self._conf_eco_value, self._conf_eco_format),
+                self._conf_eco_dp)
             return
+        elif preset_mode == PRESET_NONE:
+            # set the none also for the DP Eco
+            await self._device.set_dp(LocaltuyaClimate.convert_value(
+                self._conf_none_value, self._conf_eco_format),
+                self._conf_eco_dp)
         await self._device.set_dp(
             self._conf_preset_set[preset_mode], self._conf_preset_dp
         )
@@ -358,20 +373,27 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
             self._target_temperature = (
-                self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
+                    self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
             )
 
         if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
             self._current_temperature = (
-                self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
+                    self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
             )
 
         if self._has_presets:
             if (
-                self.has_config(CONF_ECO_DP)
-                and self.dps_conf(CONF_ECO_DP) == self._conf_eco_value
+                    self.has_config(CONF_ECO_DP)
+                    and self.dps_conf(CONF_ECO_DP) == LocaltuyaClimate.convert_value(
+                self._conf_eco_value, self._conf_eco_format)
             ):
                 self._preset_mode = PRESET_ECO
+            elif (
+                    self.has_config(CONF_ECO_DP)
+                    and self.dps_conf(CONF_ECO_DP) == LocaltuyaClimate.convert_value(
+                self._conf_none_value, self._conf_eco_format)
+            ):
+                self._preset_mode = PRESET_NONE
             else:
                 for preset, value in self._conf_preset_set.items():  # todo remove
                     if self.dps_conf(CONF_PRESET_DP) == value:
@@ -397,6 +419,18 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         for action, value in self._conf_hvac_action_set.items():
             if self.dps_conf(CONF_HVAC_ACTION_DP) == value:
                 self._hvac_action = action
+
+    @staticmethod
+    def convert_value(value, conversion):
+        try:
+            if conversion == "int":
+                return int(value)
+            elif conversion == "bool":
+                return value.lower() == "true"
+            else:
+                return str(value)
+        except ValueError:
+            return value
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaClimate, flow_schema)

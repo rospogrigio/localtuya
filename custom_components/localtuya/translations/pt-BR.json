@@ -183,6 +183,8 @@
                     "preset_set": "Conjunto de predefinições (opcional)",
                     "eco_dp": "Eco DP (opcional)",
                     "eco_value": "Valor eco (opcional)",
+                    "eco_format": "Eco data format (default: string)",
+                    "none_value": "Valor no predefinições (opcional)",
                     "heuristic_action": "Ativar ação heurística (opcional)"
                 }
             }
