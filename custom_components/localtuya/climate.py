@@ -80,6 +80,12 @@ HVAC_MODE_SETS = {
         HVAC_MODE_HEAT: "1",
         HVAC_MODE_AUTO: "0",
     },
+    "manual/auto/holiday/temporary": {
+        HVAC_MODE_HEAT: "manual",
+        HVAC_MODE_AUTO: "auto",
+        HVAC_MODE_HOLIDAY: "holiday",
+        HVAC_MODE_TEMPORARY: "temporary",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
