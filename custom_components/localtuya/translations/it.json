@@ -94,6 +94,7 @@
                     "friendly_name": "Nome",
                     "host": "Host",
                     "device_id": "ID del dispositivo",
+                    "device_node_id": "Node ID del dispositivo (sub-device)",
                     "local_key": "Chiave locale",
                     "protocol_version": "Versione del protocollo",
                     "enable_debug": "Abilita il debugging per questo device (il debug va abilitato anche in configuration.yaml)",

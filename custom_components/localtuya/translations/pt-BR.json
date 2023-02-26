@@ -94,6 +94,7 @@
                     "friendly_name": "Nome",
                     "host": "Host",
                     "device_id": "ID do dispositivo",
+                    "device_node_id": "Node ID do dispositivo (sub-device)",
                     "local_key": "Local key",
                     "protocol_version": "Versão do protocolo",
                     "enable_debug": "Ative a depuração para este dispositivo (a depuração também deve ser ativada em configuration.yaml)",
