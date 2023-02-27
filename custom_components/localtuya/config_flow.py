@@ -138,6 +138,7 @@ def options_schema(entities):
             vol.Required(CONF_FRIENDLY_NAME): cv.string,
             vol.Required(CONF_HOST): cv.string,
             vol.Required(CONF_LOCAL_KEY): cv.string,
+            vol.Optional(CONF_DEVICE_NODE_ID): cv.string,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
                 ["3.1", "3.2", "3.3", "3.4"]
             ),
