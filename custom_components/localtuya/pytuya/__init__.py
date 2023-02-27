@@ -1152,12 +1152,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if "cid" in json_data:
             if nodeId is not None:
                 json_data["cid"] = nodeId
-                json_data["devId"] = nodeId
             elif self.node_id != "" and self.node_id is not None:
                 json_data["cid"] = self.node_id
-                # The devId needs to be the nodeId, not the actual devId for
-                # subdevices to work.
-                json_data["devId"] = self.node_id
             else:
                 # don't send cid for non-subdevices
                 del json_data["cid"]
