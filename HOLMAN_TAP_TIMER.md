@@ -1288,6 +1288,8 @@ If you have a soil sensor, additionally, you can add these entities:
 16. Last Temperature Read
 17. Last Moisture Read
 
+![entities](https://user-images.githubusercontent.com/11022970/222115635-d3149694-5c2c-4684-a91c-bc92ca146902.png)
+
 Last Temperature and Moisture Reads also support statistics.
 
 ### Advanced Control
@@ -1390,6 +1392,8 @@ cards:
         name: Sat
 ```
 
+![schedule simple](https://user-images.githubusercontent.com/11022970/222115771-447b7f2c-49b1-4cae-8419-cffe8a8b1510.png)
+
 ### Templates
 
 Lastly, some more yaml UI elements so you don't have to click it all together from scratch.
@@ -1485,7 +1489,12 @@ stat_types:
   - state
 ```
 
+![water usage](https://user-images.githubusercontent.com/11022970/222115839-ac2cf943-6a24-49e3-b65a-9ac15508e743.png)
+
+
 And if you install the awesome [paper-buttons-row](https://github.com/jcwillox/lovelace-paper-buttons-row) then you can do this:
+
+![schedule paper buttons](https://user-images.githubusercontent.com/11022970/222115877-d4e44d02-c0ba-4d24-a6de-8b8cc9f479fe.png)
 
 ```
 type: entities
