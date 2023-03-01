@@ -1501,7 +1501,7 @@ type: entities
 entities:
   - type: custom:paper-buttons-row
     buttons:
-      - entity: switch.wx1_hedge_start_a_sun_switch
+      - entity: switch.wx1_start_a_sun_switch
         name: Sun
         icon: false
         state_styles:
@@ -1511,7 +1511,7 @@ entities:
           'off':
             button:
               color: grey
-      - entity: switch.wx1_hedge_start_a_mon_switch
+      - entity: switch.wx1_start_a_mon_switch
         name: Mon
         icon: false
         state_styles:
@@ -1521,7 +1521,7 @@ entities:
           'off':
             button:
               color: grey
-      - entity: switch.wx1_hedge_start_a_tue_switch
+      - entity: switch.wx1_start_a_tue_switch
         name: Tue
         icon: false
         state_styles:
@@ -1531,7 +1531,7 @@ entities:
           'off':
             button:
               color: grey
-      - entity: switch.wx1_hedge_start_a_wed_switch
+      - entity: switch.wx1_start_a_wed_switch
         name: Wed
         icon: false
         state_styles:
@@ -1541,7 +1541,7 @@ entities:
           'off':
             button:
               color: grey
-      - entity: switch.wx1_hedge_start_a_thu_switch
+      - entity: switch.wx1_start_a_thu_switch
         name: Thu
         icon: false
         state_styles:
@@ -1551,7 +1551,7 @@ entities:
           'off':
             button:
               color: grey
-      - entity: switch.wx1_hedge_start_a_fri_switch
+      - entity: switch.wx1_start_a_fri_switch
         name: Fri
         icon: false
         state_styles:
@@ -1561,7 +1561,7 @@ entities:
           'off':
             button:
               color: grey
-      - entity: switch.wx1_hedge_start_a_sat_switch
+      - entity: switch.wx1_start_a_sat_switch
         name: Sat
         icon: false
         state_styles:
@@ -1573,7 +1573,7 @@ entities:
               color: grey
   - type: custom:paper-buttons-row
     buttons:
-      - entity: switch.wx1_hedge_start_a_switch
+      - entity: switch.wx1_start_a_switch
         layout: icon|state
         position: left
         state_icons:
@@ -1591,13 +1591,13 @@ entities:
         state_text:
           'on': 'On'
           'off': 'Off'
-      - entity: input_datetime.wx1_hedge_start_a_start_time
+      - entity: input_datetime.wx1_start_a_start_time
         icon: false
         name: Start at
         styles:
           button:
             color: grey
-      - entity: input_datetime.wx1_hedge_start_a_start_time
+      - entity: input_datetime.wx1_start_a_start_time
         icon: false
         name: >-
           {{ state_attr(config.entity,'timestamp') | timestamp_custom('%I:%M%p',
@@ -1605,13 +1605,13 @@ entities:
         styles:
           button:
             color: blue
-      - entity: input_datetime.wx1_hedge_start_a_start_time
+      - entity: input_datetime.wx1_start_a_start_time
         icon: false
         name: and run for
         styles:
           button:
             color: grey
-      - entity: input_datetime.wx1_hedge_start_a_runtime
+      - entity: input_datetime.wx1_start_a_runtime
         icon: false
         name: >-
           {{ state_attr(config.entity,'timestamp') | timestamp_custom('%H:%M
@@ -1620,13 +1620,13 @@ entities:
           button:
             color: blue
   - type: divider
-  - entity: number.hedge_manual_watering_setting_mins
+  - entity: number.wx1_manual_watering_setting_mins
     icon: mdi:clock
     name: "Manual Watering Time"
     extend_paper_buttons_row:
       position: "right"
       buttons:
-      - entity: input_datetime.wx1_hedge_start_a_start_time
+      - entity: input_datetime.wx1_start_a_start_time
         icon: false
         name: min
         styles:
@@ -1634,12 +1634,12 @@ entities:
             color: grey
   - type: custom:paper-buttons-row
     buttons:
-      - entity: sensor.wx1_hedge_irrigation_status
+      - entity: sensor.wx1_irrigation_status
         layout: icon|state
         styles:
           button:
             color: grey
-      - entity: switch.wx1_hedge_manual_switch
+      - entity: switch.wx1_manual_switch
         layout: icon|state
         icon: false
         state_text: 
