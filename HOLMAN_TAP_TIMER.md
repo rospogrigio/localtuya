@@ -32,7 +32,7 @@ Use manual DPs:
 sensor
 DPS 101
 WX1 Soil Temperature
-unit 캜
+unit 째C
 class temperature
 
 sensor
@@ -111,7 +111,7 @@ select
 id 119
 WX1 Sensor Units
 select_options 1;2
-select_options_friendly L/캜;Gal/캟
+select_options_friendly L/째C;Gal/째F
 
 binary_sensor
 id 115
@@ -194,7 +194,7 @@ select
 id 119
 WX1 Sensor Units
 select_options 1;2
-select_options_friendly L/캜;Gal/캟
+select_options_friendly L/째C;Gal/째F
 
 binary_sensor
 id 125
@@ -564,7 +564,7 @@ If you have the sensor attached, add these:
         {{ "Unavailable" if states('var.wx1_temperature_count_buffer') == "unavailable" else dataw.witems[0] }}
       state_class: measurement
       device_class: temperature
-      unit_of_measurement: 캜
+      unit_of_measurement: 째C
 ```
 
 ### Adding controls
@@ -1483,6 +1483,159 @@ entities:
 title: Water Usage Per Day
 stat_types:
   - state
+```
+
+And if you install the awesome [paper-buttons-row](https://github.com/jcwillox/lovelace-paper-buttons-row) then you can do this:
+
+```
+type: entities
+entities:
+  - type: custom:paper-buttons-row
+    buttons:
+      - entity: switch.wx1_hedge_start_a_sun_switch
+        name: Sun
+        icon: false
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+      - entity: switch.wx1_hedge_start_a_mon_switch
+        name: Mon
+        icon: false
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+      - entity: switch.wx1_hedge_start_a_tue_switch
+        name: Tue
+        icon: false
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+      - entity: switch.wx1_hedge_start_a_wed_switch
+        name: Wed
+        icon: false
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+      - entity: switch.wx1_hedge_start_a_thu_switch
+        name: Thu
+        icon: false
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+      - entity: switch.wx1_hedge_start_a_fri_switch
+        name: Fri
+        icon: false
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+      - entity: switch.wx1_hedge_start_a_sat_switch
+        name: Sat
+        icon: false
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+  - type: custom:paper-buttons-row
+    buttons:
+      - entity: switch.wx1_hedge_start_a_switch
+        layout: icon|state
+        position: left
+        state_icons:
+          'on': mdi:timelapse
+          'off': mdi:circle
+        state_styles:
+          'on':
+            button:
+              color: blue
+          'off':
+            button:
+              color: grey
+            state:
+              color: blue
+        state_text:
+          'on': 'On'
+          'off': 'Off'
+      - entity: input_datetime.wx1_hedge_start_a_start_time
+        icon: false
+        name: Start at
+        styles:
+          button:
+            color: grey
+      - entity: input_datetime.wx1_hedge_start_a_start_time
+        icon: false
+        name: >-
+          {{ state_attr(config.entity,'timestamp') | timestamp_custom('%I:%M%p',
+          false)  }}
+        styles:
+          button:
+            color: blue
+      - entity: input_datetime.wx1_hedge_start_a_start_time
+        icon: false
+        name: and run for
+        styles:
+          button:
+            color: grey
+      - entity: input_datetime.wx1_hedge_start_a_runtime
+        icon: false
+        name: >-
+          {{ state_attr(config.entity,'timestamp') | timestamp_custom('%H:%M
+          hours', false)  }}
+        styles:
+          button:
+            color: blue
+  - type: divider
+  - entity: number.hedge_manual_watering_setting_mins
+    icon: mdi:clock
+    name: "Manual Watering Time"
+    extend_paper_buttons_row:
+      position: "right"
+      buttons:
+      - entity: input_datetime.wx1_hedge_start_a_start_time
+        icon: false
+        name: min
+        styles:
+          button:
+            color: grey
+  - type: custom:paper-buttons-row
+    buttons:
+      - entity: sensor.wx1_hedge_irrigation_status
+        layout: icon|state
+        styles:
+          button:
+            color: grey
+      - entity: switch.wx1_hedge_manual_switch
+        layout: icon|state
+        icon: false
+        state_text: 
+          'off': 'Run Now'
+          'on': 'Stop'
 ```
 
 That's all folks.
