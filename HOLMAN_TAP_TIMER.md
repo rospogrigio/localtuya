@@ -1494,10 +1494,11 @@ stat_types:
 
 And if you install the awesome [paper-buttons-row](https://github.com/jcwillox/lovelace-paper-buttons-row) then you can do this:
 
-![schedule paper buttons](https://user-images.githubusercontent.com/11022970/222115877-d4e44d02-c0ba-4d24-a6de-8b8cc9f479fe.png)
+![image](https://user-images.githubusercontent.com/11022970/222301946-c10898eb-182a-499d-bad1-7506c9c084d8.png)
 
 ```
 type: entities
+title: Tap Timer
 entities:
   - type: custom:paper-buttons-row
     buttons:
@@ -1620,20 +1621,25 @@ entities:
           button:
             color: blue
   - type: divider
-  - entity: number.wx1_manual_watering_setting_mins
+  - entity: number.manual_watering_setting_mins
     icon: mdi:clock
-    name: "Manual Watering Time"
+    name: Manual Watering Time
     extend_paper_buttons_row:
-      position: "right"
+      position: right
       buttons:
-      - entity: input_datetime.wx1_start_a_start_time
-        icon: false
-        name: min
+        - entity: input_datetime.wx1_start_a_start_time
+          icon: false
+          name: min
+          styles:
+            button:
+              color: grey
+  - type: custom:paper-buttons-row
+    buttons:
+      - entity: sensor.wx1_battery_status
+        layout: icon|state
         styles:
           button:
             color: grey
-  - type: custom:paper-buttons-row
-    buttons:
       - entity: sensor.wx1_irrigation_status
         layout: icon|state
         styles:
@@ -1642,9 +1648,12 @@ entities:
       - entity: switch.wx1_manual_switch
         layout: icon|state
         icon: false
-        state_text: 
-          'off': 'Run Now'
-          'on': 'Stop'
+        state_text:
+          'off': Run Now
+          'on': Stop
+        styles:
+          button:
+            color: blue
 ```
 
 That's all folks.
