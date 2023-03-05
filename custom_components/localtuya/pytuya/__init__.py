@@ -186,14 +186,14 @@ payload_dict = {
             "command": {"gwId": "", "devId": "", "uid": "", "t": ""},
         },
         CONTROL: {  # Set Control Values on Device
-            "command": {"devId": "", "uid": "", "t": ""},
+            "command": {"devId": "", "uid": "", "t": "", "cid": ""},
         },
         STATUS: {  # Get Status from Device
-            "command": {"gwId": "", "devId": ""},
+            "command": {"gwId": "", "devId": "", "cid": ""},
         },
         HEART_BEAT: {"command": {"gwId": "", "devId": ""}},
         DP_QUERY: {  # Get Data Points from Device
-            "command": {"gwId": "", "devId": "", "uid": "", "t": ""},
+            "command": {"gwId": "", "devId": "", "uid": "", "t": "", "cid": ""},
         },
         CONTROL_NEW: {"command": {"devId": "", "uid": "", "t": ""}},
         DP_QUERY_NEW: {"command": {"devId": "", "uid": "", "t": ""}},
@@ -205,7 +205,7 @@ payload_dict = {
     "type_0d": {
         DP_QUERY: {  # Get Data Points from Device
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command for some reason
-            "command": {"devId": "", "uid": "", "t": ""},
+            "command": {"devId": "", "uid": "", "t": "", "cid": ""},
         },
     },
     "v3.4": {
@@ -551,7 +551,14 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     """Implementation of the Tuya protocol."""
 
     def __init__(
-        self, dev_id, local_key, protocol_version, enable_debug, on_connected, listener
+        self,
+        dev_id,
+        local_key,
+        node_id,
+        protocol_version,
+        enable_debug,
+        on_connected,
+        listener,
     ):
         """
         Initialize a new TuyaInterface.
@@ -568,6 +575,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.loop = asyncio.get_running_loop()
         self.set_logger(_LOGGER, dev_id, enable_debug)
         self.id = dev_id
+        self.node_id = node_id
         self.local_key = local_key.encode("latin1")
         self.real_local_key = self.local_key
         self.dev_type = "type_0a"
@@ -621,6 +629,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self.seqno = msg.seqno + 1
             decoded_message = self._decode_payload(msg.payload)
             if "dps" in decoded_message:
+                if "cid" in decoded_message and decoded_message["cid"] != self.node_id:
+                    return
                 self.dps_cache.update(decoded_message["dps"])
 
             listener = self.listener and self.listener()
@@ -851,8 +861,18 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # list of available dps experience shows that the dps available are usually
         # in the ranges [1-25] and [100-110] need to split the bruteforcing in
         # different steps due to request payload limitation (max. length = 255)
+        # added a few more ranges discovered for Holman WX1 and WX2 tap timers
         self.dps_cache = {}
-        ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
+        ranges = [
+            (2, 11),
+            (11, 21),
+            (21, 31),
+            (100, 110),
+            (111, 121),
+            (122, 130),
+            (150, 160),
+            (161, 170),
+        ]
 
         for dps_range in ranges:
             # dps 1 must always be sent, otherwise it might fail in case no dps is found
@@ -1066,7 +1086,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # self.debug("payload encrypted with key %r => %r", self.local_key, binascii.hexlify(buffer))
         return buffer
 
-    def _generate_payload(self, command, data=None, gwId=None, devId=None, uid=None):
+    def _generate_payload(
+        self, command, data=None, gwId=None, devId=None, uid=None, nodeId=None
+    ):
         """
         Generate the payload to send.
 
@@ -1083,11 +1105,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         if command in payload_dict[self.dev_type]:
             if "command" in payload_dict[self.dev_type][command]:
-                json_data = payload_dict[self.dev_type][command]["command"]
+                json_data = payload_dict[self.dev_type][command]["command"].copy()
             if "command_override" in payload_dict[self.dev_type][command]:
                 command_override = payload_dict[self.dev_type][command][
                     "command_override"
-                ]
+                ].copy()
 
         if self.dev_type != "type_0a":
             if (
@@ -1095,20 +1117,22 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 and command in payload_dict["type_0a"]
                 and "command" in payload_dict["type_0a"][command]
             ):
-                json_data = payload_dict["type_0a"][command]["command"]
+                json_data = payload_dict["type_0a"][command]["command"].copy()
             if (
                 command_override is None
                 and command in payload_dict["type_0a"]
                 and "command_override" in payload_dict["type_0a"][command]
             ):
-                command_override = payload_dict["type_0a"][command]["command_override"]
+                command_override = payload_dict["type_0a"][command][
+                    "command_override"
+                ].copy()
 
         if command_override is None:
             command_override = command
         if json_data is None:
             # I have yet to see a device complain about included but unneeded attribs, but they *will*
             # complain about missing attribs, so just include them all unless otherwise specified
-            json_data = {"gwId": "", "devId": "", "uid": "", "t": ""}
+            json_data = {"gwId": "", "devId": "", "uid": "", "t": "", "cid": ""}
 
         if "gwId" in json_data:
             if gwId is not None:
@@ -1125,6 +1149,14 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 json_data["uid"] = uid
             else:
                 json_data["uid"] = self.id
+        if "cid" in json_data:
+            if nodeId is not None:
+                json_data["cid"] = nodeId
+            elif self.node_id != "" and self.node_id is not None:
+                json_data["cid"] = self.node_id
+            else:
+                # don't send cid for non-subdevices
+                del json_data["cid"]
         if "t" in json_data:
             if json_data["t"] == "int":
                 json_data["t"] = int(time.time())
@@ -1162,6 +1194,7 @@ async def connect(
     local_key,
     protocol_version,
     enable_debug,
+    node_id=None,
     listener=None,
     port=6668,
     timeout=5,
@@ -1173,6 +1206,7 @@ async def connect(
         lambda: TuyaProtocol(
             device_id,
             local_key,
+            node_id,
             protocol_version,
             enable_debug,
             on_connected,

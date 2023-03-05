@@ -36,6 +36,7 @@ from .const import (
     CONF_EDIT_DEVICE,
     CONF_ENABLE_DEBUG,
     CONF_LOCAL_KEY,
+    CONF_DEVICE_NODE_ID,
     CONF_MANUAL_DPS,
     CONF_MODEL,
     CONF_NO_CLOUD,
@@ -90,6 +91,7 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_FRIENDLY_NAME): cv.string,
         vol.Required(CONF_HOST): cv.string,
         vol.Required(CONF_DEVICE_ID): cv.string,
+        vol.Optional(CONF_DEVICE_NODE_ID): cv.string,
         vol.Required(CONF_LOCAL_KEY): cv.string,
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
             ["3.1", "3.2", "3.3", "3.4"]
@@ -137,6 +139,7 @@ def options_schema(entities):
             vol.Required(CONF_FRIENDLY_NAME): cv.string,
             vol.Required(CONF_HOST): cv.string,
             vol.Required(CONF_LOCAL_KEY): cv.string,
+            vol.Optional(CONF_DEVICE_NODE_ID): cv.string,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
                 ["3.1", "3.2", "3.3", "3.4"]
             ),
@@ -250,6 +253,7 @@ async def validate_input(hass: core.HomeAssistant, data):
             data[CONF_LOCAL_KEY],
             float(data[CONF_PROTOCOL_VERSION]),
             data[CONF_ENABLE_DEBUG],
+            data[CONF_DEVICE_NODE_ID],
         )
         if CONF_RESET_DPIDS in data:
             reset_ids_str = data[CONF_RESET_DPIDS].split(",")
@@ -635,6 +639,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             defaults[CONF_PROTOCOL_VERSION] = "3.3"
             defaults[CONF_HOST] = ""
             defaults[CONF_DEVICE_ID] = ""
+            defaults[CONF_DEVICE_NODE_ID] = ""
             defaults[CONF_LOCAL_KEY] = ""
             defaults[CONF_FRIENDLY_NAME] = ""
             if dev_id is not None:
@@ -642,6 +647,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 device = self.discovered_devices[dev_id]
                 defaults[CONF_HOST] = device.get("ip")
                 defaults[CONF_DEVICE_ID] = device.get("gwId")
+                defaults[CONF_DEVICE_NODE_ID] = device.get("cid")
                 defaults[CONF_PROTOCOL_VERSION] = device.get("version")
                 cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
                 if dev_id in cloud_devs:
