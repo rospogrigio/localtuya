@@ -1105,11 +1105,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         if command in payload_dict[self.dev_type]:
             if "command" in payload_dict[self.dev_type][command]:
-                json_data = payload_dict[self.dev_type][command]["command"].copy()
+                json_data = payload_dict[self.dev_type][command]["command"]
             if "command_override" in payload_dict[self.dev_type][command]:
                 command_override = payload_dict[self.dev_type][command][
                     "command_override"
-                ].copy()
+                ]
 
         if self.dev_type != "type_0a":
             if (
@@ -1117,7 +1117,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 and command in payload_dict["type_0a"]
                 and "command" in payload_dict["type_0a"][command]
             ):
-                json_data = payload_dict["type_0a"][command]["command"].copy()
+                json_data = payload_dict["type_0a"][command]["command"]
             if (
                 command_override is None
                 and command in payload_dict["type_0a"]
@@ -1125,7 +1125,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             ):
                 command_override = payload_dict["type_0a"][command][
                     "command_override"
-                ].copy()
+                ]
 
         if command_override is None:
             command_override = command
