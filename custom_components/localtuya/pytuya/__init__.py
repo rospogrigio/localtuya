@@ -1150,7 +1150,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             else:
                 json_data["uid"] = self.id
         if "cid" in json_data:
-            if nodeId is not None:
+            if nodeId != "" and nodeId is not None:
                 json_data["cid"] = nodeId
             elif self.node_id != "" and self.node_id is not None:
                 json_data["cid"] = self.node_id
