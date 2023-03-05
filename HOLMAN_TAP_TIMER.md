@@ -13,7 +13,7 @@ I tested it as far, as I could, and so far:
 - So far it did not appear as breaking change for devices without gateway.
 
 <b>Notes:</b>
-CID/Node ID can be found by quering Tuya API (I use tuya-cli). They are not all the same.
+CID/Node ID can be found by querying the Tuya API (I use tuya-cli). They are not all the same.
 Timer countdown counts down as it goes but gains back initial position after stop.
 
 # Installation
