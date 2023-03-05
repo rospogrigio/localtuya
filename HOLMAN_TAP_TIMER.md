@@ -13,7 +13,7 @@ I tested it as far, as I could, and so far:
 - So far it did not appear as breaking change for devices without gateway.
 
 <b>Notes:</b>
-CID/Node ID can be found by quering Tuya API (I use tuya-cli). They are not all the same.
+CID/Node ID can be found by querying the Tuya API (I use tuya-cli). They are not all the same.
 Timer countdown counts down as it goes but gains back initial position after stop.
 
 # Installation
@@ -22,12 +22,32 @@ Timer countdown counts down as it goes but gains back initial position after sto
 
 1. You can watch my [Pull Request](https://github.com/rospogrigio/localtuya/pull/1305) and install the latest version of localtuya then, or install my fork via HACS.
 2. Set up localtuya as per the README.md instructions. It's a bit of work.
-3. Add your Holman device(s), one by one. Make sure to enter the Node ID correctly. Use the following configuration:
+3. Add your Holman device(s), one by one. Make sure to enter the Node ID correctly.
+
+### How do I determine node ID and available DPs?
+
+The best way is via `tuya-cli wizard`; which will present you the Node IDs.
+
+After you know the id and key, you can query the available DPs via
+```
+tuya-cli get --id bfff9ad0b3415a47d144qi -s --key (...) --cid BD1 --ip (...) --full --protocol-version 3.3
+```
+
+Below are some of the common DP/configuration sets.
+
+### Australian WX1 Configuration(s)
+
+Use manual DPS:
+`101,102,103,105,106,107,108,113,115,116,117,120,125,127`
+
+### EU WX1 Configuration(s)
+
+Use the following configuration:
 
 Use manual DPs:
 `101,102,103,105,106,107,108,110,111,112,113,114,115,117,119,121,122,123,125,128`
 
-### With sensor:
+#### With sensor:
 ```
 sensor
 DPS 101
@@ -130,7 +150,7 @@ id 125
 WX1 Postponed Due To Rain
 ```
 
-### Without sensor
+#### Without sensor
 ```
 sensor
 id 103

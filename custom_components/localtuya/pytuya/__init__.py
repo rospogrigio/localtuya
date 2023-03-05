@@ -859,9 +859,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Return which datapoints are supported by the device."""
         # type_0d devices need a sort of bruteforce querying in order to detect the
         # list of available dps experience shows that the dps available are usually
-        # in the ranges [1-25] and [100-110] need to split the bruteforcing in
+        # in the ranges [1-25] and [100-170] need to split the bruteforcing in
         # different steps due to request payload limitation (max. length = 255)
-        # added a few more ranges discovered for Holman WX1 and WX2 tap timers
+        # ranges above 110 were discovered for Holman WX1 and WX2 tap timers
         self.dps_cache = {}
         ranges = [
             (2, 11),
@@ -1105,7 +1105,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         if command in payload_dict[self.dev_type]:
             if "command" in payload_dict[self.dev_type][command]:
-                json_data = payload_dict[self.dev_type][command]["command"]
+                json_data = payload_dict[self.dev_type][command]["command"].copy()
             if "command_override" in payload_dict[self.dev_type][command]:
                 command_override = payload_dict[self.dev_type][command][
                     "command_override"
@@ -1117,15 +1117,13 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 and command in payload_dict["type_0a"]
                 and "command" in payload_dict["type_0a"][command]
             ):
-                json_data = payload_dict["type_0a"][command]["command"]
+                json_data = payload_dict["type_0a"][command]["command"].copy()
             if (
                 command_override is None
                 and command in payload_dict["type_0a"]
                 and "command_override" in payload_dict["type_0a"][command]
             ):
-                command_override = payload_dict["type_0a"][command][
-                    "command_override"
-                ]
+                command_override = payload_dict["type_0a"][command]["command_override"]
 
         if command_override is None:
             command_override = command
