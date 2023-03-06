@@ -24,10 +24,11 @@ assignees: ''
   Provide details about your environment.
 -->
 - Localtuya version: <!-- plugin version from HACS, master, commit id --> 
-- Last working localtuya version (if known and relevant): 
 - Home Assistant Core version: <!-- Configuration => Info --> 
-- [] Are you using the Home Assistant Tuya Cloud component ? <!-- if yes, put a x between the two [] => [x] -->
-- [] Are you using the Tuya App in parallel ? <!-- if yes, put a x between the two [] => [x] -->
+- [] Does the device work using the Home Assistant Tuya Cloud component ? <!-- if yes, put a x between the two [] => [x] -->
+- [] Does the device work using the Tinytuya (https://github.com/jasonacox/tinytuya) command line tool ? <!-- if yes, put a x between the two [] => [x] -->
+- [] Was the device working with earlier versions of localtuya ? Which one? <!-- if yes, put a x between the two [] => [x] -->
+- [] Are you using the Tuya/SmartLife App in parallel ? <!-- if yes, put a x between the two [] => [x] -->
 
 ## Steps to reproduce
 <!--
@@ -37,14 +38,6 @@ assignees: ''
 2. 
 3.
 
-## Configuration `configuration.yaml` or `config_flow`
-<!--
-  Fill this with the yaml or config_flow configuration of the failing device. Even if it seems unimportant to you. 
-  Remove personal information and local key.
--->
-```yaml
-
-```
 
 ## DP dump
 <!-- 
@@ -52,17 +45,20 @@ assignees: ''
   You can also try to qualify your device using the procedure described https://github.com/rospogrigio/localtuya/wiki/Qualifying-a-device
 -->
 
-## Provide Home Assistant taceback/logs
+## Provide Home Assistant traceback/logs
 <!--
-  Provide traces if they are relevant. If the problem is reproducible, try to set the log level to debug for this component at least:
-  In Dev Tools => Services:
+  Provide logs if they are relevant. In detail, it is useful to be able to compare working with non-working situations, such as HA logs compared to the output of the tuyadebug script or the tinytuya CLI tool. 
+  To increase the debugging level of HA for the devices, check the "enable debug" button when configuring the device, and set the log level to debug for this component at least:
+  In configuration.yaml:
 
   logger.set_level
   custom_components.localtuya: debug
-
+  custom_components.localtuya.pytuya: debug
 -->
-```txt
-
 ```
+put your log output between these markers
+```
+
+
 ## Additional information
 <!-- Put here any information that you think it may be relevant -->

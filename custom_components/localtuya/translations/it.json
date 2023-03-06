@@ -33,7 +33,8 @@
     "options": {
         "abort": {
             "already_configured": "Il dispositivo è già stato configurato.",
-            "device_success": "Dispositivo {dev_name} {action} con successo."
+            "device_success": "Dispositivo {dev_name} {action} con successo.",
+            "no_entities": "Non si possono rimuovere tutte le entities da un device.\nPer rimuovere un device, entrarci nel menu Devices, premere sui 3 punti nel riquadro 'Device info', e premere il pulsante Delete."
         },
         "error": {
             "authentication_failed": "Autenticazione fallita. Errore:\n{msg}",
@@ -95,6 +96,7 @@
                     "device_id": "ID del dispositivo",
                     "local_key": "Chiave locale",
                     "protocol_version": "Versione del protocollo",
+                    "enable_debug": "Abilita il debugging per questo device (il debug va abilitato anche in configuration.yaml)",
                     "scan_interval": "Intervallo di scansione (secondi, solo quando non si aggiorna automaticamente)",
                     "entities": "Entities (deseleziona un'entity per rimuoverla)"
                 }
