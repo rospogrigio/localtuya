@@ -140,7 +140,7 @@ def options_schema(entities):
                 ["3.1", "3.2", "3.3", "3.4"]
             ),
             vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
-            vol.Optional(CONF_SCAN_INTERVAL): cv.string,
+            vol.Optional(CONF_SCAN_INTERVAL): int,
             vol.Optional(CONF_MANUAL_DPS): cv.string,
             vol.Optional(CONF_RESET_DPIDS): cv.string,
             vol.Required(
@@ -256,20 +256,21 @@ async def validate_input(hass: core.HomeAssistant, data):
             )
         try:
             detected_dps = await interface.detect_available_dps()
-        except Exception:  # pylint: disable=broad-except
+        except Exception as ex:
             try:
-                _LOGGER.debug("Initial state update failed, trying reset command")
+                _LOGGER.debug(
+                    "Initial state update failed (%s), trying reset command", ex
+                )
                 if len(reset_ids) > 0:
                     await interface.reset(reset_ids)
                     detected_dps = await interface.detect_available_dps()
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.debug("No DPS able to be detected")
+            except Exception as ex:
+                _LOGGER.debug("No DPS able to be detected: %s", ex)
                 detected_dps = {}
 
         # if manual DPs are set, merge these.
         _LOGGER.debug("Detected DPS: %s", detected_dps)
         if CONF_MANUAL_DPS in data:
-
             manual_dps_list = [dps.strip() for dps in data[CONF_MANUAL_DPS].split(",")]
             _LOGGER.debug(
                 "Manual DPS Setting: %s (%s)", data[CONF_MANUAL_DPS], manual_dps_list
@@ -493,8 +494,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     errors["base"] = "address_in_use"
                 else:
                     errors["base"] = "discovery_failed"
-            except Exception:  # pylint: disable= broad-except
-                _LOGGER.exception("discovery failed")
+            except Exception as ex:
+                _LOGGER.exception("discovery failed: %s", ex)
                 errors["base"] = "discovery_failed"
 
         devices = {
@@ -586,16 +587,28 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "invalid_auth"
             except EmptyDpsList:
                 errors["base"] = "empty_dps"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
+            except Exception as ex:
+                _LOGGER.exception("Unexpected exception: %s", ex)
                 errors["base"] = "unknown"
 
         defaults = {}
         if self.editing_device:
             # If selected device exists as a config entry, load config from it
             defaults = self.config_entry.data[CONF_DEVICES][dev_id].copy()
-            schema = schema_defaults(options_schema(self.entities), **defaults)
+            cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
             placeholders = {"for_device": f" for device `{dev_id}`"}
+            if dev_id in cloud_devs:
+                cloud_local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
+                if defaults[CONF_LOCAL_KEY] != cloud_local_key:
+                    _LOGGER.info(
+                        "New local_key detected: new %s vs old %s",
+                        cloud_local_key,
+                        defaults[CONF_LOCAL_KEY],
+                    )
+                    defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
+                    note = "\nNOTE: a new local_key has been retrieved using cloud API"
+                    placeholders = {"for_device": f" for device `{dev_id}`.{note}"}
+            schema = schema_defaults(options_schema(self.entities), **defaults)
         else:
             defaults[CONF_PROTOCOL_VERSION] = "3.3"
             defaults[CONF_HOST] = ""

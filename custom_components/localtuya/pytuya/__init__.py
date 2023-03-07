@@ -444,11 +444,14 @@ class MessageDispatcher(ContextualLogger):
         if seqno in self.listeners:
             raise Exception(f"listener exists for {seqno}")
 
-        self.debug("Command %d waiting for sequence number %d", cmd, seqno)
+        self.debug("Command %d waiting for seq. number %d", cmd, seqno)
         self.listeners[seqno] = asyncio.Semaphore(0)
         try:
             await asyncio.wait_for(self.listeners[seqno].acquire(), timeout=timeout)
         except asyncio.TimeoutError:
+            self.warning(
+                "Command %d timed out waiting for sequence number %d", cmd, seqno
+            )
             del self.listeners[seqno]
             raise
 
@@ -478,8 +481,11 @@ class MessageDispatcher(ContextualLogger):
         if msg.seqno in self.listeners:
             # self.debug("Dispatching sequence number %d", msg.seqno)
             sem = self.listeners[msg.seqno]
-            self.listeners[msg.seqno] = msg
-            sem.release()
+            if isinstance(sem, asyncio.Semaphore):
+                self.listeners[msg.seqno] = msg
+                sem.release()
+            else:
+                self.debug("Got additional message without request - skipping: %s", sem)
         elif msg.cmd == HEART_BEAT:
             self.debug("Got heartbeat response")
             if self.HEARTBEAT_SEQNO in self.listeners:
@@ -511,7 +517,7 @@ class MessageDispatcher(ContextualLogger):
             if msg.cmd == CONTROL_NEW:
                 self.debug("Got ACK message for command %d: will ignore it", msg.cmd)
             else:
-                self.error(
+                self.debug(
                     "Got message type %d for unknown listener %d: %s",
                     msg.cmd,
                     msg.seqno,
@@ -917,9 +923,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if not isinstance(payload, str):
                 try:
                     payload = payload.decode()
-                except Exception:
+                except Exception as ex:
                     self.debug("payload was not string type and decoding failed")
-                    return self.error_json(ERR_JSON, payload)
+                    raise DecodeError("payload was not a string: %s" % ex)
+                    # return self.error_json(ERR_JSON, payload)
+
             if "data unvalid" in payload:
                 self.dev_type = "type_0d"
                 self.debug(
@@ -937,7 +945,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             json_payload = json.loads(payload)
         except Exception:
-            json_payload = self.error_json(ERR_JSON, payload)
+            raise DecodeError("could not decrypt data: wrong local_key?")
+            # json_payload = self.error_json(ERR_JSON, payload)
 
         # v3.4 stuffs it into {"data":{"dps":{"1":true}}, ...}
         if (
