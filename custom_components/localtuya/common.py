@@ -187,8 +187,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self,
             )
             self._interface.add_dps_to_request(self.dps_to_request)
-        except Exception:  # pylint: disable=broad-except
-            self.exception(f"Connect to {self._dev_config_entry[CONF_HOST]} failed")
+        except Exception as ex:  # pylint: disable=broad-except
+            self.warning(
+                f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s", ex
+            )
             if self._interface is not None:
                 await self._interface.close()
                 self._interface = None
@@ -196,13 +198,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._interface is not None:
             try:
                 try:
-                   self.debug("Retrieving initial state")
-                   status = await self._interface.status()
-                   if status is None:
-                       raise Exception("Failed to retrieve status")
+                    self.debug("Retrieving initial state")
+                    status = await self._interface.status()
+                    if status is None:
+                        raise Exception("Failed to retrieve status")
 
-                       self._interface.start_heartbeat()
-                       self.status_updated(status)
+                    self._interface.start_heartbeat()
+                    self.status_updated(status)
                 except Exception as ex:
                     if (self._default_reset_dpids is not None) and (
                         len(self._default_reset_dpids) > 0
@@ -222,17 +224,18 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                         self._interface.start_heartbeat()
                         self.status_updated(status)
                     else:
-                       self.error("Initial state update failed, giving up: %r", ex)
-                       if self._interface is not None:
-                           await self._interface.close()
-                           self._interface = None
+                        self.error("Initial state update failed, giving up: %r", ex)
+                        if self._interface is not None:
+                            await self._interface.close()
+                            self._interface = None
 
             except (UnicodeDecodeError, json.decoder.JSONDecodeError) as ex:
                 self.warning("Initial state update failed (%s), trying key update", ex)
                 await self.update_local_key()
+
                 if self._interface is not None:
-                   await self._interface.close()
-                   self._interface = None
+                    await self._interface.close()
+                    self._interface = None
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
