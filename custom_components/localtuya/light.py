@@ -185,7 +185,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def brightness(self):
         """Return the brightness of the light."""
-        if (self.is_color_mode or self.is_white_mode) and self._brightness:
+        if (self.is_color_mode or self.is_white_mode) and self._brightness is not None:
             return map_range(
                 self._brightness, self._lower_brightness, self._upper_brightness, 0, 255
             )
