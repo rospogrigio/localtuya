@@ -34,7 +34,9 @@
         "abort": {
             "already_configured": "Device has already been configured.",
             "device_success": "Device {dev_name} successfully {action}.",
-            "no_entities": "Cannot remove all entities from a device.\nIf you want to delete a device, enter it in the Devices menu, click the 3 dots in the 'Device info' frame, and press the Delete button."
+            "no_entities": "Cannot remove all entities from a device.\nIf you want to delete a device, enter it in the Devices menu, click the 3 dots in the 'Device info' frame, and press the Delete button.",
+            "input_value_error": "Wrong Value {value} in field {field}",
+            "sensor_uid_error": "Sensor {value} already exists. Edit existing or delete it before add."
         },
         "error": {
             "authentication_failed": "Failed to authenticate.\n{msg}",
@@ -96,9 +98,10 @@
                     "device_id": "Device ID",
                     "local_key": "Local key",
                     "protocol_version": "Protocol Version",
-                    "enable_debug": "Enable debugging for this device (debug must be enabled also in configuration.yaml)",
+                    "enable_debug": "Enable debugging for this device (debug must be enabled also in configuration.yaml)",  
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
                     "entities": "Entities (uncheck an entity to remove it)",
+                    "add_entities": "Check to add new entity",
                     "manual_dps_strings": "Manual DPS to add (separated by commas ',') - used when detection is not working (optional)",
                     "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)"
                 }
@@ -115,7 +118,6 @@
                 "title": "Configure entity",
                 "description": "Please fill out the details for {entity} with type `{platform}`. All settings except for `ID` can be changed from the Options page later.",
                 "data": {
-                    "id": "ID",
                     "friendly_name": "Friendly name",
                     "current": "Current",
                     "current_consumption": "Current Consumption",
@@ -129,6 +131,9 @@
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
                     "scaling": "Scaling Factor",
+                    "base64_decode": "Base64 Payload",
+                    "bytes_range": "Value Bytes range ('from[starting from 0]:count', examples: '0:3';'4:2')",
+                    "round_precision": "Round decimals",
                     "state_on": "On Value",
                     "state_off": "Off Value",
                     "powergo_dp": "Power DP (Usually 25 or 2)",

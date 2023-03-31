@@ -34,11 +34,11 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
         self,
         device,
         config_entry,
-        sensorid,
+        config_entity,
         **kwargs,
     ):
         """Initialize the Tuya binary sensor."""
-        super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._is_on = False
 
     @property

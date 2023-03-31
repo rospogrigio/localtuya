@@ -138,11 +138,11 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self,
         device,
         config_entry,
-        lightid,
+        config_entity,
         **kwargs,
     ):
         """Initialize the Tuya light."""
-        super().__init__(device, config_entry, lightid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._state = False
         self._brightness = None
         self._color_temp = None

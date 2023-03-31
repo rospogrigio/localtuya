@@ -91,9 +91,9 @@ def flow_schema(dps):
 class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
     """Tuya vacuum device."""
 
-    def __init__(self, device, config_entry, switchid, **kwargs):
+    def __init__(self, device, config_entry, config_entity, **kwargs):
         """Initialize a new LocaltuyaVacuum."""
-        super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._state = None
         self._battery_level = None
         self._attrs = {}

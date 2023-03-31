@@ -37,11 +37,11 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         self,
         device,
         config_entry,
-        sensorid,
+        config_entity,
         **kwargs,
     ):
         """Initialize the Tuya sensor."""
-        super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._state = STATE_UNKNOWN
         self._state_friendly = ""
         self._valid_options = self._config.get(CONF_OPTIONS).split(";")

@@ -1,5 +1,4 @@
 """Constants for localtuya integration."""
-
 DOMAIN = "localtuya"
 
 DATA_DISCOVERY = "discovery"
@@ -35,7 +34,7 @@ CONF_MODEL = "model"
 CONF_PRODUCT_KEY = "product_key"
 CONF_PRODUCT_NAME = "product_name"
 CONF_USER_ID = "user_id"
-
+CONF_ADD_ENTITIES = "add_entities"
 
 CONF_ACTION = "action"
 CONF_ADD_DEVICE = "add_device"
@@ -83,6 +82,9 @@ CONF_FAN_DPS_TYPE = "fan_dps_type"
 
 # sensor
 CONF_SCALING = "scaling"
+CONF_BASE64_DECODE = "base64_decode"
+CONF_BYTES_RANGE = "bytes_range"
+CONF_ROUND_PRECISION = "round_precision"
 
 # climate
 CONF_TARGET_TEMPERATURE_DP = "target_temperature_dp"

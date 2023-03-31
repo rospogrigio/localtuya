@@ -39,6 +39,7 @@ from .const import (
     DATA_CLOUD,
     DOMAIN,
     TUYA_DEVICES,
+    CONF_BYTES_RANGE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -96,7 +97,7 @@ async def async_setup_entry(
                     entity_class(
                         tuyainterface,
                         dev_entry,
-                        entity_config[CONF_ID],
+                        entity_config,
                     )
                 )
     # Once the entities have been created, add to the TuyaDevice instance
@@ -109,15 +110,6 @@ def get_dps_for_platform(flow_schema):
     for key, value in flow_schema(None).items():
         if hasattr(value, "container") and value.container is None:
             yield key.schema
-
-
-def get_entity_config(config_entry, dp_id):
-    """Return entity config for a given DPS id."""
-    for entity in config_entry[CONF_ENTITIES]:
-        if entity[CONF_ID] == dp_id:
-            return entity
-    raise Exception(f"missing entity config for id {dp_id}")
-
 
 @callback
 def async_config_entry_by_device_id(hass, device_id):
@@ -205,39 +197,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         if self._interface is not None:
             try:
-                try:
-                    self.debug("Retrieving initial state")
-                    status = await self._interface.status()
-                    if status is None:
-                        raise Exception("Failed to retrieve status")
+                self.debug("Retrieving initial state")
+                status = await self._interface.status()
+                if status is None:
+                    raise Exception("Failed to retrieve status")
 
-                    self._interface.start_heartbeat()
-                    self.status_updated(status)
-
-                except Exception as ex:
-                    if (self._default_reset_dpids is not None) and (
-                        len(self._default_reset_dpids) > 0
-                    ):
-                        self.debug(
-                            "Initial state update failed, trying reset command "
-                            + "for DP IDs: %s",
-                            self._default_reset_dpids,
-                        )
-                        await self._interface.reset(self._default_reset_dpids)
-
-                        self.debug("Update completed, retrying initial state")
-                        status = await self._interface.status()
-                        if status is None or not status:
-                            raise Exception("Failed to retrieve status") from ex
-
-                        self._interface.start_heartbeat()
-                        self.status_updated(status)
-                    else:
-                        self.error("Initial state update failed, giving up: %r", ex)
-                        if self._interface is not None:
-                            await self._interface.close()
-                            self._interface = None
-
+                self._interface.start_heartbeat()
+                self.status_updated(status)
             except (UnicodeDecodeError, json.decoder.JSONDecodeError) as ex:
                 self.warning("Initial state update failed (%s), trying key update", ex)
                 await self.update_local_key()
@@ -245,6 +211,30 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 if self._interface is not None:
                     await self._interface.close()
                     self._interface = None
+
+            except Exception as ex:
+                if (self._default_reset_dpids is not None) and (
+                    len(self._default_reset_dpids) > 0
+                ):
+                    self.debug(
+                        "Initial state update failed, trying reset command "
+                        + "for DP IDs: %s",
+                        self._default_reset_dpids,
+                    )
+                    await self._interface.reset(self._default_reset_dpids)
+
+                    self.debug("Update completed, retrying initial state")
+                    status = await self._interface.status()
+                    if status is None or not status:
+                        raise Exception("Failed to retrieve status") from ex
+
+                    self._interface.start_heartbeat()
+                    self.status_updated(status)
+                else:
+                    self.error("Initial state update failed, giving up: %r", ex)
+                    if self._interface is not None:
+                        await self._interface.close()
+                        self._interface = None
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
@@ -367,13 +357,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
-    def __init__(self, device, config_entry, dp_id, logger, **kwargs):
+    def __init__(self, device, config_entry, config_entity, logger, **kwargs):
         """Initialize the Tuya entity."""
         super().__init__()
         self._device = device
         self._dev_config_entry = config_entry
-        self._config = get_entity_config(config_entry, dp_id)
-        self._dp_id = dp_id
+        self._config = config_entity
+        self._dp_id = config_entity[CONF_ID]
         self._status = {}
         self._state = None
         self._last_state = None
@@ -466,7 +456,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def unique_id(self):
         """Return unique device identifier."""
-        return f"local_{self._dev_config_entry[CONF_DEVICE_ID]}_{self._dp_id}"
+        if CONF_BYTES_RANGE in self._config and self._config[CONF_BYTES_RANGE]:
+            bytes_range = self._config[CONF_BYTES_RANGE].replace(":","")
+            return f"local_{self._dev_config_entry[CONF_DEVICE_ID]}_{self._dp_id}_{bytes_range}"
+        else:
+            return f"local_{self._dev_config_entry[CONF_DEVICE_ID]}_{self._dp_id}"
 
     def has_config(self, attr):
         """Return if a config parameter has a valid value."""

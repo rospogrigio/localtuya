@@ -154,11 +154,11 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self,
         device,
         config_entry,
-        switchid,
+        config_entity,
         **kwargs,
     ):
         """Initialize a new LocaltuyaClimate."""
-        super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
+        super().__init__(device, config_entry, config_entity, _LOGGER, **kwargs)
         self._state = None
         self._target_temperature = None
         self._current_temperature = None
