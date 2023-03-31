@@ -197,38 +197,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         if self._interface is not None:
             try:
-                try:
-                    self.debug("Retrieving initial state")
-                    status = await self._interface.status()
-                    if status is None:
-                        raise Exception("Failed to retrieve status")
+                self.debug("Retrieving initial state")
+                status = await self._interface.status()
+                if status is None:
+                    raise Exception("Failed to retrieve status")
 
-                    self._interface.start_heartbeat()
-                    self.status_updated(status)
-                except Exception as ex:
-                    if (self._default_reset_dpids is not None) and (
-                        len(self._default_reset_dpids) > 0
-                    ):
-                        self.debug(
-                            "Initial state update failed, trying reset command "
-                            + "for DP IDs: %s",
-                            self._default_reset_dpids,
-                        )
-                        await self._interface.reset(self._default_reset_dpids)
-
-                        self.debug("Update completed, retrying initial state")
-                        status = await self._interface.status()
-                        if status is None or not status:
-                            raise Exception("Failed to retrieve status") from ex
-
-                        self._interface.start_heartbeat()
-                        self.status_updated(status)
-                    else:
-                        self.error("Initial state update failed, giving up: %r", ex)
-                        if self._interface is not None:
-                            await self._interface.close()
-                            self._interface = None
-
+                self._interface.start_heartbeat()
+                self.status_updated(status)
             except (UnicodeDecodeError, json.decoder.JSONDecodeError) as ex:
                 self.warning("Initial state update failed (%s), trying key update", ex)
                 await self.update_local_key()
@@ -236,6 +211,30 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 if self._interface is not None:
                     await self._interface.close()
                     self._interface = None
+
+            except Exception as ex:
+                if (self._default_reset_dpids is not None) and (
+                    len(self._default_reset_dpids) > 0
+                ):
+                    self.debug(
+                        "Initial state update failed, trying reset command "
+                        + "for DP IDs: %s",
+                        self._default_reset_dpids,
+                    )
+                    await self._interface.reset(self._default_reset_dpids)
+
+                    self.debug("Update completed, retrying initial state")
+                    status = await self._interface.status()
+                    if status is None or not status:
+                        raise Exception("Failed to retrieve status") from ex
+
+                    self._interface.start_heartbeat()
+                    self.status_updated(status)
+                else:
+                    self.error("Initial state update failed, giving up: %r", ex)
+                    if self._interface is not None:
+                        await self._interface.close()
+                        self._interface = None
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
