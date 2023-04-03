@@ -108,7 +108,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def is_closed(self):
         """Return if the cover is closed or not."""
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE:
-            return False
+            return None
 
         if self._current_cover_position == 0:
             return True
