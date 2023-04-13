@@ -86,6 +86,9 @@ HVAC_MODE_SETS = {
     "cold/hot/wet/wind/auto": {
         HVAC_MODE_HEAT: "hot",
         HVAC_MODE_AUTO: "auto",
+        HVAC_MODE_COOL: "cold",
+        HVAC_MODE_DRY: "wet",
+        HVAC_MODE_FAN_ONLY: "wind",
     },
 }
 HVAC_ACTION_SETS = {
