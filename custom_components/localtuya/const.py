@@ -28,6 +28,7 @@ ATTR_UPDATED_AT = "updated_at"
 
 # config flow
 CONF_LOCAL_KEY = "local_key"
+CONF_ENABLE_DEBUG = "enable_debug"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
 CONF_MODEL = "model"
