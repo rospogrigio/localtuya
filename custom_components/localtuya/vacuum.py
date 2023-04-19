@@ -199,7 +199,7 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
     async def async_locate(self, **kwargs):
         """Locate the vacuum cleaner."""
         if self.has_config(CONF_LOCATE_DP):
-            await self._device.set_dp("", self._config[CONF_LOCATE_DP])
+            await self._device.set_dp(True, self._config[CONF_LOCATE_DP])
 
     async def async_set_fan_speed(self, fan_speed, **kwargs):
         """Set the fan speed."""
