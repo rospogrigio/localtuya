@@ -66,5 +66,10 @@ class LocaltuyaSensor(LocalTuyaEntity):
             state = round(state * scale_factor, DEFAULT_PRECISION)
         self._state = state
 
+    # No need to restore state for a sensor
+    async def restore_state_when_connected(self):
+        """Do nothing for a sensor."""
+        return
+
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSensor, flow_schema)
