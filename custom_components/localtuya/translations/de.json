@@ -79,7 +79,8 @@
         "title": "Konfiguration des Cloud-API-Kontos",
         "description": "Geben Sie die Anmeldeinformationen für die Tuya Cloud API ein.",
         "data": {
-          "region": "API-Serverregion"
+          "region": "API-Serverregion",
+          "client_id": "Client ID"
         }
       }
     }
