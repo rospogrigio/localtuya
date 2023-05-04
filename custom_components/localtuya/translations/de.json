@@ -130,7 +130,8 @@
           "device_class": "Geräteklasse",
           "scaling": "Vergößerungsfaktor, Verkleinerungsfaktor",
           "state_on": "Auf Wert",
-          "state_off": "Aus-Wert"
+          "state_off": "Aus-Wert",
+          "powergo_dp": "Power DP (normalerweise 25 oder 2)"
         }
       }
     }
