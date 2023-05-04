@@ -51,6 +51,9 @@
       "yaml_import": {
         "title": "Nicht unterstützt",
         "description": "Optionen können nicht bearbeitet werden, wenn sie über YAML konfiguriert werden."
+      },
+      "init": {
+        "title": "LocalTuya-Konfiguration"
       }
     }
   }
