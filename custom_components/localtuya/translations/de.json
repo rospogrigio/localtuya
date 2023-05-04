@@ -102,6 +102,9 @@
           "manual_dps_strings": "Manuelles DPS zum Hinzufügen (getrennt durch Kommas ',') - wird verwendet, wenn die Erkennung nicht funktioniert (optional)",
           "reset_dpids": "DPIDs zum Senden im RESET-Befehl (getrennt durch Kommas ',') - Wird verwendet, wenn das Gerät nach dem Einschalten nicht auf Statusanforderungen antwortet (optional)"
         }
+      },
+      "pick_entity_type": {
+        "title": "Auswahl des Entitätstyps"
       }
     }
   }
