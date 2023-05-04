@@ -112,7 +112,8 @@
         }
       },
       "configure_entity": {
-        "title": "Entität konfigurieren"
+        "title": "Entität konfigurieren",
+        "description": "Bitte füllen Sie die Details für {entity} mit dem Typ „{platform}“ aus. Alle Einstellungen außer „ID“ können später auf der Seite „Optionen“ geändert werden."
       }
     }
   }
