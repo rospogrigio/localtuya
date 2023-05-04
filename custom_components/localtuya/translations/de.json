@@ -153,7 +153,8 @@
           "brightness_upper": "Oberer Helligkeitswert",
           "color_temp": "Farbtemperatur",
           "color_temp_reverse": "Umkehrung der Farbtemperatur",
-          "color": "Farbe"
+          "color": "Farbe",
+          "color_mode": "Farbmodus"
         }
       }
     }
