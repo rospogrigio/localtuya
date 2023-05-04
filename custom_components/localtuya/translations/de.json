@@ -92,7 +92,8 @@
         "description": "Geben Sie die Gerätedetails{for_device} ein.",
         "data": {
           "friendly_name": "Name",
-          "host": "Host"
+          "host": "Host",
+          "device_id": "Geräte ID"
         }
       }
     }
