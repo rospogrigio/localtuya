@@ -99,7 +99,8 @@
           "enable_debug": "Debugging für dieses Gerät aktivieren (Debug muss auch in configuration.yaml aktiviert sein)",
           "scan_interval": "Scan-Intervall (Sekunden, nur wenn nicht automatisch aktualisiert)",
           "entities": "Entitäten (deaktivieren Sie eine Entität, um sie zu entfernen)",
-          "manual_dps_strings": "Manuelles DPS zum Hinzufügen (getrennt durch Kommas ',') - wird verwendet, wenn die Erkennung nicht funktioniert (optional)"
+          "manual_dps_strings": "Manuelles DPS zum Hinzufügen (getrennt durch Kommas ',') - wird verwendet, wenn die Erkennung nicht funktioniert (optional)",
+          "reset_dpids": "DPIDs zum Senden im RESET-Befehl (getrennt durch Kommas ',') - Wird verwendet, wenn das Gerät nach dem Einschalten nicht auf Statusanforderungen antwortet (optional)"
         }
       }
     }
