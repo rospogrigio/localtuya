@@ -170,7 +170,8 @@
           "fan_direction_forward": "Forward-DPS-String",
           "fan_direction_reverse": "Reverse-DPS-String",
           "fan_dps_type": "DP-Werttyp",
-          "current_temperature_dp": "Aktuelle Temperatur"
+          "current_temperature_dp": "Aktuelle Temperatur",
+          "target_temperature_dp": "Zieltemperatur"
         }
       }
     }
