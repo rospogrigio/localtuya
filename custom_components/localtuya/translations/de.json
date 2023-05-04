@@ -190,7 +190,8 @@
           "dps_default_value": "Standardwert, wenn nicht initialisiert (optional)",
           "restore_on_reconnect": "Nach Verbindungsabbruch den zuletzt eingestellten Wert im HomeAssistant wiederherstellen",
           "min_value": "Mindestwert",
-          "max_value": "Höchster Wert"
+          "max_value": "Höchster Wert",
+          "step_size": "Mindestinkrement zwischen Zahlen"
         }
       }
     }
