@@ -164,7 +164,8 @@
           "fan_speed_control": "Lüftergeschwindigkeitssteuerung dps",
           "fan_oscillating_control": "Lüfteroszillationssteuerung dps",
           "fan_speed_min": "minimale Lüfterdrehzahl ganzzahlig",
-          "fan_speed_max": "maximale Lüftergeschwindigkeit ganzzahlig"
+          "fan_speed_max": "maximale Lüftergeschwindigkeit ganzzahlig",
+          "fan_speed_ordered_list": "Liste der Lüftergeschwindigkeitsmodi (überschreibt Geschwindigkeit min/max)"
         }
       }
     }
