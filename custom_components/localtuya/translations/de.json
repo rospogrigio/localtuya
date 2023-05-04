@@ -63,7 +63,10 @@
       },
       "add_device": {
         "title": "Fügen Sie ein neues Gerät hinzu",
-        "description": "Wählen Sie eines der automatisch erkannten Geräte oder „...“, um ein Gerät manuell hinzuzufügen."
+        "description": "Wählen Sie eines der automatisch erkannten Geräte oder „...“, um ein Gerät manuell hinzuzufügen.",
+        "data": {
+          "selected_device": "Erkannte Geräte"
+        }
       }
     }
   }
