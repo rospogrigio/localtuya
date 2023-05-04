@@ -54,7 +54,10 @@
       },
       "init": {
         "title": "LocalTuya-Konfiguration",
-        "description": "Bitte wählen Sie die gewünschte Aktion aus."
+        "description": "Bitte wählen Sie die gewünschte Aktion aus.",
+        "data": {
+          "add_device": "Fügen Sie ein neues Gerät hinzu"
+        }
       }
     }
   }
