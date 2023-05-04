@@ -91,7 +91,8 @@
         "title": "Tuya-Gerät konfigurieren",
         "description": "Geben Sie die Gerätedetails{for_device} ein.",
         "data": {
-          "friendly_name": "Name"
+          "friendly_name": "Name",
+          "host": "Host"
         }
       }
     }
