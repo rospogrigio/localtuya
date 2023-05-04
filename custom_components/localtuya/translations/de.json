@@ -188,7 +188,8 @@
           "eco_value": "Öko-Wert (optional)",
           "heuristic_action": "Heuristische Aktion aktivieren (optional)",
           "dps_default_value": "Standardwert, wenn nicht initialisiert (optional)",
-          "restore_on_reconnect": "Nach Verbindungsabbruch den zuletzt eingestellten Wert im HomeAssistant wiederherstellen"
+          "restore_on_reconnect": "Nach Verbindungsabbruch den zuletzt eingestellten Wert im HomeAssistant wiederherstellen",
+          "min_value": "Mindestwert"
         }
       }
     }
