@@ -5,7 +5,7 @@
       "device_updated": "Gerätekonfiguration wurde aktualisiert!"
     },
     "error": {
-      "authentication_failed": "Authentifizierung fehlgeschlagen.\n{Nachricht}",
+      "authentication_failed": "Authentifizierung fehlgeschlagen. {msg}",
       "cannot_connect": "Es kann keine Verbindung zum Gerät hergestellt werden. Überprüfen Sie, ob die Adresse korrekt ist, und versuchen Sie es erneut."
     }
   }
