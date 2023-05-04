@@ -49,7 +49,8 @@
     },
     "step": {
       "yaml_import": {
-        "title": "Nicht unterstützt"
+        "title": "Nicht unterstützt",
+        "description": "Optionen können nicht bearbeitet werden, wenn sie über YAML konfiguriert werden."
       }
     }
   }
