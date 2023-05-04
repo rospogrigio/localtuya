@@ -150,7 +150,8 @@
           "stop_status": "Status stoppen",
           "brightness": "Helligkeit (nur für weiße Farbe)",
           "brightness_lower": "Helligkeit unterer Wert",
-          "brightness_upper": "Oberer Helligkeitswert"
+          "brightness_upper": "Oberer Helligkeitswert",
+          "color_temp": "Farbtemperatur"
         }
       }
     }
