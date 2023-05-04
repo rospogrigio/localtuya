@@ -158,7 +158,8 @@
           "color_temp_min_kelvin": "Minimale Farbtemperatur in K",
           "color_temp_max_kelvin": "Maximale Farbtemperatur in K",
           "music_mode": "Musikmodus verfügbar",
-          "scene": "Szene"
+          "scene": "Szene",
+          "select_options": "Gültige Eingaben, getrennte Eingaben durch ein ;"
         }
       }
     }
