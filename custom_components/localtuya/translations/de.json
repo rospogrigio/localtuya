@@ -46,6 +46,11 @@
       "address_in_use": "Die für die Ermittlung verwendete Adresse wird bereits verwendet. Stellen Sie sicher, dass keine andere Anwendung ihn verwendet (TCP-Port 6668).",
       "discovery_failed": "Beim Erkennen von Geräten ist ein Fehler aufgetreten. Siehe Protokoll für Details.",
       "empty_dps": "Verbindung zum Gerät erfolgreich, aber keine Datenpunkte gefunden, bitte versuchen Sie es erneut. Erstellen Sie ein neues Problem und fügen Sie Debug-Protokolle hinzu, wenn das Problem weiterhin besteht."
+    },
+    "step": {
+      "yaml_import": {
+        "title": "Nicht unterstützt"
+      }
     }
   }
 }
