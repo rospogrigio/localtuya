@@ -80,7 +80,8 @@
         "description": "Geben Sie die Anmeldeinformationen für die Tuya Cloud API ein.",
         "data": {
           "region": "API-Serverregion",
-          "client_id": "Client ID"
+          "client_id": "Client ID",
+          "client_secret": "Secret"
         }
       }
     }
