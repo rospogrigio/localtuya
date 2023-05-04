@@ -3,6 +3,9 @@
     "abort": {
       "already_configured": "Gerät wurde bereits konfiguriert.",
       "device_updated": "Gerätekonfiguration wurde aktualisiert!"
+    },
+    "error": {
+      "authentication_failed": "Authentifizierung fehlgeschlagen.\n{Nachricht}"
     }
   }
 }
