@@ -134,7 +134,8 @@
           "powergo_dp": "Power DP (normalerweise 25 oder 2)",
           "idle_status_value": "Ruhezustand (kommagetrennt)",
           "returning_status_value": "Rückgabestatus",
-          "docked_status_value": "Angedockter Status (kommagetrennt)"
+          "docked_status_value": "Angedockter Status (kommagetrennt)",
+          "fault_dp": "Fehler DP (normalerweise 11)"
         }
       }
     }
