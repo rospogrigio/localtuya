@@ -174,7 +174,8 @@
           "target_temperature_dp": "Zieltemperatur",
           "temperature_step": "Temperaturstufe (optional)",
           "max_temperature_dp": "Max. Temperatur (optional)",
-          "min_temperature_dp": "Mindesttemperatur (optional)"
+          "min_temperature_dp": "Mindesttemperatur (optional)",
+          "precision": "Präzision (optional, für DPs-Werte)"
         }
       }
     }
