@@ -143,7 +143,8 @@
           "fan_speed_dp": "Lüftergeschwindigkeiten DP (normalerweise 30)",
           "fan_speeds": "Liste der Lüftergeschwindigkeiten (durch Kommas getrennt)",
           "clean_time_dp": "Clean Time DP (normalerweise 33)",
-          "clean_area_dp": "Clean Area DP (normalerweise 32)"
+          "clean_area_dp": "Clean Area DP (normalerweise 32)",
+          "clean_record_dp": "Clean Record DP (normalerweise 34)"
         }
       }
     }
