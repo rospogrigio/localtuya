@@ -70,7 +70,10 @@
       },
       "edit_device": {
         "title": "Bearbeiten Sie ein neues Gerät",
-        "description": "Wählen Sie das konfigurierte Gerät aus, das Sie bearbeiten möchten."
+        "description": "Wählen Sie das konfigurierte Gerät aus, das Sie bearbeiten möchten.",
+        "data": {
+          "selected_device": "Konfigurierte Geräte"
+        }
       }
     }
   }
