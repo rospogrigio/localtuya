@@ -180,7 +180,8 @@
           "temperature_unit": "Temperatureinheit (optional)",
           "hvac_mode_dp": "HVAC-Modus DP (optional)",
           "hvac_mode_set": "HLK-Modus-Set (optional)",
-          "hvac_action_dp": "HVAC Current Action DP (optional)"
+          "hvac_action_dp": "HVAC Current Action DP (optional)",
+          "hvac_action_set": "HLK-Aktionsstromset (optional)"
         }
       }
     }
