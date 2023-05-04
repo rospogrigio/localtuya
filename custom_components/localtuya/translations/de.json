@@ -93,7 +93,8 @@
         "data": {
           "friendly_name": "Name",
           "host": "Host",
-          "device_id": "Geräte ID"
+          "device_id": "Geräte ID",
+          "local_key": "Lokaler Schlüssel"
         }
       }
     }
