@@ -139,7 +139,8 @@
           "battery_dp": "Batteriestatus DP (normalerweise 14)",
           "mode_dp": "Modus DP (normalerweise 27)",
           "modes": "Liste der Modi",
-          "return_mode": "Heimkehrmodus"
+          "return_mode": "Heimkehrmodus",
+          "fan_speed_dp": "Lüftergeschwindigkeiten DP (normalerweise 30)"
         }
       }
     }
