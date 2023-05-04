@@ -53,7 +53,8 @@
         "description": "Optionen können nicht bearbeitet werden, wenn sie über YAML konfiguriert werden."
       },
       "init": {
-        "title": "LocalTuya-Konfiguration"
+        "title": "LocalTuya-Konfiguration",
+        "description": "Bitte wählen Sie die gewünschte Aktion aus."
       }
     }
   }
