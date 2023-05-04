@@ -140,7 +140,8 @@
           "mode_dp": "Modus DP (normalerweise 27)",
           "modes": "Liste der Modi",
           "return_mode": "Heimkehrmodus",
-          "fan_speed_dp": "Lüftergeschwindigkeiten DP (normalerweise 30)"
+          "fan_speed_dp": "Lüftergeschwindigkeiten DP (normalerweise 30)",
+          "fan_speeds": "Liste der Lüftergeschwindigkeiten (durch Kommas getrennt)"
         }
       }
     }
