@@ -1,7 +1,8 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Gerät wurde bereits konfiguriert."
+      "already_configured": "Gerät wurde bereits konfiguriert.",
+      "device_updated": "Gerätekonfiguration wurde aktualisiert!"
     }
   }
 }
