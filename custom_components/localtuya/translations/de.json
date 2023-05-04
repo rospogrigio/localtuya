@@ -133,7 +133,8 @@
           "state_off": "Aus-Wert",
           "powergo_dp": "Power DP (normalerweise 25 oder 2)",
           "idle_status_value": "Ruhezustand (kommagetrennt)",
-          "returning_status_value": "Rückgabestatus"
+          "returning_status_value": "Rückgabestatus",
+          "docked_status_value": "Angedockter Status (kommagetrennt)"
         }
       }
     }
