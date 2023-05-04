@@ -149,7 +149,8 @@
           "paused_state": "Pausenzustand (pause, pausiert usw.)",
           "stop_status": "Status stoppen",
           "brightness": "Helligkeit (nur für weiße Farbe)",
-          "brightness_lower": "Helligkeit unterer Wert"
+          "brightness_lower": "Helligkeit unterer Wert",
+          "brightness_upper": "Oberer Helligkeitswert"
         }
       }
     }
