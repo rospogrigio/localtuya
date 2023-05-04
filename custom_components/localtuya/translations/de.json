@@ -185,7 +185,8 @@
           "preset_dp": "Voreinstellungen DP (optional)",
           "preset_set": "Voreinstellungen gesetzt (optional)",
           "eco_dp": "Eco DP (optional)",
-          "eco_value": "Öko-Wert (optional)"
+          "eco_value": "Öko-Wert (optional)",
+          "heuristic_action": "Heuristische Aktion aktivieren (optional)"
         }
       }
     }
