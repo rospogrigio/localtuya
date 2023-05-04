@@ -57,7 +57,8 @@
         "description": "Bitte wählen Sie die gewünschte Aktion aus.",
         "data": {
           "add_device": "Fügen Sie ein neues Gerät hinzu",
-          "edit_device": "Bearbeiten Sie ein Gerät"
+          "edit_device": "Bearbeiten Sie ein Gerät",
+          "setup_cloud": "Konfigurieren Sie das Cloud-API-Konto neu"
         }
       }
     }
