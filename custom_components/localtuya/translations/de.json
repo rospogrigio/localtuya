@@ -117,7 +117,8 @@
         "data": {
           "id": "ID",
           "friendly_name": "Freundlicher Name",
-          "current": "Aktuell"
+          "current": "Aktuell",
+          "current_consumption": "Derzeitiger Verbrauch"
         }
       }
     }
