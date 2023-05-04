@@ -97,7 +97,8 @@
           "local_key": "Lokaler Schlüssel",
           "protocol_version": "Protokollversion",
           "enable_debug": "Debugging für dieses Gerät aktivieren (Debug muss auch in configuration.yaml aktiviert sein)",
-          "scan_interval": "Scan-Intervall (Sekunden, nur wenn nicht automatisch aktualisiert)"
+          "scan_interval": "Scan-Intervall (Sekunden, nur wenn nicht automatisch aktualisiert)",
+          "entities": "Entitäten (deaktivieren Sie eine Entität, um sie zu entfernen)"
         }
       }
     }
