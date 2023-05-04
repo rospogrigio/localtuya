@@ -33,7 +33,8 @@
   "options": {
     "abort": {
       "already_configured": "Gerät wurde bereits konfiguriert.",
-      "device_success": "Gerät {dev_name} erfolgreich {action}."
+      "device_success": "Gerät {dev_name} erfolgreich {action}.",
+      "no_entities": "Es können nicht alle Entitäten von einem Gerät entfernt werden.\nWenn Sie ein Gerät löschen möchten, geben Sie es im Menü „Geräte“ ein, klicken Sie auf die 3 Punkte im Rahmen „Geräteinfo“ und drücken Sie die Schaltfläche „Löschen“."
     }
   }
 }
