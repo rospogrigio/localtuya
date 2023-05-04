@@ -123,7 +123,8 @@
           "commands_set": "Open_Close_Stop-Befehle eingestellt",
           "positioning_mode": "Positionierungsmodus",
           "current_position_dp": "Aktuelle Position (nur für *Position*-Modus)",
-          "set_position_dp": "Set Position (nur für *Position*-Modus)"
+          "set_position_dp": "Set Position (nur für *Position*-Modus)",
+          "position_inverted": "Position 0-100 invertieren (nur für Modus *Position*)"
         }
       }
     }
