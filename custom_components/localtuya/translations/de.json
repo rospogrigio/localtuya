@@ -191,7 +191,8 @@
           "restore_on_reconnect": "Nach Verbindungsabbruch den zuletzt eingestellten Wert im HomeAssistant wiederherstellen",
           "min_value": "Mindestwert",
           "max_value": "Höchster Wert",
-          "step_size": "Mindestinkrement zwischen Zahlen"
+          "step_size": "Mindestinkrement zwischen Zahlen",
+          "is_passive_entity": "Passive Einheit – erfordert Integration zum Senden des Initialisierungswerts"
         }
       }
     }
