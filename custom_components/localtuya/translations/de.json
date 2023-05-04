@@ -172,7 +172,8 @@
           "fan_dps_type": "DP-Werttyp",
           "current_temperature_dp": "Aktuelle Temperatur",
           "target_temperature_dp": "Zieltemperatur",
-          "temperature_step": "Temperaturstufe (optional)"
+          "temperature_step": "Temperaturstufe (optional)",
+          "max_temperature_dp": "Max. Temperatur (optional)"
         }
       }
     }
