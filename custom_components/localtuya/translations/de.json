@@ -160,7 +160,8 @@
           "music_mode": "Musikmodus verfügbar",
           "scene": "Szene",
           "select_options": "Gültige Eingaben, getrennte Eingaben durch ein ;",
-          "select_options_friendly": "Benutzerfreundliche Optionen, getrennte Einträge durch ein ;"
+          "select_options_friendly": "Benutzerfreundliche Optionen, getrennte Einträge durch ein ;",
+          "fan_speed_control": "Lüftergeschwindigkeitssteuerung dps"
         }
       }
     }
