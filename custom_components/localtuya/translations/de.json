@@ -184,7 +184,8 @@
           "hvac_action_set": "HLK-Aktionsstromset (optional)",
           "preset_dp": "Voreinstellungen DP (optional)",
           "preset_set": "Voreinstellungen gesetzt (optional)",
-          "eco_dp": "Eco DP (optional)"
+          "eco_dp": "Eco DP (optional)",
+          "eco_value": "Öko-Wert (optional)"
         }
       }
     }
