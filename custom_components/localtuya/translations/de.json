@@ -122,7 +122,8 @@
           "voltage": "Stromspannung",
           "commands_set": "Open_Close_Stop-Befehle eingestellt",
           "positioning_mode": "Positionierungsmodus",
-          "current_position_dp": "Aktuelle Position (nur für *Position*-Modus)"
+          "current_position_dp": "Aktuelle Position (nur für *Position*-Modus)",
+          "set_position_dp": "Set Position (nur für *Position*-Modus)"
         }
       }
     }
