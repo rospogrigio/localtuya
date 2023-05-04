@@ -176,7 +176,8 @@
           "max_temperature_dp": "Max. Temperatur (optional)",
           "min_temperature_dp": "Mindesttemperatur (optional)",
           "precision": "Präzision (optional, für DPs-Werte)",
-          "target_precision": "Zielpräzision (optional, für DPs-Werte)"
+          "target_precision": "Zielpräzision (optional, für DPs-Werte)",
+          "temperature_unit": "Temperatureinheit (optional)"
         }
       }
     }
