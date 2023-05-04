@@ -126,7 +126,8 @@
           "set_position_dp": "Set Position (nur für *Position*-Modus)",
           "position_inverted": "Position 0-100 invertieren (nur für Modus *Position*)",
           "span_time": "Vollständige Öffnungszeit in Sekunden. (nur für den *zeitgesteuerten* Modus)",
-          "unit_of_measurement": "Maßeinheit"
+          "unit_of_measurement": "Maßeinheit",
+          "device_class": "Geräteklasse"
         }
       }
     }
