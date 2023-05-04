@@ -105,7 +105,10 @@
       },
       "pick_entity_type": {
         "title": "Auswahl des Entitätstyps",
-        "description": "Bitte wählen Sie die Art der Entität aus, die Sie hinzufügen möchten."
+        "description": "Bitte wählen Sie die Art der Entität aus, die Sie hinzufügen möchten.",
+        "data": {
+          "platform_to_add": "Plattform"
+        }
       }
     }
   }
