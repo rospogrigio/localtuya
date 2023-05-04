@@ -39,7 +39,8 @@
     "error": {
       "authentication_failed": "Authentifizierung fehlgeschlagen. {msg}",
       "cannot_connect": "Es kann keine Verbindung zum Gerät hergestellt werden. Überprüfen Sie, ob die Adresse korrekt ist, und versuchen Sie es erneut.",
-      "device_list_failed": "Geräteliste konnte nicht abgerufen werden.\n{msg}"
+      "device_list_failed": "Geräteliste konnte nicht abgerufen werden.\n{msg}",
+      "invalid_auth": "Authentifizierung mit Gerät fehlgeschlagen. Stellen Sie sicher, dass die Geräte-ID und der lokale Schlüssel korrekt sind."
     }
   }
 }
