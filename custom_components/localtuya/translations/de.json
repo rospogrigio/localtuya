@@ -82,7 +82,8 @@
           "region": "API-Serverregion",
           "client_id": "Client ID",
           "client_secret": "Secret",
-          "user_id": "User ID"
+          "user_id": "User ID",
+          "user_name": "Nutzername"
         }
       }
     }
