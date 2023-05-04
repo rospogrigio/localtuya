@@ -94,7 +94,8 @@
           "friendly_name": "Name",
           "host": "Host",
           "device_id": "Geräte ID",
-          "local_key": "Lokaler Schlüssel"
+          "local_key": "Lokaler Schlüssel",
+          "protocol_version": "Protokollversion"
         }
       }
     }
