@@ -182,7 +182,8 @@
           "hvac_mode_set": "HLK-Modus-Set (optional)",
           "hvac_action_dp": "HVAC Current Action DP (optional)",
           "hvac_action_set": "HLK-Aktionsstromset (optional)",
-          "preset_dp": "Voreinstellungen DP (optional)"
+          "preset_dp": "Voreinstellungen DP (optional)",
+          "preset_set": "Voreinstellungen gesetzt (optional)"
         }
       }
     }
