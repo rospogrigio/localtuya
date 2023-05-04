@@ -118,7 +118,8 @@
           "id": "ID",
           "friendly_name": "Freundlicher Name",
           "current": "Aktuell",
-          "current_consumption": "Derzeitiger Verbrauch"
+          "current_consumption": "Derzeitiger Verbrauch",
+          "voltage": "Stromspannung"
         }
       }
     }
