@@ -128,7 +128,8 @@
           "span_time": "Vollständige Öffnungszeit in Sekunden. (nur für den *zeitgesteuerten* Modus)",
           "unit_of_measurement": "Maßeinheit",
           "device_class": "Geräteklasse",
-          "scaling": "Vergößerungsfaktor, Verkleinerungsfaktor"
+          "scaling": "Vergößerungsfaktor, Verkleinerungsfaktor",
+          "state_on": "Auf Wert"
         }
       }
     }
