@@ -120,7 +120,8 @@
           "current": "Aktuell",
           "current_consumption": "Derzeitiger Verbrauch",
           "voltage": "Stromspannung",
-          "commands_set": "Open_Close_Stop-Befehle eingestellt"
+          "commands_set": "Open_Close_Stop-Befehle eingestellt",
+          "positioning_mode": "Positionierungsmodus"
         }
       }
     }
