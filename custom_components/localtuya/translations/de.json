@@ -124,7 +124,8 @@
           "positioning_mode": "Positionierungsmodus",
           "current_position_dp": "Aktuelle Position (nur für *Position*-Modus)",
           "set_position_dp": "Set Position (nur für *Position*-Modus)",
-          "position_inverted": "Position 0-100 invertieren (nur für Modus *Position*)"
+          "position_inverted": "Position 0-100 invertieren (nur für Modus *Position*)",
+          "span_time": "Vollständige Öffnungszeit in Sekunden. (nur für den *zeitgesteuerten* Modus)"
         }
       }
     }
