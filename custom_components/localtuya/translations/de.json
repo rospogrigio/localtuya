@@ -60,6 +60,9 @@
           "edit_device": "Bearbeiten Sie ein Gerät",
           "setup_cloud": "Konfigurieren Sie das Cloud-API-Konto neu"
         }
+      },
+      "add_device": {
+        "title": "Fügen Sie ein neues Gerät hinzu"
       }
     }
   }
