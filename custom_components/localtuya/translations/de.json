@@ -11,7 +11,8 @@
       "invalid_auth": "Authentifizierung mit Gerät fehlgeschlagen. Stellen Sie sicher, dass die Geräte-ID und der lokale Schlüssel korrekt sind.",
       "unknown": "Ein unbekannter Fehler ist aufgetreten. Siehe Protokoll für Details.",
       "entity_already_configured": "Entität mit dieser ID wurde bereits konfiguriert.",
-      "address_in_use": "Die für die Ermittlung verwendete Adresse wird bereits verwendet. Stellen Sie sicher, dass keine andere Anwendung ihn verwendet (TCP-Port 6668)."
+      "address_in_use": "Die für die Ermittlung verwendete Adresse wird bereits verwendet. Stellen Sie sicher, dass keine andere Anwendung ihn verwendet (TCP-Port 6668).",
+      "discovery_failed": "Beim Erkennen von Geräten ist ein Fehler aufgetreten. Siehe Protokoll für Details."
     }
   }
 }
