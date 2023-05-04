@@ -159,7 +159,8 @@
           "color_temp_max_kelvin": "Maximale Farbtemperatur in K",
           "music_mode": "Musikmodus verfügbar",
           "scene": "Szene",
-          "select_options": "Gültige Eingaben, getrennte Eingaben durch ein ;"
+          "select_options": "Gültige Eingaben, getrennte Eingaben durch ein ;",
+          "select_options_friendly": "Benutzerfreundliche Optionen, getrennte Einträge durch ein ;"
         }
       }
     }
