@@ -74,6 +74,9 @@
         "data": {
           "selected_device": "Konfigurierte Geräte"
         }
+      },
+      "cloud_setup": {
+        "title": "Konfiguration des Cloud-API-Kontos"
       }
     }
   }
