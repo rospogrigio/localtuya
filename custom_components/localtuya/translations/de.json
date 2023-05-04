@@ -83,7 +83,8 @@
           "client_id": "Client ID",
           "client_secret": "Secret",
           "user_id": "User ID",
-          "user_name": "Nutzername"
+          "user_name": "Nutzername",
+          "no_cloud": "Konfigurieren Sie kein Cloud-API-Konto"
         }
       }
     }
