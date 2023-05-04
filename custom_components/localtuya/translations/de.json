@@ -129,7 +129,8 @@
           "unit_of_measurement": "Maßeinheit",
           "device_class": "Geräteklasse",
           "scaling": "Vergößerungsfaktor, Verkleinerungsfaktor",
-          "state_on": "Auf Wert"
+          "state_on": "Auf Wert",
+          "state_off": "Aus-Wert"
         }
       }
     }
