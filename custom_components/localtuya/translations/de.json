@@ -22,7 +22,8 @@
         "data": {
           "region": "API-Serverregion",
           "client_id": "Client ID",
-          "client_secret": "Geheimnis"
+          "client_secret": "Geheimnis",
+          "user_id": "User ID"
         }
       }
     }
