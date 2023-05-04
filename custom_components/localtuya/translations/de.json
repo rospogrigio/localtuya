@@ -178,7 +178,8 @@
           "precision": "Präzision (optional, für DPs-Werte)",
           "target_precision": "Zielpräzision (optional, für DPs-Werte)",
           "temperature_unit": "Temperatureinheit (optional)",
-          "hvac_mode_dp": "HVAC-Modus DP (optional)"
+          "hvac_mode_dp": "HVAC-Modus DP (optional)",
+          "hvac_mode_set": "HLK-Modus-Set (optional)"
         }
       }
     }
