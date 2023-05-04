@@ -110,6 +110,9 @@
           "platform_to_add": "Plattform",
           "no_additional_entities": "Fügen Sie keine weiteren Entitäten hinzu"
         }
+      },
+      "configure_entity": {
+        "title": "Entität konfigurieren"
       }
     }
   }
