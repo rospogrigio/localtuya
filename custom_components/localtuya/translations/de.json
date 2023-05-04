@@ -76,7 +76,8 @@
         }
       },
       "cloud_setup": {
-        "title": "Konfiguration des Cloud-API-Kontos"
+        "title": "Konfiguration des Cloud-API-Kontos",
+        "description": "Geben Sie die Anmeldeinformationen für die Tuya Cloud API ein."
       }
     }
   }
