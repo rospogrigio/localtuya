@@ -95,7 +95,8 @@
           "host": "Host",
           "device_id": "Geräte ID",
           "local_key": "Lokaler Schlüssel",
-          "protocol_version": "Protokollversion"
+          "protocol_version": "Protokollversion",
+          "enable_debug": "Debugging für dieses Gerät aktivieren (Debug muss auch in configuration.yaml aktiviert sein)"
         }
       }
     }
