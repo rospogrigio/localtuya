@@ -145,7 +145,8 @@
           "clean_time_dp": "Clean Time DP (normalerweise 33)",
           "clean_area_dp": "Clean Area DP (normalerweise 32)",
           "clean_record_dp": "Clean Record DP (normalerweise 34)",
-          "locate_dp": "Suchen Sie DP (normalerweise 31)"
+          "locate_dp": "Suchen Sie DP (normalerweise 31)",
+          "paused_state": "Pausenzustand (pause, pausiert usw.)"
         }
       }
     }
