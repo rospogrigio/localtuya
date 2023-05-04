@@ -135,7 +135,8 @@
           "idle_status_value": "Ruhezustand (kommagetrennt)",
           "returning_status_value": "Rückgabestatus",
           "docked_status_value": "Angedockter Status (kommagetrennt)",
-          "fault_dp": "Fehler DP (normalerweise 11)"
+          "fault_dp": "Fehler DP (normalerweise 11)",
+          "battery_dp": "Batteriestatus DP (normalerweise 14)"
         }
       }
     }
