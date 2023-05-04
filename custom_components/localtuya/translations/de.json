@@ -119,7 +119,8 @@
           "friendly_name": "Freundlicher Name",
           "current": "Aktuell",
           "current_consumption": "Derzeitiger Verbrauch",
-          "voltage": "Stromspannung"
+          "voltage": "Stromspannung",
+          "commands_set": "Open_Close_Stop-Befehle eingestellt"
         }
       }
     }
