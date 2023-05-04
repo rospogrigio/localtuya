@@ -67,6 +67,9 @@
         "data": {
           "selected_device": "Erkannte Geräte"
         }
+      },
+      "edit_device": {
+        "title": "Bearbeiten Sie ein neues Gerät"
       }
     }
   }
