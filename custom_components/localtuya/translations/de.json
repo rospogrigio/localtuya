@@ -37,7 +37,8 @@
       "no_entities": "Es können nicht alle Entitäten von einem Gerät entfernt werden.\nWenn Sie ein Gerät löschen möchten, geben Sie es im Menü „Geräte“ ein, klicken Sie auf die 3 Punkte im Rahmen „Geräteinfo“ und drücken Sie die Schaltfläche „Löschen“."
     },
     "error": {
-      "authentication_failed": "Authentifizierung fehlgeschlagen. {msg}"
+      "authentication_failed": "Authentifizierung fehlgeschlagen. {msg}",
+      "cannot_connect": "Es kann keine Verbindung zum Gerät hergestellt werden. Überprüfen Sie, ob die Adresse korrekt ist, und versuchen Sie es erneut."
     }
   }
 }
