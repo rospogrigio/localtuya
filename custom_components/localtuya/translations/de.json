@@ -156,7 +156,8 @@
           "color": "Farbe",
           "color_mode": "Farbmodus",
           "color_temp_min_kelvin": "Minimale Farbtemperatur in K",
-          "color_temp_max_kelvin": "Maximale Farbtemperatur in K"
+          "color_temp_max_kelvin": "Maximale Farbtemperatur in K",
+          "music_mode": "Musikmodus verfügbar"
         }
       }
     }
