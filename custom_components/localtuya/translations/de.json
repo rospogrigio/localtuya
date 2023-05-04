@@ -86,6 +86,9 @@
           "user_name": "Nutzername",
           "no_cloud": "Konfigurieren Sie kein Cloud-API-Konto"
         }
+      },
+      "configure_device": {
+        "title": "Tuya-Gerät konfigurieren"
       }
     }
   }
