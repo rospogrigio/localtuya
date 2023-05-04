@@ -167,7 +167,8 @@
           "fan_speed_max": "maximale Lüftergeschwindigkeit ganzzahlig",
           "fan_speed_ordered_list": "Liste der Lüftergeschwindigkeitsmodi (überschreibt Geschwindigkeit min/max)",
           "fan_direction": "Lüfterrichtung dps",
-          "fan_direction_forward": "Forward-DPS-String"
+          "fan_direction_forward": "Forward-DPS-String",
+          "fan_direction_reverse": "Reverse-DPS-String"
         }
       }
     }
