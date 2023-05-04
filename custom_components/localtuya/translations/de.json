@@ -115,7 +115,8 @@
         "title": "Entität konfigurieren",
         "description": "Bitte füllen Sie die Details für {entity} mit dem Typ „{platform}“ aus. Alle Einstellungen außer „ID“ können später auf der Seite „Optionen“ geändert werden.",
         "data": {
-          "id": "ID"
+          "id": "ID",
+          "friendly_name": "Freundlicher Name"
         }
       }
     }
