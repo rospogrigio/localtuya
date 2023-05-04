@@ -147,7 +147,8 @@
           "clean_record_dp": "Clean Record DP (normalerweise 34)",
           "locate_dp": "Suchen Sie DP (normalerweise 31)",
           "paused_state": "Pausenzustand (pause, pausiert usw.)",
-          "stop_status": "Status stoppen"
+          "stop_status": "Status stoppen",
+          "brightness": "Helligkeit (nur für weiße Farbe)"
         }
       }
     }
