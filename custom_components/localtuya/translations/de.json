@@ -137,7 +137,8 @@
           "docked_status_value": "Angedockter Status (kommagetrennt)",
           "fault_dp": "Fehler DP (normalerweise 11)",
           "battery_dp": "Batteriestatus DP (normalerweise 14)",
-          "mode_dp": "Modus DP (normalerweise 27)"
+          "mode_dp": "Modus DP (normalerweise 27)",
+          "modes": "Liste der Modi"
         }
       }
     }
