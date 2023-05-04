@@ -32,7 +32,8 @@
   },
   "options": {
     "abort": {
-      "already_configured": "Gerät wurde bereits konfiguriert."
+      "already_configured": "Gerät wurde bereits konfiguriert.",
+      "device_success": "Gerät {dev_name} erfolgreich {action}."
     }
   }
 }
