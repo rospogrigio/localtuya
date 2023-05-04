@@ -29,5 +29,10 @@
         }
       }
     }
+  },
+  "options": {
+    "abort": {
+      "already_configured": "Gerät wurde bereits konfiguriert."
+    }
   }
 }
