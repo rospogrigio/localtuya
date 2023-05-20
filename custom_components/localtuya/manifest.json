@@ -2,7 +2,7 @@
   "domain": "localtuya",
   "name": "LocalTuya integration",
   "codeowners": [
-    "@rospogrigio", "@postlund", "oven-lab"
+    "@rospogrigio", "@postlund", "@oven-lab"
   ],
   "config_flow": true,
   "dependencies": [],
