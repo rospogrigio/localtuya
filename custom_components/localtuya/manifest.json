@@ -2,13 +2,13 @@
   "domain": "localtuya",
   "name": "LocalTuya integration",
   "codeowners": [
-    "@rospogrigio", "@postlund"
+    "@rospogrigio", "@postlund", "oven-lab"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/rospogrigio/localtuya/",
+  "documentation": "https://github.com/oven-lab/localtuya/",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/rospogrigio/localtuya/issues",
+  "issue_tracker": "https://github.com/oven-lab/localtuya/issues",
   "requirements": [],
   "version": "5.1.1"
 }
