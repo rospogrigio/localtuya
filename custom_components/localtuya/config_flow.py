@@ -740,7 +740,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     new_data = self.config_entry.data.copy()
                     entry_id = self.config_entry.entry_id
                     # removing entities from registry (they will be recreated)
-                    ent_reg = await er.async_get_registry(self.hass)
+                    ent_reg = er.async_get(self.hass)
                     reg_entities = {
                         ent.unique_id: ent.entity_id
                         for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
