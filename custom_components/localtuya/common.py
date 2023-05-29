@@ -186,7 +186,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self.info("Trying to connect to %s...", self._dev_config_entry[CONF_HOST])
 
         if "addr:" in self._dev_config_entry[CONF_HOST]:
-            self._dev_config_entry[CONF_HOST] = self._dev_config_entry[CONF_HOST].replace("addr:", "")
+            self._dev_config_entry[CONF_HOST] = self._dev_config_entry[
+                CONF_HOST
+            ].replace("addr:", "")
 
         try:
             self._interface = await pytuya.connect(
