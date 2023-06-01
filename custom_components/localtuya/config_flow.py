@@ -43,6 +43,7 @@ from .const import (
     CONF_RESET_DPIDS,
     CONF_SETUP_CLOUD,
     CONF_USER_ID,
+    CONF_ENABLE_ADD_ENTITIES,
     DATA_CLOUD,
     DATA_DISCOVERY,
     DOMAIN,
@@ -146,6 +147,7 @@ def options_schema(entities):
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
+            vol.Required(CONF_ENABLE_ADD_ENTITIES, default=False): bool,
         }
     )
 
@@ -554,6 +556,17 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_PRODUCT_NAME
                         )
                 if self.editing_device:
+                    if user_input[CONF_ENABLE_ADD_ENTITIES]:
+                        self.editing_device = False
+                        user_input[CONF_DEVICE_ID] = dev_id
+                        self.device_data.update(
+                            {
+                                CONF_DEVICE_ID: dev_id,
+                                CONF_DPS_STRINGS: self.dps_strings,
+                            }
+                        )
+                        return await self.async_step_pick_entity_type()
+
                     self.device_data.update(
                         {
                             CONF_DEVICE_ID: dev_id,
@@ -608,6 +621,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
                     note = "\nNOTE: a new local_key has been retrieved using cloud API"
                     placeholders = {"for_device": f" for device `{dev_id}`.{note}"}
+            defaults[CONF_ENABLE_ADD_ENTITIES] = False
             schema = schema_defaults(options_schema(self.entities), **defaults)
         else:
             defaults[CONF_PROTOCOL_VERSION] = "3.3"
@@ -647,17 +661,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 }
 
                 dev_id = self.device_data.get(CONF_DEVICE_ID)
-                if dev_id in self.config_entry.data[CONF_DEVICES]:
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry, data=config
-                    )
-                    return self.async_abort(
-                        reason="device_success",
-                        description_placeholders={
-                            "dev_name": config.get(CONF_FRIENDLY_NAME),
-                            "action": "updated",
-                        },
-                    )
 
                 new_data = self.config_entry.data.copy()
                 new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
@@ -740,7 +743,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     new_data = self.config_entry.data.copy()
                     entry_id = self.config_entry.entry_id
                     # removing entities from registry (they will be recreated)
-                    ent_reg = await er.async_get_registry(self.hass)
+                    ent_reg = er.async_get(self.hass)
                     reg_entities = {
                         ent.unique_id: ent.entity_id
                         for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
