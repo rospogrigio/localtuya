@@ -766,10 +766,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         enc_payload = self._encode_message(payload)
         self.transport.write(enc_payload)
-        try:
-            msg = await self.dispatcher.wait_for(seqno, payload.cmd)
-        except Exception as ex:
-            self.debug("Wait was aborted for seqno %d (%s)", seqno, ex)
+        msg = await self.dispatcher.wait_for(seqno, payload.cmd)
+        if msg is None:
+            self.debug("Wait was aborted for seqno %d", seqno)
             return None
 
         # TODO: Verify stuff, e.g. CRC sequence number?
@@ -954,7 +953,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             json_payload = json.loads(payload)
         except Exception as ex:
             raise DecodeError(
-                "could not decrypt data: wrong local_key? (exception %s)", ex
+                "could not decrypt data: wrong local_key? (exception: %s)" % ex
             )
             # json_payload = self.error_json(ERR_JSON, payload)
 
