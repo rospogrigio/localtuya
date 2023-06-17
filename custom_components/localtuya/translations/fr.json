@@ -1,0 +1,202 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "L'appareil a déjà été configuré.",
+            "device_updated": "La configuration de l'appareil a été mise à jour !"
+        },
+        "error": {
+            "authentication_failed": "Échec de l'authentification.\n{msg}",
+            "cannot_connect": "Impossible de se connecter à l'appareil. Vérifiez que l'adresse est correcte et réessayez.",
+            "device_list_failed": "Échec de la récupération de la liste des appareils.\n{msg}",
+            "invalid_auth": "Échec de l'authentification de l'appareil. Vérifiez que l'ID de l'appareil et la clé locale sont corrects.",
+            "unknown": "Une erreur inconnue est survenue. Voir le journal pour plus de détails.",
+            "entity_already_configured": "L'entité avec cet ID a déjà été configurée.",
+            "address_in_use": "L'adresse utilisée pour la découverte est déjà utilisée. Assurez-vous qu'aucune autre application ne l'utilise (port TCP 6668).",
+            "discovery_failed": "Quelque chose a échoué lors de la découverte des appareils. Voir le journal pour plus de détails.",
+            "empty_dps": "La connexion à l'appareil a réussi mais aucun point de données n'a été trouvé, veuillez réessayer. Créez un nouveau problème et incluez les journaux de débogage si le problème persiste."
+        },
+        "step": {
+            "user": {
+                "title": "Configuration du compte de l'API Tuya Cloud",
+                "description": "Entrez les informations d'identification pour l'API Tuya Cloud.",
+                "data": {
+                    "region": "Région du serveur de l'API",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Ne configurez pas de compte API Cloud"
+                }
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "L'appareil a déjà été configuré.",
+            "device_success": "L'appareil {dev_name} a réussi {action}.",
+            "no_entities": "Impossible de supprimer toutes les entités d'un appareil.\nSi vous souhaitez supprimer un appareil, saisissez-le dans le menu Appareils, cliquez sur les 3 points dans le cadre "Informations sur l'appareil", puis appuyez sur le bouton Supprimer."
+        },
+        "error": {
+            "authentication_failed": "Échec de l'authentification.\n{msg}",
+            "cannot_connect": "Impossible de se connecter à l'appareil. Vérifiez que l'adresse est correcte et réessayez.",
+            "device_list_failed": "Échec de la récupération de la liste des appareils.\n{msg}",
+            "invalid_auth": "Échec de l'authentification avec l'appareil. Vérifiez que l'ID de l'appareil et la clé locale sont corrects.",
+            "unknown": "Une erreur inconnue est survenue. Voir le journal pour plus de détails.",
+            "entity_already_configured": "L'entité avec cet ID a déjà été configurée.",
+            "address_in_use": "L'adresse utilisée pour la découverte est déjà utilisée. Assurez-vous qu'aucune autre application ne l'utilise (port TCP 6668).",
+            "discovery_failed": "Quelque chose a échoué lors de la découverte des appareils. Voir le journal pour plus de détails.",
+            "empty_dps": "La connexion à l'appareil a réussi mais aucun point de données n'a été trouvé, veuillez réessayer. Créez un nouveau problème et incluez les journaux de débogage si le problème persiste."
+        },
+        "step": {
+            "yaml_import": {
+                "title": "Non supporté",
+                "description": "Les options ne peuvent pas être modifiées lorsqu'elles sont configurées via YAML."
+            },
+            "init": {
+                "title": "Configuration de LocalTuya",
+                "description": "Veuillez sélectionner l'action souhaitée.",
+                "data": {
+                    "add_device": "Ajouter un nouvel appareil",
+                    "edit_device": "Modifier un appareil",
+                    "setup_cloud": "Reconfigurer le compte de l'API Cloud"
+                }
+            },
+            "add_device": {
+                "title": "Ajouter un nouvel appareil",
+                "description": "Choisissez l'un des appareils découverts automatiquement ou `...` pour ajouter manuellement un appareil.",
+                "data": {
+                    "selected_device": "Appareils découverts"
+                }
+            },
+            "edit_device": {
+                "title": "Modifier un nouvel appareil",
+                "description": "Choisissez l'appareil configuré que vous souhaitez modifier.",
+                "data": {
+                    "selected_device": "Appareils configurés"
+                }
+            },
+            "cloud_setup": {
+                "title": "Configuration du compte de l'API Cloud",
+                "description": "Entrez les informations d'identification pour l'API Tuya Cloud.",
+                "data": {
+                    "region": "Région du serveur de l'API",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Ne configurez pas de compte API Cloud"
+                }
+            },
+            "configure_device": {
+                "title": "Configurer l'appareil Tuya",
+                "description": "Remplissez les détails de l'appareil{for_device}.",
+                "data": {
+                    "friendly_name": "Nom",
+                    "host": "Hôte",
+                    "device_id": "ID de l'appareil",
+                    "local_key": "Clé locale",
+                    "protocol_version": "Version du protocole",
+                    "enable_debug": "Activer le débogage pour ce périphérique (le débogage doit également être activé dans configuration.yaml)",
+                    "scan_interval": "Intervalle de lecture (en secondes, uniquement lorsqu'il n'est pas mis à jour automatiquement)",
+                    "entities": "Entités (décochez une entité pour la supprimer)",
+                    "add_entities": "Ajouter plus d'entités en mode 'modifier l'appareil'",
+                    "manual_dps_strings": "DPS manuel à ajouter (séparés par des virgules ',') - utilisé lorsque la détection ne fonctionne pas (facultatif)",
+                    "reset_dpids": "DPIDs à envoyer dans la commande RESET (séparés par des virgules ',') - Utilisé lorsque l'appareil ne répond pas aux demandes d'état après la mise sous tension (facultatif)"
+                }
+            },
+            "pick_entity_type": {
+                "title": "Sélection du type d'entité",
+                "description": "Veuillez sélectionner le type d'entité que vous souhaitez ajouter.",
+                "data": {
+                    "platform_to_add": "Plateforme",
+                    "no_additional_entities": "Ne plus ajouter d'entités"
+                }
+            },
+            "configure_entity": {
+                "title": "Configurer l'entité",
+                "description": "Veuillez remplir les détails pour {entity} avec le type `{platform}`. Tous les paramètres, à l'exception de 'ID', peuvent être modifiés ultérieurement à partir de la page Options.",
+                "data": {
+                    "id": "ID",
+                    "friendly_name": "Nom familier",
+                    "current": "Actuel",
+                    "current_consumption": "Consommation de courant",
+                    "voltage": "Tension",
+                    "commands_set": "Jeu de commandes Open_Close_Stop",
+                    "positioning_mode": "Mode de positionnement",
+                    "current_position_dp": "Position actuelle (uniquement pour le mode *position*)",
+                    "set_position_dp": "Définir la position (uniquement pour le mode *position*)",
+                    "position_inverted": "Inverser la position 0-100 (uniquement pour le mode *position*)",
+                    "span_time": "Temps d'ouverture complet, en secondes. (uniquement pour le mode *minuterie*)",
+                    "unit_of_measurement": "Unité de mesure",
+                    "device_class": "Catégorie de périphérique",
+                    "scaling": "Facteur d'Échelle",
+                    "state_on": "Valeur On",
+                    "state_off": "Valeur Off",
+                    "powergo_dp": "DP de Puissance (normallement 25 ou 2)",
+                    "idle_status_value": "état Inactif (séparés par des virgules)",
+                    "returning_status_value": "Statut de Retour",
+                    "docked_status_value": "État Ancré (séparés par des virgules)",
+                    "fault_dp": "DP de la Faute (normallement 11)",
+                    "battery_dp": "DP de l'État de la batterie (normallement 14)",
+                    "mode_dp": "DP du Mode (normallement 27)",
+                    "modes": "Liste des modes",
+                    "return_mode": "Mode Retour à la maison",
+                    "fan_speed_dp": "DP de la Vitesses du ventilateur(normallement 30)",
+                    "fan_speeds": "Liste des Vitesses du ventilateur (séparées par des virgules)",
+                    "clean_time_dp": "DP du Temps de nettoyage (normallement 33)",
+                    "clean_area_dp": "DP de Zone propre (normallement 32)",
+                    "clean_record_dp": "Clean Record DP (Usually 34)",
+                    "locate_dp": "Locate DP (Usually 31)",
+                    "paused_state": "État de pause (pause, en pause, etc.)",
+                    "stop_status": "État d'Arrêt",
+                    "brightness": "Luminosité (uniquement pour la couleur blanche)",
+                    "brightness_lower": "Valeur inférieure de luminosité",
+                    "brightness_upper": "Valeur supérieure de luminosité",
+                    "color_temp": "Température de couleur",
+                    "color_temp_reverse": "Inverser la température de couleur",
+                    "color": "Couleur",
+                    "color_mode": "Mode de couleur",
+                    "color_temp_min_kelvin": "Température de couleur minimale en K",
+                    "color_temp_max_kelvin": "Température de couleur maximale en K",
+                    "music_mode": "Mode musique disponible",
+                    "scene": "Scène",
+                    "select_options": "Entrées valides, séparez les entrées par un ;",
+                    "select_options_friendly": "Options conviviales, entrées séparées par un ;",
+                    "fan_speed_control": "DPS du Contrôle de la vitesse du ventilateur",
+                    "fan_oscillating_control": "DPS du Contrôle de l'oscillantion du ventilateur",
+                    "fan_speed_min": "vitesse minimale du ventilateur (nombre entier)",
+                    "fan_speed_max": "vitesse maximale du ventilateur (nombre entier)",
+                    "fan_speed_ordered_list": "Liste des modes de vitesse du ventilateur (supprime la vitesse min/max)",
+                    "fan_direction":"DPS de la direction du ventilateur",
+                    "fan_direction_forward": "DPS Direction Avant",
+                    "fan_direction_reverse": "DPS Direction Inverse",
+                    "fan_dps_type": "DP du type de valeur",
+                    "current_temperature_dp": "Température Actuelle",
+                    "target_temperature_dp": "Température Cible",
+                    "temperature_step": "Incrément de Température (optionel)",
+                    "max_temperature_dp": "Température Max (optionel)",
+                    "min_temperature_dp": "Température Min  (optionel)",
+                    "precision": "Précision (optionel, pour valeurs DPs)",
+                    "target_precision": "Précision cible (optionel, pour valeurs DPs)",
+                    "temperature_unit": "Unité de Température  (optionel)",
+                    "hvac_mode_dp": "DP du Mode HVAC (optionel)",
+                    "hvac_mode_set": "DP du Mode HVAC sélectionné (optionel)",
+                    "hvac_action_dp": "DP de l'acion en cours du HVAC (optionel)",
+                    "hvac_action_set": "Action sélectionnée du HVAC(optionel)",
+                    "preset_dp": "DP des Préréglages (optionel)",
+                    "preset_set": "Ensemble de préréglages (optionel)",
+                    "eco_dp": "DP Eco (optionel)",
+                    "eco_value": "Valeur Eco (optionel)",
+                    "heuristic_action": "Activer l'action heuristique (optionel)",
+                    "dps_default_value": "Valeur par défaut lorsqu'il non-initialisé (optionnel)",
+                    "restore_on_reconnect": "Restaurer la dernière valeur définie dans HomeAssistant après une connexion perdue",
+                    "min_value": "Valeur Minimum",
+                    "max_value": "Valeur Maximum",
+                    "step_size": "Incrément minimum entre les nombres",
+                    "is_passive_entity": "Entité passive - nécessite une intégration pour envoyer la valeur d'initialisation"
+                }
+            }
+        }
+    },
+    "title": "LocalTuya"
+}
