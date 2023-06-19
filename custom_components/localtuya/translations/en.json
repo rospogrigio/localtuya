@@ -176,6 +176,8 @@
                     "temperature_step": "Temperature Step (optional)",
                     "max_temperature_dp": "Max Temperature (optional)",
                     "min_temperature_dp": "Min Temperature (optional)",
+                    "max_temp": "Max Temperature Manual (optional)",
+                    "min_temp": "Min Temperature Manual (optional)",
                     "precision": "Precision (optional, for DPs values)",
                     "target_precision": "Target Precision (optional, for DPs values)",
                     "temperature_unit": "Temperature Unit (optional)",
