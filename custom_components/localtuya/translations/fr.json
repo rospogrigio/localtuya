@@ -34,7 +34,7 @@
         "abort": {
             "already_configured": "L'appareil a déjà été configuré.",
             "device_success": "L'appareil {dev_name} a réussi {action}.",
-            "no_entities": "Impossible de supprimer toutes les entités d'un appareil.\nSi vous souhaitez supprimer un appareil, saisissez-le dans le menu Appareils, cliquez sur les 3 points dans le cadre "Informations sur l'appareil", puis appuyez sur le bouton Supprimer."
+            "no_entities": "Impossible de supprimer toutes les entités d'un appareil.\nSi vous souhaitez supprimer un appareil, saisissez-le dans le menu Appareils, cliquez sur les 3 points dans le cadre 'Informations sur l'appareil', puis appuyez sur le bouton Supprimer."
         },
         "error": {
             "authentication_failed": "Échec de l'authentification.\n{msg}",
