@@ -1,6 +1,4 @@
 {
   "name": "Local Tuya",
-  "domains": ["climate", "cover", "fan", "light", "number", "select", "sensor", "switch"],
-  "homeassistant": "0.116.0",
-  "iot_class": ["Local Push"]
+  "homeassistant": "0.116.0"
 }
