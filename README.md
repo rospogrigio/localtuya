@@ -19,7 +19,7 @@ The following Tuya device types are currently supported:
 
 Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
-> **Currently, only Tuya protocols 3.1 and 3.3 are supported (3.4 is not).**
+> **Currently, Tuya protocols from 3.1 to 3.4 are supported.**
 
 This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
 
@@ -92,9 +92,13 @@ If you have selected one entry, you only need to input the device's Friendly Nam
 
 Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
+Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration. **Note: Any DPS added using this option will have a -1 value during setup.** 
+
+Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used. If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
+
 Once you press "Submit", the connection is tested to check that everything works.
 
-![image](https://user-images.githubusercontent.com/1082213/146664103-ac40319e-f934-4933-90cf-2beaff1e6bac.png)
+![image](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
 
 
 Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.
@@ -103,8 +107,11 @@ After you have defined all the needed entities, leave the "Do not add more entit
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
 For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
-all the available DPs found on the device (with their current status!!) for easy identification. Each entity type has different options
-to be configured. Here is an example for the "switch" entity:
+all the available DPs found on the device (with their current status!!) for easy identification. 
+
+**Note: If your device requires an LocalTuya to send an initialisation value to the entity for it to work, this can be configured (in supported entities) through the 'Passive entity' option. Optionally you can specify the initialisation value to be sent**
+
+Each entity type has different options to be configured. Here is an example for the "switch" entity:
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
 
@@ -157,7 +164,10 @@ logger:
   default: warning
   logs:
     custom_components.localtuya: debug
+    custom_components.localtuya.pytuya: debug
 ```
+
+Then, edit the device that is showing problems and check the "Enable debugging for this device" button.
 
 # Notes:
 
@@ -166,11 +176,9 @@ logger:
 # To-do list:
 
 * Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-.
-      Ideas: Use: https://www.home-assistant.io/components/integration/ and https://www.home-assistant.io/components/utility_meter/
+      Ideas: Use: https://www.home-assistant.io/integrations/integration/ and https://www.home-assistant.io/integrations/utility_meter/
 
 * Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
-
-* Support devices that use Tuya protocol v.3.4
 
 # Thanks to:
 
@@ -179,6 +187,8 @@ NameLessJedi https://github.com/NameLessJedi/localtuya-homeassistant and mileper
 TradeFace, for being the only one to provide the correct code for communication with the cover (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): https://github.com/TradeFace/tuya/
 
 sean6541, for the working (standard) Python Handler for Tuya devices.
+
+jasonacox, for the TinyTuya project from where I could import the code to communicate with devices using protocol 3.4.
 
 postlund, for the ideas, for coding 95% of the refactoring and boosting the quality of this repo to levels hard to imagine (by me, at least) and teaching me A LOT of how things work in Home Assistant.
 

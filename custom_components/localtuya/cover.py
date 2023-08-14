@@ -108,13 +108,13 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def is_closed(self):
         """Return if the cover is closed or not."""
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE:
-            return None
+            return False
 
         if self._current_cover_position == 0:
             return True
         if self._current_cover_position == 100:
             return False
-        return None
+        return False
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
@@ -227,6 +227,11 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
             # store the time of the last movement change
             self._timer_start = time.time()
+
+        # Keep record in last_state as long as not during connection/re-connection,
+        # as last state will be used to restore the previous state
+        if (self._state is not None) and (not self._device.is_connecting):
+            self._last_state = self._state
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)

@@ -1,6 +1,8 @@
 name: Tox PR CI
 
-on: [pull_request]
+on:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,8 +16,7 @@ jobs:
         platform:
           - ubuntu-latest
         python-version:
-          - 3.7
-          - 3.8
+          - 3.9
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}

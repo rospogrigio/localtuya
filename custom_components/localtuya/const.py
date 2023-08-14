@@ -28,18 +28,25 @@ ATTR_UPDATED_AT = "updated_at"
 
 # config flow
 CONF_LOCAL_KEY = "local_key"
+CONF_ENABLE_DEBUG = "enable_debug"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
 CONF_MODEL = "model"
 CONF_PRODUCT_KEY = "product_key"
 CONF_PRODUCT_NAME = "product_name"
 CONF_USER_ID = "user_id"
+CONF_ENABLE_ADD_ENTITIES = "add_entities"
+
 
 CONF_ACTION = "action"
 CONF_ADD_DEVICE = "add_device"
 CONF_EDIT_DEVICE = "edit_device"
 CONF_SETUP_CLOUD = "setup_cloud"
 CONF_NO_CLOUD = "no_cloud"
+CONF_MANUAL_DPS = "manual_dps_strings"
+CONF_DEFAULT_VALUE = "dps_default_value"
+CONF_RESET_DPIDS = "reset_dpids"
+CONF_PASSIVE_ENTITY = "is_passive_entity"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -73,6 +80,7 @@ CONF_FAN_ORDERED_LIST = "fan_speed_ordered_list"
 CONF_FAN_DIRECTION = "fan_direction"
 CONF_FAN_DIRECTION_FWD = "fan_direction_forward"
 CONF_FAN_DIRECTION_REV = "fan_direction_reverse"
+CONF_FAN_DPS_TYPE = "fan_dps_type"
 
 # sensor
 CONF_SCALING = "scaling"
@@ -113,3 +121,16 @@ CONF_FAULT_DP = "fault_dp"
 CONF_PAUSED_STATE = "paused_state"
 CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
+
+# number
+CONF_MIN_VALUE = "min_value"
+CONF_MAX_VALUE = "max_value"
+CONF_STEPSIZE_VALUE = "step_size"
+
+# select
+CONF_OPTIONS = "select_options"
+CONF_OPTIONS_FRIENDLY = "select_options_friendly"
+
+# States
+ATTR_STATE = "raw_state"
+CONF_RESTORE_ON_RECONNECT = "restore_on_reconnect"
