@@ -35,6 +35,7 @@ CONF_MODEL = "model"
 CONF_PRODUCT_KEY = "product_key"
 CONF_PRODUCT_NAME = "product_name"
 CONF_USER_ID = "user_id"
+CONF_ENABLE_ADD_ENTITIES = "add_entities"
 
 
 CONF_ACTION = "action"
