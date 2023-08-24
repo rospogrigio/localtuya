@@ -188,7 +188,7 @@
             }
         }
     },
-    "services ": {
+    "services": {
         "reload": {
             "name": "Reload",
             "description": "Reload localtuya and reconnect to all devices."
