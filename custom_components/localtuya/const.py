@@ -102,6 +102,16 @@ CONF_HVAC_ACTION_DP = "hvac_action_dp"
 CONF_HVAC_ACTION_SET = "hvac_action_set"
 CONF_ECO_DP = "eco_dp"
 CONF_ECO_VALUE = "eco_value"
+PRESET_AF = "Anti-freeze"
+# Power Levels
+CONF_POWER_LEVEL_DP = "power_level_dp"
+CONF_POWER_LEVEL_SET = "power_level_set"
+POWER_LEVEL_1 = "1"
+POWER_LEVEL_2 = "2"
+POWER_LEVEL_3 = "3"
+POWER_LEVEL_4 = "4"
+POWER_LEVEL_5 = "5"
+POWER_LEVEL_AUTO = "Auto"
 
 # vacuum
 CONF_POWERGO_DP = "powergo_dp"
