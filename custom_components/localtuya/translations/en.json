@@ -99,6 +99,7 @@
                     "enable_debug": "Enable debugging for this device (debug must be enabled also in configuration.yaml)",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
                     "entities": "Entities (uncheck an entity to remove it)",
+                    "add_entities": "Add more entities in 'edit device' mode",
                     "manual_dps_strings": "Manual DPS to add (separated by commas ',') - used when detection is not working (optional)",
                     "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)"
                 }
