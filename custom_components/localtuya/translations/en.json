@@ -167,7 +167,7 @@
                     "fan_speed_min": "minimum fan speed integer",
                     "fan_speed_max": "maximum fan speed integer",
                     "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
-                    "fan_direction":"fan direction dps",
+                    "fan_direction": "fan direction dps",
                     "fan_direction_forward": "forward dps string",
                     "fan_direction_reverse": "reverse dps string",
                     "fan_dps_type": "DP value type",
@@ -194,6 +194,30 @@
                     "max_value": "Maximum Value",
                     "step_size": "Minimum increment between numbers",
                     "is_passive_entity": "Passive entity - requires integration to send initialisation value"
+                }
+            }
+        }
+    },
+    "services": {
+        "reload": {
+            "name": "Reload",
+            "description": "Reload localtuya and reconnect to all devices."
+        },
+        "set_dp": {
+            "name": "Set datapoint",
+            "description": "Change the value of a datapoint (DP)",
+            "fields": {
+                "device_id": {
+                    "name": "Device ID",
+                    "description": "Device ID of device to change datapoint value for"
+                },
+                "dp": {
+                    "name": "DP",
+                    "description": "Datapoint index"
+                },
+                "value": {
+                    "name": "Value",
+                    "description": "New value to set"
                 }
             }
         }
