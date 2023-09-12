@@ -188,5 +188,29 @@
             }
         }
     },
+    "services": {
+        "reload": {
+            "name": "Reload",
+            "description": "Reload localtuya and reconnect to all devices."
+        },
+        "set_dp": {
+            "name": "Set datapoint",
+            "description": "Change the value of a datapoint (DP)",
+            "fields": {
+                "device_id": {
+                    "name": "Device ID",
+                    "description": "Device ID of device to change datapoint value for"
+                },
+                "dp": {
+                    "name": "DP",
+                    "description": "Datapoint index"
+                },
+                "value": {
+                    "name": "Value",
+                    "description": "New value to set"
+                }
+            }
+        }
+    },
     "title": "LocalTuya"
 }
