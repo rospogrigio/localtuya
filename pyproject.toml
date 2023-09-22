@@ -1,5 +1,5 @@
 [tool.black]
-target-version = ["py38", "py39"]
+target-version = ["py311"]
 include = 'custom_components/localtuya/.*\.py'
 
 # pylint config stolen from Home Assistant
