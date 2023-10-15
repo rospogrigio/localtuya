@@ -153,6 +153,11 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
                value_template: >-
                  {{ states.switch.sw01.attributes.current_consumption }}
                unit_of_measurement: 'W'
+         - platform: integration
+           source: sensor.tuya_sw01_current_consumptio
+           name: energy_spent
+           unit_prefix: k
+           round: 2
 ```
 
 # Debugging
