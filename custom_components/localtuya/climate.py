@@ -65,6 +65,10 @@ HVAC_MODE_SETS = {
         HVAC_MODE_HEAT: "Manual",
         HVAC_MODE_AUTO: "Auto",
     },
+    "MANUAL/AUTO": {
+        HVAC_MODE_HEAT: "MANUAL",
+        HVAC_MODE_AUTO: "AUTO",
+    },
     "Manual/Program": {
         HVAC_MODE_HEAT: "Manual",
         HVAC_MODE_AUTO: "Program",
@@ -97,6 +101,10 @@ HVAC_ACTION_SETS = {
     "Heat/Warming": {
         CURRENT_HVAC_HEAT: "Heat",
         CURRENT_HVAC_IDLE: "Warming",
+    },
+    "heating/warming": {
+        CURRENT_HVAC_HEAT: "heating",
+        CURRENT_HVAC_IDLE: "warming",
     },
 }
 PRESET_SETS = {
@@ -228,7 +236,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return the list of available operation modes."""
         if not self.has_config(CONF_HVAC_MODE_DP):
             return None
-        return list(self._conf_hvac_mode_set) + [HVAC_MODE_OFF]
+        return list(self._conf_hvac_mode_set) 
 
     @property
     def hvac_action(self):
@@ -343,22 +351,14 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return the minimum temperature."""
         if self.has_config(CONF_MIN_TEMP_DP):
             return self.dps_conf(CONF_MIN_TEMP_DP)
-        # DEFAULT_MIN_TEMP is in C
-        if self.temperature_unit == TEMP_FAHRENHEIT:
-            return DEFAULT_MIN_TEMP * 1.8 + 32
-        else:
-            return DEFAULT_MIN_TEMP
+        return DEFAULT_MIN_TEMP
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
         if self.has_config(CONF_MAX_TEMP_DP):
             return self.dps_conf(CONF_MAX_TEMP_DP)
-        # DEFAULT_MAX_TEMP is in C
-        if self.temperature_unit == TEMP_FAHRENHEIT:
-            return DEFAULT_MAX_TEMP * 1.8 + 32
-        else:
-            return DEFAULT_MAX_TEMP
+        return DEFAULT_MAX_TEMP
 
     def status_updated(self):
         """Device status was updated."""
