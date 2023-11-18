@@ -4,17 +4,14 @@ from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.select import DOMAIN, SelectEntity
-from homeassistant.const import (
-    CONF_DEVICE_CLASS,
-    STATE_UNKNOWN,
-)
+from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
 
 from .common import LocalTuyaEntity, async_setup_entry
-
 from .const import (
+    CONF_DEFAULT_VALUE,
     CONF_OPTIONS,
     CONF_OPTIONS_FRIENDLY,
-    CONF_DEFAULT_VALUE,
+    CONF_PASSIVE_ENTITY,
     CONF_RESTORE_ON_RECONNECT,
 )
 
@@ -24,8 +21,9 @@ def flow_schema(dps):
     return {
         vol.Required(CONF_OPTIONS): str,
         vol.Optional(CONF_OPTIONS_FRIENDLY): str,
-        vol.Optional(CONF_DEFAULT_VALUE): str,
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
+        vol.Required(CONF_PASSIVE_ENTITY): bool,
+        vol.Optional(CONF_DEFAULT_VALUE): str,
     }
 
 
