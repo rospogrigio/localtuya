@@ -193,7 +193,11 @@
                     "min_value": "Minimum Value",
                     "max_value": "Maximum Value",
                     "step_size": "Minimum increment between numbers",
-                    "is_passive_entity": "Passive entity - requires integration to send initialisation value"
+                    "is_passive_entity": "Passive entity - requires integration to send initialisation value",
+                    "ir_b64_code": "Button Code in Base 64 format",
+                    "ir_pronto_code": "Button Code in Pronto format",
+                    "ir_button_name": "User Friendly button name",
+                    "ir_dp_id": "DP Id used to fire IR Signal"
                 }
             }
         }

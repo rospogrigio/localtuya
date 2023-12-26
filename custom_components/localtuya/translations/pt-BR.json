@@ -183,7 +183,11 @@
                     "preset_set": "Conjunto de predefinições (opcional)",
                     "eco_dp": "Eco DP (opcional)",
                     "eco_value": "Valor eco (opcional)",
-                    "heuristic_action": "Ativar ação heurística (opcional)"
+                    "heuristic_action": "Ativar ação heurística (opcional)",
+                    "ir_b64_code": "Button Code in Base 64 format",
+                    "ir_pronto_code": "Código Pronto do botão",
+                    "ir_button_name": "Nome do botão",
+                    "ir_dp_id": "DP Utilizado para disparar o sinal"
                 }
             }
         }

@@ -207,9 +207,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             try:
                 try:
                     self.debug("Retrieving initial state")
-                    status = await self._interface.status()
-                    if status is None:
-                        raise Exception("Failed to retrieve status")
+                    if hasattr(self, "_bypass_status") and self._bypass_status:
+                        status = self._default_status
+                    else:
+                        status = await self._interface.status()
+                        if status is None:
+                            raise Exception("Failed to retrieve status")
 
                     self._interface.start_heartbeat()
                     self.status_updated(status)
@@ -403,15 +406,21 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         def _update_handler(status):
             """Update entity state when status was updated."""
-            if status is None:
-                status = {}
-            if self._status != status:
-                self._status = status.copy()
-                if status:
-                    self.status_updated()
+            if hasattr(self, "_bypass_status") and self._bypass_status:
+                status = self._default_status
 
-                # Update HA
+                self.status_updated()
                 self.schedule_update_ha_state()
+            else:
+                if status is None:
+                    status = {}
+                if self._status != status:
+                    self._status = status.copy()
+                    if status:
+                        self.status_updated()
+
+                    # Update HA
+                    self.schedule_update_ha_state()
 
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
 
