@@ -93,7 +93,7 @@ class LocaltuyaIRButton(LocalTuyaEntity, ButtonEntity):
             _LOGGER.debug("Sending Option: -> " + option_value)
 
             pulses = self.pronto_to_pulses(option_value)
-            base64_code = self.pulses_to_base64(pulses)
+            base64_code = '1' + self.pulses_to_base64(pulses)
 
         await self.send_signal(base64_code)
         
@@ -118,7 +118,7 @@ class LocaltuyaIRButton(LocalTuyaEntity, ButtonEntity):
             NSDP_TYPE: 0,
         }
         command[NSDP_HEAD] = ''
-        command[NSDP_KEY1] = '1' + base64_code
+        command[NSDP_KEY1] = base64_code
 
         await self._device.set_dp(json.dumps(command), self._default_dp)
 

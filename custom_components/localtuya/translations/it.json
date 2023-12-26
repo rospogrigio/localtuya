@@ -184,7 +184,7 @@
                     "eco_dp": "DP per Eco (opzionale)",
                     "eco_value": "Valore Eco (opzionale)",
                     "heuristic_action": "Abilita azione euristica (opzionale)",
-                    "ir_b64_code": "Button Code in Base 64 format",
+                    "ir_b64_code": "Codice pulsante in formato Base 64",
                     "ir_pronto_code": "Codice pulsante in formato Pronto",
                     "ir_button_name": "Nome pulsante intuitivo",
                     "ir_dp_id": "ID DP utilizzato per attivare il segnale IR"
