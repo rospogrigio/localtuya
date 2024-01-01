@@ -60,7 +60,7 @@ def prepare_setup_entities(hass, config_entry, platform):
 
 
 async def async_setup_entry(
-    domain, entity_class, flow_schema, hass, config_entry, async_add_entities
+        domain, entity_class, flow_schema, hass, config_entry, async_add_entities
 ):
     """Set up a Tuya platform based on a config entry.
 
@@ -148,6 +148,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._entities = []
         self._local_key = self._dev_config_entry[CONF_LOCAL_KEY]
         self._default_reset_dpids = None
+        self._make_connection_local_key = 1  # 0 need to reconnect, 1 + process
         if CONF_RESET_DPIDS in self._dev_config_entry:
             reset_ids_str = self._dev_config_entry[CONF_RESET_DPIDS].split(",")
 
@@ -183,9 +184,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
-        self.info("Trying to connect to %s...", self._dev_config_entry[CONF_HOST])
+        self.warning("Trying to connect to %s...", self._dev_config_entry[CONF_HOST])
 
         try:
+            self.info("Trying to connect to...")
             self._interface = await pytuya.connect(
                 self._dev_config_entry[CONF_HOST],
                 self._dev_config_entry[CONF_DEVICE_ID],
@@ -194,6 +196,12 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._dev_config_entry.get(CONF_ENABLE_DEBUG, False),
                 self,
             )
+            self.info(f"Connect to {self._dev_config_entry[CONF_HOST]} but not sure connection established")
+            self._make_connection_local_key = self._make_connection_local_key + 1
+            if self._make_connection_local_key >= 5:
+                self._make_connection_local_key = 0
+                self.info("Trying to receive a new key...")
+                await self.update_partial_local_key()
             self._interface.add_dps_to_request(self.dps_to_request)
         except Exception as ex:  # pylint: disable=broad-except
             self.warning(
@@ -216,7 +224,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
                 except Exception as ex:
                     if (self._default_reset_dpids is not None) and (
-                        len(self._default_reset_dpids) > 0
+                            len(self._default_reset_dpids) > 0
                     ):
                         self.debug(
                             "Initial state update failed, trying reset command "
@@ -266,8 +274,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             )
 
             if (
-                CONF_SCAN_INTERVAL in self._dev_config_entry
-                and int(self._dev_config_entry[CONF_SCAN_INTERVAL]) > 0
+                    CONF_SCAN_INTERVAL in self._dev_config_entry
+                    and int(self._dev_config_entry[CONF_SCAN_INTERVAL]) > 0
             ):
                 self._unsub_interval = async_track_time_interval(
                     self._hass,
@@ -295,12 +303,23 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             )
             self.info("local_key updated for device %s.", dev_id)
 
+    async def update_partial_local_key(self):
+        """Retrieve updated local_key from Cloud API and update the config_entry."""
+        dev_id = self._dev_config_entry[CONF_DEVICE_ID]
+        await self._hass.data[DOMAIN][DATA_CLOUD].async_get_devices_list()
+        cloud_devs = self._hass.data[DOMAIN][DATA_CLOUD].device_list
+        if dev_id in cloud_devs:
+            self._local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
+            self._dev_config_entry[CONF_LOCAL_KEY] = self._local_key
+            self.info("update_partial_local_key: local_key updated for device %s.", dev_id)
+
     async def _async_refresh(self, _now):
         if self._interface is not None:
             await self._interface.update_dps()
 
     async def close(self):
         """Close connection and stop re-connect loop."""
+        self.warning("Entering close function")
         self._is_closing = True
         if self._connect_task is not None:
             self._connect_task.cancel()
@@ -362,6 +381,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._connect_task.cancel()
             self._connect_task = None
         self.warning("Disconnected - waiting for discovery broadcast")
+        self.warning(f"disconnected: _make_connection_local_key = {self._make_connection_local_key}")
+        if self._make_connection_local_key == 0:
+            self._is_closing = False
+            self.warning("Entering connection area after disconnection ...")
+            self.warning("Trying to reconnect after disconnection ...")
+            self._make_connection_local_key = 1
+            self.async_connect()
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
@@ -387,7 +413,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """ Restore on connect setting is available to be provided by Platform entities
         if required"""
         self._restore_on_reconnect = (
-            self._config.get(CONF_RESTORE_ON_RECONNECT) or False
+                self._config.get(CONF_RESTORE_ON_RECONNECT) or False
         )
         self.set_logger(logger, self._dev_config_entry[CONF_DEVICE_ID])
 
@@ -565,7 +591,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         status.
         """
         if (not self.restore_on_reconnect) and (
-            (str(self._dp_id) in self._status) or (not self._is_passive_entity)
+                (str(self._dp_id) in self._status) or (not self._is_passive_entity)
         ):
             self.debug(
                 "Entity %s (DP %d) - Not restoring as restore on reconnect is "
