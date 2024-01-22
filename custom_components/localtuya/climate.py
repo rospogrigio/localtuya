@@ -15,6 +15,9 @@ from homeassistant.components.climate.const import (
     CURRENT_HVAC_IDLE,
     HVAC_MODE_AUTO,
     HVAC_MODE_HEAT,
+    HVAC_MODE_COOL,
+    HVAC_MODE_DRY,
+    HVAC_MODE_FAN_ONLY,
     HVAC_MODE_OFF,
     PRESET_AWAY,
     PRESET_ECO,
@@ -76,6 +79,13 @@ HVAC_MODE_SETS = {
     "1/0": {
         HVAC_MODE_HEAT: "1",
         HVAC_MODE_AUTO: "0",
+    },
+    "cold/hot/wet/wind/auto": {
+        HVAC_MODE_HEAT: "hot",
+        HVAC_MODE_AUTO: "auto",
+        HVAC_MODE_COOL: "cold",
+        HVAC_MODE_DRY: "wet",
+        HVAC_MODE_FAN_ONLY: "wind",
     },
 }
 HVAC_ACTION_SETS = {
