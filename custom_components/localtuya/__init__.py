@@ -139,10 +139,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
             )
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                device.async_connect()
-        elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
+
+        if device_id in hass.data[DOMAIN][TUYA_DEVICES]:
             # _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
 
             device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
