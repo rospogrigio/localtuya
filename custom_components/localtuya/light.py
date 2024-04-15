@@ -38,8 +38,19 @@ DEFAULT_MAX_KELVIN = 6500  # MIRED 153
 
 DEFAULT_COLOR_TEMP_REVERSE = False
 
-DEFAULT_LOWER_BRIGHTNESS = 29
+DEFAULT_LOWER_BRIGHTNESS = 10
 DEFAULT_UPPER_BRIGHTNESS = 1000
+
+# Default DPs for Tuya lights.
+# Source:
+#   https://developer.tuya.com/en/docs/iot/product-function-definition?id=K9s9rhj576ypf
+DEFAULT_DP = {
+    CONF_BRIGHTNESS: 22,
+    CONF_COLOR_TEMP: 23,
+    CONF_COLOR_MODE: 21,
+    CONF_COLOR: 24,
+    CONF_SCENE: 25,
+}
 
 MODE_COLOR = "colour"
 MODE_MUSIC = "music"
@@ -103,16 +114,16 @@ def map_range(value, from_lower, from_upper, to_lower, to_upper):
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_BRIGHTNESS): vol.In(dps),
-        vol.Optional(CONF_COLOR_TEMP): vol.In(dps),
+        _optional_with_default(CONF_BRIGHTNESS, dps): vol.In(dps),
+        _optional_with_default(CONF_COLOR_TEMP, dps): vol.In(dps),
         vol.Optional(CONF_BRIGHTNESS_LOWER, default=DEFAULT_LOWER_BRIGHTNESS): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=10000)
         ),
         vol.Optional(CONF_BRIGHTNESS_UPPER, default=DEFAULT_UPPER_BRIGHTNESS): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=10000)
         ),
-        vol.Optional(CONF_COLOR_MODE): vol.In(dps),
-        vol.Optional(CONF_COLOR): vol.In(dps),
+        _optional_with_default(CONF_COLOR_MODE, dps): vol.In(dps),
+        _optional_with_default(CONF_COLOR, dps): vol.In(dps),
         vol.Optional(CONF_COLOR_TEMP_MIN_KELVIN, default=DEFAULT_MIN_KELVIN): vol.All(
             vol.Coerce(int), vol.Range(min=1500, max=8000)
         ),
@@ -124,11 +135,37 @@ def flow_schema(dps):
             default=DEFAULT_COLOR_TEMP_REVERSE,
             description={"suggested_value": DEFAULT_COLOR_TEMP_REVERSE},
         ): bool,
-        vol.Optional(CONF_SCENE): vol.In(dps),
+        _optional_with_default(CONF_SCENE, dps): vol.In(dps),
         vol.Optional(
             CONF_MUSIC_MODE, default=False, description={"suggested_value": False}
         ): bool,
     }
+
+
+def _optional_with_default(name, dps):
+    """
+    Return a schema Optional with the provided name and a default value.
+
+    The default value is based on the provided actual device DPs.
+    The DPs must be strings of the form "DP (value: ...)".
+    """
+    if name in DEFAULT_DP and dps is not None:
+        default = _lookup_dp(DEFAULT_DP[name], dps) or vol.UNDEFINED
+        return vol.Optional(name, default=default)
+
+    return vol.Optional(name)
+
+
+def _lookup_dp(dp, dps):
+    """
+    Find the provided DP in the list of actual device DPs.
+
+    If not found returns None.
+    The DPs must be strings of the form "DP (value: ...)".
+    """
+    return next(
+        filter(lambda x: isinstance(x, str) and x.startswith(f"{dp} "), dps), None
+    )
 
 
 class LocaltuyaLight(LocalTuyaEntity, LightEntity):
