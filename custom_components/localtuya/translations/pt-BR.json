@@ -96,6 +96,8 @@
                     "device_id": "ID do dispositivo",
                     "local_key": "Local key",
                     "protocol_version": "Versão do protocolo",
+                    "device_cid": "Device CID, for subdevices (Zigbee) only",
+                    "gw_id": "Gateway's ID, for subdevices (Zigbee) only",
                     "enable_debug": "Ative a depuração para este dispositivo (a depuração também deve ser ativada em configuration.yaml)",
                     "scan_interval": "Intervalo de escaneamento (segundos, somente quando não estiver atualizando automaticamente)",
                     "entities": "Entidades (desmarque uma entidade para removê-la)"

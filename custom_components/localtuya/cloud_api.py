@@ -8,6 +8,17 @@ import time
 
 import requests
 
+from homeassistant.const import (
+    CONF_ID,
+)
+
+from .const import (
+    CONF_GW_ID,
+    CONF_LOCAL_KEY,
+    CONF_NODEID,
+    CONF_SUB,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -133,7 +144,27 @@ class TuyaCloudApi:
             # )
             return f"Error {r_json['code']}: {r_json['msg']}"
 
-        self.device_list = {dev["id"]: dev for dev in r_json["result"]}
+        self.device_list = {}
+
+        for dev in r_json["result"]:
+            dev[CONF_GW_ID] = ""
+            dev_id = dev[CONF_ID]
+            if dev[CONF_SUB] and CONF_NODEID in dev:
+                # subdevice (Zigbee): will use the cid as the real id
+                # dev_id = dev[CONF_NODEID]
+                for dev2 in r_json["result"]:
+                    if (
+                        dev[CONF_LOCAL_KEY] == dev2[CONF_LOCAL_KEY]
+                        and dev2["ip"] != ""
+                        and CONF_NODEID not in dev2
+                    ):
+                        # _LOGGER.debug("FATHER IS %s", dev2[CONF_ID])
+                        dev[CONF_GW_ID] = dev2[CONF_ID]
+
+            self.device_list[dev_id] = dev
+
+            # _LOGGER.debug("DEVICE: %s %s [%s]", dev_id, dev[CONF_LOCAL_KEY], dev[CONF_GW_ID])
+
         # _LOGGER.debug("DEV_LIST: %s", self.device_list)
 
         return "ok"

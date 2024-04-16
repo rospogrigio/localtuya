@@ -32,6 +32,7 @@ from .common import TuyaDevice, async_config_entry_by_device_id
 from .config_flow import ENTRIES_VERSION, config_schema
 from .const import (
     ATTR_UPDATED_AT,
+    CONF_GW_ID,
     CONF_NO_CLOUD,
     CONF_PRODUCT_KEY,
     CONF_USER_ID,
@@ -68,7 +69,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][TUYA_DEVICES] = {}
 
-    device_cache = {}
+    ip_cache = []
 
     async def _handle_reload(service):
         """Handle reload service call."""
@@ -97,57 +98,60 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
     def _device_discovered(device):
         """Update address of device if it has changed."""
-        device_ip = device["ip"]
-        device_id = device["gwId"]
-        product_key = device["productKey"]
+        discovered_ip = device["ip"]
+        discovered_id = device["gwId"]
+        discovered_prod_key = device["productKey"]
 
         # If device is not in cache, check if a config entry exists
-        entry = async_config_entry_by_device_id(hass, device_id)
+        entry = async_config_entry_by_device_id(hass, discovered_id)
         if entry is None:
             return
 
-        if device_id not in device_cache:
-            if entry and device_id in entry.data[CONF_DEVICES]:
-                # Save address from config entry in cache to trigger
-                # potential update below
-                host_ip = entry.data[CONF_DEVICES][device_id][CONF_HOST]
-                device_cache[device_id] = host_ip
-
-        if device_id not in device_cache:
-            return
-
-        dev_entry = entry.data[CONF_DEVICES][device_id]
-
         new_data = entry.data.copy()
-        updated = False
+        if discovered_ip not in ip_cache:
+            # new IP found: checking whether it belongs to a configured device
+            ip_cache.append(discovered_ip)
+            for dev_id, dev_entry in entry.data[CONF_DEVICES].items():
+                if discovered_id in [dev_id, dev_entry.get(CONF_GW_ID)]:
+                    entry_ip = dev_entry[CONF_HOST]
+                    updated = False
 
-        if device_cache[device_id] != device_ip:
-            updated = True
-            new_data[CONF_DEVICES][device_id][CONF_HOST] = device_ip
-            device_cache[device_id] = device_ip
+                    if entry_ip != discovered_ip:
+                        updated = True
+                        _LOGGER.debug(
+                            "UPDATING IP FOR DEVICE %s: %s", dev_id, discovered_ip
+                        )
+                        new_data[CONF_DEVICES][dev_id][CONF_HOST] = discovered_ip
 
-        if dev_entry.get(CONF_PRODUCT_KEY) != product_key:
-            updated = True
-            new_data[CONF_DEVICES][device_id][CONF_PRODUCT_KEY] = product_key
+                    if (
+                        discovered_id == dev_id
+                        and dev_entry.get(CONF_PRODUCT_KEY) != discovered_prod_key
+                    ):
+                        updated = True
+                        _LOGGER.debug(
+                            "UPDATING PRODUCT_KEY FOR DEVICE %s: %s",
+                            dev_id,
+                            discovered_prod_key,
+                        )
+                        new_data[CONF_DEVICES][dev_id][
+                            CONF_PRODUCT_KEY
+                        ] = discovered_prod_key
 
-        # Update settings if something changed, otherwise try to connect. Updating
-        # settings triggers a reload of the config entry, which tears down the device
-        # so no need to connect in that case.
-        if updated:
-            _LOGGER.debug(
-                "Updating keys for device %s: %s %s", device_id, device_ip, product_key
-            )
-            new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
-            hass.config_entries.async_update_entry(entry, data=new_data)
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                device.async_connect()
-        elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
-            # _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
+                    # Update settings if something changed, otherwise try to connect. Updating
+                    # settings triggers a reload of the config entry, which tears down the device
+                    # so no need to connect in that case.
+                    if updated:
+                        new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+                        hass.config_entries.async_update_entry(entry, data=new_data)
+                        device = hass.data[DOMAIN][TUYA_DEVICES][dev_id]
+                        if not device.connected:
+                            device.async_connect()
+                    elif dev_id in hass.data[DOMAIN][TUYA_DEVICES]:
+                        # _LOGGER.debug("Device %s found with IP %s", dev_id, discovered_ip)
 
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                device.async_connect()
+                        device = hass.data[DOMAIN][TUYA_DEVICES][dev_id]
+                        if not device.connected:
+                            device.async_connect()
 
     def _shutdown(event):
         """Clean up resources when shutting down."""
@@ -260,9 +264,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
-    async def setup_entities(device_ids):
+    async def setup_entities(discovered_ids):
         platforms = set()
-        for dev_id in device_ids:
+        for dev_id in discovered_ids:
             entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
             platforms = platforms.union(
                 set(entity[CONF_PLATFORM] for entity in entities)
@@ -276,7 +280,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             ]
         )
 
-        for dev_id in device_ids:
+        for dev_id in discovered_ids:
             hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
 
         await async_remove_orphan_entities(hass, entry)

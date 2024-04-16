@@ -211,9 +211,29 @@ payload_dict = {
     "v3.4": {
         CONTROL: {
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command
-            "command": {"protocol": 5, "t": "int", "data": ""},
+            "command": {"protocol": 5, "t": "int", "data": {}},
         },
         DP_QUERY: {"command_override": DP_QUERY_NEW},
+    },
+    # subdevices (namely: Zigbee devices), that can be operated through a gateway
+    "sub_device": {
+        AP_CONFIG: {
+            "command": {"cid": "", "t": ""},
+        },
+        CONTROL: {  # Set Control Values on Device
+            "3.3": {"cid": "", "t": ""},
+            "3.4": {"protocol": 5, "t": "int", "data": {"cid": ""}},
+        },
+        STATUS: {  # Get Status from Device
+            "command": {"cid": ""},
+        },
+        HEART_BEAT: {"command": {"cid": ""}},
+        DP_QUERY: {  # Get Data Points from Device
+            "command": {"cid": "", "t": ""},
+        },
+        CONTROL_NEW: {"command": {"cid": "", "t": ""}},
+        DP_QUERY_NEW: {"command": {"cid": "", "t": ""}},
+        UPDATEDPS: {"command": {"dpId": [18, 19, 20]}},
     },
 }
 
@@ -551,7 +571,14 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     """Implementation of the Tuya protocol."""
 
     def __init__(
-        self, dev_id, local_key, protocol_version, enable_debug, on_connected, listener
+        self,
+        dev_id,
+        local_key,
+        protocol_version,
+        dev_cid,
+        enable_debug,
+        on_connected,
+        listener,
     ):
         """
         Initialize a new TuyaInterface.
@@ -572,6 +599,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.real_local_key = self.local_key
         self.dev_type = "type_0a"
         self.dps_to_request = {}
+        self.cid = dev_cid
 
         if protocol_version:
             self.set_version(float(protocol_version))
@@ -579,6 +607,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             # make sure we call our set_version() and not a subclass since some of
             # them (such as BulbDevice) make connections when called
             TuyaProtocol.set_version(self, 3.1)
+
+        # if a cid is provided, this is a sub_device (such as Zigbee)
+        if self.cid != "":
+            self.dev_type = "sub_device"
 
         self.cipher = AESCipher(self.local_key)
         self.seqno = 1
@@ -867,7 +899,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if "dps" in data:
                 self.dps_cache.update(data["dps"])
 
-            if self.dev_type == "type_0a":
+            if self.dev_type in ("type_0a", "sub_device"):
                 return self.dps_cache
         self.debug("Detected dps: %s", self.dps_cache)
         return self.dps_cache
@@ -1089,11 +1121,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             devId(str, optional): Will be used for devId
             uid(str, optional): Will be used for uid
         """
-        json_data = command_override = None
+        payload_json = command_override = None
 
         if command in payload_dict[self.dev_type]:
             if "command" in payload_dict[self.dev_type][command]:
-                json_data = payload_dict[self.dev_type][command]["command"]
+                payload_json = payload_dict[self.dev_type][command]["command"]
             if "command_override" in payload_dict[self.dev_type][command]:
                 command_override = payload_dict[self.dev_type][command][
                     "command_override"
@@ -1101,11 +1133,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         if self.dev_type != "type_0a":
             if (
-                json_data is None
+                payload_json is None
                 and command in payload_dict["type_0a"]
                 and "command" in payload_dict["type_0a"][command]
             ):
-                json_data = payload_dict["type_0a"][command]["command"]
+                payload_json = payload_dict["type_0a"][command]["command"]
             if (
                 command_override is None
                 and command in payload_dict["type_0a"]
@@ -1113,48 +1145,56 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             ):
                 command_override = payload_dict["type_0a"][command]["command_override"]
 
+        if self.dev_type == "sub_device" and command == CONTROL:
+            # subdevices use different commands depending on the protocol version of the gateway
+            payload_json = payload_dict[self.dev_type][command][str(self.version)]
+
         if command_override is None:
             command_override = command
-        if json_data is None:
+        if payload_json is None:
             # I have yet to see a device complain about included but unneeded attribs, but they *will*
             # complain about missing attribs, so just include them all unless otherwise specified
-            json_data = {"gwId": "", "devId": "", "uid": "", "t": ""}
+            payload_json = {"gwId": "", "devId": "", "uid": "", "t": ""}
 
-        if "gwId" in json_data:
+        if "gwId" in payload_json:
             if gwId is not None:
-                json_data["gwId"] = gwId
+                payload_json["gwId"] = gwId
             else:
-                json_data["gwId"] = self.id
-        if "devId" in json_data:
+                payload_json["gwId"] = self.id
+        if "devId" in payload_json:
             if devId is not None:
-                json_data["devId"] = devId
+                payload_json["devId"] = devId
             else:
-                json_data["devId"] = self.id
-        if "uid" in json_data:
+                payload_json["devId"] = self.id
+        if "uid" in payload_json:
             if uid is not None:
-                json_data["uid"] = uid
+                payload_json["uid"] = uid
             else:
-                json_data["uid"] = self.id
-        if "t" in json_data:
-            if json_data["t"] == "int":
-                json_data["t"] = int(time.time())
+                payload_json["uid"] = self.id
+        if "cid" in payload_json:
+            payload_json["cid"] = self.cid
+        if "t" in payload_json:
+            if payload_json["t"] == "int":
+                payload_json["t"] = int(time.time())
             else:
-                json_data["t"] = str(int(time.time()))
+                payload_json["t"] = str(int(time.time()))
 
         if data is not None:
-            if "dpId" in json_data:
-                json_data["dpId"] = data
-            elif "data" in json_data:
-                json_data["data"] = {"dps": data}
+            if "dpId" in payload_json:
+                payload_json["dpId"] = data
+            elif "data" in payload_json:
+                payload_json["data"]["dps"] = data
+                if "cid" in payload_json["data"]:
+                    payload_json["data"]["cid"] = self.cid
             else:
-                json_data["dps"] = data
+                payload_json["dps"] = data
         elif self.dev_type == "type_0d" and command == DP_QUERY:
-            json_data["dps"] = self.dps_to_request
+            payload_json["dps"] = self.dps_to_request
 
-        if json_data == "":
+        if payload_json == "":
             payload = ""
         else:
-            payload = json.dumps(json_data)
+            payload = json.dumps(payload_json)
         # if spaces are not removed device does not respond!
         payload = payload.replace(" ", "").encode("utf-8")
         self.debug("Sending payload: %s", payload)
@@ -1171,7 +1211,8 @@ async def connect(
     device_id,
     local_key,
     protocol_version,
-    enable_debug,
+    device_cid="",
+    enable_debug=False,
     listener=None,
     port=6668,
     timeout=5,
@@ -1184,6 +1225,7 @@ async def connect(
             device_id,
             local_key,
             protocol_version,
+            device_cid,
             enable_debug,
             on_connected,
             listener or EmptyListener(),

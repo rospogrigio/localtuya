@@ -31,17 +31,21 @@ from .const import (
     ATTR_UPDATED_AT,
     CONF_ACTION,
     CONF_ADD_DEVICE,
+    CONF_DEVICE_CID,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
     CONF_ENABLE_DEBUG,
+    CONF_GW_ID,
     CONF_LOCAL_KEY,
     CONF_MANUAL_DPS,
     CONF_MODEL,
     CONF_NO_CLOUD,
+    CONF_NODEID,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
     CONF_SETUP_CLOUD,
+    CONF_SUB,
     CONF_USER_ID,
     CONF_ENABLE_ADD_ENTITIES,
     DATA_CLOUD,
@@ -94,6 +98,8 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
             ["3.1", "3.2", "3.3", "3.4"]
         ),
+        vol.Optional(CONF_DEVICE_CID): cv.string,
+        vol.Optional(CONF_GW_ID): cv.string,
         vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
         vol.Optional(CONF_SCAN_INTERVAL): int,
         vol.Optional(CONF_MANUAL_DPS): cv.string,
@@ -136,6 +142,7 @@ def options_schema(entities):
         {
             vol.Required(CONF_FRIENDLY_NAME): cv.string,
             vol.Required(CONF_HOST): cv.string,
+            vol.Optional(CONF_DEVICE_CID): cv.string,
             vol.Required(CONF_LOCAL_KEY): cv.string,
             vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
                 ["3.1", "3.2", "3.3", "3.4"]
@@ -243,7 +250,8 @@ async def validate_input(hass: core.HomeAssistant, data):
             data[CONF_HOST],
             data[CONF_DEVICE_ID],
             data[CONF_LOCAL_KEY],
-            float(data[CONF_PROTOCOL_VERSION]),
+            data[CONF_PROTOCOL_VERSION],
+            data.get(CONF_DEVICE_CID, ""),
             data[CONF_ENABLE_DEBUG],
         )
         if CONF_RESET_DPIDS in data:
@@ -506,11 +514,16 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             if dev["gwId"] not in self.config_entry.data[CONF_DEVICES]
         }
 
+        # checking for Zigbee sub-devices
+        cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+        for cdev_id, cdev in cloud_devs.items():
+            if cdev[CONF_SUB] and cdev[CONF_GW_ID] in devices:
+                # the subdevice takes its gateway's IP address
+                devices[cdev_id] = devices[cdev[CONF_GW_ID]]
+
         return self.async_show_form(
             step_id="add_device",
-            data_schema=devices_schema(
-                devices, self.hass.data[DOMAIN][DATA_CLOUD].device_list
-            ),
+            data_schema=devices_schema(devices, cloud_devs),
             errors=errors,
         )
 
@@ -543,6 +556,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle input of basic info."""
         errors = {}
         dev_id = self.selected_device
+        cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+
         if user_input is not None:
             try:
                 self.device_data = user_input.copy()
@@ -550,7 +565,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     # self.device_data[CONF_PRODUCT_KEY] = self.devices[
                     #     self.selected_device
                     # ]["productKey"]
-                    cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
                     if dev_id in cloud_devs:
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
                             CONF_PRODUCT_NAME
@@ -608,7 +622,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if self.editing_device:
             # If selected device exists as a config entry, load config from it
             defaults = self.config_entry.data[CONF_DEVICES][dev_id].copy()
-            cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
             placeholders = {"for_device": f" for device `{dev_id}`"}
             if dev_id in cloud_devs:
                 cloud_local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
@@ -621,24 +634,38 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
                     note = "\nNOTE: a new local_key has been retrieved using cloud API"
                     placeholders = {"for_device": f" for device `{dev_id}`.{note}"}
+
             defaults[CONF_ENABLE_ADD_ENTITIES] = False
             schema = schema_defaults(options_schema(self.entities), **defaults)
         else:
             defaults[CONF_PROTOCOL_VERSION] = "3.3"
             defaults[CONF_HOST] = ""
-            defaults[CONF_DEVICE_ID] = ""
+            defaults[CONF_DEVICE_ID] = dev_id
             defaults[CONF_LOCAL_KEY] = ""
             defaults[CONF_FRIENDLY_NAME] = ""
             if dev_id is not None:
                 # Insert default values from discovery and cloud if present
-                device = self.discovered_devices[dev_id]
-                defaults[CONF_HOST] = device.get("ip")
-                defaults[CONF_DEVICE_ID] = device.get("gwId")
-                defaults[CONF_PROTOCOL_VERSION] = device.get("version")
-                cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+                if dev_id in self.discovered_devices:
+                    device = self.discovered_devices[dev_id]
+                    defaults[CONF_HOST] = device.get("ip")
+                    defaults[CONF_PROTOCOL_VERSION] = device.get("version")
+
                 if dev_id in cloud_devs:
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
                     defaults[CONF_FRIENDLY_NAME] = cloud_devs[dev_id].get(CONF_NAME)
+                    if (
+                        cloud_devs[dev_id][CONF_SUB]
+                        and CONF_NODEID in cloud_devs[dev_id]
+                    ):
+                        # this is a subdevice (Zigbee)
+                        gw_id = cloud_devs[dev_id].get(CONF_GW_ID)
+                        if gw_id in self.discovered_devices:
+                            # getting the same IP address as the gateway
+                            gw_dev = self.discovered_devices[gw_id]
+                            defaults[CONF_HOST] = gw_dev.get("ip")
+                        defaults[CONF_DEVICE_CID] = cloud_devs[dev_id].get(CONF_NODEID)
+                        defaults[CONF_GW_ID] = gw_id
+
             schema = schema_defaults(DEVICE_SCHEMA, **defaults)
 
             placeholders = {"for_device": ""}

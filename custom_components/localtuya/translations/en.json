@@ -102,6 +102,8 @@
                     "device_id": "Device ID",
                     "local_key": "Local key",
                     "protocol_version": "Protocol Version",
+                    "device_cid": "Device CID, for subdevices (Zigbee) only",
+                    "gw_id": "Gateway's ID, for subdevices (Zigbee) only",
                     "enable_debug": "Enable debugging for this device (debug must be enabled also in configuration.yaml)",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
                     "entities": "Entities (uncheck an entity to remove it)",

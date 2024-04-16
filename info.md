@@ -25,7 +25,7 @@ Energy monitoring (voltage, current, watts, etc.) is supported for compatible de
 
 > **Currently, Tuya protocols from 3.1 to 3.4 are supported.**
 
-This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
+> **Since v5.3.0, subdevices (such as Zigbee) are supported.**
 
 
 # Installation:
@@ -37,7 +37,7 @@ For manual installation, copy the localtuya folder and all of its contents into 
 
 # Usage:
 
-**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .**
+**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md  or https://pypi.org/project/tinytuya/.**
 
 
 **NOTE 2: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
@@ -87,22 +87,28 @@ You can then proceed Adding or Editing your Tuya devices.
 
 If you select to "Add or Edit a device", a drop-down menu will appear containing the list of detected devices (using auto-discovery if adding was selected, or the list of already configured devices if editing was selected): you can select one of these, or manually input all the parameters selecting the "..." option.
 
-> **Note: The tuya app on your device must be closed for the following steps to work reliably.**
+> **Note: subdevices (such as Zigbee) can be detected only if the Cloud API are configured, otherwise their parameters must be input manually. All subdevices will be displayed with the same IP address of their Gateway.**
 
+> **Note 2: the tuya app on your device must be closed for the following steps to work reliably.**
 
 ![discovery](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/1-discovery.png)
 
-If you have selected one entry, you only need to input the device's Friendly Name and localKey. These values will be automatically retrieved if you have configured your Cloud API account, otherwise you will need to input them manually.
+If you have selected one entry, you only need to input the device's Friendly Name and Local Key (and the CID and the Gateway's ID, if it's a subdevice such as Zigbee). These values will be automatically retrieved if you have configured your Cloud API account, otherwise you will need to input them manually.
+
+The Device CID and Gateway's ID are optional and only needed if the device to be added is a subdevice (Zigbee). Subdevices shall have the same IP address and Protocol Version as their gateway.
+
+> **Note: it is not necessary to configure the gateway as an independent device. Actually, not all gateways can be configured since some of them don't provide any DPs. **
 
 Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
-Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration.
+Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration. **Note: Any DPS added using this option will have a -1 value during setup.** 
 
-Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). The DPids will vary between devices, but typically "18,19,20" is used (and will be the default if none specified). If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
+Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used. If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
 
 Once you press "Submit", the connection is tested to check that everything works.
 
 ![image](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
+
 
 Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.
 After you have defined all the needed entities, leave the "Do not add more entities" checkbox checked: this will complete the procedure.
@@ -110,12 +116,15 @@ After you have defined all the needed entities, leave the "Do not add more entit
 ![entity_type](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/3-entity_type.png)
 
 For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
-all the available DPs found on the device (with their current status!!) for easy identification. Each entity type has different options
-to be configured. Here is an example for the "switch" entity:
+all the available DPs found on the device (with their current status!!) for easy identification.
+
+**Note: If your device requires LocalTuya to send an initialization value to the entity for it to work, this can be configured (in supported entities) through the 'Passive entity' option. Optionally you can specify the initialization value to be sent**
+
+Each entity type has different options to be configured. Here is an example for the "switch" entity:
 
 ![entity](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/4-entity.png)
 
-Once you configure the entities, the procedure is complete. You can now associate the device with an Area in Home Assistant
+Once you configure the entities, the procedure is complete. You can now associate the device to an Area in Home Assistant:
 
 ![success](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/5-success.png)
 
@@ -137,7 +146,7 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
   Note:  these values are already divided by 10 for Voltage and Consumption
 3) On some devices, you may find that the energy values are not updating frequently enough by default. If so, set the scan interval (see above) to an appropriate value. Settings below 10 seconds may cause stability issues, 30 seconds is recommended.
 
-```
+```yaml
        sensor:
          - platform: template
            sensors:
@@ -175,16 +184,20 @@ Then, edit the device that is showing problems and check the "Enable debugging f
 
 # To-do list:
 
-* Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-.
-      Ideas: Use: https://www.home-assistant.io/components/integration/ and https://www.home-assistant.io/components/utility_meter/
+* Support for 3.5 protocol
 
-* Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
+* Support for missing entity types.
+
+* Create a (good and precise) sensor (counter) for Energy (kWh) -not just Power, but based on it-.
+      Ideas: Use: https://www.home-assistant.io/integrations/integration/ and https://www.home-assistant.io/integrations/utility_meter/
 
 # Thanks to:
 
+This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Let me thank them individually.
+
 NameLessJedi https://github.com/NameLessJedi/localtuya-homeassistant and mileperhour https://github.com/mileperhour/localtuya-homeassistant being the major sources of inspiration, and whose code for switches is substantially unchanged.
 
-TradeFace, for being the only one to provide the correct code for communication with the type_0d devices (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): https://github.com/TradeFace/tuya/
+TradeFace, for being the only one to provide the correct code for communication with the "type_0d" devices (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): https://github.com/TradeFace/tuya/
 
 sean6541, for the working (standard) Python Handler for Tuya devices.
 

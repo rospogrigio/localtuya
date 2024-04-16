@@ -27,7 +27,11 @@ ATTR_VOLTAGE = "voltage"
 ATTR_UPDATED_AT = "updated_at"
 
 # config flow
+CONF_DEVICE_CID = "device_cid"
+CONF_GW_ID = "gw_id"
 CONF_LOCAL_KEY = "local_key"
+CONF_NODEID = "node_id"
+CONF_SUB = "sub"
 CONF_ENABLE_DEBUG = "enable_debug"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_DPS_STRINGS = "dps_strings"
