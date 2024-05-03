@@ -124,8 +124,10 @@ def async_config_entry_by_device_id(hass, device_id):
     """Look up config entry by device id."""
     current_entries = hass.config_entries.async_entries(DOMAIN)
     for entry in current_entries:
-        if device_id in entry.data[CONF_DEVICES]:
+        if device_id in entry.data.get(CONF_DEVICES, []):
             return entry
+        else:
+            _LOGGER.warning(f"Missing device configuration for device_id {device_id}")
     return None
 
 
