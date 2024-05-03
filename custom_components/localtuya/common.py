@@ -198,16 +198,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self._interface.add_dps_to_request(self.dps_to_request)
             self._disconnect_warning_logged = False
         except Exception as ex:  # pylint: disable=broad-except
-            if not self._disconnect_warning_logged:
-                self.warning(
-                    f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s", ex
-                )
-                self._disconnect_warning_logged = True
-            else:
-                self.info(
-                    f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s", ex
-                )
-
+            message = f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s" % ex
+            self.warning(message) if not self._disconnect_warning_logged else self.info(message)
+            self._disconnect_warning_logged = True
             if self._interface is not None:
                 await self._interface.close()
                 self._interface = None
