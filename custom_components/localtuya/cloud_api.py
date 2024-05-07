@@ -32,12 +32,19 @@ class TuyaCloudApi:
     def __init__(self, hass, region_code, client_id, secret, user_id):
         """Initialize the class."""
         self._hass = hass
-        self._base_url = f"https://openapi.tuya{region_code}.com"
         self._client_id = client_id
         self._secret = secret
         self._user_id = user_id
         self._access_token = ""
         self.device_list = {}
+
+        if region_code == "ea":
+            self._base_url = "https://openapi-ueaz.tuyaus.com"
+        elif region_code == "we": 
+            self._base_url = "https://openapi-weaz.tuyaeu.com"
+        else:
+            self._base_url = f"https://openapi.tuya{region_code}.com"
+
 
     def generate_payload(self, method, timestamp, url, headers, body=None):
         """Generate signed payload for requests."""
