@@ -94,6 +94,10 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
+    "MANUAL/AUTO": {
+        HVAC_MODE_HEAT: "MANUAL",
+        HVAC_MODE_AUTO: "AUTO",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -111,6 +115,10 @@ HVAC_ACTION_SETS = {
     "Heat/Warming": {
         HVACAction.HEATING: "Heat",
         HVACAction.IDLE: "Warming",
+    },
+    "heating/warming": {
+        CURRENT_HVAC_HEAT: "heating",
+        CURRENT_HVAC_IDLE: "warming",
     },
 }
 HVAC_FAN_MODE_SETS = {
