@@ -92,13 +92,13 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def is_opening(self):
         """Return if cover is opening."""
         state = self._state
-        return state == self._open_cmd
+        return state == self._open_cmd and (self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE or self._current_cover_position != 100)
 
     @property
     def is_closing(self):
         """Return if cover is closing."""
         state = self._state
-        return state == self._close_cmd
+        return state == self._close_cmd and (self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE or self._current_cover_position != 0)
 
     @property
     def is_closed(self):
