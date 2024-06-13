@@ -14,6 +14,7 @@ from homeassistant.components.cover import (
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_COMMANDS_SET,
+    CONF_STOP_DP,
     CONF_CURRENT_POSITION_DP,
     CONF_POSITION_INVERTED,
     CONF_POSITIONING_MODE,
@@ -27,6 +28,7 @@ COVER_ONOFF_CMDS = "on_off_stop"
 COVER_OPENCLOSE_CMDS = "open_close_stop"
 COVER_FZZZ_CMDS = "fz_zz_stop"
 COVER_12_CMDS = "1_2_3"
+COVER_CONTINUE_CMDS = "open_close_continue"
 COVER_MODE_NONE = "none"
 COVER_MODE_POSITION = "position"
 COVER_MODE_TIMED = "timed"
@@ -41,8 +43,9 @@ def flow_schema(dps):
     """Return schema used in config flow."""
     return {
         vol.Optional(CONF_COMMANDS_SET): vol.In(
-            [COVER_ONOFF_CMDS, COVER_OPENCLOSE_CMDS, COVER_FZZZ_CMDS, COVER_12_CMDS]
+            [COVER_ONOFF_CMDS, COVER_OPENCLOSE_CMDS, COVER_FZZZ_CMDS, COVER_12_CMDS, COVER_CONTINUE_CMDS]
         ),
+        vol.Optional(CONF_STOP_DP): vol.In(dps),
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
             [COVER_MODE_NONE, COVER_MODE_POSITION, COVER_MODE_TIMED]
         ),
@@ -174,7 +177,13 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
         self.debug("Launching command %s to cover ", self._stop_cmd)
-        await self._device.set_dp(self._stop_cmd, self._dp_id)
+        commands_set = DEFAULT_COMMANDS_SET
+        if self.has_config(CONF_COMMANDS_SET):
+            commands_set = self._config[CONF_COMMANDS_SET]
+        if commands_set == COVER_CONTINUE_CMDS and self.has_config(CONF_STOP_DP):
+            await self._device.set_dp(True, self._config[CONF_STOP_DP])
+        else:
+            await self._device.set_dp(self._stop_cmd, self._dp_id)
 
     def status_restored(self, stored_state):
         """Restore the last stored cover status."""
