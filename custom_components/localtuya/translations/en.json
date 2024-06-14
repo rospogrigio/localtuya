@@ -165,6 +165,7 @@
                     "color_temp_min_kelvin": "Minimum Color Temperature in K",
                     "color_temp_max_kelvin": "Maximum Color Temperature in K",
                     "music_mode": "Music mode available",
+                    "lytmi_modes": "Lytmi Modes",
                     "scene": "Scene",
                     "select_options": "Valid entries, separate entries by a ;",
                     "select_options_friendly": "User Friendly options, separate entries by a ;",
