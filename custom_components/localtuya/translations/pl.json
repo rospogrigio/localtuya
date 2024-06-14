@@ -1,0 +1,139 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Urządzenie zostało już skonfigurowane.",
+            "device_updated": "Konfiguracja urządzenia została zaktualizowana!"
+        },
+        "error": {
+            "cannot_connect": "Nie można połączyć się z urządzeniem. Sprawdź, czy adres jest poprawny i spróbuj ponownie.",
+            "invalid_auth": "Nie udało się uwierzytelnić urządzenia. Sprawdź, czy identyfikator urządzenia i klucz lokalny są poprawne.",
+            "unknown": "Wystąpił nieznany błąd. Sprawdź logi, aby uzyskać szczegółowe informacje. ",
+            "entity_already_configured": "Encja o tym identyfikatorze została już skonfigurowana.",
+            "address_in_use": "Adres używany do wykrywania jest już używany. Upewnij się, że żadna inna aplikacja go nie używa (port TCP 6668).",
+            "discovery_failed": "Coś nie powiodło się podczas wykrywania urządzeń. Sprawdź logi, aby uzyskać szczegółowe informacje.",
+            "empty_dps": "Połączenie z urządzeniem powiodło się, ale nie znaleziono żadnych punktów danych (no datapoints found), spróbuj ponownie. Utwórz (na githubie) nowy issue i dołącz logi debugowania, jeśli problem będzie się powtarzał."
+        },
+        "step": {
+            "user": {
+                "title": "Wykrywanie urządzeń",
+                "description": "Wybierz jedno z automatycznie wykrytych urządzeń lub `...`, aby ręcznie dodać urządzenie.",
+                "data": {
+                    "discovered_device": "Wykryte urządzenie"
+                }
+            },
+            "basic_info": {
+                "title": "Dodaj urządzenie Tuya",
+                "description": "Wypełnij podstawowe dane urządzenia. Wpisana tutaj nazwa będzie służyć do identyfikacji samej integracji urządzenia (jaką widać na stronie `Integrations`). W kolejnych krokach dodasz encje i nadasz im nazwy.",
+                "data": {
+                    "friendly_name": "Nazwa",
+                    "host": "Host",
+                    "device_id": "ID urządzenia",
+                    "local_key": "Klucz lokalny",
+                    "protocol_version": "Wersja protokołu"
+                }
+            },
+            "pick_entity_type": {
+                "title": "Wybór typu encji",
+                "description": "Wybierz typ encji, który chcesz dodać.",
+                "data": {
+                    "platform_to_add": "Platforma",
+                    "no_additional_platforms": "Nie dodawaj więcej encji"
+                }
+            },
+            "add_entity": {
+                "title": "Dodaj nową encję",
+                "description": "Podaj dane encji z typem `{platform}`. Wszystkie ustawienia z wyjątkiem `ID` można później zmienić na stronie Opcje.",
+                "data": {
+                    "id": "ID",
+                    "friendly_name": "Przyjazna nazwa",
+                    "current": "Prąd",
+                    "current_consumption": "Pobór Prądu",
+                    "voltage": "Napięcie",
+                    "commands_set": "Zestaw komend Otwórz_Zamknij_Zatrzymaj (Open_Close_Stop)",
+                    "positioning_mode": "Tryb pozycjonowania",
+                    "current_position_dp": "Bieżąca Pozycja (tylko dla trybu *position* )",
+                    "set_position_dp": "Ustaw Pozycję (tylko dla trybu *position* )",
+                    "position_inverted": "Odwróć pozycję 0-100 (tylko dla trybu *position* )",
+                    "span_time": "Czas pełnego otwarcia w sekundach (tylko dla trybu *timed* )",
+                    "unit_of_measurement": "Jednostka miary",
+                    "device_class": "Device Class",
+                    "scaling": "Współczynnik skalowania",
+                    "state_on": "Wartość włączenia",
+                    "state_off": "Wartość wyłączenia",
+                    "brightness": "Jasność (tylko dla koloru białego)",
+                    "brightness_lower": "Niższa wartość jasności",
+                    "brightness_upper": "Wyższa wartość jasności",
+                    "color_temp": "Temperatura barwowa",
+                    "color": "Kolor",
+                    "color_mode": "Tryb koloru",
+                    "color_temp_min_kelvin": "Minimalna temperatura barwowa w K",
+                    "color_temp_max_kelvin": "Maksymalna temperatura barwowa w K",
+                    "music_mode": "Dostępny tryb muzyczny",
+                    "scene": "Scena",
+                    "fan_speed_control": "Kontrola prędkości wentylatora",
+                    "fan_oscillating_control": "Kontrola oscylacji wentylatora ",
+                    "fan_speed_low": "Niska prędkość wentylatora",
+                    "fan_speed_medium": "Średnia prędkość wentylatora",
+                    "fan_speed_high": "Wysoka prędkość wentylatora"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Skonfiguruj urządzenie Tuya",
+                "description": "Podstawowa konfiguracja dla identyfikatora urządzenia `{device_id}`.",
+                "data": {
+                    "friendly_name": "Przyjazna nazwa",
+                    "host": "Host",
+                    "local_key": "Klucz lokalny",
+                    "protocol_version": "Wersja protokołu",
+                    "entities": "Encje (odznacz encję by ją usunąć)"
+                }
+            },
+            "entity": {
+                "title": "Konfiguracja encji",
+                "description": "Edycja encji z DPS (punktami danych) `{id}` i typem `{platform}`.",
+                "data": {
+                    "id": "ID",
+                    "friendly_name": "Przyjazna nazwa",
+                    "current": "Prąd",
+                    "current_consumption": "Pobór Prądu",
+                    "voltage": "Napięcie",
+                    "commands_set": "Zestaw komend Otwórz_Zamknij_Zatrzymaj (Open_Close_Stop)",
+                    "positioning_mode": "Tryb pozycjonowania",
+                    "current_position_dp": "Bieżąca Pozycja (tylko dla trybu *position* )",
+                    "set_position_dp": "Ustaw Pozycję (tylko dla trybu *position* )",
+                    "position_inverted": "Odwróć pozycję 0-100 (tylko dla trybu *position* )",
+                    "span_time": "Czas pełnego otwarcia w sekundach (tylko dla trybu *timed* )",
+                    "unit_of_measurement": "Jednostka miary",
+                    "device_class": "Device Class",
+                    "scaling": "Współczynnik skalowania",
+                    "state_on": "Wartość włączenia",
+                    "state_off": "Wartość wyłączenia",
+                    "brightness": "Jasność (tylko dla koloru białego)",
+                    "brightness_lower": "Niższa wartość jasności",
+                    "brightness_upper": "Wyższa wartość jasności",
+                    "color_temp": "Temperatura barwowa",
+                    "color": "Kolor",
+                    "color_mode": "Tryb koloru",
+                    "color_temp_min_kelvin": "Minimalna temperatura barwowa w K",
+                    "color_temp_max_kelvin": "Maksymalna temperatura barwowa w K",
+                    "music_mode": "Dostępny tryb muzyczny",
+                    "scene": "Scena",
+                    "fan_speed_control": "Kontrola prędkości wentylatora",
+                    "fan_oscillating_control": "Kontrola oscylacji wentylatora",
+                    "fan_speed_low": "Niska prędkość wentylatora",
+                    "fan_speed_medium": "Średnia prędkość wentylatora",
+                    "fan_speed_high": "Wysoka prędkość wentylatora"
+                }
+            },
+            "yaml_import": {
+                "title": "Nieobsługiwane",
+                "description": "Opcji nie można edytować, jeśli zostały skonfigurowane za pośrednictwem YAML."
+            }
+        }
+    },
+    "title": "LocalTuya"
+}
