@@ -134,6 +134,11 @@ PRESET_SETS = {
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
     },
+    "home/leave/auto": {
+        PRESET_AWAY: "leave",
+        PRESET_HOME: "home",
+        PRESET_NONE: "auto",
+    },
 }
 
 TEMPERATURE_CELSIUS = "celsius"
