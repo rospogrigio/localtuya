@@ -139,7 +139,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
             )
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
-   
+
         elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
             _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
 
@@ -270,12 +270,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             )
             hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_setup(entry, platform)
-                for platform in platforms
-            ]
-        )
+        # Setup all platforms at once, letting HA handling each platform and avoiding
+        # potential integration restarts while elements are still initialising.
+        await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
         for dev_id in device_ids:
             hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
