@@ -198,6 +198,7 @@ Then, edit the device that is showing problems and check the "Enable debugging f
 # Notes:
 
 * Do not declare anything as "tuya", such as by initiating a "switch.tuya". Using "tuya" launches Home Assistant's built-in, cloud-based Tuya integration in lieu of localtuya.
+* If you have enrolled your devices in another HomeAssistant (eg migration) you need to remove them from the previous system otherwise they cannot be enrolled on your new system
 
 # To-do list:
 
