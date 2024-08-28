@@ -167,7 +167,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._effect_list = []
         self._scenes = None
         if self.has_config(CONF_SCENE):
-            if self._config.get(CONF_SCENE) < 20:
+            if int(self._config.get(CONF_SCENE)) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
             elif self._config.get(CONF_BRIGHTNESS) is None:
                 self._scenes = SCENE_LIST_RGB_1000
