@@ -164,6 +164,8 @@ def flow_schema(dps):
         vol.Optional(CONF_HVAC_MODE_SET): vol.In(list(HVAC_MODE_SETS.keys())),
         vol.Optional(CONF_HVAC_FAN_MODE_DP): vol.In(dps),
         vol.Optional(CONF_HVAC_FAN_MODE_SET): vol.In(list(HVAC_FAN_MODE_SETS.keys())),
+        vol.Optional(CONF_HVAC_SWING_MODE_DP): vol.In(dps),
+        vol.Optional(CONF_HVAC_SWING_MODE_SET): vol.In(list(HVAC_SWING_MODE_SETS.keys())),
         vol.Optional(CONF_HVAC_ACTION_DP): vol.In(dps),
         vol.Optional(CONF_HVAC_ACTION_SET): vol.In(list(HVAC_ACTION_SETS.keys())),
         vol.Optional(CONF_ECO_DP): vol.In(dps),
