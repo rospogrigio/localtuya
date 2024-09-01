@@ -1,0 +1,190 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Устройството е конфигурирано.",
+            "device_updated": "Конфигурацията на устройството е актуализирана!"
+        },
+        "error": {
+            "authentication_failed": "Неуспешно удостоверяване.\n{msg}",
+            "cannot_connect": "Не може да се свърже с устройството. Уверете се, че адресът е правилен и опитайте отново.",
+            "device_list_failed": "Неуспешно извличане на списъка с устройства.\n{msg}",
+            "invalid_auth": "Неуспешно удостоверяване с устройството. Уверете се, че device id и local key са правилни.",
+            "unknown": "Възникна неизвестна грешка. Вижте дневника за подробности.",
+            "entity_already_configured": "Образуванието с този ID вече е конфигурирано.",
+            "address_in_use": "Адресът, използван за откриването, вече се използва. Уверете се, че никое друго приложение не го използва (TCP порт 6668).",
+            "discovery_failed": "Нещо се провали при откриването на устройства. Вижте дневника за подробности.",
+            "empty_dps": "Връзката с устройството е успешна, но не са намерени точки за данни. Моля, опитайте отново. Създайте нов Githubb issue и включете логове за отстраняване на грешки, ако проблемът продължава."
+        },
+        "step": {
+            "user": {
+                "title": "Конфигурация на акаунта за API в облак",
+                "description": "Въведете идентификационните данни за Tuya Cloud API.",
+                "data": {
+                    "region": "API регион на сървъра",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Да не се конфигурира Cloud API акаунт"
+                }
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "Устройството вече е конфигурирано.",
+            "device_success": "Устройство {dev_name} успешно {action}."
+        },
+        "error": {
+            "authentication_failed": "Неуспешно удостоверяване.\n{msg}",
+            "cannot_connect": "Не може да се свърже с устройството. Уверете се, че адресът е правилен и опитайте отново.",
+            "device_list_failed": "Неуспешно извличане на списъка с устройства.\n{msg}",
+            "invalid_auth": "Неуспешно удостоверяване с устройството. Уверете се, че идентификационният номер на устройството и локалният ключ са правилни.",
+            "unknown": "Възникна неизвестна грешка. Вижте дневника за подробности.",
+            "entity_already_configured": "Образуванието с този ID вече е конфигурирано.",
+            "address_in_use": "Адресът, използван за откриването, вече се използва. Уверете се, че никое друго приложение не го използва (TCP порт 6668).",
+            "discovery_failed": "Нещо се провали при откриването на устройства. Вижте дневника за подробности.",
+            "empty_dps": "Връзката с устройството е успешна, но не са намерени точки за данни. Моля, опитайте отново. Създайте нов GitHub issue и включете логове за отстраняване на грешки, ако проблемът продължава."
+        },
+        "step": {
+            "yaml_import": {
+                "title": "Не се поддържа",
+                "description": "Опциите не могат да бъдат редактирани, когато са конфигурирани чрез YAML."
+            },
+            "init": {
+                "title": "LocalTuya Настройване",
+                "description": "Моля, изберете желаното действие.",
+                "data": {
+                    "add_device": "Добавяне на ново устройство",
+                    "edit_device": "Редактиране на устройство",
+                    "setup_cloud": "Настройване Cloud API акаунт"
+                }
+            },
+            "add_device": {
+                "title": "Добавяне на ново устройство",
+                "description": "Изберете едно от автоматично откритите устройства или `...` за ръчно добавяне на устройство.",
+                "data": {
+                    "selected_device": "Открити устройства"
+                }
+            },
+            "edit_device": {
+                "title": "Редактиране на ново устройство",
+                "description": "Изберете конфигурираното устройство, което искате да редактирате.",
+                "data": {
+                    "selected_device": "Конфигурирани устройства"
+                }
+            },
+            "cloud_setup": {
+                "title": "Конфигурация на акаунта за API в облак",
+                "description": "Въведете идентификационните данни за API на Tuya Cloud.",
+                "data": {
+                    "region": "Регион на API сървъра",
+                    "client_id": "Клиент ID",
+                    "client_secret": "Secret",
+                    "user_id": "User ID",
+                    "user_name": "Username",
+                    "no_cloud": "Не конфигурирайте акаунт за API в облака"
+                }
+            },
+            "configure_device": {
+                "title": "Настройване на устройството Tuya",
+                "description": "Попълнете подробностите за устройството{for_device}.",
+                "data": {
+                    "friendly_name": "Име",
+                    "host": "Host",
+                    "device_id": "Device ID",
+                    "local_key": "Local key",
+                    "protocol_version": "Версия на протокола",
+                    "scan_interval": "Интервал на сканиране (секунди, само когато не се актуализира автоматично)",
+                    "entities": "Entities (премахнете отметката от даден обект, за да го премахнете)"
+                }
+            },
+            "pick_entity_type": {
+                "title": "Entity Избор на тип",
+                "description": "Моля, изберете типа обект, който искате да добавите.",
+                "data": {
+                    "platform_to_add": "Платформа",
+                    "no_additional_entities": "Не добавяйте повече обекти"
+                }
+            },
+            "configure_entity": {
+                "title": "Конфигуриране на обект",
+                "description": "Моля, попълнете подробностите за {entity} с тип `{platform}`. All settings except for `ID` може да се промени от страницата Опции по късно.",
+                "data": {
+                    "id": "ID",
+                    "friendly_name": "Визуално име",
+                    "current": "Напрежение",
+                    "current_consumption": "Консумация на ток",
+                    "voltage": "Волтаж",
+                    "commands_set": "Open_Close_Stop Commands Set",
+                    "positioning_mode": "Режим на позициониране",
+                    "current_position_dp": "НАСТОЯЩА ПОЗИЦИЯ (за режим *position* само)",
+                    "set_position_dp": "Задай позиция (за режим *position* само)",
+                    "position_inverted": "Invert 0-100 position (за режим *position* само)",
+                    "span_time": "Full opening time, in secs. (for *timed* mode only)",
+                    "unit_of_measurement": "Измервателна единица",
+                    "device_class": "Клас устройство",
+                    "scaling": "Коефициент на мащабиране",
+                    "state_on": "Включено",
+                    "state_off": "Изключено",
+                    "powergo_dp": "Power DP (Usually 25 or 2)",
+                    "idle_status_value": "Idle Status (comma-separated)",
+                    "returning_status_value": "Returning Status",
+                    "docked_status_value": "Docked Status (comma-separated)",
+                    "fault_dp": "Fault DP (Usually 11)",
+                    "battery_dp": "Състояние на батерията DP (Usually 14)",
+                    "mode_dp": "Mode DP (Usually 27)",
+                    "modes": "Списък с режими",
+                    "return_mode": "Return home mode",
+                    "fan_speed_dp": "Скорости на вентилатора DP (Usually 30)",
+                    "fan_speeds": "Списък на скоростите на вентилатора (разделени със запетая)",
+                    "clean_time_dp": "Clean Time DP (Usually 33)",
+                    "clean_area_dp": "Clean Area DP (Usually 32)",
+                    "clean_record_dp": "Clean Record DP (Usually 34)",
+                    "locate_dp": "Locate DP (Usually 31)",
+                    "paused_state": "Състояние на пауза (pause, paused, etc)",
+                    "stop_status": "Stop status",
+                    "brightness": "Яркост (само за бял цвят)",
+                    "brightness_lower": "Яркост стойност надолу",
+                    "brightness_upper": "Яркост стойност нагоре",
+                    "color_temp": "Цветна температура",
+                    "color_temp_reverse": "Обратна цветна температура",
+                    "color": "Цвят",
+                    "color_mode": "Цветен Режим",
+                    "color_temp_min_kelvin": "Минимална цветна температура в K",
+                    "color_temp_max_kelvin": "Максимална цветна температура в K",
+                    "music_mode": "Наличен е музикален режим",
+                    "scene": "Сцена",
+                    "select_options": "Valid entries, separate entries by a ;",
+                    "select_options_friendly": "User Friendly options, separate entries by a ;",
+                    "fan_speed_control": "Fan Speed Control dps",
+                    "fan_oscillating_control": "Fan Oscillating Control dps",
+                    "fan_speed_min": "minimum fan speed integer",
+                    "fan_speed_max": "maximum fan speed integer",
+                    "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
+                    "fan_direction":"fan direction dps",
+                    "fan_direction_forward": "forward dps string",
+                    "fan_direction_reverse": "reverse dps string",
+                    "current_temperature_dp": "Текуща температура",
+                    "target_temperature_dp": "Целева температура",
+                    "temperature_step": "Температурна стъпка (по избор)",
+                    "max_temperature_dp": "Максимална температура (по избор)",
+                    "min_temperature_dp": "Минимална температура (по избор)",
+                    "precision": "Прецизност (по избор, за стойности на DP)",
+                    "target_precision": "Целева точност (по избор, за стойности на DP)",
+                    "temperature_unit": "Температурна единица (по избор)",
+                    "hvac_mode_dp": "HVAC режим DP (по избор)",
+                    "hvac_mode_set": "HVAC задаване на режим (по избор)",
+                    "hvac_action_dp": "DP за текущо действие на HVAC (незадължително)",
+                    "hvac_action_set": "Текущо зададено действие на HVAC (по избор)",
+                    "preset_dp": "Предварителни настройки DP (по избор)",
+                    "preset_set": "Предварително зададени настройки (по избор)",
+                    "eco_dp": "Eco DP (по избор)",
+                    "eco_value": "Еко стойност (по избор)",
+                    "heuristic_action": "Активиране на евристично действие (незадължително)"
+                }
+            }
+        }
+    },
+    "title": "LocalTuya"
+}
