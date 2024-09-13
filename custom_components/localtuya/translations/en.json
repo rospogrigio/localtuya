@@ -72,7 +72,13 @@
                 "title": "Edit a new device",
                 "description": "Pick the configured device you wish to edit.",
                 "data": {
-                    "selected_device": "Configured Devices"
+                    "selected_device": "Configured Devices",
+                    "max_temperature_const": "Max Temperature Constant (optional)",
+                    "min_temperature_const": "Min Temperature Constant (optional)",
+                    "hvac_fan_mode_dp": "HVAC Fan Mode DP (optional)",
+                    "hvac_fan_mode_set": "HVAC Fan Mode Set (optional)",
+                    "hvac_swing_mode_dp": "HVAC Swing Mode DP (optional)",
+                    "hvac_swing_mode_set": "HVAC Swing Mode Set (optional)"
                 }
             },
             "cloud_setup": {
@@ -99,6 +105,7 @@
                     "enable_debug": "Enable debugging for this device (debug must be enabled also in configuration.yaml)",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
                     "entities": "Entities (uncheck an entity to remove it)",
+                    "add_entities": "Add more entities in 'edit device' mode",
                     "manual_dps_strings": "Manual DPS to add (separated by commas ',') - used when detection is not working (optional)",
                     "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)"
                 }
@@ -166,20 +173,26 @@
                     "fan_speed_min": "minimum fan speed integer",
                     "fan_speed_max": "maximum fan speed integer",
                     "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
-                    "fan_direction":"fan direction dps",
+                    "fan_direction": "fan direction dps",
                     "fan_direction_forward": "forward dps string",
                     "fan_direction_reverse": "reverse dps string",
                     "fan_dps_type": "DP value type",
                     "current_temperature_dp": "Current Temperature",
                     "target_temperature_dp": "Target Temperature",
                     "temperature_step": "Temperature Step (optional)",
-                    "max_temperature_dp": "Max Temperature (optional)",
-                    "min_temperature_dp": "Min Temperature (optional)",
+                    "max_temperature_dp": "Max Temperature DP (optional)",
+                    "min_temperature_dp": "Min Temperature DP (optional)",
+                    "max_temperature_const": "Max Temperature Constant (optional)",
+                    "min_temperature_const": "Min Temperature Constant (optional)",
                     "precision": "Precision (optional, for DPs values)",
                     "target_precision": "Target Precision (optional, for DPs values)",
                     "temperature_unit": "Temperature Unit (optional)",
                     "hvac_mode_dp": "HVAC Mode DP (optional)",
                     "hvac_mode_set": "HVAC Mode Set (optional)",
+                    "hvac_fan_mode_dp": "HVAC Fan Mode DP (optional)",
+                    "hvac_fan_mode_set": "HVAC Fan Mode Set (optional)",
+                    "hvac_swing_mode_dp": "HVAC Swing Mode DP (optional)",
+                    "hvac_swing_mode_set": "HVAC Swing Mode Set (optional)",
                     "hvac_action_dp": "HVAC Current Action DP (optional)",
                     "hvac_action_set": "HVAC Current Action Set (optional)",
                     "preset_dp": "Presets DP (optional)",
@@ -193,6 +206,30 @@
                     "max_value": "Maximum Value",
                     "step_size": "Minimum increment between numbers",
                     "is_passive_entity": "Passive entity - requires integration to send initialisation value"
+                }
+            }
+        }
+    },
+    "services": {
+        "reload": {
+            "name": "Reload",
+            "description": "Reload localtuya and reconnect to all devices."
+        },
+        "set_dp": {
+            "name": "Set datapoint",
+            "description": "Change the value of a datapoint (DP)",
+            "fields": {
+                "device_id": {
+                    "name": "Device ID",
+                    "description": "Device ID of device to change datapoint value for"
+                },
+                "dp": {
+                    "name": "DP",
+                    "description": "Datapoint index"
+                },
+                "value": {
+                    "name": "Value",
+                    "description": "New value to set"
                 }
             }
         }
