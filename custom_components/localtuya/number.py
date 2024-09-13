@@ -14,6 +14,7 @@ from .const import (
     CONF_PASSIVE_ENTITY,
     CONF_RESTORE_ON_RECONNECT,
     CONF_STEPSIZE_VALUE,
+    CONF_VALUE_TYPE
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ def flow_schema(dps):
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
         vol.Required(CONF_PASSIVE_ENTITY): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
+        vol.Optional(CONF_VALUE_TYPE, default="float"): vol.In(["float", "int"]),
     }
 
 
@@ -102,7 +104,8 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
-        await self._device.set_dp(value, self._dp_id)
+        send_value = int(value) if self._config.get(CONF_VALUE_TYPE) == "int" else value
+        await self._device.set_dp(send_value, self._dp_id)
 
     # Default value is the minimum value
     def entity_default_value(self):
