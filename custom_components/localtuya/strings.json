@@ -58,6 +58,7 @@
                     "current_consumption": "Current Consumption",
                     "voltage": "Voltage",
                     "commands_set": "Open_Close_Stop Commands Set",
+                    "stop_dp": "Stop switch (for *open_close_continue* command set only)",
                     "positioning_mode": "Positioning mode",
                     "current_position_dp": "Current Position (for *position* mode only)",
                     "set_position_dp": "Set Position (for *position* mode only)",
