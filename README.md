@@ -109,6 +109,8 @@ After you have defined all the needed entities, leave the "Do not add more entit
 For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
 all the available DPs found on the device (with their current status!!) for easy identification. 
 
+Find more details about the correct entry for a large number of specific devices at the [tinytuya repository](https://github.com/jasonacox/tinytuya#version-31-devices)
+
 **Note: If your device requires an LocalTuya to send an initialisation value to the entity for it to work, this can be configured (in supported entities) through the 'Passive entity' option. Optionally you can specify the initialisation value to be sent**
 
 Each entity type has different options to be configured. Here is an example for the "switch" entity:
