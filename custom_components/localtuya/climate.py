@@ -87,6 +87,9 @@ HVAC_MODE_SETS = {
     "True/False (Heat)": {
         HVACMode.HEAT: True,
     },
+    "True/False (Cool)": {
+        HVACMode.COOL: True,
+    },
     "heat/cool/auto": {
          HVACMode.HEAT: "heat",
          HVACMode.COOL: "cool",
@@ -116,6 +119,10 @@ HVAC_ACTION_SETS = {
     "heating/no_heating": {
         HVACAction.HEATING: "heating",
         HVACAction.IDLE: "no_heating",
+    },
+    "cooling/no_cooling": {
+        HVACAction.COOLING: "cooling",
+        HVACAction.IDLE: "no_cooling",
     },
     "Heat/Warming": {
         HVACAction.HEATING: "Heat",
