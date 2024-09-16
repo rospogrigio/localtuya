@@ -64,29 +64,37 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 HVAC_MODE_SETS = {
-    "manual/auto": {
+    "manual/auto (Heat)": {
         HVACMode.HEAT: "manual",
         HVACMode.AUTO: "auto",
     },
-    "Manual/Auto": {
+    "Manual/Auto (Heat)": {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Auto",
     },
-    "MANUAL/AUTO": {
-        HVAC_MODE_HEAT: "MANUAL",
-        HVAC_MODE_AUTO: "AUTO",
+    "MANUAL/AUTO (Heat)": {
+        HVACMode.HEAT: "MANUAL",
+        HVACMode.AUTO: "AUTO",
     },
-    "Manual/Program": {
+    "Manual/Program (Heat)": {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Program",
     },
-    "m/p": {
+    "m/p (Heat)": {
         HVACMode.HEAT: "m",
         HVACMode.AUTO: "p",
     },
-    "True/False": {
+    "True/False (Heat)": {
         HVACMode.HEAT: True,
     },
+    "True/False (Cool)": {
+        HVACMode.COOL: True,
+    },
+    "heat/cool/auto": {
+         HVACMode.HEAT: "heat",
+         HVACMode.COOL: "cool",
+         HVACMode.AUTO: "auto",
+     },
     "Auto/Cold/Dry/Wind/Hot": {
         HVACMode.HEAT: "hot",
         HVACMode.FAN_ONLY: "wind",
@@ -94,17 +102,17 @@ HVAC_MODE_SETS = {
         HVACMode.COOL: "cold",
         HVACMode.AUTO: "auto",
     },
-    "1/0": {
+    "1/0 (Heat)": {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
 }
 HVAC_ACTION_SETS = {
-    "True/False": {
+    "True/False (Heating)": {
         HVACAction.HEATING: True,
         HVACAction.IDLE: False,
     },
-    "open/close": {
+    "open/close (Heating)": {
         HVACAction.HEATING: "open",
         HVACAction.IDLE: "close",
     },
@@ -112,13 +120,21 @@ HVAC_ACTION_SETS = {
         HVACAction.HEATING: "heating",
         HVACAction.IDLE: "no_heating",
     },
+    "cooling/no_cooling": {
+        HVACAction.COOLING: "cooling",
+        HVACAction.IDLE: "no_cooling",
+    },
     "Heat/Warming": {
         HVACAction.HEATING: "Heat",
         HVACAction.IDLE: "Warming",
     },
     "heating/warming": {
-        CURRENT_HVAC_HEAT: "heating",
-        CURRENT_HVAC_IDLE: "warming",
+        HVACAction.HEATING: "heating",
+        HVACAction.IDLE: "warming",
+    },
+    "1/0 (Heating)": {
+        HVACAction.HEATING: "1",
+        HVACAction.IDLE: "0",
     },
 }
 HVAC_FAN_MODE_SETS = {
@@ -146,6 +162,11 @@ PRESET_SETS = {
         PRESET_AWAY: "holiday",
         PRESET_HOME: "smart",
         PRESET_NONE: "hold",
+    },
+    "home/leave/auto": {
+        PRESET_AWAY: "leave",
+        PRESET_HOME: "home",
+        PRESET_NONE: "auto",
     },
 }
 
