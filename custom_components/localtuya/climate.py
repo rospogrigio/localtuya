@@ -93,7 +93,7 @@ HVAC_MODE_SETS = {
     "heat/cool/auto": {
          HVACMode.HEAT: "heat",
          HVACMode.COOL: "cool",
-         HVACMODE.AUTO: "auto",
+         HVACMode.AUTO: "auto",
      },
     "Auto/Cold/Dry/Wind/Hot": {
         HVACMode.HEAT: "hot",
