@@ -129,8 +129,8 @@ HVAC_ACTION_SETS = {
         HVACAction.IDLE: "Warming",
     },
     "heating/warming": {
-        CURRENT_HVAC_HEAT: "heating",
-        CURRENT_HVAC_IDLE: "warming",
+        HVACAction.HEATING: "heating",
+        HVACAction.IDLE: "warming",
     },
     "1/0 (Heating)": {
         HVACAction.HEATING: "1",
