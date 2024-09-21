@@ -1,0 +1,202 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Le périphérique a déjà été configuré.",
+            "device_updated": "La configuration du périphérique a été mise à jour !"
+        },
+        "error": {
+            "authentication_failed": "Échec de l'authentification.\n{msg}",
+            "cannot_connect": "Impossible de se connecter au périphérique. Vérifiez que l'adresse est correcte et réessayez.",
+            "device_list_failed": "Échec de la récupération de la liste des périphériques.\n{msg}",
+            "invalid_auth": "Échec de l'authentification avec le périphérique. Vérifiez que l'identifiant du périphérique et la clé locale sont corrects.",
+            "unknown": "Une erreur inconnue s'est produite. Consultez les journaux pour plus de détails.",
+            "entity_already_configured": "L'entité avec cet ID a déjà été configurée.",
+            "address_in_use": "L'adresse utilisée pour la découverte est déjà utilisée. Assurez-vous qu'aucune autre application ne l'utilise (port TCP 6668).",
+            "discovery_failed": "Quelque chose a échoué lors de la découverte des périphériques. Consultez les journaux pour plus de détails.",
+            "empty_dps": "La connexion au périphérique a réussi, mais aucun point de données n'a été trouvé. Veuillez réessayer. Créez un nouvel incident et incluez les journaux de débogage si le problème persiste."
+        },
+        "step": {
+            "user": {
+                "title": "Configuration du compte Cloud API",
+                "description": "Saisissez les identifiants pour l'API Cloud Tuya.",
+                "data": {
+                    "region": "Région du serveur API",
+                    "client_id": "ID du client",
+                    "client_secret": "Secret",
+                    "user_id": "ID de l'utilisateur",
+                    "user_name": "Nom d'utilisateur",
+                    "no_cloud": "Ne pas configurer de compte Cloud API"
+                }
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "Le périphérique a déjà été configuré.",
+            "device_success": "Le périphérique {dev_name} a été {action} avec succès.",
+            "no_entities": "Impossible de supprimer toutes les entités d'un périphérique.\nSi vous souhaitez supprimer un périphérique, entrez-le dans le menu Périphériques, cliquez sur les 3 points dans la section 'Informations sur le périphérique' et appuyez sur le bouton Supprimer."
+        },
+        "error": {
+            "authentication_failed": "Échec de l'authentification.\n{msg}",
+            "cannot_connect": "Impossible de se connecter au périphérique. Vérifiez que l'adresse est correcte et réessayez.",
+            "device_list_failed": "Échec de la récupération de la liste des périphériques.\n{msg}",
+            "invalid_auth": "Échec de l'authentification avec le périphérique. Vérifiez que l'identifiant du périphérique et la clé locale sont corrects.",
+            "unknown": "Une erreur inconnue s'est produite. Consultez les journaux pour plus de détails.",
+            "entity_already_configured": "L'entité avec cet ID a déjà été configurée.",
+            "address_in_use": "L'adresse utilisée pour la découverte est déjà en cours d'utilisation. Assurez-vous qu'aucune autre application ne l'utilise (port TCP 6668).",
+            "discovery_failed": "Quelque chose a échoué lors de la découverte des périphériques. Consultez les journaux pour plus de détails.",
+            "empty_dps": "La connexion au périphérique a réussi, mais aucun point de données n'a été trouvé. Veuillez réessayer. Créez un nouvel incident et incluez les journaux de débogage si le problème persiste."
+        },
+        "step": {
+            "yaml_import": {
+                "title": "Non pris en charge",
+                "description": "Les options ne peuvent pas être modifiées lorsqu'elles sont configurées via YAML."
+            },
+            "init": {
+                "title": "Configuration LocalTuya",
+                "description": "Veuillez sélectionner l'action souhaitée.",
+                "data": {
+                    "add_device": "Ajouter un nouveau périphérique",
+                    "edit_device": "Modifier un périphérique",
+                    "setup_cloud": "Reconfigurer le compte Cloud API"
+                }
+            },
+            "add_device": {
+                "title": "Ajouter un nouveau périphérique",
+                "description": "Choisissez l'un des périphériques détectés automatiquement ou `...` pour ajouter manuellement un périphérique.",
+                "data": {
+                    "selected_device": "Périphériques détectés"
+                }
+            },
+            "edit_device": {
+                "title": "Modifier un périphérique",
+                "description": "Sélectionnez le périphérique configuré que vous souhaitez modifier.",
+                "data": {
+                    "selected_device": "Périphériques configurés"
+                }
+            },
+            "cloud_setup": {
+                "title": "Configuration du compte Cloud API",
+                "description": "Saisissez les identifiants pour l'API Cloud Tuya.",
+                "data": {
+                    "region": "Région du serveur API",
+                    "client_id": "ID du client",
+                    "client_secret": "Secret",
+                    "user_id": "ID de l'utilisateur",
+                    "user_name": "Nom d'utilisateur",
+                    "no_cloud": "Ne pas configurer le compte Cloud API"
+                }
+            },
+            "configure_device": {
+                "title": "Configurer le périphérique Tuya",
+                "description": "Remplissez les détails du périphérique{for_device}.",
+                "data": {
+                    "friendly_name": "Nom",
+                    "host": "Hôte",
+                    "device_id": "ID du périphérique",
+                    "local_key": "Clé locale",
+                    "protocol_version": "Version du protocole",
+                    "enable_debug": "Activer le débogage pour ce périphérique (le débogage doit également être activé dans configuration.yaml)",
+                    "scan_interval": "Intervalle de balayage (en secondes, uniquement lorsque la mise à jour automatique n'est pas activée)",
+                    "entities": "Entités (décochez une entité pour la supprimer)",
+                    "add_entities": "Ajouter plus d'entités en mode 'modifier le périphérique'",
+                    "manual_dps_strings": "DPS manuels à ajouter (séparés par des virgules ',') - utilisés lorsque la détection ne fonctionne pas (facultatif)",
+                    "reset_dpids": "DPIDs à envoyer dans la commande RESET (séparés par des virgules ',') - Utilisé lorsque le périphérique ne répond pas aux demandes d'état après la mise sous tension (facultatif)"
+                }
+            },
+            "pick_entity_type": {
+                "title": "Sélection du type d'entité",
+                "description": "Veuillez choisir le type d'entité que vous souhaitez ajouter.",
+                "data": {
+                    "platform_to_add": "Plateforme",
+                    "no_additional_entities": "Ne pas ajouter d'autres entités"
+                }
+            },
+            "configure_entity": {
+                "title": "Configurer l'entité",
+                "description": "Veuillez remplir les détails pour {entity} avec le type `{platform}`. Tous les paramètres sauf `ID` peuvent être modifiés ultérieurement depuis la page des Options.",
+                "data": {
+                    "id": "ID",
+                    "friendly_name": "Nom convivial",
+                    "current": "Courant",
+                    "current_consumption": "Consommation actuelle",
+                    "voltage": "Tension",
+                    "commands_set": "Ensemble de commandes Open_Close_Stop",
+                    "positioning_mode": "Mode de positionnement",
+                    "current_position_dp": "Position actuelle (pour le mode *position* uniquement)",
+                    "set_position_dp": "Définir la position (pour le mode *position* uniquement)",
+                    "position_inverted": "Inverser la position 0-100 (pour le mode *position* uniquement)",
+                    "span_time": "Temps d'ouverture complet, en secondes (pour le mode *timed* uniquement)",
+                    "unit_of_measurement": "Unité de mesure",
+                    "device_class": "Classe de périphérique",
+                    "scaling": "Facteur d'échelle",
+                    "state_on": "Valeur activée",
+                    "state_off": "Valeur désactivée",
+                    "powergo_dp": "DP d'alimentation (généralement 25 ou 2)",
+                    "idle_status_value": "État de repos (séparé par des virgules)",
+                    "returning_status_value": "État de retour",
+                    "docked_status_value": "État de la station d'accueil (séparé par des virgules)",
+                    "fault_dp": "DP de défaut (généralement 11)",
+                    "battery_dp": "DP d'état de la batterie (généralement 14)",
+                    "mode_dp": "DP de mode (généralement 27)",
+                    "modes": "Liste des modes",
+                    "return_mode": "Mode de retour à la maison",
+                    "fan_speed_dp": "DP de vitesses de ventilateur (généralement 30)",
+                    "fan_speeds": "Liste des vitesses de ventilateur (séparée par des virgules)",
+                    "clean_time_dp": "DP de temps de nettoyage (généralement 33)",
+                    "clean_area_dp": "DP de surface de nettoyage (généralement 32)",
+                    "clean_record_dp": "DP d'enregistrement de nettoyage (généralement 34)",
+                    "locate_dp": "DP de localisation (généralement 31)",
+                    "paused_state": "État de pause (pause, en pause, etc.)",
+                    "stop_status": "État d'arrêt",
+                    "brightness": "Luminosité (uniquement pour la couleur blanche)",
+                    "brightness_lower": "Valeur inférieure de luminosité",
+                    "brightness_upper": "Valeur supérieure de luminosité",
+                    "color_temp": "Température de couleur",
+                    "color_temp_reverse": "Inversion de la température de couleur",
+                    "color": "Couleur",
+                    "color_mode": "Mode couleur",
+                    "color_temp_min_kelvin": "Température de couleur minimale en K",
+                    "color_temp_max_kelvin": "Température de couleur maximale en K",
+                    "music_mode": "Mode musique disponible",
+                    "scene": "Scène",
+                    "select_options": "Entrées valides, séparez les entrées par un ;",
+                    "select_options_friendly": "Options conviviales pour l'utilisateur, séparez les entrées par un ;",
+                    "fan_speed_control": "Commande de vitesse du ventilateur DPS",
+                    "fan_oscillating_control": "Commande d'oscillation du ventilateur DPS",
+                    "fan_speed_min": "Vitesse minimale du ventilateur (entier)",
+                    "fan_speed_max": "Vitesse maximale du ventilateur (entier)",
+                    "fan_speed_ordered_list": "Liste des modes de vitesse du ventilateur (remplace les vitesses min/max)",
+                    "fan_direction": "Direction du ventilateur DPS",
+                    "fan_direction_forward": "Chaîne DPS de direction avant",
+                    "fan_direction_reverse": "Chaîne DPS de direction arrière",
+                    "fan_dps_type": "Type de valeur DPS",
+                    "current_temperature_dp": "Température actuelle",
+                    "target_temperature_dp": "Température cible",
+                    "temperature_step": "Incrément de température (facultatif)",
+                    "max_temperature_dp": "Température maximale (facultatif)",
+                    "min_temperature_dp": "Température minimale (facultatif)",
+                    "precision": "Précision (facultatif, pour les valeurs DPS)",
+                    "target_precision": "Précision de la cible (facultatif, pour les valeurs DPS)",
+                    "temperature_unit": "Unité de température (facultatif)",
+                    "hvac_mode_dp": "DP de mode HVAC (facultatif)",
+                    "hvac_mode_set": "Ensemble de modes HVAC (facultatif)",
+                    "hvac_action_dp": "DP d'action HVAC actuelle (facultatif)",
+                    "hvac_action_set": "Ensemble d'actions HVAC actuelles (facultatif)",
+                    "preset_dp": "DP de préréglages (facultatif)",
+                    "preset_set": "Ensemble de préréglages (facultatif)",
+                    "eco_dp": "DP Eco (facultatif)",
+                    "eco_value": "Valeur Eco (facultatif)",
+                    "heuristic_action": "Activer l'action heuristique (facultatif)",
+                    "dps_default_value": "Valeur par défaut en cas de non-initialisation (facultatif)",
+                    "restore_on_reconnect": "Restaurer la dernière valeur définie dans HomeAssistant après une perte de connexion",
+                    "min_value": "Valeur minimale",
+                    "max_value": "Valeur maximale",
+                    "step_size": "Incrément minimum entre les nombres",
+                    "is_passive_entity": "Entité passive - nécessite une intégration pour envoyer la valeur d'initialisation"
+                }
+            }
+        }
+    },
+    "title": "LocalTuya"
+}
