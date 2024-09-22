@@ -126,6 +126,31 @@ If you upgrade LocalTuya from v3.x.x or older, the config entry will automatical
 
 If you had configured LocalTuya using YAML files, you can delete all its references from within the YAML files because they will no longer be considered so they might bring confusion (only the logger configuration part needs to be kept, of course, see [Debugging](https://github.com/rospogrigio/localtuya#debugging) ).
 
+## How to find the DPS values for manual entity entries
+From the Tuya cloud login > your project > devices. Find the device you want to debug from the device list and then click debug device.
+
+Click on the device logs tab on the top of the debug page for the device, and change the date range to the maximum you are able to. Now inspect element using the browser you are using and click on network. Drop down the drop down the DP ID dropdown and select something from the list, then click search.
+
+You should see the requests go out in the browser inspect network, the one you are looking for here is the list entry, click on that and then look at the payload, it should look something like this:
+```
+{
+    "startRowId": "",
+    "pageNo": 1,
+    "pageSize": 10,
+    "code": "101",
+    "startTime": 1695287053764,
+    "endTime": 1695805453764,
+    "projectCode": "p1641704291064uwv7dc",
+    "sourceId": "eu16175080464804Nlvu",
+    "sourceType": "4",
+    "deviceId": "bf2261c924da6625101z4u",
+    "pageStartRow": "",
+    "region": "EU"
+}
+```
+Match that with the text value in the dropdown from the search you executed, and volla!
+
+In this json above, 101 is "Report the number of trips to the toilet at one time"
 
 # Energy monitoring values
 
