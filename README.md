@@ -50,9 +50,16 @@ The Cloud API configuration page will appear, requesting to input your Tuya IoT 
 
 ![cloud_setup](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/9-cloud_setup.png)
 
-To setup a Tuya IoT Platform account and setup a project in it, refer to the instructions for the official Tuya integration:
-https://www.home-assistant.io/integrations/tuya/
-The place to find the Client ID and Secret is described in this link (in the ["Get Authorization Key"](https://www.home-assistant.io/integrations/tuya/#get-authorization-key) paragraph), while the User ID can be found in the "Link Tuya App Account" subtab within the Cloud project:
+Steps to get the required connection data:
+
+* Use Tuya Smart App (["iOS"|https://apps.apple.com/us/app/tuya-smart/id1034649547]|["Android"|https://play.google.com/store/apps/details?id=com.tuya.smart&hl=en&pli=1]) to add a device. Requires registration. Steps are detaied on the official ["Home Assistent Tuya integration"|https://www.home-assistant.io/integrations/tuya/].
+* Make a separate registration on ["Tuya IoT Platform"|https://platform.tuya.com/cloud/]
+* Create a new cloud project (look for Cloud item in the main menu on the left). Make sure to accept default authorisations.
+* Link your app with the cloud project - go to Devices -> Link App Account -> Add App Account and scan the QR code from the Tuya Smart app to approve the linking.
+
+You can find the Client ID and Secret on the Overview page of your Tuya Cloud project under "Access ID/Client ID" and "Access Secret/Client Secret" respectively.
+
+The user ID (UID) can be found in the "Link Tuya App Account" subtab within the Cloud project:
 
 ![user_id.png](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/8-user_id.png)
 
