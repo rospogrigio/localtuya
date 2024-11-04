@@ -1,5 +1,6 @@
 *~
 __pycache__
 .tox
+.idea
 tuyadebug/
 .pre-commit-config.yaml
