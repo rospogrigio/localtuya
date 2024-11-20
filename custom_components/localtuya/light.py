@@ -1,6 +1,8 @@
 """Platform to locally control Tuya-based light devices."""
 import logging
 import textwrap
+import struct
+import base64
 from functools import partial
 
 import homeassistant.util.color as color_util
@@ -90,6 +92,8 @@ SCENE_LIST_RGB_1000 = {
     + "00000000464602003d03e803e80000000046460200ae03e803e800000000464602011303e803e80"
     + "0000000",
 }
+
+MIX_LIGHT_DP = '51'
 
 
 def map_range(value, from_lower, from_upper, to_lower, to_upper):
@@ -260,12 +264,16 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def is_white_mode(self):
         """Return true if the light is in white mode."""
+        if self.__is_mix_light():
+            return self._mix_light_values['mode'] in (5, 7)
         color_mode = self.__get_color_mode()
         return color_mode is None or color_mode == MODE_WHITE
 
     @property
     def is_color_mode(self):
         """Return true if the light is in color mode."""
+        if self.__is_mix_light():
+            return self._mix_light_values['mode'] in (6, 7)
         color_mode = self.__get_color_mode()
         return color_mode is not None and color_mode == MODE_COLOR
 
@@ -280,6 +288,9 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         """Return true if the light is in music mode."""
         color_mode = self.__get_color_mode()
         return color_mode is not None and color_mode == MODE_MUSIC
+    
+    def __is_mix_light(self):
+        return self.dps(MIX_LIGHT_DP)
 
     def __is_color_rgb_encoded(self):
         return len(self.dps_conf(CONF_COLOR)) > 12
@@ -296,113 +307,206 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             if self.has_config(CONF_COLOR_MODE)
             else MODE_WHITE
         )
-
+    
     async def async_turn_on(self, **kwargs):
         """Turn on or control the light."""
+
+        #self.warning(f'async_turn_on kwargs={kwargs}')
         states = {}
         if not self.is_on:
             states[self._dp_id] = True
         features = self.supported_features
         brightness = None
-        if ATTR_EFFECT in kwargs and (features & SUPPORT_EFFECT):
-            scene = self._scenes.get(kwargs[ATTR_EFFECT])
-            if scene is not None:
-                if scene.startswith(MODE_SCENE):
-                    states[self._config.get(CONF_COLOR_MODE)] = scene
-                else:
-                    states[self._config.get(CONF_COLOR_MODE)] = MODE_SCENE
-                    states[self._config.get(CONF_SCENE)] = scene
-            elif kwargs[ATTR_EFFECT] == SCENE_MUSIC:
-                states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
-
-        if ATTR_BRIGHTNESS in kwargs and (features & SUPPORT_BRIGHTNESS):
-            brightness = map_range(
-                int(kwargs[ATTR_BRIGHTNESS]),
-                0,
-                255,
-                self._lower_brightness,
-                self._upper_brightness,
-            )
-            if self.is_white_mode:
-                states[self._config.get(CONF_BRIGHTNESS)] = brightness
+        if self.__is_mix_light():
+            # Handle turning on the light using DP 51
+            if ATTR_BRIGHTNESS in kwargs:
+                brightness_value = int((kwargs['brightness'] / 255) * 1000)
             else:
-                if self.__is_color_rgb_encoded():
-                    rgb = color_util.color_hsv_to_RGB(
-                        self._hs[0],
-                        self._hs[1],
-                        int(brightness * 100 / self._upper_brightness),
-                    )
-                    color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
-                        round(rgb[0]),
-                        round(rgb[1]),
-                        round(rgb[2]),
-                        round(self._hs[0]),
-                        round(self._hs[1] * 255 / 100),
-                        brightness,
-                    )
-                else:
-                    color = "{:04x}{:04x}{:04x}".format(
-                        round(self._hs[0]), round(self._hs[1] * 10.0), brightness
-                    )
-                states[self._config.get(CONF_COLOR)] = color
-                states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
+                brightness_value = self._mix_light_values["brightness_white"]
 
-        if ATTR_HS_COLOR in kwargs and (features & SUPPORT_COLOR):
-            if brightness is None:
-                brightness = self._brightness
-            hs = kwargs[ATTR_HS_COLOR]
-            if hs[1] == 0 and self.has_config(CONF_BRIGHTNESS):
-                states[self._config.get(CONF_BRIGHTNESS)] = brightness
+            if not self.is_on: #if light is off, set default values
+                self._mix_light_values["mode"] = 5
+            
+            if ATTR_HS_COLOR in kwargs:
+                self._mix_light_values["mode"] = 7
+                
+                hs_color = kwargs[ATTR_HS_COLOR]
+                self._mix_light_values["hue"] = int(hs_color[0])
+                self._mix_light_values["saturation"] = int(hs_color[1] * 10)
+                if brightness_value:
+                    self._mix_light_values["brightness_color"] = brightness_value
+
+            elif ATTR_COLOR_TEMP in kwargs:
+                self._mix_light_values["mode"] = 5  # MODE_WHITE
+                mired = kwargs[ATTR_COLOR_TEMP]
+                kelvin = color_util.color_temperature_mired_to_kelvin(mired)
+                self._mix_light_values["color_temp"] = int(((kelvin - 2700) / (6500 - 2700)) * 1000)                    
+
+            if self._mix_light_values["color_temp"] > 800:
+                self._mix_light_values["mode"] = 6
+                
+            if self._mix_light_values["mode"] == 6:
+                self._mix_light_values["brightness_color"] = brightness_value
+            elif self._mix_light_values["mode"] == 5:
+                self._mix_light_values["brightness_white"] = brightness_value
+            elif self._mix_light_values["mode"] == 7:
+                self._mix_light_values["brightness_color"] = brightness_value
+                self._mix_light_values["brightness_white"] = brightness_value
+            
+            # Encode and send data to DP 51
+            states[MIX_LIGHT_DP] = self._encode_mix_light()
+
+        else:
+            if ATTR_EFFECT in kwargs and (features & SUPPORT_EFFECT):
+                scene = self._scenes.get(kwargs[ATTR_EFFECT])
+                if scene is not None:
+                    if scene.startswith(MODE_SCENE):
+                        states[self._config.get(CONF_COLOR_MODE)] = scene
+                    else:
+                        states[self._config.get(CONF_COLOR_MODE)] = MODE_SCENE
+                        states[self._config.get(CONF_SCENE)] = scene
+                elif kwargs[ATTR_EFFECT] == SCENE_MUSIC:
+                    states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
+
+            if ATTR_BRIGHTNESS in kwargs and (features & SUPPORT_BRIGHTNESS):
+                brightness = map_range(
+                    int(kwargs[ATTR_BRIGHTNESS]),
+                    0,
+                    255,
+                    self._lower_brightness,
+                    self._upper_brightness,
+                )
+                if self.is_white_mode:
+                    states[self._config.get(CONF_BRIGHTNESS)] = brightness
+                else:
+                    if self.__is_color_rgb_encoded():
+                        rgb = color_util.color_hsv_to_RGB(
+                            self._hs[0],
+                            self._hs[1],
+                            int(brightness * 100 / self._upper_brightness),
+                        )
+                        color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
+                            round(rgb[0]),
+                            round(rgb[1]),
+                            round(rgb[2]),
+                            round(self._hs[0]),
+                            round(self._hs[1] * 255 / 100),
+                            brightness,
+                        )
+                    else:
+                        color = "{:04x}{:04x}{:04x}".format(
+                            round(self._hs[0]), round(self._hs[1] * 10.0), brightness
+                        )
+                    states[self._config.get(CONF_COLOR)] = color
+                    states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
+
+            if ATTR_HS_COLOR in kwargs and (features & SUPPORT_COLOR):
+                if brightness is None:
+                    brightness = self._brightness
+                hs = kwargs[ATTR_HS_COLOR]
+                if hs[1] == 0 and self.has_config(CONF_BRIGHTNESS):
+                    states[self._config.get(CONF_BRIGHTNESS)] = brightness
+                    states[self._config.get(CONF_COLOR_MODE)] = MODE_WHITE
+                else:
+                    if self.__is_color_rgb_encoded():
+                        rgb = color_util.color_hsv_to_RGB(
+                            hs[0], hs[1], int(brightness * 100 / self._upper_brightness)
+                        )
+                        color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
+                            round(rgb[0]),
+                            round(rgb[1]),
+                            round(rgb[2]),
+                            round(hs[0]),
+                            round(hs[1] * 255 / 100),
+                            brightness,
+                        )
+                    else:
+                        color = "{:04x}{:04x}{:04x}".format(
+                            round(hs[0]), round(hs[1] * 10.0), brightness
+                        )
+                    states[self._config.get(CONF_COLOR)] = color
+                    states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
+
+            if ATTR_COLOR_TEMP in kwargs and (features & SUPPORT_COLOR_TEMP):
+                if brightness is None:
+                    brightness = self._brightness
+                mired = int(kwargs[ATTR_COLOR_TEMP])
+                if self._color_temp_reverse:
+                    mired = self._max_mired - (mired - self._min_mired)
+                if mired < self._min_mired:
+                    mired = self._min_mired
+                elif mired > self._max_mired:
+                    mired = self._max_mired
+                color_temp = int(
+                    self._upper_color_temp
+                    - (self._upper_color_temp / (self._max_mired - self._min_mired))
+                    * (mired - self._min_mired)
+                )
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_WHITE
-            else:
-                if self.__is_color_rgb_encoded():
-                    rgb = color_util.color_hsv_to_RGB(
-                        hs[0], hs[1], int(brightness * 100 / self._upper_brightness)
-                    )
-                    color = "{:02x}{:02x}{:02x}{:04x}{:02x}{:02x}".format(
-                        round(rgb[0]),
-                        round(rgb[1]),
-                        round(rgb[2]),
-                        round(hs[0]),
-                        round(hs[1] * 255 / 100),
-                        brightness,
-                    )
-                else:
-                    color = "{:04x}{:04x}{:04x}".format(
-                        round(hs[0]), round(hs[1] * 10.0), brightness
-                    )
-                states[self._config.get(CONF_COLOR)] = color
-                states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
-
-        if ATTR_COLOR_TEMP in kwargs and (features & SUPPORT_COLOR_TEMP):
-            if brightness is None:
-                brightness = self._brightness
-            mired = int(kwargs[ATTR_COLOR_TEMP])
-            if self._color_temp_reverse:
-                mired = self._max_mired - (mired - self._min_mired)
-            if mired < self._min_mired:
-                mired = self._min_mired
-            elif mired > self._max_mired:
-                mired = self._max_mired
-            color_temp = int(
-                self._upper_color_temp
-                - (self._upper_color_temp / (self._max_mired - self._min_mired))
-                * (mired - self._min_mired)
-            )
-            states[self._config.get(CONF_COLOR_MODE)] = MODE_WHITE
-            states[self._config.get(CONF_BRIGHTNESS)] = brightness
-            states[self._config.get(CONF_COLOR_TEMP)] = color_temp
+                states[self._config.get(CONF_BRIGHTNESS)] = brightness
+                states[self._config.get(CONF_COLOR_TEMP)] = color_temp
         await self._device.set_dps(states)
 
     async def async_turn_off(self, **kwargs):
         """Turn Tuya light off."""
         await self._device.set_dp(False, self._dp_id)
 
+    def _decode_mix_light(self, data):
+        """Decode Mix Light data from DP 51."""
+        decoded_data = base64.b64decode(data)
+        (
+            mode,
+            hue,
+            saturation,
+            brightness_color,
+            brightness_white,
+            color_temp,
+        ) = struct.unpack(">6H", decoded_data)
+        self._mode = mode
+        self._mix_light_values = {
+            "mode": mode,
+            "hue": hue,
+            "saturation": saturation,
+            "brightness_color": brightness_color,
+            "brightness_white": brightness_white,
+            "color_temp": color_temp,
+        }
+
+    def _encode_mix_light(self):
+        """Encode Mix Light data to send to DP 51."""
+        data_tuple = (
+            self._mix_light_values["mode"],
+            self._mix_light_values["hue"],
+            self._mix_light_values["saturation"],
+            self._mix_light_values["brightness_color"],
+            self._mix_light_values["brightness_white"],
+            self._mix_light_values["color_temp"],
+        )
+        #self.warning(f'_encode_mix_light {data_tuple}')
+        packed_data = struct.pack(">6H", *data_tuple)
+        encoded_data = base64.b64encode(packed_data).decode("utf-8")
+        return encoded_data
+
     def status_updated(self):
         """Device status was updated."""
         self._state = self.dps(self._dp_id)
         supported = self.supported_features
         self._effect = None
+
+        if self.__is_mix_light():
+            self._decode_mix_light(self.dps(MIX_LIGHT_DP))
+            if self._mix_light_values['mode'] in (5, 7): # white mode
+                self._brightness = self._mix_light_values["brightness_white"]
+                self._color_temp = self._mix_light_values["color_temp"]
+
+            if self._mix_light_values['mode'] in (6, 7):
+                self._hs = [self._mix_light_values["hue"], self._mix_light_values["saturation"]/10.0]
+
+            if self._mix_light_values['mode'] in (6,):
+                self._brightness = self._mix_light_values["brightness_color"]
+        
+            return
+
         if supported & SUPPORT_BRIGHTNESS and self.has_config(CONF_BRIGHTNESS):
             self._brightness = self.dps_conf(CONF_BRIGHTNESS)
 
