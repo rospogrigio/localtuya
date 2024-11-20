@@ -843,6 +843,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             dp_index(int):   dps index to set
             value: new value for the dps index
         """
+        if not isinstance(value, str):
+            value = json.dumps(value)
         return await self.exchange(CONTROL, {str(dp_index): value})
 
     async def set_dps(self, dps):
