@@ -29,6 +29,7 @@ from .const import (
     CONF_COLOR_TEMP_MIN_KELVIN,
     CONF_COLOR_TEMP_REVERSE,
     CONF_MUSIC_MODE,
+    CONF_LYTMI_MODES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,6 +92,27 @@ SCENE_LIST_RGB_1000 = {
     + "0000000",
 }
 
+SCENE_LIST_LYTMI = {
+    "Screen Weak": "80000000000000000000000000000000",
+    "Screen Normal": "81000000000000000000000000000000",
+    "Screen Hight": "82000000000000000000000000000000",
+    "Music Spectrum": "83000000000000000000000000000000",
+    "Music Electronic": "84000000000000000000000000000000",
+    "Music Listen": "85000000000000000000000000000000",
+    "Rainbow": "86000000000000000000000000000000",
+    "Fire": "87000000000000000000000000000000",
+    "Read": "88000000000000000000000000000000",
+    "Firework": "89000000000000000000000000000000",
+    "Star": "90000000000000000000000000000000",
+    "Drip": "91000000000000000000000000000000",
+    "Particle": "92000000000000000000000000000000",
+    "Flow": "93000000000000000000000000000000",
+    "Ball": "94000000000000000000000000000000",
+    "Swing": "95000000000000000000000000000000",
+    "Breath": "96000000000000000000000000000000",
+    "Pure": "97000000000000000000000000000000",
+}
+
 
 def map_range(value, from_lower, from_upper, to_lower, to_upper):
     """Map a value in one range to another."""
@@ -128,6 +150,7 @@ def flow_schema(dps):
         vol.Optional(
             CONF_MUSIC_MODE, default=False, description={"suggested_value": False}
         ): bool,
+        vol.Optional(CONF_LYTMI_MODES, default=False): bool,
     }
 
 
@@ -167,7 +190,9 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._effect_list = []
         self._scenes = None
         if self.has_config(CONF_SCENE):
-            if self._config.get(CONF_SCENE) < 20:
+            if self._config.get(CONF_LYTMI_MODES):
+                self._scenes = SCENE_LIST_LYTMI
+            elif self._config.get(CONF_SCENE) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
             elif self._config.get(CONF_BRIGHTNESS) is None:
                 self._scenes = SCENE_LIST_RGB_1000
