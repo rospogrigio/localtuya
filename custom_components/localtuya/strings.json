@@ -52,6 +52,8 @@
                 "title": "Entity Configuration",
                 "description": "Editing entity with DPS `{id}` and platform `{platform}`.",
                 "data": {
+                    "work_state_dp" : "Work State DP",
+                   
                     "id": "ID",
                     "friendly_name": "Friendly name",
                     "current": "Current",

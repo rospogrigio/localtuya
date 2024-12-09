@@ -113,6 +113,8 @@
                 "title": "Configurare entity",
                 "description": "Compila i dettagli per {entity} con tipo `{platform}`.Tutte le impostazioni ad eccezione di `id` possono essere modificate dalla pagina delle opzioni in seguito.",
                 "data": {
+                    "work_state_dp" : "Work State DP (opzionale)",
+ 
                     "id": "ID",
                     "friendly_name": "Nome amichevole",
                     "current": "Corrente",

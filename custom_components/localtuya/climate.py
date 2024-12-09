@@ -37,6 +37,7 @@ from homeassistant.const import (
 
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
+    CONF_WORK_STATE_DP,
     CONF_CURRENT_TEMPERATURE_DP,
     CONF_TEMP_MAX,
     CONF_TEMP_MIN,
@@ -71,10 +72,6 @@ HVAC_MODE_SETS = {
     "Manual/Auto": {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Auto",
-    },
-    "MANUAL/AUTO": {
-        HVAC_MODE_HEAT: "MANUAL",
-        HVAC_MODE_AUTO: "AUTO",
     },
     "Manual/Program": {
         HVACMode.HEAT: "Manual",
@@ -116,10 +113,6 @@ HVAC_ACTION_SETS = {
         HVACAction.HEATING: "Heat",
         HVACAction.IDLE: "Warming",
     },
-    "heating/warming": {
-        CURRENT_HVAC_HEAT: "heating",
-        CURRENT_HVAC_IDLE: "warming",
-    },
 }
 HVAC_FAN_MODE_SETS = {
     "Auto/Low/Middle/High/Strong": {
@@ -142,11 +135,6 @@ PRESET_SETS = {
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
     },
-    "smart/holiday/hold": {
-        PRESET_AWAY: "holiday",
-        PRESET_HOME: "smart",
-        PRESET_NONE: "hold",
-    },
 }
 
 TEMPERATURE_CELSIUS = "celsius"
@@ -161,6 +149,7 @@ MODE_WAIT = 0.1
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
+        vol.Optional(CONF_WORK_STATE_DP): vol.In(dps),
         vol.Optional(CONF_TARGET_TEMPERATURE_DP): vol.In(dps),
         vol.Optional(CONF_CURRENT_TEMPERATURE_DP): vol.In(dps),
         vol.Optional(CONF_TEMPERATURE_STEP, default=PRECISION_WHOLE): vol.In(
@@ -296,7 +285,17 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         Need to be one of CURRENT_HVAC_*.
         """
-        if self._config.get(CONF_HEURISTIC_ACTION, False):
+        if self.has_config(CONF_WORK_STATE_DP):
+            if self.dps_conf(CONF_WORK_STATE_DP) == HVACAction.OFF and not self.dps(self._dp_id):
+                self._hvac_action = HVACAction.OFF
+            elif self.dps_conf(CONF_WORK_STATE_DP) == HVACAction.OFF and self.dps(self._dp_id):
+                self._hvac_action = HVACAction.IDLE
+            elif self.dps_conf(CONF_WORK_STATE_DP) == HVACMode.HEAT:
+                self._hvac_action = HVACAction.HEATING
+            else:
+                self._hvac_action = HVACAction.IDLE
+
+        elif self._config.get(CONF_HEURISTIC_ACTION, False):
             if self._hvac_mode == HVACMode.HEAT:
                 if self._current_temperature < (
                     self._target_temperature - self._precision
@@ -315,6 +314,11 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                     self._hvac_action = HVACAction.IDLE
             return self._hvac_action
         return self._hvac_action
+
+    @property
+    def state(self) -> str:
+        """Return the current state."""
+        return self._hvac_mode
 
     @property
     def preset_mode(self):
@@ -339,6 +343,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def target_temperature(self):
         """Return the temperature we try to reach."""
+        if self._hvac_mode == HVACAction.OFF:
+            return
         return self._target_temperature
 
     @property

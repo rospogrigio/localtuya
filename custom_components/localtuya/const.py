@@ -109,6 +109,10 @@ CONF_HVAC_ACTION_SET = "hvac_action_set"
 CONF_ECO_DP = "eco_dp"
 CONF_ECO_VALUE = "eco_value"
 
+#vins customization
+CONF_WORK_STATE_DP = "work_state_dp"
+#vins customization
+
 # vacuum
 CONF_POWERGO_DP = "powergo_dp"
 CONF_IDLE_STATUS_VALUE = "idle_status_value"
