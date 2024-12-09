@@ -113,6 +113,8 @@
                 "title": "Configurar entidade",
                 "description": "Por favor, preencha os detalhes de {entity} com o tipo `{platform}`. Todas as configurações, exceto `ID`, podem ser alteradas na página Opções posteriormente.",
                 "data": {
+                    "work_state_dp" : "Work State DP (optional)",
+                    
                     "id": "ID",
                     "friendly_name": "Nome fantasia",
                     "current": "Atual",

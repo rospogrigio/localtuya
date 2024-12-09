@@ -122,6 +122,8 @@
                 "title": "Configure entity",
                 "description": "Please fill out the details for {entity} with type `{platform}`. All settings except for `ID` can be changed from the Options page later.",
                 "data": {
+                    "work_state_dp" : "Work State DP (optional)",
+                    
                     "id": "ID",
                     "friendly_name": "Friendly name",
                     "current": "Current",
