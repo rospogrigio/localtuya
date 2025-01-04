@@ -6,7 +6,6 @@ from functools import partial
 
 import homeassistant.util.color as color_util
 import voluptuous as vol
-from homeassistant.components.ecobee.humidifier import MODE_MANUAL
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     ATTR_EFFECT,
@@ -40,6 +39,7 @@ DEFAULT_COLOR_TEMP_REVERSE = False
 DEFAULT_LOWER_BRIGHTNESS = 29
 DEFAULT_UPPER_BRIGHTNESS = 1000
 
+MODE_MANUAL = "manual"
 MODE_COLOR = "colour"
 MODE_MUSIC = "music"
 MODE_SCENE = "scene"
