@@ -465,9 +465,6 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         ):
             self._brightness = self.dps_conf(CONF_BRIGHTNESS)
 
-        if brightness_dp_value := self.dp_value(CONF_BRIGHTNESS, None):
-            self._brightness = brightness_dp_value
-
         if ColorMode.HS in self.supported_color_modes:
             color = self.dps_conf(CONF_COLOR)
             if color is not None and not self.is_white_mode:
