@@ -183,7 +183,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._hs = None
         self._effect = None
         self._effect_list = []
-        self._scenes = None
+        self._scenes = {}
+
         if self.has_config(CONF_SCENE):
             if self._config.get(CONF_SCENE) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
@@ -192,6 +193,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             else:
                 self._scenes = SCENE_LIST_RGBW_1000
             self._effect_list = list(self._scenes.keys())
+
         if self._config.get(CONF_MUSIC_MODE):
             self._effect_list.append(SCENE_MUSIC)
 
@@ -259,7 +261,11 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def effect_list(self):
         """Return the list of supported effects for this light."""
-        return self._effect_list
+        if self.is_scene_mode or self.is_music_mode:
+            return self._effect
+        elif (color_mode := self.__get_color_mode()) in self._scenes.values():
+            return self.__find_scene_by_scene_data(color_mode)
+        return None
 
     @property
     def supported_color_modes(self) -> set[ColorMode] | set[str] | None:
@@ -288,6 +294,21 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         return supports
 
     @property
+    def color_mode(self) -> ColorMode:
+        """Return the color_mode of the light."""
+        if len(self.supported_color_modes) == 1:
+            return next(iter(self.supported_color_modes))
+
+        if self.is_color_mode:
+            return ColorMode.HS
+        if self.is_white_mode:
+            return ColorMode.COLOR_TEMP
+        if self._brightness:
+            return ColorMode.BRIGHTNESS
+
+        return ColorMode.ONOFF
+
+    @property
     def is_white_mode(self):
         """Return true if the light is in white mode."""
         color_mode = self.__get_color_mode()
@@ -297,19 +318,19 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     def is_color_mode(self):
         """Return true if the light is in color mode."""
         color_mode = self.__get_color_mode()
-        return color_mode is not None and color_mode == MODE_COLOR
+        return color_mode is not None and color_mode == self._modes.color
 
     @property
     def is_scene_mode(self):
         """Return true if the light is in scene mode."""
         color_mode = self.__get_color_mode()
-        return color_mode is not None and color_mode.startswith(MODE_SCENE)
+        return color_mode is not None and color_mode.startswith(self._modes.scene)
 
     @property
     def is_music_mode(self):
         """Return true if the light is in music mode."""
         color_mode = self.__get_color_mode()
-        return color_mode is not None and color_mode == MODE_MUSIC
+        return color_mode is not None and color_mode == self._modes.music
 
     def __is_color_rgb_encoded(self):
         return len(self.dps_conf(CONF_COLOR)) > 12
@@ -324,7 +345,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         return (
             self.dps_conf(CONF_COLOR_MODE)
             if self.has_config(CONF_COLOR_MODE)
-            else MODE_WHITE
+            else self._modes.white
         )
 
     async def async_turn_on(self, **kwargs):
