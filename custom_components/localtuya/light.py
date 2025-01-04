@@ -9,12 +9,12 @@ import voluptuous as vol
 from homeassistant.components.ecobee.humidifier import MODE_MANUAL
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
     ATTR_EFFECT,
     ATTR_HS_COLOR,
     DOMAIN,
     LightEntity,
-    LightEntityFeature, ColorMode,
+    LightEntityFeature,
+    ColorMode,
 )
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
@@ -408,10 +408,10 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
 
-        if ATTR_COLOR_TEMP in kwargs and (features & ColorMode.RGB):
+        if ColorMode.COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in self.supported_color_modes:
             if brightness is None:
                 brightness = self._brightness
-            mired = int(kwargs[ATTR_COLOR_TEMP])
+            mired = int(kwargs[ColorMode.COLOR_TEMP])
             if self._color_temp_reverse:
                 mired = self._max_mired - (mired - self._min_mired)
             if mired < self._min_mired:
