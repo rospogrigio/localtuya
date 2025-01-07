@@ -137,6 +137,8 @@ def flow_schema(dps):
         vol.Optional(CONF_HVAC_ACTION_SET): vol.In(list(HVAC_ACTION_SETS.keys())),
         vol.Optional(CONF_ECO_DP): vol.In(dps),
         vol.Optional(CONF_ECO_VALUE): str,
+        vol.Optional(CONF_ECO_FORMAT, default="str"): vol.In(["str", "bool", "int"]),
+        vol.Optional(CONF_NONE_VALUE): str,
         vol.Optional(CONF_PRESET_DP): vol.In(dps),
         vol.Optional(CONF_PRESET_SET): vol.In(list(PRESET_SETS.keys())),
         vol.Optional(CONF_TEMPERATURE_UNIT): vol.In(
@@ -183,6 +185,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         )
         self._conf_eco_dp = self._config.get(CONF_ECO_DP)
         self._conf_eco_value = self._config.get(CONF_ECO_VALUE, "ECO")
+        self._conf_eco_format = self._config.get(CONF_ECO_FORMAT, "str")
+        self._conf_none_value = self._config.get(CONF_NONE_VALUE, "NONE")
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
@@ -271,6 +275,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         presets = list(self._conf_preset_set)
         if self._conf_eco_dp:
             presets.append(PRESET_ECO)
+        if PRESET_NONE not in self._conf_preset_set:
+            presets.append(PRESET_NONE)
         return presets
 
     @property
@@ -333,7 +339,16 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
-            )
+        if self.has_config(CONF_ECO_VALUE) and preset_mode == PRESET_ECO:
+            await self._device.set_dp(LocaltuyaClimate.convert_value(
+                self._conf_eco_value, self._conf_eco_format),
+                self._conf_eco_dp)
+            return
+        elif self.has_config(CONF_NONE_VALUE) and preset_mode == PRESET_NONE:
+            # set the none also for the DP Eco
+            await self._device.set_dp(LocaltuyaClimate.convert_value(
+                self._conf_none_value, self._conf_eco_format),
+                self._conf_eco_dp)
             return
         await self._device.set_dp(
             self._conf_preset_set[preset_mode], self._conf_preset_dp
@@ -405,6 +420,19 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         for action, value in self._conf_hvac_action_set.items():
             if self.dps_conf(CONF_HVAC_ACTION_DP) == value:
                 self._hvac_action = action
+
+    @staticmethod
+    def convert_value(value, conversion):
+        """Try value conversion as requested."""
+        try:
+            if conversion == "int":
+                return int(value)
+            elif conversion == "bool":
+                return value.lower() == "true"
+            else:
+                return str(value)
+        except ValueError:
+            return value
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaClimate, flow_schema)
