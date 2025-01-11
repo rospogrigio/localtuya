@@ -73,8 +73,8 @@ HVAC_MODE_SETS = {
         HVACMode.AUTO: "Auto",
     },
     "MANUAL/AUTO": {
-        HVAC_MODE_HEAT: "MANUAL",
-        HVAC_MODE_AUTO: "AUTO",
+        HVACMode.HEAT: "MANUAL",
+        HVACMode.AUTO: "AUTO",
     },
     "Manual/Program": {
         HVACMode.HEAT: "Manual",
@@ -117,8 +117,8 @@ HVAC_ACTION_SETS = {
         HVACAction.IDLE: "Warming",
     },
     "heating/warming": {
-        CURRENT_HVAC_HEAT: "heating",
-        CURRENT_HVAC_IDLE: "warming",
+        HVACAction.HEATING: "heating",
+        HVACAction.IDLE: "warming",
     },
 }
 HVAC_FAN_MODE_SETS = {
