@@ -71,8 +71,8 @@ HVAC_MODE_SETS = {
         HVACMode.AUTO: "Auto",
     },
     "MANUAL/AUTO": {
-        HVAC_MODE_HEAT: "MANUAL",
-        HVAC_MODE_AUTO: "AUTO",
+        HVACMode.HEAT: "MANUAL",
+        HVACMode.AUTO: "AUTO",
     },
     "Manual/Program": {
         HVACMode.HEAT: "Manual",
@@ -91,6 +91,11 @@ HVAC_MODE_SETS = {
         HVACMode.DRY: "wet",
         HVACMode.COOL: "cold",
         HVACMode.AUTO: "auto",
+    },
+    "Cold/Dehumidify/Hot": {
+        HVACMode.HEAT: "hot",
+        HVACMode.DRY: "dehumidify",
+        HVACMode.COOL: "cold",
     },
     "1/0": {
         HVACMode.HEAT: "1",
@@ -115,8 +120,8 @@ HVAC_ACTION_SETS = {
         HVACAction.IDLE: "Warming",
     },
     "heating/warming": {
-        CURRENT_HVAC_HEAT: "heating",
-        CURRENT_HVAC_IDLE: "warming",
+        HVACAction.HEATING: "heating",
+        HVACAction.IDLE: "warming",
     },
 }
 HVAC_FAN_MODE_SETS = {
