@@ -66,6 +66,7 @@
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",
                     "scaling": "Scaling Factor",
+                    "calibration": "Calibration Value",
                     "state_on": "On Value",
                     "state_off": "Off Value",
                     "powergo_dp": "Power DP (Usually 25 or 2)",
