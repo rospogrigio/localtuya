@@ -127,6 +127,7 @@
                     "unit_of_measurement": "Unità di misura",
                     "device_class": "Classe del dispositivo",
                     "scaling": "Fattore di scala",
+                    "calibration": "Valore di calibrazione",
                     "state_on": "Valore di ON",
                     "state_off": "Valore di OFF",
                     "powergo_dp": "Potenza DP (di solito 25 o 2)",

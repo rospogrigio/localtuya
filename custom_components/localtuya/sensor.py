@@ -16,13 +16,14 @@ from .const import CONF_SCALING
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_PRECISION = 2
-
+CONF_CALIBRATION = "calibration"
 
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): str,
         vol.Optional(CONF_DEVICE_CLASS): vol.In(DEVICE_CLASSES),
+        vol.Optional(CONF_CALIBRATION): vol.Coerce(float),
         vol.Optional(CONF_SCALING): vol.All(
             vol.Coerce(float), vol.Range(min=-1000000.0, max=1000000.0)
         ),
@@ -62,8 +63,11 @@ class LocaltuyaSensor(LocalTuyaEntity):
         """Device status was updated."""
         state = self.dps(self._dp_id)
         scale_factor = self._config.get(CONF_SCALING)
+        calibration_factor = self._config.get(CONF_CALIBRATION, 0)
         if scale_factor is not None and isinstance(state, (int, float)):
-            state = round(state * scale_factor, DEFAULT_PRECISION)
+            state = round(state * scale_factor + calibration_factor, DEFAULT_PRECISION)
+        else:
+            state = round(state + calibration_factor, DEFAULT_PRECISION)
         self._state = state
 
     # No need to restore state for a sensor
