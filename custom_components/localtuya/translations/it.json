@@ -17,15 +17,34 @@
         },
         "step": {
             "user": {
-                "title": "Configurazione dell'account Cloud API",
-                "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
+                "title": "Seleziona il tipo di Cloud API",
+                "description": "Il cloud verrà utilizzato solo per recuperare le chiavi locali Tuya e i nomi dei dispositivi.",
+                "menu_options": {
+                    "iot": "Tuya IoT Platform",
+                    "oem_ledvance": "Tuya OEM Ledvance",
+                    "oem_generic": "Tuya OEM generico",
+                    "no_cloud": "Non configurare l'account Cloud API"
+                }
+            },
+            "iot": {
+                "title": "Configurazione Tuya IoT Platform",
+                "description": "Inserisci le credenziali per l'account IoT Platform.",
                 "data": {
                     "region": "Regione del server API",
                     "client_id": "Client ID",
                     "client_secret": "Secret",
-                    "user_id": "User ID",
-                    "user_name": "Username",
-                    "no_cloud": "Non configurare un account Cloud API"
+                    "user_id": "User ID"
+                }
+            },
+            "oem": {
+                "title": "Tuya OEM configuration",
+                "description": "Inserisci le credenziali per l'account app OEM {vendor}.",
+                "data": {
+                    "region": "Regione del server API",
+                    "oem_email": "Email",
+                    "oem_password": "Password",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret"
                 }
             }
         }
@@ -55,7 +74,7 @@
             "init": {
                 "title": "Configurazione LocalTuya",
                 "description": "Seleziona l'azione desiderata.",
-                "data": {
+                "menu_options": {
                     "add_device": "Aggiungi un nuovo dispositivo",
                     "edit_device": "Modifica un dispositivo",
                     "setup_cloud": "Riconfigurare l'account Cloud API"
@@ -75,16 +94,35 @@
                     "selected_device": "Dispositivi configurati"
                 }
             },
-            "cloud_setup": {
-                "title": "Configurazione dell'account Cloud API",
-                "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
+            "setup_cloud": {
+                "title": "Seleziona il tipo di Cloud API",
+                "description": "Il cloud verrà utilizzato solo per recuperare le chiavi locali Tuya e i nomi dei dispositivi.",
+                "menu_options": {
+                    "iot": "Tuya IoT Platform",
+                    "oem_ledvance": "Tuya OEM Ledvance",
+                    "oem_generic": "Tuya OEM generico",
+                    "no_cloud": "Non configurare l'account Cloud API"
+                }
+            },
+            "iot": {
+                "title": "Configurazione Tuya IoT Platform",
+                "description": "Inserisci le credenziali per l'account IoT Platform.",
                 "data": {
                     "region": "Regione del server API",
                     "client_id": "Client ID",
                     "client_secret": "Secret",
-                    "user_id": "User ID",
-                    "user_name": "Username",
-                    "no_cloud": "Non configurare l'account Cloud API"
+                    "user_id": "User ID"
+                }
+            },
+            "oem": {
+                "title": "Tuya OEM configuration",
+                "description": "Inserisci le credenziali per l'account app OEM {vendor}.",
+                "data": {
+                    "region": "Regione del server API",
+                    "oem_email": "Email",
+                    "oem_password": "Password",
+                    "client_id": "Client ID",
+                    "client_secret": "Secret"
                 }
             },
             "configure_device": {
