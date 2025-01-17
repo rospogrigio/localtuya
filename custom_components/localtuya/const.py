@@ -70,6 +70,7 @@ CONF_POSITIONING_MODE = "positioning_mode"
 CONF_CURRENT_POSITION_DP = "current_position_dp"
 CONF_SET_POSITION_DP = "set_position_dp"
 CONF_POSITION_INVERTED = "position_inverted"
+CONF_POSITION_SCALE = "position_scale"
 CONF_SPAN_TIME = "span_time"
 
 # fan
