@@ -145,7 +145,13 @@
                     "preset_set": "Presets Set (optional)",
                     "eco_dp": "Eco DP (optional)",
                     "eco_value": "Eco value (optional)",
-                    "heuristic_action": "Enable heuristic action (optional)"
+                    "heuristic_action": "Enable heuristic action (optional)",
+                    "max_temperature_const": "Max Temperature Constant (optional)",
+                    "min_temperature_const": "Min Temperature Constant (optional)",
+                    "hvac_fan_mode_dp": "HVAC Fan Mode DP (optional)",
+                    "hvac_fan_mode_set": "HVAC Fan Mode Set (optional)",
+                    "hvac_swing_mode_dp": "HVAC Swing Mode DP (optional)",
+                    "hvac_swing_mode_set": "HVAC Swing Mode Set (optional)"
                 }
             },
             "cloud_setup": {
@@ -252,11 +258,17 @@
                     "min_temperature_dp": "Min Temperature DP (optional)",
                     "max_temp": "Max Temperature Manual (optional)",
                     "min_temp": "Min Temperature Manual (optional)",
+                    "max_temperature_const": "Max Temperature Constant (optional)",
+                    "min_temperature_const": "Min Temperature Constant (optional)",
                     "precision": "Precision (optional, for DPs values)",
                     "target_precision": "Target Precision (optional, for DPs values)",
                     "temperature_unit": "Temperature Unit (optional)",
                     "hvac_mode_dp": "HVAC Mode DP (optional)",
                     "hvac_mode_set": "HVAC Mode Set (optional)",
+                    "hvac_fan_mode_dp": "HVAC Fan Mode DP (optional)",
+                    "hvac_fan_mode_set": "HVAC Fan Mode Set (optional)",
+                    "hvac_swing_mode_dp": "HVAC Swing Mode DP (optional)",
+                    "hvac_swing_mode_set": "HVAC Swing Mode Set (optional)",
                     "hvac_action_dp": "HVAC Current Action DP (optional)",
                     "hvac_action_set": "HVAC Current Action Set (optional)",
                     "preset_dp": "Presets DP (optional)",
