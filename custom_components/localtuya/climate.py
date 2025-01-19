@@ -245,6 +245,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
+        self._enable_turn_on_off_backwards_compatibility = False
         _LOGGER.debug("Initialized climate [%s]", self.name)
 
     @property
