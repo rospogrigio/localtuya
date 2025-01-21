@@ -1,7 +1,7 @@
 {
   "domain": "localtuya35",
   "name": "LocalTuya integration",
-  "version": "3.5.2",
+  "version": "3.5.3",
   "documentation": "https://github.com/myhomeiot/localtuya35",
   "dependencies": [],
   "codeowners": ["myhomeiot"],
