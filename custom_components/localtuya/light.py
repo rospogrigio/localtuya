@@ -378,7 +378,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 self._lower_brightness,
                 self._upper_brightness,
             )
-            if self.is_white_mode:
+            if self.is_white_mode or self.dps_conf(CONF_COLOR) is None:
                 states[self._config.get(CONF_BRIGHTNESS)] = brightness
             else:
                 if self.__is_color_rgb_encoded():
