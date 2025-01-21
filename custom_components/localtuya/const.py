@@ -66,6 +66,7 @@ CONF_VOLTAGE = "voltage"
 
 # cover
 CONF_COMMANDS_SET = "commands_set"
+CONF_STOP_DP = "stop_dp"
 CONF_POSITIONING_MODE = "positioning_mode"
 CONF_CURRENT_POSITION_DP = "current_position_dp"
 CONF_SET_POSITION_DP = "set_position_dp"
