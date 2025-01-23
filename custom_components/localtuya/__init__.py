@@ -164,6 +164,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
 
     async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_RELOAD,
         _handle_reload,
