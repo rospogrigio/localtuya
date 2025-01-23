@@ -72,6 +72,10 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Auto",
     },
+    "MANUAL/AUTO": {
+        HVACMode.HEAT: "MANUAL",
+        HVACMode.AUTO: "AUTO",
+    },
     "Manual/Program": {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Program",
@@ -89,6 +93,11 @@ HVAC_MODE_SETS = {
         HVACMode.DRY: "wet",
         HVACMode.COOL: "cold",
         HVACMode.AUTO: "auto",
+    },
+    "Cold/Dehumidify/Hot": {
+        HVACMode.HEAT: "hot",
+        HVACMode.DRY: "dehumidify",
+        HVACMode.COOL: "cold",
     },
     "1/0": {
         HVACMode.HEAT: "1",
@@ -112,6 +121,10 @@ HVAC_ACTION_SETS = {
         HVACAction.HEATING: "Heat",
         HVACAction.IDLE: "Warming",
     },
+    "heating/warming": {
+        HVACAction.HEATING: "heating",
+        HVACAction.IDLE: "warming",
+    },
 }
 HVAC_FAN_MODE_SETS = {
     "Auto/Low/Middle/High/Strong": {
@@ -133,6 +146,11 @@ PRESET_SETS = {
         PRESET_AWAY: "Holiday",
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
+    },
+    "smart/holiday/hold": {
+        PRESET_AWAY: "holiday",
+        PRESET_HOME: "smart",
+        PRESET_NONE: "hold",
     },
 }
 
