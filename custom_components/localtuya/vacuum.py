@@ -11,16 +11,7 @@ from homeassistant.components.vacuum import (
     STATE_IDLE,
     STATE_PAUSED,
     STATE_RETURNING,
-    SUPPORT_BATTERY,
-    SUPPORT_FAN_SPEED,
-    SUPPORT_LOCATE,
-    SUPPORT_PAUSE,
-    SUPPORT_RETURN_HOME,
-    SUPPORT_START,
-    SUPPORT_STATE,
-    SUPPORT_STATUS,
-    SUPPORT_STOP,
-    StateVacuumEntity,
+    StateVacuumEntity, VacuumEntityFeature,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -123,21 +114,21 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
     def supported_features(self):
         """Flag supported features."""
         supported_features = (
-            SUPPORT_START
-            | SUPPORT_PAUSE
-            | SUPPORT_STOP
-            | SUPPORT_STATUS
-            | SUPPORT_STATE
+            VacuumEntityFeature.START
+            | VacuumEntityFeature.PAUSE
+            | VacuumEntityFeature.STOP
+            | VacuumEntityFeature.STATUS
+            | VacuumEntityFeature.STATE
         )
 
         if self.has_config(CONF_RETURN_MODE):
-            supported_features = supported_features | SUPPORT_RETURN_HOME
+            supported_features = supported_features | VacuumEntityFeature.RETURN_HOME
         if self.has_config(CONF_FAN_SPEED_DP):
-            supported_features = supported_features | SUPPORT_FAN_SPEED
+            supported_features = supported_features | VacuumEntityFeature.FAN_SPEED
         if self.has_config(CONF_BATTERY_DP):
-            supported_features = supported_features | SUPPORT_BATTERY
+            supported_features = supported_features | VacuumEntityFeature.BATTERY
         if self.has_config(CONF_LOCATE_DP):
-            supported_features = supported_features | SUPPORT_LOCATE
+            supported_features = supported_features | VacuumEntityFeature.LOCATE
 
         return supported_features
 

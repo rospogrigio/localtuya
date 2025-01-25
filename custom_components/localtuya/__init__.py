@@ -139,15 +139,13 @@ async def async_setup(hass: HomeAssistant, config: dict):
             )
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                device.async_connect()
         elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
-            # _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
-
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                device.async_connect()
+            _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
+        device = hass.data[DOMAIN][TUYA_DEVICES].get(device_id)
+        if not device:
+            _LOGGER.warning(f"Could not find device for device_id {device_id}")
+        elif not device.connected:
+            device.async_connect()
 
     def _shutdown(event):
         """Clean up resources when shutting down."""
@@ -167,7 +165,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         _handle_reload,
     )
 
-    hass.helpers.service.async_register_admin_service(
+    hass.services.async_register(
         DOMAIN, SERVICE_SET_DP, _handle_set_dp, schema=SERVICE_SET_DP_SCHEMA
     )
 
@@ -255,8 +253,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         res = await tuya_api.async_get_access_token()
         if res != "ok":
             _LOGGER.error("Cloud API connection failed: %s", res)
-        _LOGGER.info("Cloud API connection succeeded.")
-        res = await tuya_api.async_get_devices_list()
+        else:
+            _LOGGER.info("Cloud API connection succeeded.")
+            res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
     async def setup_entities(device_ids):
