@@ -22,7 +22,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
-from homeassistant.core import HomeAssistant, Event
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
@@ -72,7 +72,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     current_entries = hass.config_entries.async_entries(DOMAIN)
     device_cache = {}
 
-    async def _handle_reload(service):
+    async def _handle_reload(service: ServiceCall):
         """Handle reload service call."""
         _LOGGER.info("Service %s.reload called: reloading integration", DOMAIN)
 
@@ -84,7 +84,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         ]
         await asyncio.gather(*reload_tasks)
 
-    async def _handle_set_dp(event: Event):
+    async def _handle_set_dp(event: ServiceCall):
         """Handle set_dp service call."""
         dev_id = event.data[CONF_DEVICE_ID]
         entry: ConfigEntry = async_config_entry_by_device_id(hass, dev_id)

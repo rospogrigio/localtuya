@@ -46,6 +46,7 @@ import struct
 import time
 import weakref
 from abc import ABC, abstractmethod
+from typing import Self
 from collections import namedtuple
 from hashlib import md5, sha256
 
@@ -722,6 +723,8 @@ class MessageDispatcher(ContextualLogger):
 class TuyaListener(ABC):
     """Listener interface for Tuya device changes."""
 
+    _sub_devices: dict[str, Self]
+
     @abstractmethod
     def status_updated(self, status):
         """Device updated status."""
@@ -746,12 +749,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     def __init__(
         self,
-        dev_id,
-        local_key,
-        protocol_version,
-        enable_debug,
-        on_connected,
-        listener,
+        dev_id: str,
+        local_key: str,
+        protocol_version: float,
+        enable_debug: bool,
+        on_connected: asyncio.Future,
+        listener: TuyaListener,
     ):
         """
         Initialize a new TuyaInterface.
@@ -1484,8 +1487,10 @@ async def connect(
         )
     except OSError as ex:
         raise ValueError(str(ex))
+    except Exception as ex:
+        raise ex
     except:
-        raise ValueError(f"Failed conect to the device, try again and check logs.")
+        raise ValueError(f"Unable to connect to the device. try again.")
 
     await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol

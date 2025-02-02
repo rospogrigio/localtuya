@@ -1,28 +1,11 @@
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
 
-A Home Assistant custom Integration for local handling of Tuya-based devices.
+__A Home Assistant custom Integration for local handling of Tuya-based devices.__
 
+### **Usage and setup [Documentation](https://xzetsubou.github.io/hass-localtuya/)**
 
-- [Installation:](#installation)
-- [Usage:](#usage)
-  * [Adding the Integration](#adding-the-integration)
-  * [Integration Options](#integration-options)
-  * [Add Devices](#add-devices)
-  * [Delete Devices](#delete-devices)
-  * [Templates](https://github.com/xZetsubou/hass-localtuya/discussions/13)
-- [Debugging](#debugging)
-- [Notes](#notes)
-- [Credits](#credits)
-
-
-
-# Installation
-
-The easiest way and the best, Is using [HACS](https://hacs.xyz/), <br>
-
-<details><summary>HACS installation</summary>
-<p>
+<br>
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou)
 1. Open HACS and navigate to Integrations Section <br>
@@ -136,36 +119,21 @@ Once you press "Submit", the connection is tested to check that everything works
 
 
 
-Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.
-After you have defined all the needed entities, leave the "Do not add more entities" checkbox checked: this will complete the procedure.
-
-> Template is simply you can provide pre-config yaml devices [Guide #13](https://github.com/xZetsubou/hass-localtuya/discussions/13)
-
-![image](https://github.com/xZetsubou/hass-localtuya/assets/46300268/1cea1b79-c0b0-41a2-bbc1-274bc5e6337c)
-
-For each entity, the associated DP has to be selected. All the options requiring to select a DP will provide a drop-down menu showing
-all the available DPs found on the device (with their current status and code if available!!) for easy identification. 
-
-**Note: If your device requires an LocalTuya to send an initialisation value to the entity for it to work, this can be configured (in supported entities) through the 'Passive entity' option. Optionally you can specify the initialisation value to be sent**
-
-Each entity type has different options to be configured. Here is an example for the "binary_sensor" entity:
-> 0 and 1 are the values that device report it changes from devices to another
-
-![image](https://github.com/xZetsubou/hass-localtuya/assets/46300268/ecbfc344-3280-4f7b-8df1-8cc936a917c9)
-
-Once you configure the entities, the procedure is complete. and can access devices by click on `devices` under your Username
-
-![image](https://github.com/xZetsubou/hass-localtuya/assets/46300268/154c94c0-d10e-485f-ac5c-c5a370b671c7)
-
-### Delete Devices
-Deleting a device simply go to device page and click on three dots next to `Download diagnostics` then delete.
-![image](https://github.com/xZetsubou/hass-localtuya/assets/46300268/5064c1a9-7513-4b16-a2ac-5a36b375cc75)
+## __𝐅𝐞𝐚𝐭𝐮𝐫𝐞𝐬__
+- Supported Sub-devices: `Devices that function through gateways`
+- Auto-configure devices - `Requires a cloud API setup`
+- Automatic insertion - `Some fields requires a cloud API setup`
+- Devices discovery - `Discovers Tuya devices on your network`
+- Cloud API - `Only to help you on setup devices, can works without it.`
 
 
-<details><summary>Remap the values</summary>
+
+<br>
+
+<details><summary> 𝐑𝐞𝐩𝐨𝐫𝐭𝐢𝐧𝐠 𝐚𝐧 𝐢𝐬𝐬𝐮𝐞 </summary>
 <p>
 
-Usually we use True `on` and False `off` commands for switches but if you have device that do more like single, double clicks and long press. there are 2 method to manage this devices:
+Whenever you write a bug report, it's incredibly helpful to include debug logs directly. Otherwise, we'll need to request them separately, prolonging the process. Please enable debug logs as shown and include them in your issue:
 
 
 ![image](https://github.com/xZetsubou/hass-localtuya/assets/46300268/f38ae38e-3a7a-43de-ac39-7942f75db28d)
@@ -251,6 +219,9 @@ data:
 <details><summary>Debugging</summary>
 
 Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
+<details><summary> Via UI </summary>
+![](https://github.com/xZetsubou/hass-localtuya/assets/46300268/2515cf9d-fffb-46a9-b2c2-e776e20c5eb3)
+</details>
 
 ```yaml
 logger:
@@ -264,21 +235,19 @@ Then, edit the device that is showing problems and check the "Enable debugging f
 </p>
 </details> 
 
-# Notes
+<!-- ### Notes
 
 * Do not declare anything as "tuya", such as by initiating a "switch.tuya". Using "tuya" launches Home Assistant's built-in, cloud-based Tuya integration in lieu of localtuya.
 
 * This custom integration updates device status via pushing updates instead of polling, so status updates are fast (even when manually operated).
 
 * The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
-The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed.
+The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed. -->
 
-<details><summary>Credits</summary>
+<details><summary> 𝐂𝐫𝐞𝐝𝐢𝐭𝐬 </summary>
 <p>
     
-# Credits:
-
-[Rospogrigio](https://github.com/rospogrigio), The original maintainer of localtuya. this fork made when upstream version was `v5.2.1` 
+[Rospogrigio](https://github.com/rospogrigio), originally maintained LocalTuya. This fork was created when the upstream version was at `v5.2.1`.
 
 [NameLessJedi](https://github.com/NameLessJedi/localtuya-homeassistant) and [mileperhour](https://github.com/mileperhour/localtuya-homeassistant) being the major sources of inspiration, and whose code for switches is substantially unchanged.
 

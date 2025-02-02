@@ -1,245 +1,245 @@
 {
-    "config": {
-      "abort": {
-        "already_configured": "تم تكوين هذا الحساب بالفعل.",
-        "device_updated": "تم تحديث تكوين الجهاز."
-      },
-      "error": {
-        "authentication_failed": "فشلت المصادقة.\n",
-        "cannot_connect": "لا يمكن الاتصال بالجهاز. ",
-        "device_list_failed": "فشل في استرداد قائمة الأجهزة.\n",
-        "invalid_auth": "فشلت المصادقة مع الجهاز. ",
-        "unknown": "حدث خطأ غير معروف.\n",
-        "entity_already_configured": "تم تكوين هذا الكيان بالفعل.",
-        "address_in_use": "منفذ TCP رقم 6668 (المستخدم للاكتشاف) قيد الاستخدام بالفعل. ",
-        "discovery_failed": "فشل شيء ما عند البحث عن الأجهزة. ",
-        "empty_dps": "نجح الاتصال بالجهاز ولكن لم يتم العثور على بيانات الجهاز. "
-      },
-      "step": {
-        "user": {
-          "title": "تكوين حساب Cloud API",
-          "description": "قم بتكوين بيانات الاعتماد المستخدمة للاتصال بـ Tuya Cloud API.",
-          "data": {
-            "region": "منطقة مركز البيانات",
-            "client_id": "معرف العميل (Client ID)",
-            "client_secret": "المعرف السري العميل (Client Secret)",
-            "user_id": "معرف المستخدم (UID)",
-            "username": "اسم المستخدم",
-            "no_cloud": "هل تريد تعطيل Cloud API؟"
-          }
+  "config": {
+    "abort": {
+      "already_configured": "تم تكوين هذا الحساب بالفعل.",
+      "device_updated": "تم تحديث تكوين الجهاز."
+    },
+    "error": {
+      "authentication_failed": "فشلت عملية المصادقة.\n{msg}",
+      "cannot_connect": "لا يمكن الاتصال بالجهاز. تحقق من صحة عنوان IP ثم حاول مرة أخرى.",
+      "device_list_failed": "فشل استرجاع قائمة الأجهزة.\n{msg}",
+      "invalid_auth": "فشلت عملية المصادقة مع الجهاز. تأكد من صحة معرّف الجهاز والمفتاح المحلي.",
+      "unknown": "حدث خطأ غير معروف.\n{ex}.",
+      "entity_already_configured": "تم تكوين هذه الكيان بالفعل.",
+      "address_in_use": "منفذ TCP 6668 (المستخدم للاكتشاف) قيد الاستخدام بالفعل. تحقق من عدم استخدام أي تكامل آخر له.",
+      "discovery_failed": "حدث خطأ عند اكتشاف الأجهزة. انظر إلى السجل للتفاصيل. إذا استمرت المشكلة، قم بإنشاء مشكلة جديدة (بما في ذلك السجلات التصحيحية).",
+      "empty_dps": "نجح الاتصال بالجهاز ولكن لم يتم العثور على نقاط البيانات. يُرجى المحاولة مرة أخرى. إذا استمرت المشكلة، قم بإنشاء مشكلة جديدة (بما في ذلك السجلات التصحيحية)."
+    },
+    "step": {
+      "user": {
+        "title": "تكوين حساب Cloud API",
+        "description": "قم بتكوين بيانات الاعتماد المستخدمة للاتصال بـ Tuya Cloud API.",
+        "data": {
+          "region": "منطقة مركز البيانات",
+          "client_id": "معرف العميل (Client ID)",
+          "client_secret": "المعرف السري العميل (Client Secret)",
+          "user_id": "معرف المستخدم (UID)",
+          "username": "اسم المستخدم",
+          "no_cloud": "هل تريد تعطيل Cloud API؟"
         }
       }
+    }
+  },
+  "options": {
+    "abort": {
+      "already_configured": "تم تكوين هذا الحساب بالفعل.",
+      "device_success": "تم {action} الجهاز {dev_name} بنجاح.",
+      "no_entities": "لا يمكن حذف كل الكيانات من الجهاز.\nإذا كنت ترغب في حذف الجهاز: انتقل إلى القائمة 'الأجهزة والخدمات'، ابحث عن جهازك في علامة التبويب 'الأجهزة'، انقر على 3 نقاط في الإطار 'معلومات الجهاز'، واضغط على زر 'حذف'."
     },
-    "options": {
-      "abort": {
-        "already_configured": "تم تكوين هذا الحساب بالفعل.",
-        "device_success": "الجهاز {dev_name} نجح {action}.",
-        "no_entities": "لا يمكن إزالة كافة الكيانات من الجهاز.\n"
-      },
-      "error": {
-        "authentication_failed": "فشلت المصادقة.\n",
-        "cannot_connect": "لا يمكن الاتصال بالجهاز. ",
-        "device_list_failed": "فشل في استرداد قائمة الأجهزة.\n",
-        "invalid_auth": "فشلت المصادقة مع الجهاز. ",
-        "unknown": "حدث خطأ غير معروف.\n",
-        "entity_already_configured": "تم تكوين هذا الكيان بالفعل.",
-        "address_in_use": "منفذ TCP رقم 6668 (المستخدم للاكتشاف) قيد الاستخدام بالفعل. ",
-        "discovery_failed": "فشل شيء ما عند اكتشاف الأجهزة. ",
-        "empty_dps": "نجح الاتصال بالجهاز ولكن لم يتم العثور على نقاط بيانات. "
-      },
-      "step": {
-        "yaml_import": {
+    "error": {
+      "authentication_failed": "فشلت عملية المصادقة.\n{msg}",
+      "cannot_connect": "لا يمكن الاتصال بالجهاز. تحقق من صحة عنوان IP ثم حاول مرة أخرى.",
+      "device_list_failed": "فشل استرجاع قائمة الأجهزة.\n{msg}",
+      "invalid_auth": "فشلت عملية المصادقة مع الجهاز. تأكد من صحة معرّف الجهاز والمفتاح المحلي.",
+      "unknown": "حدث خطأ غير معروف. \n{ex}.",
+      "entity_already_configured": "تم تكوين هذه الكيان بالفعل.",
+      "address_in_use": "منفذ TCP 6668 (المستخدم للاكتشاف) قيد الاستخدام بالفعل. تحقق من عدم استخدام أي تكامل آخر له.",
+      "discovery_failed": "حدث خطأ عند اكتشاف الأجهزة. انظر إلى السجل للتفاصيل. إذا استمرت المشكلة، قم بإنشاء مشكلة جديدة (بما في ذلك السجلات التصحيحية).",
+      "empty_dps": "نجح الاتصال بالجهاز ولكن لم يتم العثور على نقاط البيانات. يُرجى المحاولة مرة أخرى. إذا استمرت المشكلة، قم بإنشاء مشكلة جديدة (بما في ذلك السجلات التصحيحية)."
+    },
+    "step": {
+      "yaml_import": {
           "title": "غير معتمد",
-          "description": "لا يمكن تكوين الأجهزة التي تم تكوينها باستخدام `YAML` في واجهة المستخدم. "
-        },
-        "init": {
-          "title": "إعدادات",
+          "description": "الأجهزة المكونة باستخدام `YAML` لا يمكن تكوينها في واجهة المستخدم. احذف جهازك من `YAML` وأعِد إنشاؤه في واجهة المستخدم أو قم بتعديل تكوين `YAML` الخاص بك."
+      },
+      "init": {
+          "title": "التكوين",
           "description": "حدد خيارًا للمتابعة.",
           "menu_options": {
-            "add_device": "إضافة جهاز جديد",
-            "edit_device": "إعادة تكوين الجهاز موجود",
-            "configure_cloud": "إدارة حساب Cloud API"
-          }
-        },
-        "add_device": {
-          "title": "اختر الجهاز لتكوينه",
-          "description": "يتم اكتشاف أجهزة Tuya المتوافقة على شبكتك المحلية تلقائيًا بمجرد إعدادها في تطبيق Tuya. \n إذا كنت تريد اضافة جهاز بشكل يدوي اختر `Add device manually` من الأجهزة المكتشفة",
+              "add_device": "إضافة جهاز جديد",
+              "edit_device": "إعادة تكوين الجهاز موجود",
+              "configure_cloud": "إدارة حساب Cloud API"
+            }
+      },
+      "add_device": {
+          "title": "اختيار الجهاز للتكوين",
+          "description": "يتم اكتشاف الأجهزة المتوافقة مع Tuya على شبكتك المحلية تلقائيًا بمجرد إعدادها في تطبيق Tuya. إذا لم تر الجهاز الذي تتوقعه، اختر `إضافة الجهاز يدويًا` من القائمة المنسدلة.",
           "data": {
-            "selected_device": "الأجهزة المكتشفة"
+              "selected_device": "الأجهزة المكتشفة"
           }
-        },
-        "edit_device": {
+      },
+      "edit_device": {
           "title": "إعادة تكوين الجهاز الموجود",
           "description": "حدد الجهاز الذي ترغب في إعادة تكوينه.",
           "data": {
-            "selected_device": "الأجهزة التي تم تكوينها"
+              "selected_device": "الأجهزة المكونة"
           }
-        },
-        "configure_cloud": {
-          "title": "إدارة حساب Cloud API",
-          "description": "قم بتكوين بيانات الاعتماد المستخدمة للاتصال بـ Tuya Cloud API.",
-          "data": {
+      },
+      "configure_cloud": {
+        "title": "إدارة حساب Cloud API",
+        "description": "قم بتكوين بيانات الاعتماد المستخدمة للاتصال بـ Tuya Cloud API.",
+        "data": {
             "region": "منطقة مركز البيانات",
             "client_id": "معرف العميل (Client ID)",
             "client_secret": "المعرف السري العميل (Client Secret)",
             "user_id": "معرف المستخدم (UID)",
-            "username": "اسم المستخدم",
+            "username": "اسم للحساب",
             "no_cloud": "هل تريد تعطيل Cloud API؟"
           }
+      },
+      "configure_device": {
+        "title": "تكوين اتصال الجهاز",
+        "description": "قم بتكوين أي تفاصيل جهاز {for_device} فارغة (إن وجدت) للسماح لـ LocalTuya بالاتصال بالجهاز.",
+        "data": {
+          "friendly_name": "اسم الجهاز",
+          "host": "عنوان IP",
+          "device_id": "معرف الجهاز",
+          "local_key": "المفتاح المحلي (Local Key)",
+          "node_id": "(اختياري) معرف الأجهزة الفرعية",
+          "protocol_version": "إصدار البروتوكول",
+          "enable_debug": "تمكين التصحيح (يجب تمكينه يدويًا في `configuration.yaml` أيضًا)",
+          "scan_interval": "(اختياري) الفاصل الزمني للمسح بالثواني، إذا كان الجهاز لا يمسح تلقائيًا",
+          "entities": "الكيانات التي تم تكوينها (قم بإلغاء التحديد للحذف)",
+          "add_entities": "إضافة كيان (كيانات) جديدة",
+          "manual_dps_strings": "(اختياري) دليل DPS، إذا لم يتم اكتشافه تلقائيًا (مفصولاً بفواصل)",
+          "reset_dpids": "(اختياري) معرفات DPID لإرسالها في أمر RESET، إذا لم يستجب الجهاز لطلبات الحالة بعد التشغيل (مفصولة بفواصل)",
+          "export_config": "احفظ تكوين الكيان كقالب"
+        }
+      },
+      "device_setup_method": {
+        "title": "تكوين كيانات الجهاز",
+        "description": "سيحاول LocalTuya اكتشاف بقية التكوين تلقائيًا. ",
+        "menu_options": {
+          "auto_configure_device": "اكتشف كيانات الجهاز تلقائيًا",
+          "pick_entity_type": "قم بتكوين كيانات الجهاز يدويًا",
+          "choose_template": "استخدم القالب المحفوظ"
+        }
+      },
+      "auto_configure_device": {
+        "title": "التكوين التلقائي",
+        "description": "حدث خطأ: {err_msg}. ",
+        "menu_options": {
+          "device_setup_method": "العودة إلى طريقة الإعداد"
+        }
+      },
+      "pick_entity_type": {
+        "title": "اختيار نوع الكيان",
+        "description": "اختر نوع الكيان الذي تريد إضافته.",
+        "data": {
+          "platform_to_add": "اختر الكيان",
+          "no_additional_entities": "الانتهاء من تكوين الكيانات",
+          "use_template": "استيراد ملف القالب"
+        }
+      },
+      "choose_template": {
+        "title": "استيراد ملف القالب",
+        "description": "توجد ملفات القالب في المجلد `templates`.",
+        "data": {
+          "templates": "اختيار القالب"
         },
-        "configure_device": {
-          "title": "تكوين اتصال الجهاز",
-          "description": "قم بتكوين أي تفاصيل جهاز {for_device} فارغة (إن وجدت) للسماح لـ LocalTuya بالاتصال بالجهاز.",
-          "data": {
-            "friendly_name": "اسم الجهاز",
-            "host": "عنوان IP",
-            "device_id": "معرف الجهاز",
-            "local_key": "المفتاح المحلي (Local Key)",
-            "node_id": "(اختياري) معرف الأجهزة الفرعية",
-            "protocol_version": "إصدار البروتوكول",
-            "enable_debug": "تمكين التصحيح (يجب تمكينه يدويًا في `configuration.yaml` أيضًا)",
-            "scan_interval": "(اختياري) الفاصل الزمني للمسح بالثواني، إذا كان الجهاز لا يمسح تلقائيًا",
-            "entities": "الكيانات التي تم تكوينها (قم بإلغاء التحديد للحذف)",
-            "add_entities": "إضافة كيان (كيانات) جديدة",
-            "manual_dps_strings": "(اختياري) دليل DPS، إذا لم يتم اكتشافه تلقائيًا (مفصولاً بفواصل)",
-            "reset_dpids": "(اختياري) معرفات DPID لإرسالها في أمر RESET، إذا لم يستجب الجهاز لطلبات الحالة بعد التشغيل (مفصولة بفواصل)",
-            "export_config": "احفظ تكوين الكيان كقالب"
-          }
+        "data_description": {
+          "templates": "يمكنك إدخال اسم ملف القالب يدويًا إذا لم يظهر.\n"
+        }
+      },
+      "configure_entity": {
+        "title": "Configure entity",
+        "description": "يرجى ملء التفاصيل الخاصة بـ {entity} بالنوع {platform}. ",
+        "data": {
+          "id": "DP ID",
+          "friendly_name": "Friendly name for Entity",
+          "current": "Current",
+          "current_consumption": "Current Consumption",
+          "voltage": "Voltage",
+          "commands_set": "Open_Close_Stop Commands Set",
+          "positioning_mode": "Positioning mode",
+          "current_position_dp": "Current Position (for *position* mode only)",
+          "set_position_dp": "Set Position (for *position* mode only)",
+          "position_inverted": "Invert 0-100 position (for *position* mode only)",
+          "span_time": "Full opening time, in secs. (for *timed* mode only)",
+          "unit_of_measurement": "Unit of Measurement (optional)",
+          "device_class": "(Optional) Device Class",
+          "state_class": "(Optional) State Class",
+          "scaling": "Scaling Factor",
+          "state_on": "On Value",
+          "state_off": "Off Value",
+          "powergo_dp": "Power DP (usually 25 or 2)",
+          "idle_status_value": "Idle Status (comma-separated)",
+          "returning_status_value": "Returning Status",
+          "docked_status_value": "Docked Status (comma-separated)",
+          "fault_dp": "Fault DP (usually 11)",
+          "battery_dp": "Battery status DP (usually 14)",
+          "mode_dp": "Mode DP (usually 27)",
+          "modes": "Modes list",
+          "return_mode": "Return home mode",
+          "fan_speed_dp": "Fan speeds DP (usually 30)",
+          "fan_speeds": "Fan speeds list (comma-separated)",
+          "clean_time_dp": "Clean Time DP (usually 33)",
+          "clean_area_dp": "Clean Area DP (usually 32)",
+          "clean_record_dp": "Clean Record DP (usually 34)",
+          "locate_dp": "Locate DP (usually 31)",
+          "paused_state": "Pause state (pause, paused, etc)",
+          "stop_status": "Stop status",
+          "brightness": "Brightness (only for white color)",
+          "brightness_lower": "Brightness Lower Value",
+          "brightness_upper": "Brightness Upper Value",
+          "color_temp": "Color Temperature",
+          "color_temp_reverse": "Reverse Color Temperature?",
+          "color": "Color",
+          "color_mode": "Color Mode aka Work Mode",
+          "color_temp_min_kelvin": "Minimum Color Temperature in K",
+          "color_temp_max_kelvin": "Maximum Color Temperature in K",
+          "music_mode": "Music mode available?",
+          "scene": "Scene",
+          "scene_values": "Scene values, separate entries by comma ','",
+          "scene_values_friendly": "User friendly scene values, separate entries by comma ','",
+          "select_options": "Valid entries, separate entries by comma ','",
+          "select_options_friendly": "User Friendly options, separate entries by comma ','",
+          "fan_speed_control": "Fan Speed Control DP",
+          "fan_oscillating_control": "Fan Oscillating Control DP",
+          "fan_speed_min": "minimum fan speed integer",
+          "fan_speed_max": "maximum fan speed integer",
+          "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
+          "fan_direction": "Fan Direction DP",
+          "fan_direction_forward": "Forward DP string",
+          "fan_direction_reverse": "Reverse DP string",
+          "fan_dps_type": "DP value type",
+          "current_temperature_dp": "Current Temperature",
+          "target_temperature_dp": "Target Temperature",
+          "temperature_step": "Temperature Step (optional)",
+          "max_temp": "Max Temperature (Number)",
+          "min_temp": "Min Temperature (Number)",
+          "precision": "Precision (optional, for DPs values)",
+          "target_precision": "Target Precision (optional, for DP values)",
+          "temperature_unit": "Temperature Unit (optional)",
+          "hvac_mode_dp": "HVAC Mode DP (optional)",
+          "hvac_mode_set": "HVAC Mode Set (optional)",
+          "hvac_action_dp": "HVAC Current Action DP (optional)",
+          "hvac_action_set": "HVAC Current Action Set (optional)",
+          "preset_dp": "Presets DP (optional)",
+          "preset_set": "Presets Set (optional)",
+          "eco_dp": "Eco DP (optional)",
+          "eco_value": "Eco value (optional)",
+          "heuristic_action": "Enable heuristic action (optional)",
+          "dps_default_value": "(Optional) Default value when un-initialised",
+          "restore_on_reconnect": "Restore the last value set in Home Assistant after lost connection?",
+          "min_value": "Minimum Value",
+          "max_value": "Maximum Value",
+          "step_size": "Minimum increment between numbers",
+          "is_passive_entity": "Passive entity? (requires integration to send initialisation value)",
+          "entity_category": "Show the entity in this category",
+          "humidifier_available_modes": "(optional) Avaliable modes in device, separate entries by comma ','",
+          "humidifier_current_humidity_dp": "(optional) Current Humidity DP",
+          "humidifier_mode_dp": "(optional) Set mode DP",
+          "humidifier_set_humidity_dp": "(optional) Set Humidity DP",
+          "min_humidity": "Set the minimum supported humidity",
+          "max_humidity": "Set the maximum supported humidity"
         },
-        "device_setup_method": {
-          "title": "تكوين كيانات الجهاز",
-          "description": "سيحاول LocalTuya اكتشاف بقية التكوين تلقائيًا. ",
-          "menu_options": {
-            "auto_configure_device": "اكتشف كيانات الجهاز تلقائيًا",
-            "pick_entity_type": "قم بتكوين كيانات الجهاز يدويًا",
-            "choose_template": "استخدم القالب المحفوظ"
-          }
-        },
-        "auto_configure_device": {
-          "title": "التكوين التلقائي",
-          "description": "حدث خطأ: {err_msg}. ",
-          "menu_options": {
-            "device_setup_method": "العودة إلى طريقة الإعداد"
-          }
-        },
-        "pick_entity_type": {
-          "title": "اختيار نوع الكيان",
-          "description": "اختر نوع الكيان الذي تريد إضافته.",
-          "data": {
-            "platform_to_add": "اختر الكيان",
-            "no_additional_entities": "الانتهاء من تكوين الكيانات",
-            "use_template": "استيراد ملف القالب"
-          }
-        },
-        "choose_template": {
-          "title": "استيراد ملف القالب",
-          "description": "توجد ملفات القالب في المجلد `templates`.",
-          "data": {
-            "templates": "اختيار القالب"
-          },
-          "data_description": {
-            "templates": "يمكنك إدخال اسم ملف القالب يدويًا إذا لم يظهر.\n"
-          }
-        },
-        "configure_entity": {
-            "title": "Configure entity",
-            "description": "يرجى ملء التفاصيل الخاصة بـ {entity} بالنوع {platform}. ",
-            "data": {
-                "id": "DP ID",
-                "friendly_name": "Friendly name for Entity",
-                "current": "Current",
-                "current_consumption": "Current Consumption",
-                "voltage": "Voltage",
-                "commands_set": "Open_Close_Stop Commands Set",
-                "positioning_mode": "Positioning mode",
-                "current_position_dp": "Current Position (for *position* mode only)",
-                "set_position_dp": "Set Position (for *position* mode only)",
-                "position_inverted": "Invert 0-100 position (for *position* mode only)",
-                "span_time": "Full opening time, in secs. (for *timed* mode only)",
-                "unit_of_measurement": "Unit of Measurement (optional)",
-                "device_class": "(Optional) Device Class",
-                "state_class": "(Optional) State Class",
-                "scaling": "Scaling Factor",
-                "state_on": "On Value",
-                "state_off": "Off Value",
-                "powergo_dp": "Power DP (usually 25 or 2)",
-                "idle_status_value": "Idle Status (comma-separated)",
-                "returning_status_value": "Returning Status",
-                "docked_status_value": "Docked Status (comma-separated)",
-                "fault_dp": "Fault DP (usually 11)",
-                "battery_dp": "Battery status DP (usually 14)",
-                "mode_dp": "Mode DP (usually 27)",
-                "modes": "Modes list",
-                "return_mode": "Return home mode",
-                "fan_speed_dp": "Fan speeds DP (usually 30)",
-                "fan_speeds": "Fan speeds list (comma-separated)",
-                "clean_time_dp": "Clean Time DP (usually 33)",
-                "clean_area_dp": "Clean Area DP (usually 32)",
-                "clean_record_dp": "Clean Record DP (usually 34)",
-                "locate_dp": "Locate DP (usually 31)",
-                "paused_state": "Pause state (pause, paused, etc)",
-                "stop_status": "Stop status",
-                "brightness": "Brightness (only for white color)",
-                "brightness_lower": "Brightness Lower Value",
-                "brightness_upper": "Brightness Upper Value",
-                "color_temp": "Color Temperature",
-                "color_temp_reverse": "Reverse Color Temperature?",
-                "color": "Color",
-                "color_mode": "Color Mode aka Work Mode",
-                "color_temp_min_kelvin": "Minimum Color Temperature in K",
-                "color_temp_max_kelvin": "Maximum Color Temperature in K",
-                "music_mode": "Music mode available?",
-                "scene": "Scene",
-                "scene_values": "Scene values, separate entries by comma ','",
-                "scene_values_friendly": "User friendly scene values, separate entries by comma ','",
-                "select_options": "Valid entries, separate entries by comma ','",
-                "select_options_friendly": "User Friendly options, separate entries by comma ','",
-                "fan_speed_control": "Fan Speed Control DP",
-                "fan_oscillating_control": "Fan Oscillating Control DP",
-                "fan_speed_min": "minimum fan speed integer",
-                "fan_speed_max": "maximum fan speed integer",
-                "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
-                "fan_direction":"Fan Direction DP",
-                "fan_direction_forward": "Forward DP string",
-                "fan_direction_reverse": "Reverse DP string",
-                "fan_dps_type": "DP value type",
-                "current_temperature_dp": "Current Temperature",
-                "target_temperature_dp": "Target Temperature",
-                "temperature_step": "Temperature Step (optional)",
-                "max_temp": "Max Temperature (Number)",
-                "min_temp": "Min Temperature (Number)",
-                "precision": "Precision (optional, for DPs values)",
-                "target_precision": "Target Precision (optional, for DP values)",
-                "temperature_unit": "Temperature Unit (optional)",
-                "hvac_mode_dp": "HVAC Mode DP (optional)",
-                "hvac_mode_set": "HVAC Mode Set (optional)",
-                "hvac_action_dp": "HVAC Current Action DP (optional)",
-                "hvac_action_set": "HVAC Current Action Set (optional)",
-                "preset_dp": "Presets DP (optional)",
-                "preset_set": "Presets Set (optional)",
-                "eco_dp": "Eco DP (optional)",
-                "eco_value": "Eco value (optional)",
-                "heuristic_action": "Enable heuristic action (optional)",
-                "dps_default_value": "(Optional) Default value when un-initialised",
-                "restore_on_reconnect": "Restore the last value set in Home Assistant after lost connection?",
-                "min_value": "Minimum Value",
-                "max_value": "Maximum Value",
-                "step_size": "Minimum increment between numbers",
-                "is_passive_entity": "Passive entity? (requires integration to send initialisation value)",
-                "entity_category": "Show the entity in this category",
-                "humidifier_available_modes": "(optional) Avaliable modes in device, separate entries by comma ','",
-                "humidifier_current_humidity_dp": "(optional) Current Humidity DP",
-                "humidifier_mode_dp": "(optional) Set mode DP",
-                "humidifier_set_humidity_dp": "(optional) Set Humidity DP",
-                "min_humidity": "Set the minimum supported humidity",
-                "max_humidity": "Set the maximum supported humidity"
-            },
-            "data_description": {
-                "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
-                "state_class": "Find out more about [State Classes](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
-            }
+        "data_description": {
+          "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
+          "state_class": "Find out more about [State Classes](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
         }
       }
-    },
-    "title": "LocalTuya"
-  }
+    }
+  },
+  "title": "LocalTuya"
+}

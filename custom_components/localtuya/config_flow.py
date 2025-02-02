@@ -449,7 +449,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     cloud_dp_codes = {}
     cloud_data: TuyaCloudApi = hass.data[DOMAIN][entry_id].cloud_data
     if device_cloud_data := cloud_data.device_list.get(data[CONF_DEVICE_ID]):
-        cloud_dp_codes = device_cloud_data.get("dps_data")
+        cloud_dp_codes = device_cloud_data.get("dps_data", {})
 
     return {
         CONF_DPS_STRINGS: dps_string_list(detected_dps, cloud_dp_codes),

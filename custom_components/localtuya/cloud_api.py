@@ -41,6 +41,7 @@ class TuyaCloudApi:
         self._token_expire_time: int = 0
 
         self.device_list = {}
+        self.cached_device_list = {}
 
     def generate_payload(self, method, timestamp, url, headers, body=None):
         """Generate signed payload for requests."""
@@ -196,6 +197,11 @@ class TuyaCloudApi:
 
     async def get_device_functions(self, device_id) -> dict[str, dict]:
         """Pull Devices Properties and Specifications to devices_list"""
+        cached = device_id in self.cached_device_list
+        if cached and (dps_data := self.cached_device_list[device_id].get("dps_data")):
+            self.device_list[device_id]["dps_data"] = dps_data
+            return
+
         device_data = {}
         get_data = [
             self.async_get_device_specifications(device_id),
@@ -211,6 +217,7 @@ class TuyaCloudApi:
 
         if device_data:
             self.device_list[device_id]["dps_data"] = device_data
+            self.cached_device_list.update({device_id: self.device_list[device_id]})
 
         return device_data
 
