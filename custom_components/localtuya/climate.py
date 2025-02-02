@@ -224,7 +224,7 @@ def flow_schema(dps):
         ),
         vol.Optional(
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
-        ): _col_to_select(SUPPORTED_PRECISIONS)
+        ): _col_to_select(SUPPORTED_PRECISIONS),
         vol.Optional(CONF_HVAC_MODE_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_HVAC_FAN_MODE_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(
@@ -364,14 +364,22 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
+        supported_features = (
+            ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
+        )
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            supported_features = supported_features | ClimateEntityFeature.TARGET_TEMPERATURE
+            supported_features = (
+                supported_features | ClimateEntityFeature.TARGET_TEMPERATURE
+            )
         if self.has_config(CONF_MAX_TEMP_DP):
-            supported_features = supported_features | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+            supported_features = (
+                supported_features | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+            )
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
             supported_features = supported_features | ClimateEntityFeature.PRESET_MODE
-        if self.has_config(CONF_HVAC_FAN_MODE_DP) and self.has_config(CONF_HVAC_FAN_MODE_SET):
+        if self.has_config(CONF_HVAC_FAN_MODE_DP) and self.has_config(
+            CONF_HVAC_FAN_MODE_SET
+        ):
             supported_features = supported_features | ClimateEntityFeature.FAN_MODE
         if self.has_config(CONF_HVAC_SWING_MODE_DP):
             supported_features = supported_features | ClimateEntityFeature.SWING_MODE
@@ -664,7 +672,9 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
                     break
             else:
                 # in case fan mode and preset share the same dp
-                _LOGGER.debug("Unknown fan mode %s" % self.dps_conf(CONF_HVAC_FAN_MODE_DP))
+                _LOGGER.debug(
+                    "Unknown fan mode %s" % self.dps_conf(CONF_HVAC_FAN_MODE_DP)
+                )
                 self._fan_mode = FAN_AUTO
 
         # Update the swing status
@@ -674,7 +684,9 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
                     self._swing_mode = mode
                     break
             else:
-                _LOGGER.debug("Unknown swing mode %s" % self.dps_conf(CONF_HVAC_SWING_MODE_DP))
+                _LOGGER.debug(
+                    "Unknown swing mode %s" % self.dps_conf(CONF_HVAC_SWING_MODE_DP)
+                )
                 self._swing_mode = SWING_OFF
 
         # Update the current action
