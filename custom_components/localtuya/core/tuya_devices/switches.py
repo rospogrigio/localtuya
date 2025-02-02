@@ -721,6 +721,15 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Fan switch
+    "fskg": (
+        LocalTuyaEntity(
+            id=DPCode.BACKLIGHT_SWITCH,
+            name="LED Siwtch",
+            icon="mdi:led-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
     # Curtain
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf46o5mtfyc
     "cl": (
@@ -739,19 +748,19 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.UP_CONFIRM,
-            name="UP Limit Reset",
+            name="Set Upper Limit",
             icon="mdi:arrow-collapse-up",
             entity_category=EntityCategory.CONFIG,
         ),
         LocalTuyaEntity(
             id=DPCode.MIDDLE_CONFIRM,
-            name="Middle Reset",
+            name="Set Middle Limit",
             icon="mdi:format-vertical-align-center",
             entity_category=EntityCategory.CONFIG,
         ),
         LocalTuyaEntity(
             id=DPCode.DOWN_CONFIRM,
-            name="Down Limit Reset",
+            name="Set Down Limit",
             icon="mdi:arrow-collapse-down",
             entity_category=EntityCategory.CONFIG,
         ),
@@ -785,6 +794,10 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+
+# Scene Switch
+# https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
+SWITCHES["cjkg"] = SWITCHES["kg"]
 
 # Socket (duplicate of `pc`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s

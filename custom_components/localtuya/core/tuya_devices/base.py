@@ -1,5 +1,6 @@
 from enum import StrEnum
-from typing import Any, NamedTuple
+from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.const import (
     CONF_FRIENDLY_NAME,
@@ -10,10 +11,17 @@ from homeassistant.const import (
     EntityCategory,
 )
 
-# Obtain value from cloud data.
-CLOUD_VALUE = NamedTuple(
-    "dp_values", [("default_value", str), ("dp_config", str), ("value_key", str)]
-)
+
+# Obtain values from cloud data.
+@dataclass
+class CLOUD_VALUE:
+    """Retrieve a value from stored cloud data"""
+
+    default_value: Any
+    dp_config: str
+    value_key: str
+    prefer_type: type = None
+
 
 from ...const import CONF_CLEAN_AREA_DP, CONF_DPS_STRINGS, CONF_STATE_CLASS
 
@@ -107,6 +115,7 @@ class DPCode(StrEnum):
     ARM_UP_PERCENT = "arm_up_percent"
     AUTOMATIC_LOCK = "automatic_lock"
     AUTO_LOCK_TIME = "auto_lock_time"
+    BACKLIGHT_SWITCH = "backlight_switch"
     BASIC_ANTI_FLICKER = "basic_anti_flicker"
     BASIC_DEVICE_VOLUME = "basic_device_volume"
     BASIC_FLIP = "basic_flip"
@@ -316,6 +325,14 @@ class DPCode(StrEnum):
     RECORD_MODE = "record_mode"
     RECORD_SWITCH = "record_switch"  # Recording switch
     RELAY_STATUS = "relay_status"
+    RELAY_STATUS_1 = "relay_status_1"  # Scene Switch cjkg
+    RELAY_STATUS_2 = "relay_status_2"  # Scene Switch cjkg
+    RELAY_STATUS_3 = "relay_status_3"  # Scene Switch cjkg
+    RELAY_STATUS_4 = "relay_status_4"  # Scene Switch cjkg
+    RELAY_STATUS_5 = "relay_status_5"  # Scene Switch cjkg
+    RELAY_STATUS_6 = "relay_status_6"  # Scene Switch cjkg
+    RELAY_STATUS_7 = "relay_status_7"  # Scene Switch cjkg
+    RELAY_STATUS_8 = "relay_status_8"  # Scene Switch cjkg
     REMAIN_TIME = "remain_time"
     REMOTE_REGISTER = "remote_register"
     RESET_DUSTER_CLOTH = "reset_duster_cloth"
@@ -325,6 +342,26 @@ class DPCode(StrEnum):
     RESET_MAP = "reset_map"
     RESET_ROLL_BRUSH = "reset_roll_brush"
     ROLL_BRUSH = "roll_brush"
+    SCENE_1 = "scene_1"
+    SCENE_10 = "scene_10"
+    SCENE_11 = "scene_11"
+    SCENE_12 = "scene_12"
+    SCENE_13 = "scene_13"
+    SCENE_14 = "scene_14"
+    SCENE_15 = "scene_15"
+    SCENE_16 = "scene_16"
+    SCENE_17 = "scene_17"
+    SCENE_18 = "scene_18"
+    SCENE_19 = "scene_19"
+    SCENE_2 = "scene_2"
+    SCENE_20 = "scene_20"
+    SCENE_3 = "scene_3"
+    SCENE_4 = "scene_4"
+    SCENE_5 = "scene_5"
+    SCENE_6 = "scene_6"
+    SCENE_7 = "scene_7"
+    SCENE_8 = "scene_8"
+    SCENE_9 = "scene_9"
     SCENE_DATA = "scene_data"  # Colored light mode
     SCENE_DATA_V2 = "scene_data_v2"  # Colored light mode
     SEEK = "seek"

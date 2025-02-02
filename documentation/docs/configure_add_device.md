@@ -129,11 +129,8 @@ Each platform has its unique configuration page with different sets of configura
 !!! info "Templates"
     You can import a ready-to-go device configuration through the 'add device' process. This feature is useful for creating backups, sharing configurations, 
     or setting up similar devices. All templates stored in the 'templates' directory will be listed in the 'Use saved template' step.<br>
-    __Templates directory located in `custom_components/localtuya/templates`__.
-    !!! annotate note ""
-        Templates are loaded when Home Assistant (HA) starts, so for them to appear in the list, a restart is required.<br>
-        __However__, When importing a template, you can manually enter the name, such as `my_template.yaml` (1)<br>
-    1. This will load the template even if it didn't appear in the list<br> <br> ![](images/templates.png)
+    _Templates directory located in `custom_components/localtuya/templates`_
+
 
 ##### Create templates
 There are two ways to create templates
@@ -147,7 +144,7 @@ There are two ways to create templates
         commands_set: open_close_stop
         current_position_dp: '3'
         entity_category: None
-        friendly_name: My BedRoom Shade
+        friendly_name: Blind
         id: '1'
         platform: cover
         position_inverted: false
@@ -156,7 +153,7 @@ There are two ways to create templates
         span_time: 25.0
     - select:
         entity_category: config
-        friendly_name: My BedRoom Shade Motor Direction
+        friendly_name: Motor Direction
         id: '5'
         is_passive_entity: false
         platform: select
@@ -165,7 +162,7 @@ There are two ways to create templates
         select_options_friendly: Forward;Reverse
     - select:
         entity_category: config
-        friendly_name: My BedRoom Shade Motor Mode
+        friendly_name: Motor Mode
         id: '106'
         is_passive_entity: false
         platform: select
@@ -175,10 +172,9 @@ There are two ways to create templates
     - binary_sensor:
         device_class: problem
         entity_category: diagnostic
-        friendly_name: My BedRoom Shade Fault
+        friendly_name: Fault
         id: '12'
         platform: binary_sensor
-        state_off: '0'
         state_on: '1'
     ```
 

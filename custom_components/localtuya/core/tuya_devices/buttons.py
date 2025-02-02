@@ -8,6 +8,115 @@
 from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
 
 BUTTONS: dict[str, tuple[LocalTuyaEntity, ...]] = {
+    # Scene Switch
+    # https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
+    "cjkg": (
+        LocalTuyaEntity(
+            id=DPCode.SCENE_1,
+            name="Scene 1",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_2,
+            name="Scene 2",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_3,
+            name="Scene 3",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_4,
+            name="Scene 4",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_5,
+            name="Scene 5",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_6,
+            name="Scene 6",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_7,
+            name="Scene 7",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_8,
+            name="Scene 8",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_9,
+            name="Scene 9",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_10,
+            name="Scene 10",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_11,
+            name="Scene 11",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_12,
+            name="Scene 12",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_13,
+            name="Scene 13",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_14,
+            name="Scene 14",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_15,
+            name="Scene 15",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_16,
+            name="Scene 16",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_17,
+            name="Scene 17",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_18,
+            name="Scene 18",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_18,
+            name="Scene 18",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_19,
+            name="Scene 19",
+            icon="mdi:palette",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SCENE_20,
+            name="Scene 20",
+            icon="mdi:palette",
+        ),
+    ),
     # Curtain
     # Note: Multiple curtains isn't documented
     # https://developer.tuya.com/en/docs/iot/categorycl?id=Kaiuz1hnpo7df

@@ -161,6 +161,156 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_selector("0,1,2", "ON,OFF,Last State"),
         ),
         LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_1,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 1",
+            custom_configs=localtuya_selector(
+                "power_on,power_off,last", "ON,OFF,Last State"
+            ),
+            condition_contains_any=["power_on", "power_off", "last"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_1,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 1",
+            custom_configs=localtuya_selector("on,off,memory", "ON,OFF,Last State"),
+            condition_contains_any=["on", "off", "memory"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_1,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 1",
+            custom_configs=localtuya_selector("0,1,2", "ON,OFF,Last State"),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_2,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 2",
+            custom_configs=localtuya_selector(
+                "power_on,power_off,last", "ON,OFF,Last State"
+            ),
+            condition_contains_any=["power_on", "power_off", "last"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_2,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 2",
+            custom_configs=localtuya_selector("on,off,memory", "ON,OFF,Last State"),
+            condition_contains_any=["on", "off", "memory"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_2,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 2",
+            custom_configs=localtuya_selector("0,1,2", "ON,OFF,Last State"),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_3,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 3",
+            custom_configs=localtuya_selector(
+                "power_on,power_off,last", "ON,OFF,Last State"
+            ),
+            condition_contains_any=["power_on", "power_off", "last"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_3,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 3",
+            custom_configs=localtuya_selector("on,off,memory", "ON,OFF,Last State"),
+            condition_contains_any=["on", "off", "memory"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_3,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 3",
+            custom_configs=localtuya_selector("0,1,2", "ON,OFF,Last State"),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_4,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 4",
+            custom_configs=localtuya_selector(
+                "power_on,power_off,last", "ON,OFF,Last State"
+            ),
+            condition_contains_any=["power_on", "power_off", "last"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_4,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 4",
+            custom_configs=localtuya_selector("on,off,memory", "ON,OFF,Last State"),
+            condition_contains_any=["on", "off", "memory"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_4,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 4",
+            custom_configs=localtuya_selector("0,1,2", "ON,OFF,Last State"),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_5,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 5",
+            custom_configs=localtuya_selector(
+                "power_on,power_off,last", "ON,OFF,Last State"
+            ),
+            condition_contains_any=["power_on", "power_off", "last"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_5,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 5",
+            custom_configs=localtuya_selector("on,off,memory", "ON,OFF,Last State"),
+            condition_contains_any=["on", "off", "memory"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_5,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 5",
+            custom_configs=localtuya_selector("0,1,2", "ON,OFF,Last State"),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_6,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 6",
+            custom_configs=localtuya_selector(
+                "power_on,power_off,last", "ON,OFF,Last State"
+            ),
+            condition_contains_any=["power_on", "power_off", "last"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_6,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 6",
+            custom_configs=localtuya_selector("on,off,memory", "ON,OFF,Last State"),
+            condition_contains_any=["on", "off", "memory"],
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RELAY_STATUS_6,
+            icon="mdi:circle-double",
+            entity_category=EntityCategory.CONFIG,
+            name="Relay Status 6",
+            custom_configs=localtuya_selector("0,1,2", "ON,OFF,Last State"),
+        ),
+        LocalTuyaEntity(
             id=DPCode.LIGHT_MODE,
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_selector("relay,pos,none", "State,Position,OFF"),
@@ -604,6 +754,14 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+
+# Scene Switch
+# https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
+SELECTS["cjkg"] = SELECTS["kg"]
+
+# Fan wall switch
+# For relay status
+SELECTS["fskg"] = SELECTS["kg"]
 
 # Socket (duplicate of `kg`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s

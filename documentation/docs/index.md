@@ -9,7 +9,7 @@ LocalTuya is an [HomeAssistant](https://www.home-assistant.io/){target="_blank"}
 
 
 !!! info "Cloud API"
-    LocalTuya uses the cloud solely to obtain device data and pre-fill the required fields for you.
+    LocalTuya uses the cloud only to obtain device data and pre-fill the required fields for you.
 
     It offers many features to simplify device setup.
 

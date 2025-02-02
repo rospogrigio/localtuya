@@ -34,13 +34,13 @@ UNIT_F = "fahrenheit"
 
 def localtuya_climate(
     hvac_mode_set=None,
-    temp_step=None,
+    temp_step=1,
     actions_set=None,
     echo_value=None,
     preset_set=None,
     unit=None,
     values_precsion=0.1,
-    target_precision=None,
+    target_precision=0.1,
     includes_off_mode=True,
 ) -> dict:
     """Create localtuya climate configs"""
@@ -77,10 +77,10 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 temp_step=1,
                 actions_set="heating/cooling",
                 unit=UNIT_C,
-                values_precsion=1.0,
-                target_precision=1.0,
+                values_precsion=0.1,
+                target_precision=0.1,
             ),
-        )
+        ),
     ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf46epy4j82
@@ -94,11 +94,11 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_climate(
                 temp_step=1,
                 actions_set="heating/warming",
-                values_precsion=1.0,
-                target_precision=1.0,
+                values_precsion=0.1,
+                target_precision=0.1,
                 preset_set="auto/smart",
             ),
-        )
+        ),
     ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/categoryrs?id=Kaiuz0nfferyx
@@ -113,8 +113,8 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 temp_step=1,
                 actions_set="heating/warming",
                 unit=UNIT_C,
-                values_precsion=1.0,
-                target_precision=1.0,
+                values_precsion=0.1,
+                target_precision=0.1,
                 preset_set="auto/manual/smart/comfortable/eco",
             ),
         ),
@@ -134,8 +134,8 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 temp_step=1,
                 actions_set="True/False",
                 unit=UNIT_C,
-                values_precsion=1.0,
-                target_precision=1.0,
+                values_precsion=0.1,
+                target_precision=0.1,
             ),
         ),
     ),
@@ -153,8 +153,8 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 temp_step=1,
                 actions_set="opened/closed",
                 unit=UNIT_C,
-                values_precsion=1.0,
-                target_precision=1.0,
+                values_precsion=0.1,
+                target_precision=0.1,
             ),
         ),
     ),

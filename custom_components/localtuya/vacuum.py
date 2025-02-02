@@ -12,7 +12,8 @@ from homeassistant.components.vacuum import (
     STATE_IDLE,
     STATE_PAUSED,
     STATE_RETURNING,
-    StateVacuumEntity, VacuumEntityFeature,
+    VacuumEntityFeature,
+    StateVacuumEntity,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry

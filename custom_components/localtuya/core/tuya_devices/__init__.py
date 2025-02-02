@@ -122,7 +122,8 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                 for k, v in entity_configs.items():
                     if isinstance(v, CLOUD_VALUE):
                         config_dp = local_entity.get(v.dp_config)
-                        dp_values = get_dp_values(config_dp, dps_data) or {}
+                        pref_type = v.prefer_type
+                        dp_values = get_dp_values(config_dp, dps_data, pref_type) or {}
 
                         # special case for lights
                         # if v.value_key in dp_values and "kelvin" in k:
@@ -136,7 +137,6 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                 if local_entity:
                     # Entity most contains ID
                     if not local_entity.get(CONF_ID):
-                        _LOGGER.debug(f"{device_name}: Missing ID for: {local_entity}")
                         continue
                     # Workaround to Prevent duplicated id.
                     if local_entity[CONF_ID] in entities:
@@ -159,8 +159,8 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
     return list_entities
 
 
-def parse_enum(dp_code):
-    """get enum value if code type is enum"""
+def parse_enum(dp_code: Enum) -> str:
+    """Get enum value if code type is enum"""
     try:
         parsed_dp_code = dp_code.value
     except:
@@ -169,7 +169,7 @@ def parse_enum(dp_code):
     return parsed_dp_code
 
 
-def get_dp_values(dp, dps_data):
+def get_dp_values(dp: str, dps_data: dict, prefer_type: type = None) -> dict:
     """Get DP Values"""
     if not dp or not dps_data:
         return
@@ -190,10 +190,39 @@ def get_dp_values(dp, dps_data):
         dp_values["scale"] = scale(1, val_scale, float)
         return dp_values
 
+    # ENUM Values: range: list of values.
+    if dp_values and dp_type == DPType.ENUM:
+        dp_values["min"] = dp_values.get("range", [])[0]  # first value
+        dp_values["max"] = dp_values.get("range", [])[-1]  # Last value
+        dp_values["range"] = convert_list(dp_values.get("range"), prefer_type)
+        return dp_values
+
 
 def scale(value: int, scale: int, _type: type = int) -> float:
     """Return scaled value."""
     return _type(value) / (10**scale)
+
+
+def convert_list(_list: list, prefer_type: dict | list | str = str):
+    """Return list to dict values."""
+    if not _list:
+        return ""
+
+    if prefer_type == str:
+        # Return str "value1,value2,value3"
+        to_str = ""
+        for i in _list:
+            to_str += f"{i},"
+        to_str = to_str[:-1]
+        return to_str
+
+    if prefer_type == dict:
+        # Return dict {value1: value1, value2: value2, value3: value3}
+        to_dict = {k: k.replace("_", " ").capitalize() for k in _list}
+        return to_dict
+
+    # otherwise return prefer type list
+    return _list
 
 
 def convert_to_kelvin(value):

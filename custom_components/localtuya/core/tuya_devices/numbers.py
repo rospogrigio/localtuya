@@ -561,6 +561,10 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+# Scene Switch
+# https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
+NUMBERS["cjkg"] = NUMBERS["kg"]
+
 NUMBERS["cz"] = NUMBERS["kg"]
 NUMBERS["pc"] = NUMBERS["kg"]
 

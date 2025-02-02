@@ -1,15 +1,17 @@
 # Events
 !!! note ""
-    Your devices must be added to localtuya to use Events
+    Your device must be added to localtuya to use Events
 
 Localtuya fires an [events](https://www.home-assistant.io/docs/configuration/events/){target="_blank"} on `homeassisstant` 
-that can be used on automation or monitoring your device behaviour from [Developer tools -> events](https://my.home-assistant.io/redirect/developer_events/) (1)<Br>
+that can be used on automation or monitoring your device behaviour from [Developer tools -> events](https://my.home-assistant.io/redirect/developer_events/){target="_blank"} (1)<Br>
 {.annotate}
 
 1. to monitor your device subscribe to any event below and trigger action on the device
 
-With this you can automate `scene remote` (1) devices to trigger action on `homeassistant`
-{.annotate}
+
+!!! annotate tip ""
+    With this you can automate devices such as `scene remote` (1) to trigger an action on `homeassistant`
+
 
 1. e.g. `single click`, `double click` or `hold`.
 

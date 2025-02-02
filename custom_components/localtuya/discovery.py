@@ -23,6 +23,7 @@ UDP_KEY = md5(b"yGAdlopoPVldABfn").digest()
 
 PREFIX_55AA_BIN = b"\x00\x00U\xaa"
 PREFIX_6699_BIN = b"\x00\x00\x66\x99"
+UDP_COMMAND = b"\x00\x00\x00\x00"
 
 DEFAULT_TIMEOUT = 6.0
 
@@ -37,7 +38,10 @@ def decrypt(msg, key):
 def decrypt_udp(message):
     """Decrypt encrypted UDP broadcasts."""
     if message[:4] == PREFIX_55AA_BIN:
-        return decrypt(message[20:-8], UDP_KEY)
+        payload = message[20:-8]
+        if message[8:12] == UDP_COMMAND:
+            return payload
+        return decrypt(payload, UDP_KEY)
     if message[:4] == PREFIX_6699_BIN:
         unpacked = pytuya.unpack_message(message, hmac_key=UDP_KEY, no_retcode=None)
         payload = unpacked.payload.decode()

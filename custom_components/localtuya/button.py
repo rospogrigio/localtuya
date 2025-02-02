@@ -6,9 +6,7 @@ import voluptuous as vol
 from homeassistant.components.button import DOMAIN, ButtonEntity
 
 from .common import LocalTuyaEntity, async_setup_entry
-from .const import (
-    CONF_PASSIVE_ENTITY,
-)
+from .const import CONF_PASSIVE_ENTITY
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Required(CONF_PASSIVE_ENTITY): bool,
+        # vol.Required(CONF_PASSIVE_ENTITY): bool,
     }
 
 

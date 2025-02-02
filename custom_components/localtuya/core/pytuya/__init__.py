@@ -53,9 +53,9 @@ from hashlib import md5, sha256
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-version_tuple = (2023, 12, 0)
+version_tuple = (2024, 1, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
-__author__ = "rospogrigio"
+__author__ = "rospogrigio, xZetsubou"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -831,9 +831,15 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
             if "dps" in decoded_message:
                 if cid := decoded_message.get("cid"):
-                    self.dps_cache.update({cid: decoded_message["dps"]})
+                    if cid in self.dps_cache:
+                        self.dps_cache[cid].update(decoded_message["dps"])
+                    else:
+                        self.dps_cache.update({cid: decoded_message["dps"]})
                 else:
-                    self.dps_cache.update({"parent": decoded_message["dps"]})
+                    if "parent" in self.dps_cache:
+                        self.dps_cache["parent"].update(decoded_message["dps"])
+                    else:
+                        self.dps_cache.update({"parent": decoded_message["dps"]})
 
             listener = self.listener and self.listener()
             if listener is not None:
@@ -1107,9 +1113,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self.dps_cache.update({"parent": data["parent"]})
 
             if self.dev_type == "type_0a" and not cid:
-                return self.dps_cache.get("parent")
+                return self.dps_cache.get("parent", {})
 
-        return self.dps_cache.get(cid) if cid else self.dps_cache.get("parent")
+        return self.dps_cache.get(cid, {}) if cid else self.dps_cache.get("parent", {})
 
     def add_dps_to_request(self, dp_indicies):
         """Add a datapoint (DP) to be included in requests."""
@@ -1422,10 +1428,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if cid := nodeId:
                 json_data["cid"] = cid
                 # for <= 3.3 we don't need `gwID`, `devID` and `uid` in payload.
-                # if command == CONTROL:
-                #     for k in ["gwId", "devId", "uid"]:
-                #         if k in json_data:
-                #             json_data.pop(k)
+                if command in (CONTROL, DP_QUERY):
+                    for k in ("gwId", "devId", "uid"):
+                        if k in json_data:
+                            json_data.pop(k)
             else:
                 del json_data["cid"]
         if "data" in json_data and "cid" in json_data["data"]:

@@ -195,7 +195,7 @@
                     "fan_oscillating_control": "Fan Oscillating Control DP",
                     "fan_speed_min": "minimum fan speed integer",
                     "fan_speed_max": "maximum fan speed integer",
-                    "fan_speed_ordered_list": "Fan speed modes list (overrides speed min/max)",
+                    "fan_speed_ordered_list": "Fan speed list (overrides speed min/max), separate entries by comma ','",
                     "fan_direction":"Fan Direction DP",
                     "fan_direction_forward": "Forward DP string",
                     "fan_direction_reverse": "Reverse DP string",

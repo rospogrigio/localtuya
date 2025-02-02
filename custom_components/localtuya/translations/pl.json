@@ -200,7 +200,7 @@
                     "fan_oscillating_control": "DP Sterowania oscylacyjnego wentylatora",
                     "fan_speed_min": "minimalna prędkość wentylatora",
                     "fan_speed_max": "maksymalna prędkośc wentylatora",
-                    "fan_speed_ordered_list": "Lista trybów prędkości wentylatora (zastępuje prędkość min./maks.)",
+                    "fan_speed_ordered_list": "Lista trybów prędkości wentylatora (zastępuje prędkość min./maks.), wpisy oddzielaj przecinkami ','",
                     "fan_direction":"DP kierunku wentylatora",
                     "fan_direction_forward": "DP do przodu",
                     "fan_direction_reverse": "DP do tyłu",

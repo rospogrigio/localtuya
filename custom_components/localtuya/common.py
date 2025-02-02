@@ -31,6 +31,7 @@ from homeassistant.helpers.dispatcher import (
 )
 from homeassistant.helpers.event import async_track_time_interval, async_call_later
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .cloud_api import TuyaCloudApi
 from .core import pytuya
@@ -78,7 +79,7 @@ async def async_setup_entry(
     flow_schema,
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities,
+    async_add_entities: AddEntitiesCallback,
 ):
     """Set up a Tuya platform based on a config entry.
 
@@ -139,7 +140,7 @@ def get_entity_config(config_entry, dp_id) -> dict:
 
 
 @callback
-def async_config_entry_by_device_id(hass, device_id):
+def async_config_entry_by_device_id(hass: HomeAssistant, device_id):
     """Look up config entry by device id."""
     current_entries = hass.config_entries.async_entries(DOMAIN)
     for entry in current_entries:
@@ -296,7 +297,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self.debug("Retrieving initial state")
 
                 status = await self._interface.status(cid=self._node_id)
-                if status is None:
+                if status is None and not self.is_subdevice:
                     raise Exception("Failed to retrieve status")
                 if not self._interface.heartbeater:
                     self._interface.start_heartbeat()
