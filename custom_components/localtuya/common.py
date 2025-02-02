@@ -51,6 +51,7 @@ from .const import (
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
     CONF_RESTORE_ON_RECONNECT,
+    DATA_DISCOVERY,
     DOMAIN,
     DEFAULT_CATEGORIES,
     ENTITY_CATEGORY,
@@ -59,6 +60,7 @@ from .const import (
     CONF_DEVICE_SLEEP_TIME,
     CONF_DPS_STRINGS,
     CONF_MANUAL_DPS,
+    CONF_TUYA_IP,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -390,6 +392,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             await self._connect_task
         if not self.connected and self._gwateway and self._gwateway._connect_task:
             await self._gwateway._connect_task
+        if not self._interface:
+            self.error(f"Not connected to device {self._device_config.name}")
 
     async def close(self):
         """Close connection and stop re-connect loop."""
@@ -412,46 +416,67 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         dev_id = self._device_config.id
         cloud_api = self._hass_entry.cloud_data
         await cloud_api.async_get_devices_list()
+        discovery = self._hass.data[DOMAIN].get(DATA_DISCOVERY)
+
         cloud_devs = cloud_api.device_list
         if dev_id in cloud_devs:
             cloud_localkey = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
             if not cloud_localkey or self._local_key == cloud_localkey:
                 return
-            self._local_key = cloud_localkey
+
             new_data = self._config_entry.data.copy()
+            self._local_key = cloud_localkey
+
+            if self.is_subdevice:
+                from .core.helpers import get_gateway_by_deviceid
+
+                # Update Node ID.
+                if new_node_id := cloud_devs[dev_id].get(CONF_NODE_ID):
+                    new_data[CONF_DEVICES][dev_id][CONF_NODE_ID] = new_node_id
+
+                # Update Gateway ID and IP
+                new_gw = get_gateway_by_deviceid(dev_id, cloud_devs)
+                new_data[CONF_DEVICES][dev_id][CONF_GATEWAY_ID] = new_gw.id
+                if discovery and (local_gw := discovery.devices.get(new_gw.id)):
+                    new_ip = local_gw.get(CONF_TUYA_IP, self._device_config.host)
+                    new_data[CONF_DEVICES][dev_id][CONF_HOST] = new_ip
+                self.info(f"Updated informations for sub-device {dev_id}.")
+
             new_data[CONF_DEVICES][dev_id][CONF_LOCAL_KEY] = self._local_key
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             self._hass.config_entries.async_update_entry(
-                self._config_entry,
-                data=new_data,
+                self._config_entry, data=new_data
             )
             self.info(f"local_key updated for device {dev_id}.")
 
+    async def set_values(self):
+        """Send self._pending_status payload to device."""
+        await self.check_connection()
+        if self._interface and self._pending_status:
+            payload, self._pending_status = self._pending_status.copy(), {}
+            try:
+                await self._interface.set_dps(payload, cid=self._node_id)
+            except Exception:  # pylint: disable=broad-except
+                self.debug(f"Failed to set values {payload}", force=True)
+
     async def set_dp(self, state, dp_index):
         """Change value of a DP of the Tuya device."""
-        await self.check_connection()
         if self._interface is not None:
-            try:
-                await self._interface.set_dp(state, dp_index, cid=self._node_id)
-            except Exception:  # pylint: disable=broad-except
-                self.debug(f"Failed to set DP {dp_index} to {str(state)}", force=True)
+            self._pending_status.update({dp_index: state})
+            await asyncio.sleep(0.001)
+            await self.set_values()
         else:
             if self.is_sleep:
                 return self._pending_status.update({str(dp_index): state})
-            self.error(f"Not connected to device {self._device_config.name}")
 
     async def set_dps(self, states):
         """Change value of a DPs of the Tuya device."""
-        await self.check_connection()
         if self._interface is not None:
-            try:
-                await self._interface.set_dps(states, cid=self._node_id)
-            except Exception:  # pylint: disable=broad-except
-                self.debug(f"Failed to set DPs {states}")
+            self._pending_status.update(states)
+            await self.set_values()
         else:
             if self.is_sleep:
                 return self._pending_status.update(states)
-            self.error(f"Not connected to device {self._device_config.name}")
 
     async def _async_refresh(self, _now):
         if self._interface is not None:
@@ -591,11 +616,13 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             """Update entity state when status was updated."""
             if status is None:
                 status = {}
+
+            if status == RESTORE_STATES and stored_data:
+                if stored_data.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+                    self.debug(f"{self.name}: Restore state: {stored_data.state}")
+                    status[self._dp_id] = stored_data.state
+
             if self._status != status:
-                if status == RESTORE_STATES:
-                    if stored_data and stored_data.state != STATE_UNAVAILABLE:
-                        self.debug(f"{self.name}: restore state: {stored_data.state}")
-                        status[self._dp_id] = stored_data.state
                 self._status = status.copy()
 
                 if status:
