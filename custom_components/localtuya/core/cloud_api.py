@@ -15,6 +15,16 @@ _LOGGER = logging.getLogger(__name__)
 
 DEVICES_UPDATE_INTERVAL = 300
 
+TUYA_ENDPOINTS = {
+    # Regions code
+    "Central Europe Data Center": "eu",
+    "China Data Center": "cn",
+    "Eastern America Data Center": "ea",
+    "India Data Center": "in",
+    "Western America Data Center": "us",
+    "Western Europe Data Center": "we",
+}
+
 
 # Signature algorithm.
 def calc_sign(msg, key):
@@ -37,12 +47,18 @@ class TuyaCloudApi:
     def __init__(self, hass, region_code, client_id, secret, user_id):
         """Initialize the class."""
         self._hass = hass
-        self._base_url = f"https://openapi.tuya{region_code}.com"
         self._client_id = client_id
         self._secret = secret
         self._user_id = user_id
         self._access_token = ""
         self._token_expire_time: int = 0
+
+        if region_code == "ea":
+            self._base_url = "https://openapi-ueaz.tuyaus.com"
+        elif region_code == "we":
+            self._base_url = "https://openapi-weaz.tuyaeu.com"
+        else:
+            self._base_url = f"https://openapi.tuya{region_code}.com"
 
         self.device_list = {}
         self.cached_device_list = {}

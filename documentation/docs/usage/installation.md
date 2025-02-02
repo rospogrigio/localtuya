@@ -23,7 +23,7 @@ If you haven't added the repository to `HACS`.
 2. Adding a new hub will introduce you to this configuration page (1)<br>
 { .annotate }
 
-    1. ![](/images/init.png)
+    1. ![](../images/init.png)
     
     a. If you prefer not to set up the cloud API, check `Disable Cloud API?`
 

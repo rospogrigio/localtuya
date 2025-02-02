@@ -261,7 +261,6 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "tgkg": (
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_1,
-            name="light",
             brightness=DPCode.BRIGHT_VALUE_1,
             brightness_upper=DPCode.BRIGHTNESS_MAX_1,
             brightness_lower=DPCode.BRIGHTNESS_MIN_1,
@@ -269,7 +268,7 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_2,
-            name="light_2",
+            name="Light 2",
             brightness=DPCode.BRIGHT_VALUE_2,
             brightness_upper=DPCode.BRIGHTNESS_MAX_2,
             brightness_lower=DPCode.BRIGHTNESS_MIN_2,
@@ -277,7 +276,7 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.SWITCH_LED_3,
-            name="light_3",
+            name="Light 3",
             brightness=DPCode.BRIGHT_VALUE_3,
             brightness_upper=DPCode.BRIGHTNESS_MAX_3,
             brightness_lower=DPCode.BRIGHTNESS_MIN_3,
@@ -398,6 +397,9 @@ LIGHTS["hdmipmtbq"] = (
     *LIGHTS["tgkg"],
     *LIGHTS["dj"],
 )
+
+# Dimmer
+LIGHTS["tdq"] = LIGHTS["tgkg"]
 
 # Scene Switch
 # https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8

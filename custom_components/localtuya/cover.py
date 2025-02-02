@@ -251,7 +251,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         """Device status was updated."""
         self._previous_state = self._state
         self._state = self.dp_value(self._dp_id)
-        if self._state.isupper():
+        if self._state and self._state.isupper():
             self._open_cmd = self._open_cmd.upper()
             self._close_cmd = self._close_cmd.upper()
             self._stop_cmd = self._stop_cmd.upper()

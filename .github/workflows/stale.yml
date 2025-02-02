@@ -33,6 +33,7 @@ jobs:
             [${{env.release_tag}}](${{env.release_link}})
           days-before-issue-close: 0
           days-before-issue-stale: 0
+          operations-per-run: 250
           close-issue-reason: "completed"
 
   stale-issues:

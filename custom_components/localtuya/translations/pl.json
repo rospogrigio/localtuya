@@ -172,7 +172,7 @@
                     "docked_status_value": "Stan zadokowania (oddzielone przecinkami)",
                     "fault_dp": "DP błędu (zazwyczaj 11)",
                     "battery_dp": "DP statusu baterii (zazwyczaj 14)",
-                    "mode_dp": "DP trybu (zazwyczaj 27)",
+                    "mode_dp": "DP trybu",
                     "modes": "Lista trybów",
                     "return_mode": "Tryb powrotu do domu",
                     "fan_speed_dp": "(Opcjonalnie) DP prędkości wentylatora",

@@ -20,7 +20,10 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfVolume,
     UnitOfElectricPotential,
+    UnitOfMass,
     DEGREE,
+    LIGHT_LUX,
+    UnitOfLength,
 )
 
 from .base import (
@@ -100,6 +103,12 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.MODE_2,
             name="Switch 2 Mode",
             icon="mdi:information-slab-circle-outline",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.KNOB_SWITCH_MODE_1,
+            name="Knob Mode",
+            icon="mdi:knob",
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         *BATTERY_SENSORS,
     ),
@@ -645,6 +654,14 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.DIAGNOSTIC,
             custom_configs=localtuya_sensor("s"),
         ),
+        LocalTuyaEntity(
+            id=DPCode.ILLUMINANCE_VALUE,
+            name="Illuminance",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            device_class=SensorDeviceClass.ILLUMINANCE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(LIGHT_LUX),
+        ),
         *BATTERY_SENSORS,
     ),
     # PM2.5 Sensor
@@ -896,6 +913,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Illuminance",
             device_class=SensorDeviceClass.ILLUMINANCE,
             state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(LIGHT_LUX),
         ),
         *BATTERY_SENSORS,
     ),
@@ -1359,6 +1377,82 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:timer",
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
+        # Sensors 'Micro Inverter' ?
+        LocalTuyaEntity(
+            id=DPCode.PV_POWER,
+            name="PV Power",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfPower.WATT),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.EMISSION,
+            name="Emission",
+            device_class=SensorDeviceClass.WEIGHT,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfMass.KILOGRAMS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PV_VOLT,
+            name="PV Voltage",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TEMPERATURE,
+            name="Temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfTemperature.CELSIUS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.AC_CURRENT,
+            name="AC Current",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PV_CURRENT,
+            name="PV Current",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.AC_VOLT,
+            name="AC Voltage",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DAY_ENERGY,
+            name="Daily Consumption",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY,
+            name="Energy",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.OUT_POWER,
+            name="Out Power",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfPower.WATT),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PLANT,
+            name="Plant",
+            custom_configs=localtuya_sensor("pcs"),
+        ),
     ),
     # Soil sensor (Plant monitor)
     "zwjcy": (
@@ -1397,6 +1491,14 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         LocalTuyaEntity(
             id=DPCode.OTHEREVENT,
             name="Other Event",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+    ),
+    # Lock
+    "ms": (
+        LocalTuyaEntity(
+            id=DPCode.LOCK_MOTOR_STATE,
+            name="Motor State",
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
     ),
@@ -1469,6 +1571,25 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.ODU_FAN_SPEED,
             name="ODU Fan Speed",
             icon="mdi:fan",
+        ),
+    ),
+    # Ultrasonic level sensor
+    "ywcgq": (
+        LocalTuyaEntity(
+            id=DPCode.LIQUID_STATE,
+            name="State",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.LIQUID_DEPTH,
+            name="Depth",
+            icon="mdi:altimeter",
+            custom_configs=localtuya_sensor(UnitOfLength.METERS, 1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.LIQUID_LEVEL_PERCENT,
+            name="Level",
+            icon="mdi:altimeter",
+            custom_configs=localtuya_sensor(PERCENTAGE, 1),
         ),
     ),
 }

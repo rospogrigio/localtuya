@@ -122,10 +122,8 @@ def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=F
         return 0
     if reverse:
         value = from_upper - value + from_lower
-    mapped = (value - from_lower) * (to_upper - to_lower) / (
-        from_upper - from_lower
-    ) + to_lower
-    return round(min(max(mapped, to_lower), to_upper))
+    mapped = value * to_upper / from_upper
+    return min(max(round(mapped), to_lower), to_upper)
 
 
 def flow_schema(dps):
@@ -215,9 +213,15 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def brightness(self):
         """Return the brightness of the light."""
-        if self._brightness is not None and (self.is_color_mode or self.is_white_mode):
+        brightness = self._brightness
+        if brightness is not None and (self.is_color_mode or self.is_white_mode):
+            if self._upper_brightness >= 1000: 
+                # Round to the nearest 10th, since Tuya does that.
+                # If the value is less than 5, it will round down to 0.
+                # So instead, we take _lower_brightness, which is < 5 in this case.
+                brightness = (brightness + 5) // 10 * 10 if brightness >= 5 else self._lower_brightness
             return map_range(
-                self._brightness, self._lower_brightness, self._upper_brightness, 0, 255
+                brightness, self._lower_brightness, self._upper_brightness, 0, 255
             )
         return None
 
@@ -362,7 +366,9 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         return ColorMode.ONOFF
 
     def __is_color_rgb_encoded(self):
-        return len(self.dp_value(CONF_COLOR)) > 12
+        # for now we will prefer non encoded if color is none "added by manual or cloud pull dp"
+        color = self.dp_value(CONF_COLOR)
+        return False if color is None else len(color) > 12
 
     def __find_scene_by_scene_data(self, data):
         return next(
@@ -386,14 +392,17 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         color_modes = self.supported_color_modes
         brightness = None
         if ATTR_EFFECT in kwargs and (features & LightEntityFeature.EFFECT):
-            scene = self._scenes.get(kwargs[ATTR_EFFECT])
+            effect = kwargs[ATTR_EFFECT]
+            scene = self._scenes.get(effect)
             if scene is not None:
                 if scene.startswith(MODE_SCENE):
                     states[self._config.get(CONF_COLOR_MODE)] = scene
                 else:
                     states[self._config.get(CONF_COLOR_MODE)] = MODE_SCENE
                     states[self._config.get(CONF_SCENE)] = scene
-            elif kwargs[ATTR_EFFECT] == SCENE_MUSIC:
+            elif effect in (MODE_WHITE, MODE_COLOR, MODE_SCENE, MODE_MUSIC):
+                states[self._config.get(CONF_COLOR_MODE)] = effect
+            elif effect == SCENE_MUSIC:
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
 
         if ATTR_BRIGHTNESS in kwargs and (

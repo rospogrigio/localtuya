@@ -554,8 +554,9 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.PIR_SENSITIVITY,
+            icon="mdi:ray-start-arrow",
             entity_category=EntityCategory.CONFIG,
-            name="PIR sensitivity",
+            name="PIR Sensitivity",
             custom_configs=localtuya_selector({"0": "Low", "1": "Medium", "2": "High"}),
         ),
     ),
@@ -966,6 +967,24 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 {"mode_auto": "AUTO", "mode_on": "ON", "mode_off": "OFF"}
             ),
         ),
+        LocalTuyaEntity(
+            id=DPCode.PIR_SENSITIVITY,
+            icon="mdi:ray-start-arrow",
+            entity_category=EntityCategory.CONFIG,
+            name="PIR Sensitivity",
+            custom_configs=localtuya_selector(
+                {"low": "Low", "middle": "Middle", "high": "High"}
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PIR_TIME,
+            icon="mdi:timer-sand",
+            entity_category=EntityCategory.CONFIG,
+            name="Reset Time",
+            custom_configs=localtuya_selector(
+                {"30s": "30 Seconds", "60s": "60 Seconds", "120s": "120 Seconds"}
+            ),
+        ),
     ),
     # Thermostat
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
@@ -1241,6 +1260,16 @@ SELECTS["wxkg"] = (
             }
         ),
         condition_contains_any=["single_click", "double_click", "long_press"],
+    ),
+    LocalTuyaEntity(
+        id=DPCode.MODE,
+        name="Mode",
+        icon="mdi:cog",
+        entity_category=EntityCategory.CONFIG,
+        custom_configs=localtuya_selector(
+            {"remote_control": "Remote", "wireless_switch": "Wireless"}
+        ),
+        condition_contains_any=["remote_control", "wireless_switch"],
     ),
     *SELECTS["kg"],
 )

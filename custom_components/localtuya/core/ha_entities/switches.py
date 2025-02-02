@@ -925,6 +925,22 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Thermostat
+    # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
+    "wk": (
+        LocalTuyaEntity(
+            id=DPCode.CHILD_LOCK,
+            name="Child Lock",
+            icon="mdi:account-lock",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ECO,
+            name="ECO",
+            icon="mdi:sprout",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
 }
 
 # Scene Switch
@@ -939,7 +955,11 @@ SWITCHES["wxkg"] = SWITCHES["kg"]
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s
 SWITCHES["cz"] = SWITCHES["pc"]
 
-SWITCHES["wk"] = CHILD_LOCK
+# Climates / heaters
+SWITCHES["wkf"] = SWITCHES["wk"]
+SWITCHES["rs"] = SWITCHES["wk"]
+SWITCHES["qn"] = SWITCHES["wk"]
+SWITCHES["kt"] = SWITCHES["wk"]
 
 # Dehumidifier
 # https://developer.tuya.com/en/docs/iot/categorycs?id=Kaiuz1vcz4dha

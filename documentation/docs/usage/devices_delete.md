@@ -4,4 +4,4 @@
 2. On the device info panel, click on the :material-dots-vertical: and select on __delete__
 
 ???+ example "Example image"
-    ![](/images/delete_device.png)
+    ![](../images/delete_device.png)

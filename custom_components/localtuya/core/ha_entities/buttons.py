@@ -171,6 +171,14 @@ BUTTONS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:sleep",
         ),
     ),
+    "cz": (
+        LocalTuyaEntity(
+            id=DPCode.CLEAR_ENERGY,
+            name="Clear Energy",
+            icon="mdi:lightning-bolt-circle",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
 }
 
 # Wireless Switch  # also can come as knob switch.

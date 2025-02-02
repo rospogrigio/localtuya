@@ -39,8 +39,8 @@ async def async_get_config_entry_diagnostics(
         local_key = dev[CONF_LOCAL_KEY]
         local_key_obfuscated = obfuscate(local_key)
         dev[CONF_LOCAL_KEY] = local_key_obfuscated
-    data[CLOUD_DEVICES] = tuya_api.device_list
-    for dev_id, dev in data[CLOUD_DEVICES].copy().items():
+    data[CLOUD_DEVICES] = copy.deepcopy(tuya_api.device_list)
+    for dev_id, dev in data[CLOUD_DEVICES].items():
         for obf, obf_len in DATA_OBFUSCATE.items():
             if ob := data[CLOUD_DEVICES][dev_id].get(obf):
                 data[CLOUD_DEVICES][dev_id][obf] = obfuscate(ob, obf_len, obf_len)
@@ -61,7 +61,7 @@ async def async_get_device_diagnostics(
     hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
     tuya_api = hass_localtuya.cloud_data
     if dev_id in tuya_api.device_list:
-        data[DEVICE_CLOUD_INFO] = tuya_api.device_list[dev_id]
+        data[DEVICE_CLOUD_INFO] = copy.deepcopy(tuya_api.device_list[dev_id])
         for obf, obf_len in DATA_OBFUSCATE.items():
             if ob := data[DEVICE_CLOUD_INFO].get(obf):
                 data[DEVICE_CLOUD_INFO][obf] = obfuscate(ob, obf_len, obf_len)

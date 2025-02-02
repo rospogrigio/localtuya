@@ -102,6 +102,8 @@ class DPCode(StrEnum):
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
     """
 
+    AC_CURRENT = "ac_current"
+    AC_VOLT = "ac_volt"
     ADD_ELE = "add_ele"
     ADD_ELE1 = "add_ele1"
     ADD_ELE2 = "add_ele2"
@@ -168,6 +170,7 @@ class DPCode(StrEnum):
     CLEAN_AREA = "clean_area"
     CLEAN_RECORD = "clean_record"
     CLEAN_TIME = "clean_time"
+    CLEAR_ENERGY = "clear_energy"
     CLICK_SUSTAIN_TIME = "click_sustain_time"
     CLOSED_OPENED = "closed_opened"
     CLOSED_OPENED_KIT = "closed_opened_kit"
@@ -229,6 +232,7 @@ class DPCode(StrEnum):
     CUR_VOLTAGE1 = "cur_voltage1"
     CUR_VOLTAGE2 = "cur_voltage2"
     C_F = "c_f"  # Temperature unit switching
+    DAY_ENERGY = "day_energy"
     DECIBEL_SENSITIVITY = "decibel_sensitivity"
     DECIBEL_SWITCH = "decibel_switch"
     DEFROST = "defrost"
@@ -251,9 +255,12 @@ class DPCode(StrEnum):
     DOWN_CONFIRM = "down_confirm"  # cover reset.
     DO_NOT_DISTURB = "do_not_disturb"
     DUSTER_CLOTH = "duster_cloth"
+    ECO = "eco"
     ECO2 = "eco2"
     EDGE_BRUSH = "edge_brush"
     ELECTRICITY_LEFT = "electricity_left"
+    EMISSION = "emission"
+    ENERGY = "energy"
     ENERGY_A_CALIBRATION_FWD = "energy_a_calibration_fwd"
     ENERGY_A_CALIBRATION_REV = "energy_a_calibration_rev"
     ENERGY_B_CALIBRATION_FWD = "energy_b_calibration_fwd"
@@ -312,11 +319,15 @@ class DPCode(StrEnum):
     HUM_PERIODIC_REPORT = "hum_periodic_report"
     HUM_SENSITIVITY = "hum_sensitivity"
     IDU_ERROR = "idu_error"
+    ILLUMINANCE_VALUE = "illuminance_value"
     INNERDRY = "innerdry"
+    INSTALLATION_HEIGHT = "installation_height"
+    INTERVAL_TIME = "interval_time"
     IPC_WORK_MODE = "ipc_work_mode"
     IR_SEND = "ir_send"
     IR_STUDY_CODE = "ir_study_code"
     KEY_STUDY = "key_study"
+    KNOB_SWITCH_MODE_1 = "knob_switch_mode_1"
     LED_TYPE_1 = "led_type_1"
     LED_TYPE_2 = "led_type_2"
     LED_TYPE_3 = "led_type_3"
@@ -324,8 +335,13 @@ class DPCode(StrEnum):
     LEVEL_CURRENT = "level_current"
     LIGHT = "light"  # Light
     LIGHT_MODE = "light_mode"
+    LIQUID_DEPTH = "liquid_depth"
+    LIQUID_DEPTH_MAX = "liquid_depth_max"
+    LIQUID_LEVEL_PERCENT = "liquid_level_percent"
+    LIQUID_STATE = "liquid_state"
     LOADSTATUS = "loadstatus"
     LOCK = "lock"  # Lock / Child lock
+    LOCK_MOTOR_STATE = "lock_motor_state"
     LOWER_TEMP = "lower_temp"
     LOWER_TEMP_F = "lower_temp_f"
     LOWPROTECTVALUE = "lowprotectvalue"
@@ -339,9 +355,11 @@ class DPCode(StrEnum):
     MAXHUM_SET = "maxhum_set"
     MAXTEMP_SET = "maxtemp_set"
     MAX_HUMI = "max_humi"
+    MAX_SET = "max_set"
     MIDDLE_CONFIRM = "middle_confirm"  # cover reset.
     MINIHUM_SET = "minihum_set"
     MINITEMP_SET = "minitemp_set"
+    MINI_SET = "mini_set"
     MIN_HUMI = "min_humi"
     MOD = "mod"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MODE = "mode"  # Working mode / Mode
@@ -367,9 +385,11 @@ class DPCode(StrEnum):
     NET_STATE = "net_state"
     NORMAL_OPEN_SWITCH = "normal_open_switch"
     ODU_FAN_SPEED = "odu_fan_speed"
+    OPEN_CLOSE = "open_close"
     OPPOSITE = "opposite"
     OPTIMUMSTART = "optimumstart"
     OTHEREVENT = "OtherEvent"
+    OUT_POWER = "out_power"
     OVERCHARGE_SWITCH = "overcharge_switch"
     OXYGEN = "oxygen"  # Oxygen bar
     PAUSE = "pause"
@@ -387,6 +407,9 @@ class DPCode(StrEnum):
     PHOTO_MODE = "photo_mode"
     PIR = "pir"  # Motion sensor
     PIR_SENSITIVITY = "pir_sensitivity"
+    PIR_STATE = "pir_state"
+    PIR_TIME = "pir_time"
+    PLANT = "plant"
     PLAY_INFO = "play_info"
     PLAY_MODE = "play_mode"
     PLAY_TIME = "play_time"
@@ -404,6 +427,7 @@ class DPCode(StrEnum):
     POWER = "power"
     POWEREVENT = "PowerEvent"
     POWER_A = "power_a"
+    POWER_ADJUSTMENT = "power_adjustmen"
     POWER_A_CALIBRATION = "power_a_calibration"
     POWER_B = "power_b"
     POWER_B_CALIBRATION = "power_b_calibration"
@@ -425,6 +449,9 @@ class DPCode(StrEnum):
     PTZ_CONTROL = "ptz_control"
     PTZ_STOP = "ptz_stop"
     PUMP_RESET = "pump_reset"  # Water pump reset
+    PV_CURRENT = "pv_current"
+    PV_POWER = "pv_power"
+    PV_VOLT = "pv_volt"
     RECORD_MODE = "record_mode"
     RECORD_SWITCH = "record_switch"  # Recording switch
     RELAY_STATUS = "relay_status"
@@ -438,6 +465,7 @@ class DPCode(StrEnum):
     RELAY_STATUS_8 = "relay_status_8"  # Scene Switch cjkg
     REMAIN_TIME = "remain_time"
     REMOTE_REGISTER = "remote_register"
+    REMOTE_UNLOCK_SWITCH = "remote_unlock_switch"
     REPORT_PERIOD_SET = "report_period_set"
     REPORT_RATE_CONTROL = "report_rate_control"
     RESET_DUSTER_CLOTH = "reset_duster_cloth"
@@ -446,6 +474,7 @@ class DPCode(StrEnum):
     RESET_LIMIT = "reset_limit"
     RESET_MAP = "reset_map"
     RESET_ROLL_BRUSH = "reset_roll_brush"
+    RESIDUAL_ELECTRICITY = "residual_electricity"
     REVERSE_ENERGY_TOTAL = "reverse_energy_total"
     ROLL_BRUSH = "roll_brush"
     RUNNING_FAN_SPEED = "running_fan_speed"
@@ -571,10 +600,13 @@ class DPCode(StrEnum):
     SWITCH_WELCOME = "switch_welcome"
     SYNC_REQUEST = "sync_request"
     SYNC_RESPONSE = "sync_response"
+    SYSTEMMODE = "systemmode"
     TBD = "tbd"
     TEMP = "temp"  # Temperature setting
     TEMPACTIVATE = "tempactivate"
     TEMPCOMP = "tempcomp"
+    TEMPCURRENT = "tempcurrent"  # Current temperature in °C
+    TEMPERATURE = "temperature"
     TEMPER_ALARM = "temper_alarm"  # Tamper alarm
     TEMPFLOOR = "TempFloor"
     TEMPPROGRAM = "tempprogram"
@@ -585,12 +617,14 @@ class DPCode(StrEnum):
     TEMP_CURRENT = "temp_current"  # Current temperature in °C
     TEMP_CURRENT_F = "temp_current_f"  # Current temperature in °F
     TEMP_INDOOR = "temp_indoor"  # Indoor temperature in °C
+    TEMP_LOW = "temp_low"
     TEMP_PERIODIC_REPORT = "temp_periodic_report"
     TEMP_SENSITIVITY = "temp_sensitivity"
     TEMP_SET = "temp_set"  # Set the temperature in °C
     TEMP_SET_F = "temp_set_f"  # Set the temperature in °F
     TEMP_STATUS = "temp_status"
     TEMP_UNIT_CONVERT = "temp_unit_convert"  # Temperature unit switching
+    TEMP_UP = "temp_up"
     TEMP_VALUE = "temp_value"  # Color temperature
     TEMP_VALUE_V2 = "temp_value_v2"
     TIM = "tim"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)

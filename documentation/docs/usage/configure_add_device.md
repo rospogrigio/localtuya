@@ -15,8 +15,8 @@ After setting up the integration, you can now manage your devices by `adding` or
 Go to hub `Configure` (1) a menu will show up (2) Choose `Add new device`
 { .annotate }
 
-1. ![](/images/configure.png)
-2. "The `Reconfigure existing device` option will appear if there are devices that have already been set up."<br><br> ![](/images/options.png)
+1. ![](../images/configure.png)
+2. "The `Reconfigure existing device` option will appear if there are devices that have already been set up."<br><br> ![](../images/options.png)
 
 
 !!! Note "Discovery"
@@ -25,7 +25,7 @@ Go to hub `Configure` (1) a menu will show up (2) Choose `Add new device`
 1. Selecting `Add new device` will display a new page with the listed discovered devices (1) <br> Select the device you wish to configure, then click on `Submit`.
     {.annotate}
 
-    1. If the device is configured on a Tuya account, the ID will be replaced with the name. If not, it will remain as `... (IP)` <br><br> ![](/images/opt_add_devices.png)
+    1. If the device is configured on a Tuya account, the ID will be replaced with the name. If not, it will remain as `... (IP)` <br><br> ![](../images/opt_add_devices.png)
 
 2. `Configure device`: Fill in the fields that are still missing and are `required`<br>
 
@@ -92,12 +92,12 @@ This option will work for everyone, but it's more advanced.
 Each platform has its unique configuration page with different sets of configuration fields. <br> <br>
 {.annotate}
 
-    1. ![](/images/opt_configure_entity.png)
+    1. ![](../images/opt_configure_entity.png)
 
 2. Configure `switch platform` (1)
 {.annotate}
 
-    1. ![](/images/opt_configure_switch_ex.png)
+    1. ![](../images/opt_configure_switch_ex.png)
 
     !!! tip annotate "`DP` fields (1)"
         The DP fields will display all the DP IDs reported by the device along with their respective values (3)<br><br>
@@ -112,8 +112,8 @@ Each platform has its unique configuration page with different sets of configura
             Sometimes Devices don't report the all `DPS`, However `localtuya` will pull them if cloud is setup.<br>
             it's only recommended to use this `DPs` for button platform -->
 
-    1. ![](/images/dps_list_ex.png)
-    2. `DP 1` Switch 1 is `OFF` `[1st gang]` <br> `DP 2` Switch 2 is `OFF` `[2nd gang]` <br> `DP 7` Switch 1 Timer is `0` <br> `DP 8` Switch 2 Timer is `0` <br> <br> ![](/images/dps_list_ex.png)
+    1. ![](../images/dps_list_ex.png)
+    2. `DP 1` Switch 1 is `OFF` `[1st gang]` <br> `DP 2` Switch 2 is `OFF` `[2nd gang]` <br> `DP 7` Switch 1 Timer is `0` <br> `DP 8` Switch 2 Timer is `0` <br> <br> ![](../images/dps_list_ex.png)
     3. `Code only shows if cloud setup`
 
     Most DP fields are optional, but the __ID__ is always required. For example, select the Switch platform and set the ID to 1. 
@@ -122,7 +122,7 @@ Each platform has its unique configuration page with different sets of configura
 3. When submitting the first entity, if there are additional unconfigured DP IDs, it will prompt you to either complete the process or add more entities (1)
     {.annotate}
     
-    1. ![](/images/opt_configure_more.png)
+    1. ![](../images/opt_configure_more.png)
 
     !!! info ""
         I unchecked `Finish configuring entities` and repeated `step 2` to add another `switch` entity that controls `ID 2` <- `2nd Gang switch` 

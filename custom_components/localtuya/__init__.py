@@ -49,9 +49,6 @@ _LOGGER = logging.getLogger(__name__)
 
 UNSUB_LISTENER = "unsub_listener"
 
-RECONNECT_INTERVAL = timedelta(seconds=5)
-RECONNECT_TASK = "localtuya_reconnect_interval"
-
 CONF_DP = "dp"
 CONF_VALUE = "value"
 
@@ -378,9 +375,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             await asyncio.wait(connect_to_devices, return_when=asyncio.FIRST_COMPLETED)
 
     await setup_entities(entry.data[CONF_DEVICES])
-
-    # Add reconnect task.
-    reconnectTask(hass, entry)
     return True
 
 
@@ -467,26 +461,6 @@ async def async_remove_orphan_entities(hass, entry):
 
     for entity_id in entities.values():
         ent_reg.async_remove(entity_id)
-
-
-def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
-    """Add a task to reconnect to the devices if is not connected [interval: RECONNECT_INTERVAL]"""
-    hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
-
-    async def _async_reconnect(now):
-        """Try connecting to devices not already connected to."""
-        reconnect_devices = []
-        for host, dev in hass_localtuya.devices.items():
-            dev_id = dev._device_config.id
-            if check_if_device_disabled(hass, entry, dev_id):
-                return
-            # "async_connect" has to check if the device is already connected, then stop.
-            asyncio.create_task(dev.async_connect())
-
-    # Add unsub callbeack in unsub_listeners object.
-    hass_localtuya.unsub_listeners.append(
-        async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
-    )
 
 
 @callback

@@ -79,6 +79,8 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
 
         if isinstance(self._ordered_list, list) and len(self._ordered_list) > 1:
             self._use_ordered_list = True
+            # Assuming that the ordered list cannot be "int" type.
+            self._dps_type = str
             _LOGGER.debug(
                 "Fan _use_ordered_list: %s > %s",
                 self._use_ordered_list,

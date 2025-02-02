@@ -11,7 +11,6 @@ from collections.abc import Coroutine
 from typing import Any
 from copy import deepcopy
 
-from .core.helpers import templates, get_gateway_by_deviceid, gen_localtuya_entities
 
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.entity_registry as er
@@ -44,6 +43,8 @@ from homeassistant.const import (
 from homeassistant.core import callback
 
 from .coordinator import pytuya, TuyaCloudApi
+from .core.cloud_api import TUYA_ENDPOINTS
+from .core.helpers import templates, get_gateway_by_deviceid, gen_localtuya_entities
 from .const import (
     ATTR_UPDATED_AT,
     CONF_ADD_DEVICE,
@@ -130,9 +131,7 @@ def _col_to_select(
 
 CLOUD_CONFIGURE_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_REGION, default="eu"): _col_to_select(
-            ["eu", "us", "cn", "in"]
-        ),
+        vol.Required(CONF_REGION, default="eu"): _col_to_select(TUYA_ENDPOINTS),
         vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_CLIENT_SECRET): cv.string,
         vol.Optional(CONF_USER_ID): cv.string,
@@ -904,7 +903,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "invalid_auth"
             except EmptyDpsList:
                 errors["base"] = "empty_dps"
-            except (ValueError, pytuya.DecodeError) as ex:
+            except (OSError, ValueError, pytuya.DecodeError) as ex:
                 _LOGGER.debug("Unexpected exception: %s", ex)
                 placeholders["ex"] = str(ex)
                 errors["base"] = "unknown"
@@ -1546,6 +1545,9 @@ def strip_dps_values(user_input, dps_strings):
 
 async def validate_input(hass: core.HomeAssistant, entry_id, data):
     """Validate the user input allows us to connect."""
+    logger = pytuya.ContextualLogger()
+    logger.set_logger(_LOGGER, data[CONF_DEVICE_ID], True, data[CONF_FRIENDLY_NAME])
+
     detected_dps = {}
     error = None
     interface = None
@@ -1597,7 +1599,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                         break
 
                 # If connection to host is failed raise wrong address.
-                except (ValueError, pytuya.DecodeError) as ex:
+                except (OSError, ValueError, pytuya.DecodeError) as ex:
                     error = ex
                     break
                 except:
@@ -1613,13 +1615,13 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
             reset_ids = []
             for reset_id in reset_ids_str:
                 reset_ids.append(int(reset_id.strip()))
-            _LOGGER.debug(
+            logger.debug(
                 "Reset DPIDs configured: %s (%s)", data[CONF_RESET_DPIDS], reset_ids
             )
         try:
             # If reset dpids set - then assume reset is needed before status.
             if (reset_ids is not None) and (len(reset_ids) > 0):
-                _LOGGER.debug("Resetting command for DP IDs: %s", reset_ids)
+                logger.debug("Resetting command for DP IDs: %s", reset_ids)
                 # Assume we want to request status updated for the same set of DP_IDs as the reset ones.
                 interface.set_updatedps_list(reset_ids)
 
@@ -1633,16 +1635,16 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
         except (ValueError, pytuya.DecodeError) as ex:
             error = ex
         except Exception as ex:
-            _LOGGER.debug(f"No DPS able to be detected {ex}")
+            logger.debug(f"No DPS able to be detected {ex}")
             detected_dps = {}
 
         # if manual DPs are set, merge these.
         # detected_dps_device used to pervent user from bypass handshake manual dps.
         detected_dps_device = detected_dps.copy()
-        _LOGGER.debug("Detected DPS: %s", detected_dps)
+        logger.debug("Detected DPS: %s", detected_dps)
         if CONF_MANUAL_DPS in data:
             manual_dps_list = [dps.strip() for dps in data[CONF_MANUAL_DPS].split(",")]
-            _LOGGER.debug(
+            logger.debug(
                 "Manual DPS Setting: %s (%s)", data[CONF_MANUAL_DPS], manual_dps_list
             )
             # merge the lists
@@ -1657,7 +1659,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
 
     except (ConnectionRefusedError, ConnectionResetError) as ex:
         raise CannotConnect from ex
-    except (ValueError, pytuya.DecodeError) as ex:
+    except (OSError, ValueError, pytuya.DecodeError) as ex:
         error = ex
     finally:
         if interface and close:
@@ -1681,7 +1683,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     ):
         raise EmptyDpsList
 
-    _LOGGER.debug("Total DPS: %s", detected_dps)
+    logger.debug("Total DPS: %s", detected_dps)
     return {
         CONF_DPS_STRINGS: dps_string_list(detected_dps, cloud_dp_codes),
         CONF_PROTOCOL_VERSION: conf_protocol,

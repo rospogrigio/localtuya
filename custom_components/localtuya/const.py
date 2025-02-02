@@ -30,6 +30,7 @@ PLATFORMS = {
     "Fan": Platform.FAN,
     "Humidifier": Platform.HUMIDIFIER,
     "Light": Platform.LIGHT,
+    "Lock": Platform.LOCK,
     "Number": Platform.NUMBER,
     "Remote": Platform.REMOTE,
     "Select": Platform.SELECT,
@@ -37,6 +38,7 @@ PLATFORMS = {
     "Siren": Platform.SIREN,
     "Switch": Platform.SWITCH,
     "Vacuum": Platform.VACUUM,
+    "Water Heater": Platform.WATER_HEATER,
 }
 
 ATTR_CURRENT = "current"
@@ -186,6 +188,14 @@ CONF_OPTIONS_FRIENDLY = "select_options_friendly"
 # Remote
 CONF_RECEIVE_DP = "receive_dp"
 CONF_KEY_STUDY_DP = "key_study_dp"
+
+# Lock
+CONF_JAMMED_DP = "jammed_dp"
+CONF_LOCK_STATE_DP = "lock_state_dp"
+
+# Water Heater
+CONF_TARGET_TEMPERATURE_LOW_DP = "target_temperature_low_dp"
+CONF_TARGET_TEMPERATURE_HIGH_DP = "target_temperature_high_dp"
 
 # States
 ATTR_STATE = "raw_state"

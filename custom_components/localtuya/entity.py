@@ -3,7 +3,7 @@
 import logging
 from typing import Any
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from homeassistant.config_entries import ConfigEntry
 
 from homeassistant.const import (
@@ -135,6 +135,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self._status = {}
         self._state = None
         self._last_state = None
+        self._stored_states: State | None = None
         self._hass = device._hass
 
         # Default value is available to be provided by Platform entities if required
@@ -142,9 +143,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         """ Restore on connect setting is available to be provided by Platform entities
         if required"""
-        self.set_logger(
-            logger, self._device_config.id, self._device_config.enable_debug
-        )
+        dev = self._device_config
+        self.set_logger(logger, dev.id, dev.enable_debug, dev.name)
         self.debug(f"Initialized {self._config.get(CONF_PLATFORM)} [{self.name}]")
 
     async def async_added_to_hass(self):
@@ -155,19 +155,22 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         stored_data = await self.async_get_last_state()
         if stored_data:
+            self._stored_states = stored_data
             self.status_restored(stored_data)
 
         def _update_handler(new_status: dict | None):
             """Update entity state when status was updated."""
             status = self._status.clear() if new_status is None else new_status.copy()
 
-            if status == RESTORE_STATES and stored_data:
+            if status == RESTORE_STATES and stored_data and not self._status:
                 if stored_data.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN):
                     self.debug(f"{self.name}: Restore state: {stored_data.state}")
                     status[self._dp_id] = stored_data.state
 
             if self._status != status:
                 if status:
+                    # Pop the special DPs
+                    status.pop("0", None)
                     self._status.update(status)
                     self.status_updated()
 
@@ -231,7 +234,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def available(self) -> bool:
         """Return if device is available or not."""
-        return len(self._status) > 0
+        return (len(self._status) > 0) or self._device.connected
 
     @property
     def entity_category(self) -> str:
