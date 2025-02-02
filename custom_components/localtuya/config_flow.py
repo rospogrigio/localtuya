@@ -192,12 +192,15 @@ def mergeDevicesList(devList: dict, cloudList: dict, addSubDevices=True) -> dict
                     newList[f"Sub Device"] = _devID
                 else:
                     # Create a data for sub_device [cloud and local gateway] to merge it with discovered devices.
-                    local_GW = devList[gateway[0].get(CONF_ID)]
+                    if len(gateway) > 0:
+                        local_GW = devList[gateway[0].get(CONF_ID)]
+                    else:  # If we can't find the gateway we will pull data without local "ip"
+                        local_GW = cloudList[_devID]
                     dev_data = {
                         _devID: {
                             CONF_TUYA_IP: local_GW.get(CONF_TUYA_IP),
                             CONF_TUYA_GWID: _devID,
-                            CONF_TUYA_VERSION: local_GW.get(CONF_TUYA_VERSION),
+                            CONF_TUYA_VERSION: local_GW.get(CONF_TUYA_VERSION, "auto"),
                             CONF_NODE_ID: cloudList[_devID].get(CONF_NODE_ID, None),
                         }
                     }
@@ -349,25 +352,28 @@ async def validate_input(hass: core.HomeAssistant, data):
         auto_protocol = conf_protocol == "auto"
         # If 'auto' will be loop through supported protocols.
         for ver in SUPPORTED_PROTOCOL_VERSIONS:
-            version = ver if auto_protocol else conf_protocol
-            interface = await pytuya.connect(
-                data[CONF_HOST],
-                data[CONF_DEVICE_ID],
-                data[CONF_LOCAL_KEY],
-                float(version),
-                data[CONF_ENABLE_DEBUG],
-                data.get(CONF_NODE_ID, None),
-            )
-            # Break the loop if input isn't auto.
-            if not auto_protocol:
-                break
+            try:
+                version = ver if auto_protocol else conf_protocol
+                interface = await pytuya.connect(
+                    data[CONF_HOST],
+                    data[CONF_DEVICE_ID],
+                    data[CONF_LOCAL_KEY],
+                    float(version),
+                    data[CONF_ENABLE_DEBUG],
+                    data.get(CONF_NODE_ID, None),
+                )
+                # Break the loop if input isn't auto.
+                if not auto_protocol:
+                    break
 
-            detected_dps = await interface.detect_available_dps()
-            # If Auto: using DPS detected we will assume this is the correct version if dps found.
-            if len(detected_dps) > 0:
-                # Set the conf_protocol to the worked version to return it and update self.device_data.
-                conf_protocol = version
-                break
+                detected_dps = await interface.detect_available_dps()
+                # If Auto: using DPS detected we will assume this is the correct version if dps found.
+                if len(detected_dps) > 0:
+                    # Set the conf_protocol to the worked version to return it and update self.device_data.
+                    conf_protocol = version
+                    break
+            except:
+                continue
 
         if CONF_RESET_DPIDS in data:
             reset_ids_str = data[CONF_RESET_DPIDS].split(",")
@@ -725,6 +731,12 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
                             CONF_PRODUCT_NAME
                         )
+                    # We add from local devices if exists because keys will re_update without it.
+                    if dev_id in self.discovered_devices.keys():
+                        self.device_data[CONF_PRODUCT_KEY] = self.discovered_devices[
+                            dev_id
+                        ].get("productKey")
+                # Handle Inputs on edit device mode.
                 if self.editing_device:
                     dev_config = {}
                     if user_input.get(EXPORT_CONFIG):
@@ -851,7 +863,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 defaults[CONF_DEVICE_ID] = device.get(CONF_TUYA_GWID)
                 defaults[CONF_PROTOCOL_VERSION] = device.get(CONF_TUYA_VERSION)
                 defaults[CONF_NODE_ID] = device.get(CONF_NODE_ID, None)
-                defaults[CONF_PRODUCT_KEY] = device.get(CONF_PRODUCT_KEY)
 
                 if dev_id in cloud_devs:
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
