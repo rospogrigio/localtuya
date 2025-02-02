@@ -158,6 +158,6 @@ ENTITY_CATEGORY = {
 # Default Categories
 DEFAULT_CATEGORIES = {
     "CONTROL" : ['switch', 'climate','fan','vacuum','light'],
-    "CONFIG" : ['select','number'],
+    "CONFIG" : ['select','number','button'],
     "DIAGNOSTIC" : ['sensor','binary_sensor']
 }
