@@ -97,8 +97,13 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
     def device_found(self, device):
         """Discover a new device."""
-        if device.get("gwId") not in self.devices:
-            self.devices[device.get("gwId")] = device
+        gwid, ip = device.get("gwId"), device.get("ip")
+        # If device found but the ip changed.
+        if gwid in self.devices and (self.devices[gwid].get("ip") != ip):
+            self.devices.pop(gwid)
+
+        if gwid not in self.devices:
+            self.devices[gwid] = device
             # Sort devices by ip.
             sort_devices = sorted(
                 self.devices.items(), key=lambda i: inet_aton(i[1].get("ip", "0"))

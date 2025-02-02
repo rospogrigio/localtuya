@@ -343,7 +343,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     close = True
 
     cid = data.get(CONF_NODE_ID, None)
-    localtuya_devices = hass.data[DOMAIN][entry_id].tuya_devices
+    localtuya_devices = hass.data[DOMAIN][entry_id].devices
     try:
         conf_protocol = data[CONF_PROTOCOL_VERSION]
         auto_protocol = conf_protocol == "auto"
@@ -762,7 +762,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     dev_config: dict = self.config_entry.data[CONF_DEVICES].get(
                         dev_id, {}
                     )
-                    if user_input.get(EXPORT_CONFIG):
+                    if self.device_data.pop(EXPORT_CONFIG, False):
                         dev_config = self.config_entry.data[CONF_DEVICES][dev_id].copy()
                         templates.export_config(
                             dev_config, self.device_data[CONF_FRIENDLY_NAME]
@@ -777,7 +777,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         if rm_conf in user_input and user_input[rm_conf] in ["-", " "]:
                             self.device_data.pop(rm_conf)
 
-                    if user_input[CONF_ENABLE_ADD_ENTITIES]:
+                    if self.device_data.pop(CONF_ENABLE_ADD_ENTITIES, False):
                         self.editing_device = False
                         user_input[CONF_DEVICE_ID] = dev_id
                         self.device_data.update(
@@ -869,7 +869,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         placeholders = {
                             "for_device": f" for sub-device `{dev_id}.\nNodeID {self.nodeID}.{note}`"
                         }
-            defaults[CONF_ENABLE_ADD_ENTITIES] = False
             schema = schema_defaults(options_schema(self.entities), **defaults)
         else:
             # user_in will restore input if an error occurred instead of clears all fields.

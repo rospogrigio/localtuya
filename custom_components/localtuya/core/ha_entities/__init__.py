@@ -20,7 +20,8 @@
 
             If the configuration is not DPS, it will be inserted through "custom_configs". This is used to inject any configuration into the entity configuration
                 Example: custom_configs={"positioning_mode": "position"}. I hope that clarifies the concept
-        Check for more details at the URL above
+                
+        Check URL above for more details. 
 """
 
 import json
@@ -87,7 +88,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
             for ent_data in cat_data:
                 main_confs = ent_data.data
                 localtuya_conf = ent_data.localtuya_conf
-                entity_configs = ent_data.entity_configs
+                localtuya_entity_configs = ent_data.entity_configs
                 # Conditions
                 contains_any: list[str] = ent_data.contains_any
                 local_entity = {}
@@ -119,7 +120,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                 # Pull dp values from cloud. still unsure to apply this to all.
                 # This is due to the fact that some local values may not same with the values provided from cloud.
                 # For now, this is applied only to numbers values.
-                for k, v in entity_configs.items():
+                for k, v in localtuya_entity_configs.items():
                     if isinstance(v, CLOUD_VALUE):
                         config_dp = local_entity.get(v.dp_config)
                         pref_type = v.prefer_type
@@ -203,22 +204,19 @@ def scale(value: int, scale: int, _type: type = int) -> float:
     return _type(value) / (10**scale)
 
 
-def convert_list(_list: list, prefer_type: dict | list | str = str):
+def convert_list(_list: list, prefer_type: dict | str = str):
     """Return list to dict values."""
     if not _list:
         return ""
 
     if prefer_type == str:
         # Return str "value1,value2,value3"
-        to_str = ""
-        for i in _list:
-            to_str += f"{i},"
-        to_str = to_str[:-1]
+        to_str = ",".join(str(v) for v in _list)
         return to_str
 
     if prefer_type == dict:
-        # Return dict {value1: value1, value2: value2, value3: value3}
-        to_dict = {k: k.replace("_", " ").capitalize() for k in _list}
+        # Return dict {value_1: Value 1, value_2: Value 2, value_3: Value 3}
+        to_dict = {v: v.replace("_", " ").capitalize() for v in _list}
         return to_dict
 
     # otherwise return prefer type list

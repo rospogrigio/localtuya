@@ -365,6 +365,31 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_numbers(0, 360),
         ),
     ),
+    # PIR Detector
+    # https://developer.tuya.com/en/docs/iot/categorypir?id=Kaiuz3ss11b80
+    "pir": (
+        LocalTuyaEntity(
+            id=DPCode.SENS,
+            icon="mdi:signal-distance-variant",
+            entity_category=EntityCategory.CONFIG,
+            name="Sensitivity",
+            custom_configs=localtuya_numbers(0, 4),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TIM,
+            icon="mdi:signal-distance-variant",
+            entity_category=EntityCategory.CONFIG,
+            name="Hold Time",
+            custom_configs=localtuya_numbers(10, 900, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.LUX,
+            icon="mdi:brightness-6",
+            entity_category=EntityCategory.CONFIG,
+            name="Light level",
+            custom_configs=localtuya_numbers(0, 981, 1, 1, "lx"),
+        ),
+    ),
     # Robot Vacuum
     # https://developer.tuya.com/en/docs/iot/fsd?id=K9gf487ck1tlo
     "sd": (

@@ -605,6 +605,16 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # PIR Detector
+    # https://developer.tuya.com/en/docs/iot/categorypir?id=Kaiuz3ss11b80
+    "pir": (
+        LocalTuyaEntity(
+            id=DPCode.MOD_ON_TMR,
+            icon="mdi:timer-play",
+            entity_category=EntityCategory.CONFIG,
+            name="Timer",
+        ),
+    ),
     # Thermostatic Radiator Valve
     # Not documented
     "wkf": (

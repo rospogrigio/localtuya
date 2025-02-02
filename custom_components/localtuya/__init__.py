@@ -92,7 +92,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
             raise HomeAssistantError("unknown device id")
 
         host = entry.data[CONF_DEVICES][dev_id].get(CONF_HOST)
-        device: TuyaDevice = hass.data[DOMAIN][entry.entry_id].tuya_devices[host]
+        device: TuyaDevice = hass.data[DOMAIN][entry.entry_id].devices[host]
         if not device.connected:
             raise HomeAssistantError("not connected to device")
         value = event.data[CONF_VALUE]
@@ -278,7 +278,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
         # Connect to tuya devices.
         connect_to_devices = [
-            device.async_connect() for device in hass_localtuya.tuya_devices.values()
+            device.async_connect() for device in hass_localtuya.devices.values()
         ]
         # Update listener: add to unsub_listeners
         entry_update = entry.add_update_listener(update_listener)
@@ -300,7 +300,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     disconnect_devices = []
     hass_data: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
-    for dev in hass_data.tuya_devices.values():
+    for dev in hass_data.devices.values():
         disconnect_devices.append(dev.close())
         for entity in dev._device_config[CONF_ENTITIES]:
             platforms[entity[CONF_PLATFORM]] = True
@@ -350,7 +350,7 @@ async def async_remove_config_entry_device(
         return True
 
     # host = config_entry.data[CONF_DEVICES][dev_id][CONF_HOST]
-    # await hass.data[DOMAIN][config_entry.entry_id].tuya_devices[host].close()
+    # await hass.data[DOMAIN][config_entry.entry_id].devices[host].close()
 
     new_data = config_entry.data.copy()
     new_data[CONF_DEVICES].pop(dev_id)
@@ -372,7 +372,7 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
 
     async def _async_reconnect(now):
         """Try connecting to devices not already connected to."""
-        for host, dev in hass_localtuya.tuya_devices.items():
+        for host, dev in hass_localtuya.devices.items():
             if not dev.connected:
                 entry.async_create_background_task(
                     hass, dev.async_connect(), f"reconnect_{host}"

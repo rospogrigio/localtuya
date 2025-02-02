@@ -1,10 +1,10 @@
 # Auto configure devices
 Localtuya can disocver you device entities if cloud is enable because the feature at the moment rely on `DP code` and [Devices Category](https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq#title-6-List%20of%20category%20code){target="_blank"}.
 
-By known the `category` we use that to get all the possible entities from stored data.<br> Data stored in `/localtuya/core/tuya_devices` (1)
+By known the `category` we use that to get all the possible entities from stored data.<br> Data stored in `/localtuya/core/ha_entities` (1)
 {.annotate}
 
-1. Files are named with entities type <br> <br> ![](images/dev/tuya_devices_dir.png)
+1. Files are named with entities type <br> <br> ![](images/dev/ha_entities_dir.png)
 
 ??? info "DPCodes data"
     All known `Codes` are stored in `base.py` in `DPCode Class`. <br>
@@ -25,7 +25,7 @@ By known the `category` we use that to get all the possible entities from stored
 
 _Now that we know the device `category` and `Codes` we can start add the entities._
 
-In `/localtuya/core/tuya_devices` open the file named with `entity type` you want to add.<br>
+In `/localtuya/core/ha_entities` open the file named with `entity type` you want to add.<br>
 All files contains `constant dict` (1) includes all known `categories` and possible entites.<br>
 {.annotate}
 

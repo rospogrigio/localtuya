@@ -10,27 +10,24 @@ from homeassistant.const import (
     Platform,
     EntityCategory,
 )
+from ...const import CONF_CLEAN_AREA_DP, CONF_DPS_STRINGS, CONF_STATE_CLASS
 
 
 # Obtain values from cloud data.
 @dataclass
 class CLOUD_VALUE:
-    """Retrieve a value from stored cloud data"""
+    """Retrieve a value from stored cloud data
+
+    `default_value`: The value that will be used if it fails to retrieve from the cloud.\n
+    `dp_config(str)`: The dp config key that will be used to look for the values into it.\n
+    `value_key(str)`: The "key" name of the targeted value.\n
+    `prefer_type(dict | str)`: Used for enums to convert the values to [dict or str splitted by comma, default is list].
+    """
 
     default_value: Any
     dp_config: str
     value_key: str
     prefer_type: type = None
-
-
-from ...const import CONF_CLEAN_AREA_DP, CONF_DPS_STRINGS, CONF_STATE_CLASS
-
-
-def update_dict(dict: dict, new_data: dict):
-    """update dict values"""
-    data = dict
-    data.update(new_data)
-    return data
 
 
 class LocalTuyaEntity:
@@ -261,13 +258,17 @@ class DPCode(StrEnum):
     LOCK = "lock"  # Lock / Child lock
     LOWPROTECTVALUE = "lowprotectvalue"
     LOW_POWER_THRESHOLD = "low_power_threshold"
+    LUX = "lux"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MACH_OPERATE = "mach_operate"
     MANUAL_FEED = "manual_feed"
     MASTER_MODE = "master_mode"  # alarm mode
     MASTER_STATE = "master_state"  # alarm mode
     MATERIAL = "material"  # Material
     MIDDLE_CONFIRM = "middle_confirm"  # cover reset.
+    MOD = "mod"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MODE = "mode"  # Working mode / Mode
+    MOD_ON_TMR = "mod_on_tmr"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
+    MOD_ON_TMR_CD = "mod_on_tmr_cd"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MOODLIGHTING = "moodlighting"  # Mood light
     MOTION_INTERVAL = "motion_interval"
     MOTION_RECORD = "motion_record"
@@ -365,6 +366,7 @@ class DPCode(StrEnum):
     SCENE_DATA = "scene_data"  # Colored light mode
     SCENE_DATA_V2 = "scene_data_v2"  # Colored light mode
     SEEK = "seek"
+    SENS = "sens"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     SENSITIVITY = "sensitivity"  # Sensitivity
     SENSORTYPE = "sensortype"
     SENSOR_HUMIDITY = "sensor_humidity"
@@ -386,6 +388,7 @@ class DPCode(StrEnum):
     SPEED = "speed"  # Speed level
     SPRAY_MODE = "spray_mode"  # Spraying mode
     SPRAY_VOLUME = "spray_volume"  # Dehumidifier
+    STA = "sta"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     START = "start"  # Start
     STATUS = "status"
     STERILIZATION = "sterilization"  # Sterilization
@@ -450,6 +453,7 @@ class DPCode(StrEnum):
     TEMP_UNIT_CONVERT = "temp_unit_convert"  # Temperature unit switching
     TEMP_VALUE = "temp_value"  # Color temperature
     TEMP_VALUE_V2 = "temp_value_v2"
+    TIM = "tim"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     TIME_TOTAL = "time_total"
     TOTAL_CLEAN_AREA = "total_clean_area"
     TOTAL_CLEAN_COUNT = "total_clean_count"

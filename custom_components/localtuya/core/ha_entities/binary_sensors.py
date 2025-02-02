@@ -254,6 +254,11 @@ BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=BinarySensorDeviceClass.MOTION,
             custom_configs={CONF_STATE_ON: "pir"},
         ),
+        LocalTuyaEntity(
+            id=DPCode.STA,
+            device_class=BinarySensorDeviceClass.MOTION,
+            custom_configs={CONF_STATE_ON: "true"},
+        ),
         TAMPER_BINARY_SENSOR,
     ),
     # PM2.5 Sensor
