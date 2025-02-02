@@ -170,6 +170,7 @@ CONF_OPTIONS_FRIENDLY = "select_options_friendly"
 
 # Remote
 CONF_RECEIVE_DP = "receive_dp"
+CONF_KEY_STUDY_DP = "key_study_dp"
 
 # States
 ATTR_STATE = "raw_state"

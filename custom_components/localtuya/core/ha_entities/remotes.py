@@ -25,6 +25,7 @@ REMOTES: dict[str, tuple[LocalTuyaEntity, ...]] = {
         LocalTuyaEntity(
             id=DPCode.IR_SEND,
             receive_dp=DPCode.IR_STUDY_CODE,
+            key_study_dp=DPCode.KEY_STUDY,
         ),
     ),
 }

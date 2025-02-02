@@ -30,7 +30,7 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import Store
 
 from .common import LocalTuyaEntity, async_setup_entry
-from .const import CONF_RECEIVE_DP
+from .const import CONF_RECEIVE_DP, CONF_KEY_STUDY_DP
 
 NSDP_CONTROL = "control"  # The control commands
 NSDP_TYPE = "type"  # The identifier of an IR library
@@ -41,9 +41,15 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ControlType(StrEnum):
+    ENUM = "Enum"
+    JSON = "Json"
+
+
+class ControlMode(StrEnum):
     SEND_IR = "send_ir"
     STUDY = "study"
     STUDY_EXIT = "study_exit"
+    STUDY_KEY = "study_key"
 
 
 class RemoteDP(StrEnum):
@@ -61,6 +67,7 @@ def flow_schema(dps):
         vol.Optional(
             CONF_RECEIVE_DP, default=RemoteDP.DP_RECIEVE.value
         ): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_KEY_STUDY_DP): _col_to_select(dps, is_dps=True),
     }
 
 
@@ -79,6 +86,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
         self._dp_send = str(self._config.get(self._dp_id, RemoteDP.DP_SEND))
         self._dp_recieve = str(self._config.get(CONF_RECEIVE_DP, RemoteDP.DP_RECIEVE))
+        self._dp_key_study = self._config.get(CONF_KEY_STUDY_DP)
 
         self._device_id = self._device_config.id
 
@@ -97,6 +105,13 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         self._attr_supported_features = (
             RemoteEntityFeature.LEARN_COMMAND | RemoteEntityFeature.DELETE_COMMAND
         )
+
+    @property
+    def _ir_control_type(self):
+        if self.has_config(CONF_KEY_STUDY_DP):
+            return ControlType.ENUM
+        else:
+            return ControlType.JSON
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn on the remote."""
@@ -140,13 +155,13 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             if repeats:
                 current_repeat = 0
                 while current_repeat < repeats:
-                    await self.send_signal(ControlType.SEND_IR, base64_code)
+                    await self.send_signal(ControlMode.SEND_IR, base64_code)
                     if repeats_delay:
                         await asyncio.sleep(repeats_delay)
                     current_repeat += 1
                 continue
 
-            await self.send_signal(ControlType.SEND_IR, base64_code)
+            await self.send_signal(ControlMode.SEND_IR, base64_code)
 
     async def async_learn_command(self, **kwargs: Any) -> None:
         """Learn a command from a device."""
@@ -168,7 +183,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
         for command in commands:
             last_code = self._last_code
-            await self.send_signal(ControlType.STUDY)
+            await self.send_signal(ControlMode.STUDY)
             persistent_notification.async_create(
                 self.hass,
                 f"Press the '{command}' button.",
@@ -181,14 +196,14 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
                     if last_code != (dp_code := self.dp_value(RemoteDP.DP_RECIEVE)):
                         self._last_code = dp_code
                         sucess = True
-                        await self.send_signal(ControlType.STUDY_EXIT)
+                        await self.send_signal(ControlMode.STUDY_EXIT)
                         break
 
                     now += 1
                     await asyncio.sleep(1)
 
                 if not sucess:
-                    await self.send_signal(ControlType.STUDY_EXIT)
+                    await self.send_signal(ControlMode.STUDY_EXIT)
                     raise ServiceValidationError(f"Failed to learn: {command}")
 
             finally:
@@ -219,14 +234,24 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             await self._delete_command(device, command)
 
     async def send_signal(self, control, base64_code=None):
-        command = {NSDP_CONTROL: control}
+        if self._ir_control_type == ControlType.ENUM:
+            command = {self._dp_id: control}
+            if control == ControlMode.SEND_IR:
+                command[self._dp_id] = ControlMode.STUDY_KEY.value
+                command[self._dp_key_study] = base64_code
 
-        if control == ControlType.SEND_IR:
-            command[NSDP_TYPE] = 0
-            command[NSDP_HEAD] = ""
-            command[NSDP_KEY1] = base64_code
+        else:
+            command = {NSDP_CONTROL: control}
 
-        await self._device.set_dp(json.dumps(command), self._dp_send)
+            if control == ControlMode.SEND_IR:
+                command[NSDP_TYPE] = 0
+                command[NSDP_HEAD] = ""  # also known as ir_code
+                command[NSDP_KEY1] = base64_code  # also code: key_code
+
+            command = {self._dp_id: json.dumps(command)}
+
+        _LOGGER.debug(f"Sending: {command}")
+        await self._device.set_dps(command)
 
     async def _delete_command(self, device, command) -> None:
         """Store new code into stoarge."""
@@ -238,7 +263,9 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             devices_data = codes_data[ir_controller]
 
         if device not in devices_data:
-            raise ServiceValidationError(f"Couldn't find the device: {device}.")
+            raise ServiceValidationError(
+                f"Couldn't find the device: {device} available devices is on this IR Remote is: {list(devices_data)}."
+            )
 
         commands = devices_data[device]
         if command not in commands:
@@ -299,7 +326,9 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             devices_data = codes_data[ir_controller]
 
         if device not in devices_data:
-            raise ServiceValidationError(f"Couldn't find the device: {device}.")
+            raise ServiceValidationError(
+                f"Couldn't find the device: {device} available devices is on this IR Remote is: {list(devices_data)}."
+            )
 
         commands = devices_data[device]
         if command not in commands:

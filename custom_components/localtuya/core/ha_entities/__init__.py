@@ -103,10 +103,11 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                     if type(code) == Enum:
                         code = code.value
 
+                    # If there's multi possible codes.
                     if isinstance(code, tuple):
-                        for dp_code in code:
-                            if any(dp_code in dps.split() for dps in detected_dps):
-                                code = parse_enum(dp_code)
+                        for _code in code:
+                            if any(_code in dp.lower().split() for dp in detected_dps):
+                                code = parse_enum(_code)
                                 break
                             else:
                                 code = None

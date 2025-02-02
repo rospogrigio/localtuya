@@ -310,6 +310,7 @@ class DPCode(StrEnum):
     IPC_WORK_MODE = "ipc_work_mode"
     IR_SEND = "ir_send"
     IR_STUDY_CODE = "ir_study_code"
+    KEY_STUDY = "key_study"
     LED_TYPE_1 = "led_type_1"
     LED_TYPE_2 = "led_type_2"
     LED_TYPE_3 = "led_type_3"

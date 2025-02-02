@@ -238,7 +238,8 @@
                     "min_humidity": "Ustaw minimalną obsługiwaną wilgotność",
                     "max_humidity": "Ustaw maksymalną obsługiwaną wilgotność",
                     "alarm_supported_states": "States supported by the device",
-                    "receive_dp":"Receiving signals DP. (default is 202)"
+                    "receive_dp":"Receiving signals DP. (default is 202)",
+                    "key_study_dp":"(Optional) Key Study DP (usually 7)"
                 },
                 "data_description": {
                     "hvac_mode_set":"Każda linia reprezentuje [ hvac_mode: device_value ] [Obsługiwane tryby HVAC](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",

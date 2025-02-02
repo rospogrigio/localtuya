@@ -437,7 +437,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
             for new_dps in manual_dps_list + (reset_ids or []):
                 # If the DPS not in the detected dps list, then add with a
                 # default value indicating that it has been manually added
-                if str(new_dps) not in detected_dps:
+                if str(new_dps) not in detected_dps and not str(new_dps) == "0":
                     detected_dps[new_dps] = -1
 
     except (ConnectionRefusedError, ConnectionResetError) as ex:
@@ -1160,10 +1160,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         used_dps = [str(entity[CONF_ID]) for entity in self.entities]
         for dp_string in self.dps_strings:
             dp = dp_string.split(" ")[0]
-            # 0 Is only using to bypass status check.
-            if dp == "0":
-                continue
-
             if dp not in used_dps:
                 available_dps.append(dp_string)
         return available_dps
