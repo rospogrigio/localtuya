@@ -1,4 +1,5 @@
 """Diagnostics support for LocalTuya."""
+
 from __future__ import annotations
 
 import copy
@@ -19,6 +20,8 @@ DEVICE_CLOUD_INFO = "device_cloud_info"
 
 _LOGGER = logging.getLogger(__name__)
 
+DATA_OBFUSCATE = {"ip": 1, "uid": 3, CONF_LOCAL_KEY: 3, "lat": 0, "lon": 0}
+
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
@@ -37,12 +40,10 @@ async def async_get_config_entry_diagnostics(
         local_key_obfuscated = obfuscate(local_key)
         dev[CONF_LOCAL_KEY] = local_key_obfuscated
     data[CLOUD_DEVICES] = tuya_api.device_list
-    for dev_id, dev in data[CLOUD_DEVICES].items():
-        local_key = data[CLOUD_DEVICES][dev_id][CONF_LOCAL_KEY]
-        local_key_obfuscated = obfuscate(local_key)
-        if ip := data[CLOUD_DEVICES][dev_id].get("ip"):
-            data[CLOUD_DEVICES][dev_id]["ip"] = obfuscate(ip, 1, 1)
-        data[CLOUD_DEVICES][dev_id][CONF_LOCAL_KEY] = local_key_obfuscated
+    for dev_id, dev in data[CLOUD_DEVICES].copy().items():
+        for obf, obf_len in DATA_OBFUSCATE.items():
+            if ob := data[CLOUD_DEVICES][dev_id].get(obf):
+                data[CLOUD_DEVICES][dev_id][obf] = obfuscate(ob, obf_len, obf_len)
     return data
 
 
@@ -61,8 +62,9 @@ async def async_get_device_diagnostics(
     tuya_api = hass_localtuya.cloud_data
     if dev_id in tuya_api.device_list:
         data[DEVICE_CLOUD_INFO] = tuya_api.device_list[dev_id]
-        if ip := data[DEVICE_CLOUD_INFO].get("ip"):
-            data[DEVICE_CLOUD_INFO]["ip"] = obfuscate(ip, 1, 1)
+        for obf, obf_len in DATA_OBFUSCATE.items():
+            if ob := data[DEVICE_CLOUD_INFO].get(obf):
+                data[DEVICE_CLOUD_INFO][obf] = obfuscate(ob, obf_len, obf_len)
         # NOT censoring private information on device diagnostic data
         # local_key = data[DEVICE_CLOUD_INFO][CONF_LOCAL_KEY]
         # local_key_obfuscated = "{local_key[0:3]}...{local_key[-3:]}"
@@ -74,4 +76,7 @@ async def async_get_device_diagnostics(
 
 def obfuscate(key, start_characters=3, end_characters=3) -> str:
     """Return obfuscated text by removing characters between [start_characters and end_characters]"""
+    if start_characters <= 0 and end_characters <= 0:
+        return ""
+
     return f"{key[0:start_characters]}...{key[-end_characters:]}"

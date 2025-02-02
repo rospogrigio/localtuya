@@ -23,8 +23,8 @@ REMOTES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # not documented
     "wnykq": (
         LocalTuyaEntity(
-            id=DPCode.IR_SEND,
-            receive_dp=DPCode.IR_STUDY_CODE,
+            id=(DPCode.IR_SEND, DPCode.CONTROL),
+            receive_dp=(DPCode.IR_STUDY_CODE, DPCode.STUDY_CODE),
             key_study_dp=DPCode.KEY_STUDY,
         ),
     ),

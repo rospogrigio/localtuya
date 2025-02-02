@@ -264,7 +264,9 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
 
     # Merge DPs that found through cloud with local.
     for dp, func in cloud_dp_codes.items():
-        if dp not in dps_data and (value := str(func.get("value"))):
+        # Default Manual dp value is -1, we will replace it if it in cloud.
+        add_dp = dp not in dps_data or dps_data.get(dp) == -1
+        if add_dp and (value := str(func.get("value"))):
             dps_data[dp] = f"{value}, cloud pull"
 
     for dp, value in dps_data.items():
@@ -353,6 +355,8 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
     interface = None
     reset_ids = None
     close = True
+    bypass_connection = False  # On users risk, only used for low-power power devices
+    bypass_handshake = False  # In-case device is passive.
 
     cid = data.get(CONF_NODE_ID, None)
     localtuya_devices = hass.data[DOMAIN][entry_id].devices
@@ -398,6 +402,10 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                     raise ValueError(ex)
                 except:
                     continue
+                finally:
+                    if not auto_protocol and data.get(CONF_DEVICE_SLEEP_TIME, 0) > 0:
+                        bypass_connection = True
+
         if CONF_RESET_DPIDS in data:
             reset_ids_str = data[CONF_RESET_DPIDS].split(",")
             reset_ids = []
@@ -427,6 +435,8 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
             detected_dps = {}
 
         # if manual DPs are set, merge these.
+        # detected_dps_device used to pervent user from bypass handshake manual dps.
+        detected_dps_device = detected_dps.copy()
         _LOGGER.debug("Detected DPS: %s", detected_dps)
         if CONF_MANUAL_DPS in data:
             manual_dps_list = [dps.strip() for dps in data[CONF_MANUAL_DPS].split(",")]
@@ -437,7 +447,10 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
             for new_dps in manual_dps_list + (reset_ids or []):
                 # If the DPS not in the detected dps list, then add with a
                 # default value indicating that it has been manually added
-                if str(new_dps) not in detected_dps and not str(new_dps) == "0":
+                if str(new_dps) == "0":
+                    bypass_handshake = True
+                    continue
+                if str(new_dps) not in detected_dps:
                     detected_dps[new_dps] = -1
 
     except (ConnectionRefusedError, ConnectionResetError) as ex:
@@ -450,20 +463,25 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
         if interface and close:
             await interface.close()
 
-    # Indicate an error if no datapoints found as the rest of the flow
-    # won't work in this case
-    if error:
-        raise ValueError(error)
-    if not detected_dps:
-        raise EmptyDpsList
-
-    _LOGGER.debug("Total DPS: %s", detected_dps)
     # Get DP descriptions from the cloud, if the device is there.
     cloud_dp_codes = {}
     cloud_data: TuyaCloudApi = hass.data[DOMAIN][entry_id].cloud_data
     if device_cloud_data := cloud_data.device_list.get(data[CONF_DEVICE_ID]):
         cloud_dp_codes = device_cloud_data.get("dps_data", {})
 
+    # Indicate an error if no datapoints found as the rest of the flow
+    # won't work in this case
+    if not bypass_connection and error:
+        raise ValueError(error)
+    # If bypass handshake. otherwise raise faild to make handshake with device.
+    # --- Cloud: We will use the DPS found on cloud if exists.
+    # --- No cloud: user will have to input the DPS manually.
+    if not detected_dps_device and not (
+        (cloud_dp_codes or detected_dps) and bypass_handshake
+    ):
+        raise EmptyDpsList
+
+    _LOGGER.debug("Total DPS: %s", detected_dps)
     return {
         CONF_DPS_STRINGS: dps_string_list(detected_dps, cloud_dp_codes),
         CONF_PROTOCOL_VERSION: conf_protocol,

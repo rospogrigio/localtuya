@@ -192,8 +192,9 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             )
 
             try:
+                self.debug(f"Waiting for code from DP: {self._dp_recieve}")
                 while now < timeout:
-                    if last_code != (dp_code := self.dp_value(RemoteDP.DP_RECIEVE)):
+                    if last_code != (dp_code := self.dp_value(self._dp_recieve)):
                         self._last_code = dp_code
                         sucess = True
                         await self.send_signal(ControlMode.STUDY_EXIT)
@@ -250,7 +251,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
 
             command = {self._dp_id: json.dumps(command)}
 
-        _LOGGER.debug(f"Sending: {command}")
+        self.debug(f"Sending IR Command: {command}")
         await self._device.set_dps(command)
 
     async def _delete_command(self, device, command) -> None:

@@ -63,7 +63,6 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 RESTORE_STATES = {"0": "restore"}
-BYPASS_STATUS = {"0": "bypass"}
 
 
 async def async_setup_entry(
@@ -364,7 +363,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 await asyncio.gather(*connect_sub_devices)
 
             if "0" in self._device_config.manual_dps.split(","):
-                self.status_updated(BYPASS_STATUS)
+                self.status_updated(RESTORE_STATES)
 
             if self._pending_status:
                 await self.set_dps(self._pending_status)
@@ -573,7 +572,9 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         """ Restore on connect setting is available to be provided by Platform entities
         if required"""
-        self.set_logger(logger, self._device_config.id)
+        self.set_logger(
+            logger, self._device_config.id, self._device_config.enable_debug
+        )
         self.debug(f"Initialized {self._config.get(CONF_PLATFORM)} [{self.name}]")
 
     async def async_added_to_hass(self):
@@ -592,11 +593,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
                 status = {}
             if self._status != status:
                 if status == RESTORE_STATES:
-                    status = {}
                     if stored_data and stored_data.state != STATE_UNAVAILABLE:
                         self.debug(f"{self.name}: restore state: {stored_data.state}")
-                        status = {self._dp_id: stored_data.state}
+                        status[self._dp_id] = stored_data.state
                 self._status = status.copy()
+
                 if status:
                     self.status_updated()
 

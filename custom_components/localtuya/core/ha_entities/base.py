@@ -494,6 +494,7 @@ class DPCode(StrEnum):
     STERILIZATION = "sterilization"  # Sterilization
     STRIP_DIRECTION = "strip_direction"
     STRIP_INPUT_POS = "strip_input_pos"
+    STUDY_CODE = "study_code"
     SUB_CLASS = "sub_class"
     SUB_STATE = "sub_state"
     SUB_TYPE = "sub_type"
