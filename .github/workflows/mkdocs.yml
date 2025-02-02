@@ -2,6 +2,7 @@ name: "MkDocs"
 
 on:
   push:
+    branches: [master, dev]
     paths:
       - .github/workflows/mkdocs.yml
       - documentation/**

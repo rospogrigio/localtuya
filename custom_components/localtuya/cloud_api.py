@@ -211,8 +211,8 @@ class TuyaCloudApi:
         if query_props[1] == "ok":
             device_data = {str(p["dp_id"]): p for p in query_props[0].get("properties")}
         if specs[1] == "ok":
-            for func in specs[0].get("functions"):
-                if str(func["dp_id"]) in device_data:
+            for func in specs[0].get("functions", {}):
+                if str(func.get("dp_id")) in device_data:
                     device_data[str(func["dp_id"])].update(func)
 
         if device_data:

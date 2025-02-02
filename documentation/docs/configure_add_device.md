@@ -8,7 +8,7 @@
     [TinyTuya](https://pypi.org/project/tinytuya/.){target=_blank}, 
     or [MarkVideo](https://www.youtube.com/watch?v=YKvGYXw-_cE){target=_blank}.
 
-    !!! failure ""
+    !!! danger "Important"
         Before adding any device, ensure that `Smart Life` and `Tuya Smart` apps are closed on your phones. Devices shouldn't be added to different local integrations as __some__ Tuya devices can only accept one local connection at a time.
 
 After setting up the integration, you can now manage your devices by `adding` or `editing`<br>
@@ -68,28 +68,28 @@ Go to hub `Configure` (1) a menu will show up (2) Choose `Add new device`
 
 ### Configure device methods
 !!! Abstract "How does localtuya work"
-    Before configuring device entities, this is how `LocalTuya` control devices: Tuya devices encompass various functions like Switch 1, Switch 2, and more, each identified by a DP ID. LocalTuya configures entities by utilizing and managing the function values using their respective DP IDs.<br>
-    __LocalTuya will pull these functions for you to set them up as Home Assistant entities__
+    Before setting up device entities, let me explain how `LocalTuya` control devices: Tuya devices have different functions such as Switch 1, Switch 2, and more, each identified by a DP ID. `LocalTuya` configures entities by using and managing the function values using their respective DP IDs.<br>
+    _LocalTuya will pull these functions for you to set them up as Home Assistant entities_
 
 #### Discover device entities automatically 
-??? info "Discover device entities automatically"
+!!! quote ""
     Automatic setup is only supported for CloudAPI setup.<br>
-    It's possible to tweak the entities config later after auto configure.
+    Note: It's possible to tweak the entities config later after auto configure.
 
 <br>
 
 #### Configure device entities manually
 !!! note ""
-    The example below uses a `2 Gang Tuya Switch`
+    Below, I used `2 Gang Tuya Switch` as an example
 This option will work for everyone, but it's more advanced.
 
 1. Selecting the manual setup option will bring up a new page listing supported platforms `platforms` (1)
-Each platform features its unique configuration page with different sets of configuration fields. <br> <br>
+Each platform has its unique configuration page with different sets of configuration fields. <br> <br>
 {.annotate}
 
     1. ![](images/opt_configure_entity.png)
 
-2. Configure `switch` (1). You can modify all fields later, except for the `ID`
+2. Configure `switch platform` (1)
 {.annotate}
 
     1. ![](images/opt_configure_switch_ex.png)
@@ -122,7 +122,7 @@ Each platform features its unique configuration page with different sets of conf
     !!! info ""
         I unchecked `Finish configuring entities` and repeated `step 2` to add another `switch` entity that controls `ID 2` <- `2nd Gang switch` 
 
-4. After completing the addition of entities, check 'Finish configuring entities' and submit to add your device and entities
+4. After completing the addition of entities, check `Finish configuring entities` and submit to add your device and entities
 <br>
 
 #### Use saved template

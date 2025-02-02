@@ -12,26 +12,27 @@ By known the `category` we use that to get all the possible entities from stored
 
 
 !!! tip annotate "How to get the `Codes and DP`"
-    You can download your devices data from HA using `Download diagnostics`
+    You can download your device data your `Home Assistant` by `Downloading Diagnostics`.
 
-    1. Download device diagnostics `localtuya` from device page. (1) `file -> device_cloud_info`
-    2. Download entry diagnostics `note: contains all devices data` (2) `file -> cloud_devices`
+    1. Download `device` diagnostics `localtuya` from device page. (1) `file -> device_cloud_info`
+    2. Or download `entry` diagnostics `note: contains all devices data` (2) `file -> cloud_devices`
 
     Inside downloaded `txt file`, in `cloud_data object` look for your `device -> dps_data`
 
 1. ![](images/dev/device_diagnostics.png)
 2. ![](images/dev/entry_diagnostics.png)
 
-__Now that we know the device `category` and `Codes` we can start add the entities.__
+_Now that we know the device `category` and `Codes` we can start add the entities._
 
 In `/localtuya/core/tuya_devices` open the file named with `entity type` you want to add.<br>
-All files contain `constant dict` contains all known `categories` (1).<br>
-Look for the `category` modify if it existed then add the missing `entity`.
+All files contains `constant dict` (1) includes all known `categories` and possible entites.<br>
 {.annotate}
 
 1. e.g `COVERS or SWITCHES`
 
-Using `LocalTuyaEntity class` we pass entity parameters `DPs Config name as keys and DPCode as values` Config names has to be supported by `localtuya` (1)
+Look for the `category` if it already exist modify it and add the missing `entities`.
+
+Using `LocalTuyaEntity class` we pass entity parameters `id` and `DPs Config name as keys and DPCode as values` Config names has to be supported by `localtuya` (1)
 {.annotate}
 
 1. All entities platforms has `id` config name. but some has more dp configs<br> For example: `cover platforms` has config names for `current_position_dp` and  `set_position_dp`<br> 
