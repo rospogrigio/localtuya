@@ -266,7 +266,7 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
     for dp, func in cloud_dp_codes.items():
         # Default Manual dp value is -1, we will replace it if it in cloud.
         add_dp = dp not in dps_data or dps_data.get(dp) == -1
-        if add_dp and (value := func.get("value") and value is not None):
+        if add_dp and (value := func.get("value")) and value is not None:
             dps_data[dp] = f"{value}, cloud pull"
 
     for dp, value in dps_data.items():
@@ -871,10 +871,13 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "invalid_auth"
             except EmptyDpsList:
                 errors["base"] = "empty_dps"
-            except (Exception, ValueError, pytuya.DecodeError) as ex:
+            except (ValueError, pytuya.DecodeError) as ex:
                 _LOGGER.debug("Unexpected exception: %s", ex)
                 placeholders["ex"] = str(ex)
                 errors["base"] = "unknown"
+            except Exception as ex:
+                _LOGGER.debug("Unexpected exception: %s", ex)
+                raise ex
 
         defaults = {}
         if self.editing_device:
