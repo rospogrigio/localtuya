@@ -340,7 +340,7 @@ def config_schema():
     )
 
 
-async def validate_input(hass: core.HomeAssistant, data):
+async def validate_input(hass: core.HomeAssistant, entry_id, data):
     """Validate the user input allows us to connect."""
     detected_dps = {}
     error = None
@@ -441,8 +441,8 @@ async def validate_input(hass: core.HomeAssistant, data):
 
     # Get DP descriptions from the cloud, if the device is there.
     cloud_dp_codes = {}
-    if data[CONF_DEVICE_ID] in hass.data[DOMAIN][DATA_CLOUD].device_list:
-        cloud_device_specs, res = await hass.data[DOMAIN][
+    if data[CONF_DEVICE_ID] in hass.data[DOMAIN][entry_id][DATA_CLOUD].device_list:
+        cloud_device_specs, res = await hass.data[DOMAIN][entry_id][
             DATA_CLOUD
         ].async_get_device_specifications(data[CONF_DEVICE_ID])
         if res != "ok":
@@ -667,10 +667,17 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         allDevices = mergeDevicesList(
             self.discovered_devices,
-            self.hass.data[DOMAIN][DATA_CLOUD].device_list,
+            self.hass.data[DOMAIN][self.config_entry.entry_id][DATA_CLOUD].device_list,
         )
         devices = {}
-        configured_Devices = self.config_entry.data[CONF_DEVICES]
+
+        # To avoid duplicated entities we will get all devices in every hub.
+        entries = self.hass.config_entries.async_entries(DOMAIN)
+        configured_Devices = []
+        for entry in entries:
+            for devID in entry.data[CONF_DEVICES].keys():
+                configured_Devices.append(devID)
+
         for dev_id, dev in allDevices.items():
             if dev[CONF_TUYA_GWID] not in configured_Devices:
                 if dev.get(CONF_NODE_ID, None) is not None:
@@ -681,7 +688,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="add_device",
             data_schema=devices_schema(
-                devices, self.hass.data[DOMAIN][DATA_CLOUD].device_list
+                devices,
+                self.hass.data[DOMAIN][self.config_entry.entry_id][
+                    DATA_CLOUD
+                ].device_list,
             ),
             errors=errors,
         )
@@ -709,7 +719,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="edit_device",
             data_schema=devices_schema(
                 devices,
-                self.hass.data[DOMAIN][DATA_CLOUD].device_list,
+                self.hass.data[DOMAIN][self.config_entry.entry_id][
+                    DATA_CLOUD
+                ].device_list,
                 False,
                 self.config_entry.data[CONF_DEVICES],
             ),
@@ -726,7 +738,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 self.device_data = user_input.copy()
                 self.nodeID = self.nodeID or user_input.get(CONF_NODE_ID, None)
                 if dev_id is not None:
-                    cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+                    cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
+                        DATA_CLOUD
+                    ].device_list
                     if dev_id in cloud_devs:
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
                             CONF_PRODUCT_NAME
@@ -790,7 +804,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         # _LOGGER.debug("Edit Device Conf Data: %s", self.device_data)
                         return await self.async_step_configure_entity()
 
-                valid_data = await validate_input(self.hass, user_input)
+                valid_data = await validate_input(
+                    self.hass, self.config_entry.entry_id, user_input
+                )
                 self.dps_strings = valid_data[CONF_DPS_STRINGS]
                 # We will also get protocol version from valid date in case auto used.
                 self.device_data[CONF_PROTOCOL_VERSION] = valid_data[
@@ -822,7 +838,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 else self.config_entry.data[CONF_DEVICES][dev_id].copy()
             )
             self.nodeID = defaults.get(CONF_NODE_ID, None)
-            cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+            cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
+                DATA_CLOUD
+            ].device_list
             placeholders["for_device"] = f" for device `{dev_id}`"
             if self.nodeID:
                 placeholders.update(
@@ -855,7 +873,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             defaults[CONF_NODE_ID] = ""
             if dev_id is not None:
                 # Insert default values from discovery and cloud if present
-                cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+                cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
+                    DATA_CLOUD
+                ].device_list
                 local_devs = self.discovered_devices
                 allDevices = mergeDevicesList(local_devs, cloud_devs)
                 device = allDevices[dev_id]

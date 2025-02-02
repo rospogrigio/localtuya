@@ -9,12 +9,22 @@ set_dp:
     device_id:
       name: "Device ID"
       description: Device ID of device to change datapoint value for
+      required: true
       example: 11100118278aab4de001
+      selector:
+        text:
     dp:
       name: "DP"
       description: Target DP, Datapoint index
+      required: true
       example: 1
+      selector:
+        number:
+          mode: box
     value:
       name: "Value"
       description: New value to set
-      example: False
+      required: true
+      example: "true"
+      selector:
+        object:

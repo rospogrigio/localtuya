@@ -25,7 +25,7 @@ async def async_get_config_entry_diagnostics(
     """Return diagnostics for a config entry."""
     data = {}
     data = dict(entry.data)
-    tuya_api = hass.data[DOMAIN][DATA_CLOUD]
+    tuya_api = hass.data[DOMAIN][entry.entry_id][DATA_CLOUD]
     # censoring private information on integration diagnostic data
     for field in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
         data[field] = f"{data[field][0:3]}...{data[field][-3:]}"
@@ -53,7 +53,7 @@ async def async_get_device_diagnostics(
     # local_key = data[DEVICE_CONFIG][CONF_LOCAL_KEY]
     # data[DEVICE_CONFIG][CONF_LOCAL_KEY] = f"{local_key[0:3]}...{local_key[-3:]}"
 
-    tuya_api = hass.data[DOMAIN][DATA_CLOUD]
+    tuya_api = hass.data[DOMAIN][entry.entry_id][DATA_CLOUD]
     if dev_id in tuya_api.device_list:
         data[DEVICE_CLOUD_INFO] = tuya_api.device_list[dev_id]
         # NOT censoring private information on device diagnostic data
