@@ -301,9 +301,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up LocalTuya integration from a config entry."""
-    unsub_listener = entry.add_update_listener(update_listener)
-    hass.data[DOMAIN][UNSUB_LISTENER] = unsub_listener
-    hass.data[DOMAIN][TUYA_DEVICES] = {}
     if entry.version < ENTRIES_VERSION:
         _LOGGER.debug(
             "Skipping setup for entry %s since its version (%s) is old",
