@@ -78,10 +78,6 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "MANUAL",
         HVACMode.AUTO: "AUTO",
     },
-    "MANUAL/AUTO": {
-        HVAC_MODE_HEAT: "MANUAL",
-        HVAC_MODE_AUTO: "AUTO",
-    },
     "Manual/Program": {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Program",
