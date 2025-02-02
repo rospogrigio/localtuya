@@ -38,7 +38,7 @@ Manual installation:
 ## Adding the Integration
 > This Integration Works without IoT Setup But It's highly recommended setup IoT Cloud To support way more features.
 > 
-> Features E.g.( Automatic insert needed informations to setup devices AND auto detect Sub Devices ) and more.
+> Features E.g.( Automatic insert needed information to setup devices AND auto detect Sub Devices ) and more.
 
 
 > Assuming you Already Installed The integration Manually or HACS
@@ -109,7 +109,7 @@ If you have selected one entry, you only need to input the device's Friendly Nam
 
 Setting the scan interval is optional, it is only needed if energy/power values are not updating frequently enough by default. Values less than 10 seconds may cause stability issues.
 
-Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration. **Note: Any DPS added using this option will have a -1 value during setup.** 
+Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initialised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration. **Note: Any DPS added using this option will have a -1 value during setup.** 
 
 Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used. If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
 
