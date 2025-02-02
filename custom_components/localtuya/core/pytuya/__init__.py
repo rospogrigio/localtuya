@@ -485,11 +485,14 @@ def parse_header(data):
         )
 
     # sanity check. currently the max payload length is somewhere around 300 bytes
-    if payload_len > 1000:
-        raise DecodeError(
-            "Header claims the packet size is over 1000 bytes!  It is most likely corrupt.  Claimed size: %d bytes. fmt:%s unpacked:%r"
-            % (payload_len, fmt, unpacked)
+    if payload_len > 2000:
+        _LOGGER.debug(
+            f"Header claims the packet size is over 2000 bytes!  It is most likely corrupt.  Claimed size: {payload_len} bytes. fmt: {fmt} unpacked: {unpacked}"
         )
+        # raise DecodeError(
+        #     "Header claims the packet size is over 2000 bytes!  It is most likely corrupt.  Claimed size: %d bytes. fmt:%s unpacked:%r"
+        #     % (payload_len, fmt, unpacked)
+        # )
 
     return TuyaHeader(prefix, seqno, cmd, payload_len, total_length)
 
@@ -572,9 +575,7 @@ class MessageDispatcher(ContextualLogger):
     RESET_SEQNO = -101
     SESS_KEY_SEQNO = -102
 
-    def __init__(
-        self, dev_id, callback_status_update, protocol_version, local_key, enable_debug
-    ):
+    def __init__(self, dev_id, callback_status_update, protocol_version, local_key):
         """Initialize a new MessageBuffer."""
         super().__init__()
         self.buffer = b""
@@ -582,7 +583,6 @@ class MessageDispatcher(ContextualLogger):
         self.callback_status_update = callback_status_update
         self.version = protocol_version
         self.local_key = local_key
-        self.set_logger(_LOGGER, dev_id, enable_debug)
 
     def abort(self):
         """Abort all waiting clients."""
@@ -616,10 +616,10 @@ class MessageDispatcher(ContextualLogger):
         """Add new data to the buffer and try to parse messages."""
         self.buffer += data
 
-        header_len_55AA = struct.calcsize(MESSAGE_HEADER_FMT_55AA)
+        header_len_55AA = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
         header_len_6699 = struct.calcsize(MESSAGE_HEADER_FMT_6699)
-        header_len = header_len_55AA
 
+        header_len = header_len_55AA
         prefix_len = len(PREFIX_55AA_BIN)
 
         while self.buffer:
@@ -628,9 +628,7 @@ class MessageDispatcher(ContextualLogger):
 
             if prefix_offset_55AA < 0 and prefix_offset_6699 < 0:
                 self.buffer = self.buffer[1 - prefix_len :]
-                header_len = header_len_55AA
             else:
-                header_len = header_len_6699
                 prefix_offset = (
                     prefix_offset_6699 if prefix_offset_55AA < 0 else prefix_offset_55AA
                 )
@@ -655,64 +653,35 @@ class MessageDispatcher(ContextualLogger):
 
     def _dispatch(self, msg):
         """Dispatch a message to someone that is listening."""
-        # ON devices >= 3.4 the seqno get conflict with the waited seqno.
-        # The devices sends cmds 8 and 9 usually before NEW_CONTROL which increase the seqno.
-        # ^ This needs to be handle in better way, The fix atm is just workaround.
 
         self.debug("Dispatching message CMD %r %s", msg.cmd, msg)
-        if msg.seqno in self.listeners and msg.cmd != STATUS:
-            # self.debug("Dispatching sequence number %d", msg.seqno)
-            sem = self.listeners[msg.seqno]
-            if isinstance(sem, asyncio.Semaphore):
-                self.listeners[msg.seqno] = msg
-                sem.release()
-            else:
-                self.debug("Got additional message without request - skipping: %s", sem)
-        elif msg.cmd == HEART_BEAT:
+
+        if msg.seqno in self.listeners:
+            self.debug("Dispatching sequence number %d", msg.seqno)
+            self._release_listener(msg.seqno, msg)
+
+        if msg.cmd == HEART_BEAT:
             self.debug("Got heartbeat response")
-            if self.HEARTBEAT_SEQNO in self.listeners:
-                sem = self.listeners[self.HEARTBEAT_SEQNO]
-                self.listeners[self.HEARTBEAT_SEQNO] = msg
-                sem.release()
+            self._release_listener(self.HEARTBEAT_SEQNO, msg)
         elif msg.cmd == UPDATEDPS:
             self.debug("Got normal updatedps response")
-            if self.RESET_SEQNO in self.listeners:
-                sem = self.listeners[self.RESET_SEQNO]
-                if isinstance(sem, asyncio.Semaphore):
-                    self.listeners[self.RESET_SEQNO] = msg
-                    sem.release()
-                else:
-                    self.debug(
-                        "Got additional updatedps message without request - skipping: %s",
-                        sem,
-                    )
+            self._release_listener(self.RESET_SEQNO, msg)
+            if self.RESET_SEQNO not in self.listeners:
+                self.debug(
+                    "Got additional updatedps message without request - skipping: %s",
+                    sem,
+                )
         elif msg.cmd == SESS_KEY_NEG_RESP:
             self.debug("Got key negotiation response")
-            if self.SESS_KEY_SEQNO in self.listeners:
-                sem = self.listeners[self.SESS_KEY_SEQNO]
-                self.listeners[self.SESS_KEY_SEQNO] = msg
-                sem.release()
+            self._release_listener(self.SESS_KEY_SEQNO, msg)
         elif msg.cmd == STATUS:
             if self.RESET_SEQNO in self.listeners:
                 self.debug("Got reset status update")
+                self._release_listener(self.RESET_SEQNO, msg)
                 sem = self.listeners[self.RESET_SEQNO]
-                if isinstance(sem, asyncio.Semaphore):
-                    self.listeners[self.RESET_SEQNO] = msg
-                    sem.release()
-                else:
-                    self.debug(
-                        "Got additional reset message without request - skipping: %s",
-                        sem,
-                    )
             else:
                 self.debug("Got status update")
                 self.callback_status_update(msg)
-                # workdaround for >= v3.4 devices until find prper way to wait seqno correctly.
-                if msg.seqno in self.listeners:
-                    sem = self.listeners[msg.seqno]
-                    if isinstance(sem, asyncio.Semaphore):
-                        self.listeners[msg.seqno] = msg
-                        sem.release()
         else:
             if msg.cmd == CONTROL_NEW:
                 self.debug("Got ACK message for command %d: will ignore it", msg.cmd)
@@ -723,6 +692,17 @@ class MessageDispatcher(ContextualLogger):
                     msg.seqno,
                     msg,
                 )
+
+    def _release_listener(self, seqno, msg):
+        if seqno not in self.listeners:
+            return
+
+        sem = self.listeners[seqno]
+        if isinstance(sem, asyncio.Semaphore):
+            self.listeners[seqno] = msg
+            sem.release()
+        else:
+            self.debug("Got additional message without request - skipping: %s", sem)
 
 
 class TuyaListener(ABC):
@@ -752,6 +732,8 @@ class EmptyListener(TuyaListener):
 class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     """Implementation of the Tuya protocol."""
 
+    HEARTBEAT_SKIP = 5
+
     def __init__(
         self,
         dev_id: str,
@@ -774,7 +756,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """
         super().__init__()
         self.loop = asyncio.get_running_loop()
-        self.set_logger(_LOGGER, dev_id, enable_debug)
         self.id = dev_id
         self.local_key = local_key.encode("latin1")
         self.real_local_key = self.local_key
@@ -792,7 +773,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.seqno = 1
         self.transport = None
         self.listener = weakref.ref(listener)
-        self.dispatcher = self._setup_dispatcher(enable_debug)
+        self.dispatcher = self._setup_dispatcher()
         self.on_connected = on_connected
         self.heartbeater = None
         self.dps_cache = {}
@@ -800,6 +781,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.remote_nonce = b""
         self.dps_whitelist = UPDATE_DPS_WHITELIST
         self.dispatched_dps = {}  # Store payload so we can trigger an event in HA.
+        self._last_command_sent = 1
+        self.enable_debug(enable_debug)
 
     def set_version(self, protocol_version):
         """Set the device version and eventually start available DPs detection."""
@@ -827,44 +810,52 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         return json.loads('{ "Error":"%s", "Err":"%s", "Payload":%s }' % vals)
 
-    def _setup_dispatcher(self, enable_debug):
+    def _setup_dispatcher(self) -> MessageDispatcher:
         def _status_update(msg):
             if msg.seqno > 0:
                 self.seqno = msg.seqno + 1
             decoded_message: dict = self._decode_payload(msg.payload)
-            new_states = {}
             cid = None
 
-            if "dps" in decoded_message:
+            if "dps" not in decoded_message:
+                return
+
+            if dps_payload := decoded_message.get("dps"):
                 if cid := decoded_message.get("cid"):
-                    if cid in self.dps_cache:
-                        self.dps_cache[cid].update(decoded_message["dps"])
-                    else:
-                        self.dps_cache.update({cid: decoded_message["dps"]})
+                    self.dps_cache.setdefault(cid, {})
+                    self.dps_cache[cid].update(dps_payload)
                 else:
-                    if "parent" in self.dps_cache:
-                        self.dps_cache["parent"].update(decoded_message["dps"])
-                    else:
-                        self.dps_cache.update({"parent": decoded_message["dps"]})
+                    self.dps_cache.setdefault("parent", {})
+                    self.dps_cache["parent"].update(dps_payload)
 
             listener = self.listener and self.listener()
             if listener is not None:
                 if cid:
                     listener = listener._sub_devices.get(cid, listener)
-                    new_states = self.dps_cache.get(cid)
+                    device = self.dps_cache.get(cid, {})
                 else:
-                    new_states = self.dps_cache.get("parent", {})
+                    device = self.dps_cache.get("parent", {})
 
-                listener.status_updated(new_states)
+                listener.status_updated(device)
 
-        return MessageDispatcher(
-            self.id, _status_update, self.version, self.local_key, enable_debug
-        )
+        return MessageDispatcher(self.id, _status_update, self.version, self.local_key)
 
     def connection_made(self, transport):
         """Did connect to the device."""
         self.transport = transport
         self.on_connected.set_result(True)
+
+    async def transport_write(self, data, command_delay=True):
+        """Write data on transport, The 'command_delay' will ensure that no massive requests happen all at once."""
+        wait = 0
+        while command_delay and self.last_command_sent < 0.050:
+            await asyncio.sleep(0.060)
+            wait += 1
+            if wait == 10:
+                break
+
+        self._last_command_sent = time.time()
+        self.transport.write(data)
 
     def start_heartbeat(self):
         """Start the heartbeat transmissions with the device."""
@@ -874,7 +865,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.debug("Started heartbeat loop")
             while True:
                 try:
-                    await self.heartbeat()
+                    if self.last_command_sent > self.HEARTBEAT_SKIP:
+                        await self.heartbeat()
                     await asyncio.sleep(HEARTBEAT_INTERVAL)
                 except asyncio.CancelledError:
                     self.debug("Stopped heartbeat loop")
@@ -944,10 +936,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # self.debug("Quick-dispatching message %s, seqno %s", binascii.hexlify(enc_payload), self.seqno)
 
         try:
-            self.transport.write(enc_payload)
+            await self.transport_write(enc_payload)
         except Exception:
-            # self._check_socket_close(True)
-            self.close()
+            await self.close()
             return None
         while recv_retries:
             try:
@@ -972,13 +963,15 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 )
         return None
 
-    async def exchange(self, command, dps=None, nodeID=None):
+    async def exchange(self, command, dps=None, nodeID=None, delay=True):
         """Send and receive a message, returning response from device."""
         if self.version >= 3.4 and self.real_local_key == self.local_key:
             self.debug("3.4 or 3.5 device: negotiating a new session key")
             await self._negotiate_session_key()
 
-        self.debug("Sending command %s (device type: %s)", command, self.dev_type)
+        self.debug(
+            "Sending command %s (device type: %s) DPS: %s", command, self.dev_type, dps
+        )
         payload = self._generate_payload(command, dps, nodeId=nodeID)
         real_cmd = payload.cmd
         dev_type = self.dev_type
@@ -993,7 +986,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             seqno = MessageDispatcher.RESET_SEQNO
 
         enc_payload = self._encode_message(payload)
-        self.transport.write(enc_payload)
+
+        await self.transport_write(enc_payload, delay)
         msg = await self.dispatcher.wait_for(seqno, payload.cmd)
         if msg is None:
             self.debug("Wait was aborted for seqno %d", seqno)
@@ -1020,7 +1014,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def status(self, cid=None):
         """Return device status."""
-        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid)
+        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid, delay=False)
 
         if status:
             if cid and "dps" in status:
@@ -1067,7 +1061,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     dps = list(set(dps).intersection(set(self.dps_whitelist)))
             payload = self._generate_payload(UPDATEDPS, dps, nodeId=cid)
             enc_payload = self._encode_message(payload)
-            self.transport.write(enc_payload)
+            await self.transport_write(enc_payload)
         return True
 
     async def set_dp(self, value, dp_index, cid=None):
@@ -1467,6 +1461,16 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.debug("Sending payload: %s", payload)
 
         return MessagePayload(command_override, payload)
+
+    def enable_debug(self, enable=False):
+        """Enable the debug logs for the device."""
+        self.set_logger(_LOGGER, self.id, enable)
+        self.dispatcher.set_logger(_LOGGER, self.id, enable)
+
+    @property
+    def last_command_sent(self):
+        """Return last command sent by seconds"""
+        return time.time() - self._last_command_sent
 
     def __repr__(self):
         """Return internal string representation of object."""

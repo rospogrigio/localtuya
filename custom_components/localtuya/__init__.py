@@ -334,7 +334,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     if no_cloud:
         _LOGGER.info("Cloud API account not configured.")
         # wait 1 second to make sure possible migration has finished
-        await asyncio.sleep(1)
+        # await asyncio.sleep(1)
     else:
         entry.async_create_background_task(
             hass, tuya_api.async_connect(), "localtuya-cloudAPI"
@@ -403,10 +403,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Unload the platforms.
     await hass.config_entries.async_unload_platforms(entry, platforms)
-
-    # Close all connection to the devices.
-    if disconnect_devices:
-        await asyncio.wait(disconnect_devices)
 
     hass.data[DOMAIN].pop(entry.entry_id)
 
@@ -486,8 +482,8 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
             dev_id = dev._device_config.id
             if check_if_device_disabled(hass, entry, dev_id):
                 return
-            if not dev.connected:
-                asyncio.create_task(dev.async_connect())
+            # "async_connect" has to check if the device is already connected, then stop.
+            asyncio.create_task(dev.async_connect())
 
     # Add unsub callbeack in unsub_listeners object.
     hass_localtuya.unsub_listeners.append(

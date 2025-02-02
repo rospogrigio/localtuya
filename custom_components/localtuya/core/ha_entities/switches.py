@@ -605,6 +605,12 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:motion-sensor",
             entity_category=EntityCategory.CONFIG,
         ),
+        LocalTuyaEntity(
+            id=DPCode.PTZ_STOP,
+            name="PTZ Stop",
+            icon="mdi:stop-circle",
+            entity_category=EntityCategory.CONFIG,
+        ),
     ),
     # Fingerbot
     "szjqr": (

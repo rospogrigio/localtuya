@@ -421,6 +421,7 @@ class DPCode(StrEnum):
     PRM_CONTENT = "prm_content"
     PRM_TEMPERATURE = "prm_temperature"
     PTZ_CONTROL = "ptz_control"
+    PTZ_STOP = "ptz_stop"
     PUMP_RESET = "pump_reset"  # Water pump reset
     RECORD_MODE = "record_mode"
     RECORD_SWITCH = "record_switch"  # Recording switch
