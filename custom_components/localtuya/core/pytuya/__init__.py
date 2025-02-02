@@ -1512,7 +1512,7 @@ async def connect(
     except OSError as ex:
         raise ValueError(str(ex))
     except Exception as ex:
-        raise str(ex)
+        raise Exception(ex)
     except:
         raise Exception(f"The host refused to connect")
 

@@ -190,6 +190,8 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
     # Some DPS doesn't have the type, in high level data.
     if not dp_type and (_type := dp_values.get("type")):
         dp_type = _type.capitalize()
+        # Fix type names.
+        dp_type = DPType.INTEGER if dp_type == "Value" else dp_type
 
     # Integer values: min, max, scale, step
     if dp_values and dp_type == DPType.INTEGER:
