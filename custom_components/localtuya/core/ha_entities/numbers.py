@@ -354,6 +354,35 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Power 2 Wanring Limit",
             custom_configs=localtuya_numbers(0, 50000, 1, 1, UnitOfPower.WATT),
         ),
+        # Fan "tdq"
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN_2,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan 2 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN_3,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan 3 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_COUNTDOWN_4,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Fan 4 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
     ),
     # Smart Lock
     # https://developer.tuya.com/en/docs/iot/s?id=Kb0o2xhlkxbet

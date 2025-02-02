@@ -144,6 +144,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         if device := hass_data.devices.get(device_ip):
             ...
 
+        # hass.create_task(hass_data.cloud_data.async_get_devices_list())
         new_data = entry.data.copy()
         updated = False
         for dev_id, host in device_cache[device_id].items():
@@ -392,20 +393,20 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     disconnect_devices = []
     hass_data: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
+    # Unsub listeners.
+    [unsub() for unsub in hass_data.unsub_listeners]
+
     for dev in hass_data.devices.values():
         disconnect_devices.append(asyncio.create_task(dev.close()))
         for entity in dev._device_config.entities:
             platforms[entity[CONF_PLATFORM]] = True
 
-    # Unsub events.
-    [unsub() for unsub in hass_data.unsub_listeners]
+    # Unload the platforms.
+    await hass.config_entries.async_unload_platforms(entry, platforms)
 
     # Close all connection to the devices.
     if disconnect_devices:
         await asyncio.wait(disconnect_devices)
-
-    # Unload the platforms.
-    await hass.config_entries.async_unload_platforms(entry, platforms)
 
     hass.data[DOMAIN].pop(entry.entry_id)
 
@@ -455,6 +456,25 @@ async def async_remove_config_entry_device(
     return True
 
 
+async def async_remove_orphan_entities(hass, entry):
+    """Remove entities associated with config entry that has been removed."""
+    return
+    ent_reg = er.async_get(hass)
+    entities = {
+        ent.unique_id: ent.entity_id
+        for ent in er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+    }
+    _LOGGER.info("ENTITIES ORPHAN %s", entities)
+    return
+
+    for entity in entry.data[CONF_ENTITIES]:
+        if entity[CONF_ID] in entities:
+            del entities[entity[CONF_ID]]
+
+    for entity_id in entities.values():
+        ent_reg.async_remove(entity_id)
+
+
 def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
     """Add a task to reconnect to the devices if is not connected [interval: RECONNECT_INTERVAL]"""
     hass_localtuya: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
@@ -473,25 +493,6 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
     hass_localtuya.unsub_listeners.append(
         async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
     )
-
-
-async def async_remove_orphan_entities(hass, entry):
-    """Remove entities associated with config entry that has been removed."""
-    return
-    ent_reg = er.async_get(hass)
-    entities = {
-        ent.unique_id: ent.entity_id
-        for ent in er.async_entries_for_config_entry(ent_reg, entry.entry_id)
-    }
-    _LOGGER.info("ENTITIES ORPHAN %s", entities)
-    return
-
-    for entity in entry.data[CONF_ENTITIES]:
-        if entity[CONF_ID] in entities:
-            del entities[entity[CONF_ID]]
-
-    for entity_id in entities.values():
-        ent_reg.async_remove(entity_id)
 
 
 @callback

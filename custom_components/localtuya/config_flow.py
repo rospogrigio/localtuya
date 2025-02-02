@@ -1470,7 +1470,7 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
     for dp, func in cloud_dp_codes.items():
         # Default Manual dp value is -1, we will replace it if it in cloud.
         add_dp = dp not in dps_data or dps_data.get(dp) == -1
-        if add_dp and (value := func.get("value")) and value is not None:
+        if add_dp and ((value := func.get("value")) or value is not None):
             dps_data[dp] = f"{value}, cloud pull"
 
     for dp, value in dps_data.items():

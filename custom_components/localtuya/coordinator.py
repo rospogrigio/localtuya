@@ -315,6 +315,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 if self._fake_gateway:
                     self.warning(f"Failed to use {name} as gateway.")
                     await self.abort_connect()
+                    update_localkey = True
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
@@ -400,6 +401,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     async def update_local_key(self):
         """Retrieve updated local_key from Cloud API and update the config_entry."""
         dev_id = self._device_config.id
+        name = self._device_config.name
+
         cloud_api = self._hass_entry.cloud_data
         await cloud_api.async_get_devices_list()
         discovery = self._hass.data[DOMAIN].get(DATA_DISCOVERY)
@@ -422,21 +425,22 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
                 # Update Gateway ID and IP
                 if new_gw := get_gateway_by_deviceid(dev_id, cloud_devs):
+                    self.info(f"Updated {name} gateway ID to: {new_gw.id}")
                     new_data[CONF_DEVICES][dev_id][CONF_GATEWAY_ID] = new_gw.id
-                    self.info(f"Updated {dev_id} gateway ID to: {new_gw.id}")
+
                     if discovery and (local_gw := discovery.devices.get(new_gw.id)):
                         new_ip = local_gw.get(CONF_TUYA_IP, self._device_config.host)
                         new_data[CONF_DEVICES][dev_id][CONF_HOST] = new_ip
-                        self.info(f"Updated {dev_id} IP to: {new_ip}")
+                        self.info(f"Updated {name} IP to: {new_ip}")
 
-                self.info(f"Updated informations for sub-device {dev_id}.")
+                self.info(f"Updated informations for sub-device {name}.")
 
             new_data[CONF_DEVICES][dev_id][CONF_LOCAL_KEY] = self._local_key
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             self._hass.config_entries.async_update_entry(
                 self._config_entry, data=new_data
             )
-            self.info(f"local_key updated for device {dev_id}.")
+            self.info(f"local_key updated for device {name}.")
 
     async def set_values(self):
         """Send self._pending_status payload to device."""
@@ -454,7 +458,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Change value of a DP of the Tuya device."""
         if self._interface is not None:
             self._pending_status.update({dp_index: state})
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.001)
             await self.set_values()
         else:
             if self.is_sleep:
@@ -464,7 +468,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Change value of a DPs of the Tuya device."""
         if self._interface is not None:
             self._pending_status.update(states)
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.001)
             await self.set_values()
         else:
             if self.is_sleep:

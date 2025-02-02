@@ -269,6 +269,10 @@ class DPCode(StrEnum):
     ENERGY_REVERSE_C = "energy_reverse_c"
     FAN_BEEP = "fan_beep"  # Sound
     FAN_COOL = "fan_cool"  # Cool wind
+    FAN_COUNTDOWN = "fan_countdown"
+    FAN_COUNTDOWN_2 = "fan_countdown_2"
+    FAN_COUNTDOWN_3 = "fan_countdown_3"
+    FAN_COUNTDOWN_4 = "fan_countdown_4"
     FAN_DIRECTION = "fan_direction"  # Fan direction
     FAN_HORIZONTAL = "fan_horizontal"  # Horizontal swing flap angle
     FAN_MODE = "fan_mode"
