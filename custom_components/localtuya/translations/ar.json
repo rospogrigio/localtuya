@@ -189,7 +189,7 @@
             "music_mode": "Music mode available?",
             "scene": "Scene",
             "scene_values": "(Optional) Scene values",
-            "select_options": "Valid entries",
+            "select_options": "Select options values",
             "fan_speed_control": "Fan Speed Control DP",
             "fan_oscillating_control": "Fan Oscillating Control DP",
             "fan_speed_min": "minimum fan speed integer",
@@ -224,7 +224,7 @@
             "step_size": "Minimum increment between numbers",
             "is_passive_entity": "Passive entity? (requires integration to send initialisation value)",
             "entity_category": "Show the entity in this category",
-            "humidifier_available_modes": "(Optional) Avaliable modes in device, separate entries by comma ','",
+            "humidifier_available_modes": "(Optional) Available modes in the device",
             "humidifier_current_humidity_dp": "(Optional) Current Humidity DP",
             "humidifier_mode_dp": "(Optional) Set mode DP",
             "humidifier_set_humidity_dp": "(Optional) Set Humidity DP",
@@ -237,6 +237,7 @@
             "preset_set":"Each line represents [ device_value: friendly name ]",
             "scene_values":"Each line represents [ device_value: friendly name ]",
             "select_options":"Each line represents [ device_value: friendly name ]",
+            "humidifier_available_modes":"Each line represents [ device_value: friendly name ]",
             "device_class": "Find out more about [Device Classes](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
             "state_class": "Find out more about [State Classes](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
         }

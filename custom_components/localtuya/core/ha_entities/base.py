@@ -98,6 +98,7 @@ class DPCode(StrEnum):
     https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
     """
 
+    ADD_ELE = "add_ele"
     AIR_QUALITY = "air_quality"
     ALARM_LOCK = "alarm_lock"
     ALARM_MESSAGE = "alarm_message"
@@ -271,6 +272,12 @@ class DPCode(StrEnum):
     MIDDLE_CONFIRM = "middle_confirm"  # cover reset.
     MOD = "mod"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MODE = "mode"  # Working mode / Mode
+    MODE_1 = "mode_1"  # Working mode / Mode
+    MODE_2 = "mode_2"  # Working mode / Mode
+    MODE_3 = "mode_3"  # Working mode / Mode
+    MODE_4 = "mode_4"  # Working mode / Mode
+    MODE_5 = "mode_5"  # Working mode / Mode
+    MODE_6 = "mode_6"  # Working mode / Mode
     MOD_ON_TMR = "mod_on_tmr"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MOD_ON_TMR_CD = "mod_on_tmr_cd"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MOODLIGHTING = "moodlighting"  # Mood light

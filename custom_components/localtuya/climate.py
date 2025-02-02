@@ -447,7 +447,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def target_temperature_step(self):
         """Return the supported step of target temperature."""
-        return self._config.get(CONF_TEMPERATURE_STEP, DEFAULT_TEMPERATURE_STEP)
+        target_step = self._config.get(CONF_TEMPERATURE_STEP, DEFAULT_TEMPERATURE_STEP)
+        return float(target_step)
 
     @property
     def fan_mode(self):

@@ -1,0 +1,50 @@
+name: "Stale"
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+  schedule:
+    - cron: '30 1 * * *'
+
+env:
+  release_tag: ${{ github.event.release.tag_name }}
+  release_link: ${{ github.event.release.html_url }}
+
+jobs:
+  close-fixed-issues:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'release' && !github.event.release.prerelease
+    permissions:
+      issues: write
+    steps:
+      # - name: "Dump release context"
+      #   run: echo "${{ toJSON(github.event.release) }}"
+
+      - name: "Close Resolved issues"
+        uses: actions/stale@v8
+        with:
+          only-labels: "master/next-release"
+          labels-to-remove-when-stale: "master/next-release,stale"
+          stale-issue-label: 'stale'
+          stale-issue-message: > 
+            This issue was closed because it was resolved on the release: 
+            [${{env.release_tag}}](${{env.release_link}})
+          days-before-issue-close: 0
+          days-before-issue-stale: 0
+          close-issue-reason: "completed"
+
+  stale-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: "Stale issues"
+        uses: actions/stale@v8
+        with:
+          stale-issue-message: 'This issue is stale because it has been open 14 days with no activity. Remove stale label or comment or this will be closed in 5 days.'
+          exempt-issue-labels: "master/next-release"
+          days-before-stale: 14
+          days-before-close: 5
+          stale-issue-label: 'stale'

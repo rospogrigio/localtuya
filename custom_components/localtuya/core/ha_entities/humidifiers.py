@@ -6,7 +6,13 @@
     Modified by: xZetsubou
 """
 
-from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
+from .base import (
+    DPCode,
+    LocalTuyaEntity,
+    CONF_DEVICE_CLASS,
+    EntityCategory,
+    CLOUD_VALUE,
+)
 from homeassistant.components.humidifier import HumidifierDeviceClass
 
 CONF_HUMIDIFIER_SET_HUMIDITY_DP = "humidifier_set_humidity_dp"
@@ -17,7 +23,12 @@ CONF_HUMIDIFIER_AVAILABLE_MODES = "humidifier_available_modes"
 
 def localtuya_humidifier(modes):
     """Define localtuya fan configs"""
-    data = {"humidifier_available_modes": modes}
+
+    data = {
+        "humidifier_available_modes": CLOUD_VALUE(
+            modes, CONF_HUMIDIFIER_MODE_DP, "range", dict
+        )
+    }
     return data
 
 
@@ -30,9 +41,15 @@ HUMIDIFIERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             humidifier_current_humidity_dp=DPCode.HUMIDITY_INDOOR,
             humidifier_set_humidity_dp=DPCode.DEHUMIDITY_SET_VALUE,
             humidifier_mode_dp=(DPCode.MODE, DPCode.WORK_MODE),
-            custom_configs=localtuya_humidifier("dehumidify,drying,continuous"),
+            custom_configs=localtuya_humidifier(
+                {
+                    "dehumidify": "Dehumidify",
+                    "drying": "Drying",
+                    "continuous": "Continuous",
+                }
+            ),
             device_class=HumidifierDeviceClass.DEHUMIDIFIER,
-        )
+        ),
     ),
     # Humidifier
     # https://developer.tuya.com/en/docs/iot/categoryjsq?id=Kaiuz1smr440b
@@ -42,8 +59,14 @@ HUMIDIFIERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             humidifier_current_humidity_dp=DPCode.HUMIDITY_CURRENT,
             humidifier_set_humidity_dp=DPCode.HUMIDITY_SET,
             humidifier_mode_dp=(DPCode.MODE, DPCode.WORK_MODE),
-            custom_configs=localtuya_humidifier("large,middle,small"),
+            custom_configs=localtuya_humidifier(
+                {
+                    "large": "Large",
+                    "middle": "Middle",
+                    "small": "Small",
+                }
+            ),
             device_class=HumidifierDeviceClass.HUMIDIFIER,
-        )
+        ),
     ),
 }

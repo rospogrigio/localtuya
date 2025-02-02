@@ -10,6 +10,7 @@ from homeassistant.components.sensor import (
     DOMAIN,
     STATE_CLASSES_SCHEMA,
     SensorStateClass,
+    SensorEntity,
 )
 from homeassistant.const import (
     CONF_DEVICE_CLASS,
@@ -54,7 +55,7 @@ class LocaltuyaSensor(LocalTuyaEntity, SensorEntity):
         self._state = STATE_UNKNOWN
 
     @property
-    def state(self):
+    def native_value(self):
         """Return sensor state."""
         return self._state
     
@@ -74,7 +75,7 @@ class LocaltuyaSensor(LocalTuyaEntity, SensorEntity):
         return self._config.get(CONF_STATE_CLASS)
 
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         """Return the unit of measurement of this entity, if any."""
         return self._config.get(CONF_UNIT_OF_MEASUREMENT)
 

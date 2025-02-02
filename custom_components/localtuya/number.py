@@ -114,7 +114,7 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
         if scale_factor := self._config.get(CONF_SCALING):
             value = value / float(scale_factor)
 
-        await self._device.set_dp(value, self._dp_id)
+        await self._device.set_dp(int(value), self._dp_id)
 
     # Default value is the minimum value
     def entity_default_value(self):

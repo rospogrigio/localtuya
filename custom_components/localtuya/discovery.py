@@ -13,7 +13,6 @@ from socket import inet_aton
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from Crypto.Cipher import AES
 
 from .common import pytuya
 
@@ -32,7 +31,9 @@ def decrypt(msg, key):
     def _unpad(data):
         return data[: -ord(data[len(data) - 1 :])]
 
-    return _unpad(AES.new(key, AES.MODE_ECB).decrypt(msg)).decode()
+    cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
+    decryptor = cipher.decryptor()
+    return _unpad(decryptor.update(msg) + decryptor.finalize()).decode()
 
 
 def decrypt_udp(message):

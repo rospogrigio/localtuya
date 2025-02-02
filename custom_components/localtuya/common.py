@@ -280,7 +280,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
                 self.debug("Retrieving initial state")
 
-                status = await self._interface.status(cid=self._node_id)
+                # Usually we use status instead of detect_available_dps, but some device doesn't reports all dps when ask for status.
+                status = await self._interface.detect_available_dps(cid=self._node_id)
                 if status is None:  # and not self.is_subdevice
                     raise Exception("Failed to retrieve status")
                 self._interface.start_heartbeat()
@@ -346,9 +347,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
     async def check_connection(self):
         """Ensure that the device is not still connecting; if it is, wait for it."""
-        if self._connect_task:
+        if not self.connected and self._connect_task:
             await self._connect_task
-        if self._gwateway and self._gwateway._connect_task:
+        if not self.connected and self._gwateway and self._gwateway._connect_task:
             await self._gwateway._connect_task
 
     async def close(self):
@@ -465,8 +466,6 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._fake_gateway:
             # Fake gateways are only used to pass commands no need to update status.
             return
-        cid = self._node_id
-        status = status.get(cid, {}) if cid else status.get("parent", {})
         self._handle_event(self._status, status)
         self._status.update(status)
         self._dispatch_status()
@@ -643,12 +642,12 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """Return cached value for DPS index or Entity Config Key."""
         requested_dp = str(key)
         # If requested_dp in DP ID, get cached value.
-        if value := self._status.get(requested_dp):
+        if (value := self._status.get(requested_dp)) or value is not None:
             return value
 
         # If requested_dp is an config key get config dp then get cached value.
-        if conf_key := self._config.get(requested_dp):
-            if value := self._status.get(conf_key):
+        if (conf_key := self._config.get(requested_dp)) or conf_key is not None:
+            if (value := self._status.get(conf_key)) or value is not None:
                 return value
 
         if value is None:

@@ -809,6 +809,10 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
 # https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
 SWITCHES["cjkg"] = SWITCHES["kg"]
 
+# Wireless Switch  # also can come as knob switch.
+# https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5
+SWITCHES["wxkg"] = SWITCHES["kg"]
+
 # Socket (duplicate of `pc`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s
 SWITCHES["cz"] = SWITCHES["pc"]

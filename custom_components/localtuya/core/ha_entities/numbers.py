@@ -5,6 +5,7 @@
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
+
 from homeassistant.components.number import NumberDeviceClass
 from homeassistant.const import PERCENTAGE, UnitOfTime, CONF_UNIT_OF_MEASUREMENT
 
@@ -593,6 +594,19 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+
+# Wireless Switch  # also can come as knob switch.
+# https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5
+NUMBERS["wxkg"] = (
+    LocalTuyaEntity(
+        id=DPCode.TEMP_VALUE,
+        name="Temperature",
+        icon="mdi:thermometer",
+        custom_configs=localtuya_numbers(0, 1000),
+    ),
+    *NUMBERS["kg"],
+)
+
 # Scene Switch
 # https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
 NUMBERS["cjkg"] = NUMBERS["kg"]

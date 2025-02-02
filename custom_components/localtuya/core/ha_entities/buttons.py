@@ -172,3 +172,7 @@ BUTTONS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+
+# Wireless Switch  # also can come as knob switch.
+# https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5
+BUTTONS["wxkg"] = BUTTONS["cjkg"]

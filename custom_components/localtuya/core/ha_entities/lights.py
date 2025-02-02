@@ -66,9 +66,10 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.SWITCH_LED,
             name=None,
             color_mode=DPCode.WORK_MODE,
-            brightness=DPCode.BRIGHT_VALUE,
-            color_temp=DPCode.TEMP_VALUE,
-            color=DPCode.COLOUR_DATA,
+            brightness=(DPCode.BRIGHT_VALUE_V2, DPCode.BRIGHT_VALUE),
+            color_temp=(DPCode.TEMP_VALUE_V2, DPCode.TEMP_VALUE),
+            color=(DPCode.COLOUR_DATA_V2, DPCode.COLOUR_DATA),
+            scene=(DPCode.SCENE_DATA_V2, DPCode.SCENE_DATA),
             custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False)
             # default_color_type=DEFAULT_COLOR_TYPE_DATA_V2,
         ),
@@ -394,6 +395,11 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
 # Scene Switch
 # https://developer.tuya.com/en/docs/iot/f?id=K9gf7nx6jelo8
 LIGHTS["cjkg"] = LIGHTS["tgkg"]
+
+# Wireless Switch  # also can come as knob switch.
+# https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5
+LIGHTS["wxkg"] = LIGHTS["tgkg"]
+
 
 # Socket (duplicate of `kg`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s

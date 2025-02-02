@@ -53,7 +53,7 @@ from hashlib import md5, sha256
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-version_tuple = (2024, 1, 0)
+version_tuple = (2024, 2, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
 __author__ = "rospogrigio, xZetsubou"
 
@@ -830,6 +830,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if msg.seqno > 0:
                 self.seqno = msg.seqno + 1
             decoded_message: dict = self._decode_payload(msg.payload)
+            new_states = {}
 
             if "dps" in decoded_message:
                 if cid := decoded_message.get("cid"):
@@ -847,8 +848,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if listener is not None:
                 if cid:
                     listener = listener._sub_devices.get(cid, listener)
+                    new_states = self.dps_cache.get(cid)
+                else:
+                    new_states = self.dps_cache.get("parent", {})
 
-                listener.status_updated(self.dps_cache)
+                listener.status_updated(new_states)
 
         return MessageDispatcher(
             self.id, _status_update, self.version, self.local_key, enable_debug
@@ -1025,7 +1029,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             elif "dps" in status:
                 self.dps_cache.update({"parent": status["dps"]})
 
-        return self.dps_cache
+        return self.dps_cache.get(cid, {}) if cid else self.dps_cache.get("parent", {})
 
     async def heartbeat(self):
         """Send a heartbeat message."""

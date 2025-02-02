@@ -5,6 +5,7 @@
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
+
 from homeassistant.components.sensor import SensorStateClass, SensorDeviceClass
 from homeassistant.const import (
     PERCENTAGE,
@@ -17,6 +18,7 @@ from homeassistant.const import (
     UnitOfTime,
     CONF_UNIT_OF_MEASUREMENT,
     UnitOfTemperature,
+    UnitOfEnergy,
 )
 
 from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
@@ -80,6 +82,20 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
 # end up being a sensor.
 # https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
 SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
+    # Wireless Switch  # also can come as knob switch.
+    # https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5
+    "wxkg": (
+        LocalTuyaEntity(
+            id=DPCode.MODE_1,
+            name="Switch 1 Mode",
+            icon="mdi:information-slab-circle-outline",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MODE_2,
+            name="Switch 2 Mode",
+            icon="mdi:information-slab-circle-outline",
+        ),
+    ),
     # Smart panel with switches and zigbee hub ?
     # Not documented
     "dgnzk": (
@@ -353,7 +369,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.CUR_VOLTAGE,
@@ -361,6 +377,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ADD_ELE,
+            name="Electricity",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
         ),
     ),
     # IoT Switch
@@ -379,7 +402,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(
@@ -389,6 +412,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
             # entity_registry_enabled_default=False,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ADD_ELE,
+            name="Electricity",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
         ),
     ),
     # Luminance Sensor
@@ -530,7 +560,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
     ),
     # Gas Detector
@@ -716,7 +746,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
@@ -737,7 +767,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase B Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
@@ -758,7 +788,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
@@ -789,7 +819,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
@@ -810,7 +840,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase B Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
@@ -831,7 +861,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase C Power",
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
@@ -1037,7 +1067,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
-            custom_configs=localtuya_sensor(UnitOfPower.KILO_WATT, 0.1),
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(
@@ -1048,6 +1078,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.DIAGNOSTIC,
             custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
             # entity_registry_enabled_default=False,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ADD_ELE,
+            name="Electricity",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
         ),
     ),
     # Dehumidifier

@@ -8,6 +8,7 @@ import logging
 import time
 
 import requests
+from requests.adapters import HTTPAdapter, Retry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -82,19 +83,24 @@ class TuyaCloudApi:
             "sign_method": "HMAC-SHA256",
         }
         full_url = self._base_url + url
-        # _LOGGER.debug("\n" + method + ": [%s]", full_url)
-
+        max_retries = 3
         request_timeout = 3
+
+        # Create requests session.
+        request_session = requests.Session()
+        # Setup retries configuration
+        retries = Retry(total=max_retries, backoff_factor=0.3)
+        request_session.mount(full_url, HTTPAdapter(max_retries=retries))
         if method == "GET":
             func = functools.partial(
-                requests.get,
+                request_session.get,
                 full_url,
                 headers=dict(default_par, **headers),
                 timeout=request_timeout,
             )
         elif method == "POST":
             func = functools.partial(
-                requests.post,
+                request_session.post,
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
@@ -103,7 +109,7 @@ class TuyaCloudApi:
             # _LOGGER.debug("BODY: [%s]", body)
         elif method == "PUT":
             func = functools.partial(
-                requests.put,
+                request_session.put,
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
@@ -243,7 +249,12 @@ class TuyaCloudApi:
             self.async_get_device_query_properties(device_id),
             self.async_get_device_query_things_data_model(device_id),
         ]
-        specs, query_props, query_model = await asyncio.gather(*get_data)
+        try:
+            specs, query_props, query_model = await asyncio.gather(*get_data)
+        except requests.exceptions.ConnectionError as ex:
+            _LOGGER.debug(f"Failed to get DPS functions for {device_id} - {ex}")
+            return
+
         if query_props[1] == "ok":
             device_data = {str(p["dp_id"]): p for p in query_props[0].get("properties")}
         if specs[1] == "ok":
