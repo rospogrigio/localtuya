@@ -48,6 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 UNSUB_LISTENER = "unsub_listener"
 
 RECONNECT_INTERVAL = timedelta(seconds=60)
+RECONNECT_TASK = "localtuya_reconnect_interval"
 
 CONFIG_SCHEMA = config_schema()
 
@@ -184,7 +185,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     return True
 
 
-async def async_migrate_entry(hass, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate old entries merging all of them in one."""
     new_version = ENTRIES_VERSION
     stored_entries = hass.config_entries.async_entries(DOMAIN)
@@ -194,18 +195,17 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     if config_entry.version == 2:
         # Switch config flow to selectors convert DP IDs from int to str require HA 2022.4.
         _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
-        if config_entry.entry_id == stored_entries[0].entry_id:
-            new_data = stored_entries[0].data.copy()
-            for device in new_data[CONF_DEVICES]:
-                i = 0
-                for _ent in new_data[CONF_DEVICES][device][CONF_ENTITIES]:
-                    ent_items = {}
-                    for k, v in _ent.items():
-                        ent_items[k] = str(v) if type(v) is int else v
-                    new_data[CONF_DEVICES][device][CONF_ENTITIES][i].update(ent_items)
-                    i = i + 1
-            config_entry.version = new_version
-            hass.config_entries.async_update_entry(config_entry, data=new_data)
+        new_data = config_entry.data.copy()
+        for device in new_data[CONF_DEVICES]:
+            i = 0
+            for _ent in new_data[CONF_DEVICES][device][CONF_ENTITIES]:
+                ent_items = {}
+                for k, v in _ent.items():
+                    ent_items[k] = str(v) if type(v) is int else v
+                new_data[CONF_DEVICES][device][CONF_ENTITIES][i].update(ent_items)
+                i = i + 1
+        config_entry.version = new_version
+        hass.config_entries.async_update_entry(config_entry, data=new_data)
 
     _LOGGER.info(
         "Entry %s successfully migrated to version %s.",
@@ -272,7 +272,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             device.async_connect()
             for device in hass.data[DOMAIN][entry.entry_id][TUYA_DEVICES].values()
         ]
-        await asyncio.gather(*connect_task)
+        try:
+            await asyncio.wait_for(asyncio.gather(*connect_task), 1)
+        except:
+            # If there is device that isn't connected to network it will return failed Initialization.
+            ...
 
     await setup_entities(entry.data[CONF_DEVICES].keys())
     # callback back to unsub listener
@@ -294,7 +298,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             platforms[entity[CONF_PLATFORM]] = True
 
     # Unload the platforms.
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, platforms)
+    await hass.config_entries.async_unload_platforms(entry, platforms)
 
     # Close all connection to the devices.
     close_devices = [
@@ -308,10 +312,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except:
         pass
 
-    if unload_ok:
-        # Unsub listener.
-        hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
-        hass.data[DOMAIN].pop(entry.entry_id)
+    # Unsub events.
+    hass.data[DOMAIN][entry.entry_id][RECONNECT_TASK]()
+    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+
+    hass.data[DOMAIN].pop(entry.entry_id)
 
     return True
 
@@ -367,7 +372,9 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
             if not dev.connected:
                 hass.create_task(dev.async_connect())
 
-    async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
+    hass.data[DOMAIN][entry.entry_id][RECONNECT_TASK] = async_track_time_interval(
+        hass, _async_reconnect, RECONNECT_INTERVAL
+    )
 
 
 async def async_remove_orphan_entities(hass, entry):

@@ -198,13 +198,22 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             if self.has_config(CONF_SCENE_VALUES) and self.has_config(
                 CONF_SCENE_VALUES_FRIENDLY
             ):
+                # temporary warnings
+                if ";" in self._config.get(CONF_SCENE_VALUES):
+                    _LOGGER.warning(
+                        f"{self._config.get(CONF_SCENE_VALUES)} Separate the sence values and friendly by ',' not ';'"
+                    )
+                if ";" in self._config.get(CONF_SCENE_VALUES_FRIENDLY):
+                    _LOGGER.warning(
+                        f"{self._config.get(CONF_SCENE_VALUES_FRIENDLY)} Separate the sence values and friendly by ',' not ';'"
+                    )
                 values_list = [
                     value.strip()
-                    for value in self._config.get(CONF_SCENE_VALUES).split(";")
+                    for value in self._config.get(CONF_SCENE_VALUES).split(",")
                 ]
                 friendly_values_list = [
                     value.strip()
-                    for value in self._config.get(CONF_SCENE_VALUES_FRIENDLY).split(";")
+                    for value in self._config.get(CONF_SCENE_VALUES_FRIENDLY).split(",")
                 ]
                 self._scenes = dict(zip(friendly_values_list, values_list))
             elif int(self._config.get(CONF_SCENE)) < 20:

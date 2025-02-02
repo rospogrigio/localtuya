@@ -14,7 +14,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from Crypto.Cipher import AES
 
-from .pytuya import unpack_message
+from .common import pytuya
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ def decrypt_udp(message):
     if message[:4] == PREFIX_55AA_BIN:
         return decrypt(message[20:-8], UDP_KEY)
     if message[:4] == PREFIX_6699_BIN:
-        unpacked = unpack_message(message, hmac_key=UDP_KEY, no_retcode=None)
+        unpacked = pytuya.unpack_message(message, hmac_key=UDP_KEY, no_retcode=None)
         payload = unpacked.payload.decode()
         # app sometimes has extra bytes at the end
         while payload[-1] == chr(0):

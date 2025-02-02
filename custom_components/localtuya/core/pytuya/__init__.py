@@ -200,7 +200,7 @@ payload_dict = {
     # Default Device
     "type_0a": {
         AP_CONFIG: {  # [BETA] Set Control Values on Device
-            "command": {"gwId": "", "devId": "", "uid": "", "t": ""},
+            "command": {"gwId": "", "devId": "", "uid": "", "t": "", "cid": ""},
         },
         CONTROL: {  # Set Control Values on Device
             "command": {"devId": "", "uid": "", "t": "", "cid": ""},
@@ -815,21 +815,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         def _status_update(msg):
             if msg.seqno > 0:
                 self.seqno = msg.seqno + 1
-            decoded_message = self._decode_payload(msg.payload)
-            if "data" in decoded_message and "dps" in decoded_message:
-                decoded_message.pop("data")
-            if "dps" in decoded_message:
-                if "cid" in decoded_message and decoded_message["cid"] != self.node_id:
-                    return
-                self.dps_cache.update(decoded_message["dps"])
-            # Special case for >= 3.4 devices.
-            elif "data" in decoded_message:
-                if (
-                    "cid" in decoded_message["data"]
-                    and decoded_message["data"]["cid"] != self.node_id
-                ):
-                    return
+            decoded_message: dict = self._decode_payload(msg.payload)
 
+            if "cid" in decoded_message and decoded_message["cid"] != self.node_id:
+                return
+
+            if "dps" in decoded_message:
                 self.dps_cache.update(decoded_message["dps"])
 
             listener = self.listener and self.listener()
@@ -1198,6 +1189,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         ):
             json_payload["dps"] = json_payload["data"]["dps"]
 
+            if "cid" in json_payload["data"]:
+                json_payload["cid"] = json_payload["data"]["cid"]
+
         # We will store the payload to trigger an event in HA.
         if "dps" in json_payload:
             self.dispatched_dps = json_payload["dps"]
@@ -1399,28 +1393,26 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             else:
                 json_data["uid"] = self.id
         if "cid" in json_data:
-            if nodeId != "" and nodeId is not None:
-                json_data["cid"] = nodeId
-            elif self.node_id != "" and self.node_id is not None:
-                json_data["cid"] = self.node_id
+            if cid := nodeId or self.node_id:
+                json_data["cid"] = cid
+                # for <= 3.3 we don't need `gwID`, `devID` and `uid` in payload.
+                for k in ["gwId", "devId", "uid"]:
+                    if k in json_data:
+                        json_data.pop(k)
             else:
-                # don't send cid for non-subdevices
                 del json_data["cid"]
-        # "cid" For 3.4 and 3.5 versions.
-        if "data" in json_data:
-            if "cid" in json_data["data"]:
-                if nodeId is not None:
-                    json_data["data"]["cid"] = self.node_id
-                elif self.node_id != "" and self.node_id is not None:
-                    json_data["data"]["cid"] = self.node_id
-                else:
-                    # Remove "CID" if Device isn't sub.
-                    del json_data["data"]["cid"]
+        if "data" in json_data and "cid" in json_data["data"]:
+            # "cid" is inside "data" For 3.4 and 3.5 versions.
+            if cid := nodeId or self.node_id:
+                json_data["data"]["cid"] = cid
+            else:
+                del json_data["data"]["cid"]
         if "t" in json_data:
             if json_data["t"] == "int":
                 json_data["t"] = int(time.time())
             else:
                 json_data["t"] = str(int(time.time()))
+
         if data is not None:
             if "dpId" in json_data:
                 json_data["dpId"] = data

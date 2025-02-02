@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_DEVICES,
+    CONF_DEVICE_CLASS,
     CONF_ENTITIES,
     CONF_FRIENDLY_NAME,
     CONF_HOST,
@@ -20,6 +21,7 @@ from homeassistant.const import (
     CONF_ENTITY_CATEGORY,
     EntityCategory,
     CONF_TYPE,
+    CONF_ICON,
 )
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import (
@@ -29,7 +31,7 @@ from homeassistant.helpers.dispatcher import (
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 
-from . import pytuya
+from .core import pytuya
 from .const import (
     ATTR_STATE,
     ATTR_UPDATED_AT,
@@ -154,7 +156,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         super().__init__()
         self._hass = hass
         self._config_entry = config_entry
-        self._dev_config_entry = config_entry.data[CONF_DEVICES][dev_id].copy()
+        self._dev_config_entry: dict = config_entry.data[CONF_DEVICES][dev_id].copy()
         self._interface = None
         self._status = {}
         self.dps_to_request = {}
@@ -172,7 +174,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             for reset_id in reset_ids_str:
                 self._default_reset_dpids.append(int(reset_id.strip()))
 
-        self.set_logger(_LOGGER, self._dev_config_entry[CONF_DEVICE_ID])
+        self.set_logger(
+            _LOGGER,
+            self._dev_config_entry.get(CONF_DEVICE_ID),
+            self._dev_config_entry.get(CONF_ENABLE_DEBUG),
+        )
 
         # This has to be done in case the device type is type_0d
         for entity in self._dev_config_entry[CONF_ENTITIES]:
@@ -196,7 +202,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
         # if not self._is_closing and self._connect_task is None and not self._interface:
-        await self._make_connection()
+        await asyncio.wait_for(self._make_connection(), 7)
         # self._connect_task = asyncio.create_task(self._make_connection())
 
     async def _make_connection(self):
@@ -343,7 +349,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             try:
                 await self._interface.set_dp(state, dp_index)
             except Exception:  # pylint: disable=broad-except
-                self.exception("Failed to set DP %d to %s", dp_index, str(state))
+                self.debug("Failed to set DP %d to %s", dp_index, str(state))
         else:
             self.error(
                 "Not connected to device %s", self._dev_config_entry[CONF_FRIENDLY_NAME]
@@ -355,7 +361,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             try:
                 await self._interface.set_dps(states)
             except Exception:  # pylint: disable=broad-except
-                self.exception("Failed to set DPs %r", states)
+                self.debug("Failed to set DPs %r", states)
         else:
             self.error(
                 "Not connected to device %s", self._dev_config_entry[CONF_FRIENDLY_NAME]
@@ -432,12 +438,14 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
+    _attr_has_entity_name = True
+
     def __init__(self, device, config_entry, dp_id, logger, **kwargs):
         """Initialize the Tuya entity."""
         super().__init__()
         self._device = device
         self._dev_config_entry = config_entry
-        self._config = get_entity_config(config_entry, dp_id)
+        self._config: dict = get_entity_config(config_entry, dp_id)
         self._dp_id = dp_id
         self._status = {}
         self._state = None
@@ -521,7 +529,15 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def name(self):
         """Get name of Tuya entity."""
-        return self._config[CONF_FRIENDLY_NAME]
+        return self._config.get(CONF_FRIENDLY_NAME)
+
+    @property
+    def icon(self) -> str | None:
+        """Icon of the entity."""
+        if icon := self._config.get(CONF_ICON, False):
+            return icon
+
+        return None
 
     @property
     def should_poll(self):
@@ -558,7 +574,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         else:
             # Set Default values for unconfigured devices.
             if self.has_config(CONF_PLATFORM):
-                platform = self._config[CONF_PLATFORM]
+                platform = self._config.get(CONF_PLATFORM)
                 # Call default_category from config_flow  to set default values!
                 # This will be removed after a while, this is only made to convert who came from main integration.
                 # new users will be forced to choose category from config_flow.
@@ -566,6 +582,11 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
                 return default_category(platform)
         return None
+
+    @property
+    def device_class(self):
+        """Return the class of this device."""
+        return self._config.get(CONF_DEVICE_CLASS, None)
 
     def dps(self, dp_index):
         """Return cached value for DPS index."""

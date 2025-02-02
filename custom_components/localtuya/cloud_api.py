@@ -37,6 +37,8 @@ class TuyaCloudApi:
         self._secret = secret
         self._user_id = user_id
         self._access_token = ""
+        self._token_expire_time: int = -1
+
         self.device_list = {}
 
     def generate_payload(self, method, timestamp, url, headers, body=None):
@@ -63,6 +65,10 @@ class TuyaCloudApi:
 
     async def async_make_request(self, method, url, body=None, headers={}):
         """Perform requests."""
+        # obtain new token if expired.
+        if not self.token_validate and self._token_expire_time != -1:
+            await self.async_get_access_token()
+
         timestamp = str(int(time.time() * 1000))
         payload = self.generate_payload(method, timestamp, url, headers, body)
         default_par = {
@@ -101,6 +107,10 @@ class TuyaCloudApi:
 
     async def async_get_access_token(self):
         """Obtain a valid access token."""
+        # Reset access token
+        self._token_expire_time = -1
+        self._access_token = ""
+
         try:
             resp = await self.async_make_request("GET", "/v1.0/token?grant_type=1")
         except requests.exceptions.ConnectionError:
@@ -113,6 +123,8 @@ class TuyaCloudApi:
         if not r_json["success"]:
             return f"Error {r_json['code']}: {r_json['msg']}"
 
+        req_results = r_json["result"]
+        self._token_expire_time = int(time.time()) + int(req_results.get("expire_time"))
         self._access_token = resp.json()["result"]["access_token"]
         return "ok"
 
@@ -153,3 +165,26 @@ class TuyaCloudApi:
             return {}, f"Error {r_json['code']}: {r_json['msg']}"
 
         return r_json["result"], "ok"
+
+    async def async_get_device_query_properties(self, device_id):
+        """Obtain the DP ID mappings for a device correctly!."""
+        resp = await self.async_make_request(
+            "GET", url=f"/v2.0/cloud/thing/{device_id}/shadow/properties"
+        )
+
+        if not resp.ok:
+            return {}, "Request failed, status " + str(resp.status)
+
+        r_json = resp.json()
+        if not r_json["success"]:
+            return {}, f"Error {r_json['code']}: {r_json['msg']}"
+
+        return r_json["result"], "ok"
+
+    @property
+    def token_validate(self):
+        """Return whether token is expired or not"""
+        cur_time = int(time.time())
+        expire_time = self._token_expire_time - 30
+
+        return expire_time >= cur_time

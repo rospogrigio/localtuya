@@ -1,4 +1,6 @@
-"""Platform to locally control Tuya-based climate devices."""
+"""Platform to locally control Tuya-based climate devices.
+    # PRESETS and HVAC_MODE Needs to be handle in better way.
+"""
 import asyncio
 import logging
 from functools import partial
@@ -83,6 +85,12 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Program",
     },
+    "auto/cold/hot/wet": {
+        HVACMode.AUTO: "auto",
+        HVACMode.COOL: "cold",
+        HVACMode.HEAT: "hot",
+        HVACMode.DRY: "wet",
+    },
     "m/p": {
         HVACMode.HEAT: "m",
         HVACMode.AUTO: "p",
@@ -106,6 +114,10 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
+    "smart/auto": {
+        HVACMode.HEAT_COOL: "1",
+        HVACMode.AUTO: "auto",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -119,6 +131,12 @@ HVAC_ACTION_SETS = {
     "heating/no_heating": {
         HVACAction.HEATING: "heating",
         HVACAction.IDLE: "no_heating",
+    },
+    "heating/cooling": {
+        HVACAction.HEATING: "heating",
+        HVACAction.COOLING: "cooling",
+        HVACAction.IDLE: "ventilation",
+        HVACAction.OFF: "off",
     },
     "Heat/Warming": {
         HVACAction.HEATING: "Heat",
@@ -154,6 +172,17 @@ PRESET_SETS = {
         PRESET_AWAY: "holiday",
         PRESET_HOME: "smart",
         PRESET_NONE: "hold",
+    },
+    "auto/smart": {
+        "auto": "Auto",
+        "smart": "Smart",
+    },
+    "auto/manual/smart/comfortable/eco": {
+        "auto": "Auto",
+        "manual": "Manual",
+        "smart": "Smart",
+        "comfortable": "Comfort",
+        "eco": "ECO",
     },
 }
 
@@ -223,9 +252,9 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._swing_mode = None
         self._preset_mode = None
         self._hvac_action = None
-        self._precision = self._config.get(CONF_PRECISION, DEFAULT_PRECISION)
-        self._target_precision = self._config.get(
-            CONF_TARGET_PRECISION, self._precision
+        self._precision = float(self._config.get(CONF_PRECISION, DEFAULT_PRECISION))
+        self._target_precision = float(
+            self._config.get(CONF_TARGET_PRECISION, self._precision)
         )
         self._conf_hvac_mode_dp = self._config.get(CONF_HVAC_MODE_DP)
         self._conf_hvac_mode_set = HVAC_MODE_SETS.get(
@@ -311,12 +340,12 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 if self._current_temperature < (
                     self._target_temperature - self._precision
                 ):
-                    self._hvac_action = HVACAction.HEATING
+                    self._hvac_action = HVACMode.HEAT
                 if self._current_temperature == (
                     self._target_temperature - self._precision
                 ):
-                    if self._hvac_action == HVACAction.HEATING:
-                        self._hvac_action = HVACAction.HEATING
+                    if self._hvac_action == HVACMode.HEAT:
+                        self._hvac_action = HVACMode.HEAT
                     if self._hvac_action == HVACAction.IDLE:
                         self._hvac_action = HVACAction.IDLE
                 if (
@@ -445,11 +474,15 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def min_temp(self):
         """Return the minimum temperature."""
-        if self.has_config(CONF_MIN_TEMP_DP):
+        if _min_temp := self._config.get(CONF_MIN_TEMP_DP):
             return self.dps_conf(CONF_MIN_TEMP_DP)
         if self.has_config(CONF_TEMP_MIN):
             return self._config[CONF_TEMP_MIN]
-        return DEFAULT_MIN_TEMP
+        # DEFAULT_MIN_TEMP is in C
+        if self.temperature_unit == TEMP_FAHRENHEIT:
+            return DEFAULT_MIN_TEMP * 1.8 + 32
+        else:
+            return DEFAULT_MIN_TEMP
 
     @property
     def max_temp(self):
@@ -458,7 +491,11 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
             return self.dps_conf(CONF_MAX_TEMP_DP)
         if self.has_config(CONF_TEMP_MAX):
             return self._config[CONF_TEMP_MAX]
-        return DEFAULT_MAX_TEMP
+        # DEFAULT_MAX_TEMP is in C
+        if self.temperature_unit == TEMP_FAHRENHEIT:
+            return DEFAULT_MAX_TEMP * 1.8 + 32
+        else:
+            return DEFAULT_MAX_TEMP
 
     def status_updated(self):
         """Device status was updated."""

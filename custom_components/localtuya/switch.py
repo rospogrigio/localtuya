@@ -4,7 +4,13 @@ from functools import partial
 from .config_flow import _col_to_select
 
 import voluptuous as vol
-from homeassistant.components.switch import DOMAIN, SwitchEntity
+from homeassistant.components.switch import (
+    DOMAIN,
+    SwitchEntity,
+    DEVICE_CLASSES_SCHEMA,
+    SwitchDeviceClass,
+)
+from homeassistant.const import CONF_DEVICE_CLASS
 
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
@@ -32,6 +38,9 @@ def flow_schema(dps):
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
         vol.Required(CONF_PASSIVE_ENTITY): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
+        vol.Optional(CONF_DEVICE_CLASS): _col_to_select(
+            [sc.value for sc in SwitchDeviceClass]
+        ),
     }
 
 

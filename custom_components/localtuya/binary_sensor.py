@@ -11,10 +11,10 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.const import CONF_DEVICE_CLASS
 
 from .common import LocalTuyaEntity, async_setup_entry
+from .const import CONF_STATE_ON
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_STATE_ON = "state_on"
 CONF_STATE_OFF = "state_off"
 
 
@@ -22,7 +22,7 @@ def flow_schema(dps):
     """Return schema used in config flow."""
     return {
         vol.Required(CONF_STATE_ON, default="True"): str,
-        vol.Required(CONF_STATE_OFF, default="False"): str,
+        # vol.Required(CONF_STATE_OFF, default="False"): str,
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
     }
 
@@ -46,24 +46,15 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
         """Return sensor state."""
         return self._is_on
 
-    @property
-    def device_class(self):
-        """Return the class of this device."""
-        return self._config.get(CONF_DEVICE_CLASS)
-
     def status_updated(self):
         """Device status was updated."""
         super().status_updated()
 
         state = str(self.dps(self._dp_id)).lower()
-        if state == self._config[CONF_STATE_ON].lower():
+        if state == self._config[CONF_STATE_ON].lower() or state == "true":
             self._is_on = True
-        elif state == self._config[CONF_STATE_OFF].lower():
-            self._is_on = False
         else:
-            self.warning(
-                "State for entity %s did not match state patterns", self.entity_id
-            )
+            self._is_on = False
 
     # No need to restore state for a sensor
     async def restore_state_when_connected(self):

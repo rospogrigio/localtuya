@@ -45,6 +45,9 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         self._state = STATE_UNKNOWN
         self._state_friendly = ""
         self._valid_options = self._config.get(CONF_OPTIONS).split(";")
+        # We split using comma, we still gonna use ; a little bit old configure devices.
+        if "," in self._config.get(CONF_OPTIONS):
+            self._valid_options = self._config.get(CONF_OPTIONS).split(",")
 
         # Set Display options
         self._display_options = []
@@ -55,12 +58,18 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
 
         if display_options_str.find(";") >= 0:
             self._display_options = display_options_str.split(";")
+        elif display_options_str.find(",") >= 0:
+            self._display_options = display_options_str.split(",")
         elif len(display_options_str.strip()) > 0:
             self._display_options.append(display_options_str)
         else:
             # Default display string to raw string
             _LOGGER.debug("No Display options configured - defaulting to raw values")
             self._display_options = self._valid_options
+
+        # Remove white spaces on the start
+        self._display_options = [opt.lstrip() for opt in self._display_options]
+        self._valid_options = [opt.lstrip() for opt in self._valid_options]
 
         _LOGGER.debug(
             "Total Raw Options: %s - Total Display Options: %s",

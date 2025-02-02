@@ -186,6 +186,22 @@
                     "export_config": "Export the device config."
                 }
             },
+            "device_setup_method": {
+                "title": "Configure device method",
+                "description": "Pick the setup method for the device auto works similar to HA tuya integration",
+                "menu_options": {
+                    "auto_configure_device":"Auto Configure (Beta)",
+                    "pick_entity_type": "Setup Manually (Advanced)",
+                    "choose_template":"Use Template (Pre-Config)"
+                }
+            },
+            "auto_configure_device": {
+                "title": "Auto Configure",
+                "description": "An Error occurred: {err_msg}, if reason isn't showing check logs",
+                "menu_options": {
+                    "device_setup_method":"Return to Setup method"
+                }
+            },
             "pick_entity_type": {
                 "title": "Entity type selection",
                 "description": "Please pick the type of entity you want to add.",
@@ -210,7 +226,7 @@
                 "description": "Please fill out the details for {entity} with type `{platform}`. All settings except for `ID` can be changed from the Options page later.",
                 "data": {
                     "id": "ID",
-                    "friendly_name": "Friendly name",
+                    "friendly_name": "Friendly name for entity (device_name_entity name)",
                     "current": "Current",
                     "current_consumption": "Current Consumption",
                     "voltage": "Voltage",
@@ -220,8 +236,9 @@
                     "set_position_dp": "Set Position (for *position* mode only)",
                     "position_inverted": "Invert 0-100 position (for *position* mode only)",
                     "span_time": "Full opening time, in secs. (for *timed* mode only)",
-                    "unit_of_measurement": "Unit of Measurement",
-                    "device_class": "Device Class",
+                    "unit_of_measurement": "Unit of Measurement (Optional)",
+                    "device_class": "Device Class (Optional)",
+                    "state_class": "State Class (Optional)",
                     "scaling": "Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
@@ -253,10 +270,10 @@
                     "color_temp_max_kelvin": "Maximum Color Temperature in K",
                     "music_mode": "Music mode available",
                     "scene": "Scene",
-                    "scene_values": "Scene values, separate entries by a ;",
-                    "scene_values_friendly": "User friendly scene values, separate entries by a ;",
-                    "select_options": "Valid entries, separate entries by a ;",
-                    "select_options_friendly": "User Friendly options, separate entries by a ;",
+                    "scene_values": "Scene values, separate entries by comma ','",
+                    "scene_values_friendly": "User friendly scene values, separate entries by comma ','",
+                    "select_options": "Valid entries, separate entries by comma ','",
+                    "select_options_friendly": "User Friendly options, separate entries by comma ','",
                     "fan_speed_control": "Fan Speed Control dps",
                     "fan_oscillating_control": "Fan Oscillating Control dps",
                     "fan_speed_min": "minimum fan speed integer",
@@ -298,6 +315,10 @@
                     "step_size": "Minimum increment between numbers",
                     "is_passive_entity": "Passive entity - requires integration to send initialisation value",
                     "entity_category": "Show the entity in this categroy"
+                },
+                "data_description": {
+                    "device_class": "[Device Classes: More Info](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
+                    "state_class": "[State Classes: More Info](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
                 }
             }
         }

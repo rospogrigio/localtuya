@@ -1,5 +1,5 @@
 """Constants for localtuya integration."""
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, Platform
 
 DOMAIN = "localtuya"
 
@@ -11,19 +11,20 @@ SUPPORTED_PROTOCOL_VERSIONS = ["3.3", "3.1", "3.2", "3.4", "3.5"]
 
 
 # Platforms in this list must support config flows
-PLATFORMS = [
-    "binary_sensor",
-    "button",
-    "climate",
-    "cover",
-    "fan",
-    "light",
-    "number",
-    "select",
-    "sensor",
-    "switch",
-    "vacuum",
-]
+PLATFORMS = {
+    "Binary Sensor": Platform.BINARY_SENSOR,
+    "Button": Platform.BUTTON,
+    "Climate": Platform.CLIMATE,
+    "Cover": Platform.COVER,
+    "Fan": Platform.FAN,
+    "Light": Platform.LIGHT,
+    "Number": Platform.NUMBER,
+    "Selector": Platform.SELECT,
+    "Sensor": Platform.SENSOR,
+    "Siren": Platform.SIREN,
+    "Switch": Platform.SWITCH,
+    "Vacuum": Platform.VACUUM,
+}
 TUYA_DEVICES = "tuya_devices"
 
 ATTR_CURRENT = "current"
@@ -58,6 +59,9 @@ CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
+
+# Binary_sensor, Siren
+CONF_STATE_ON = "state_on"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -98,6 +102,7 @@ CONF_FAN_DPS_TYPE = "fan_dps_type"
 
 # sensor
 CONF_SCALING = "scaling"
+CONF_STATE_CLASS = "state_class"
 
 # climate
 CONF_TARGET_TEMPERATURE_DP = "target_temperature_dp"
@@ -105,10 +110,10 @@ CONF_CURRENT_TEMPERATURE_DP = "current_temperature_dp"
 CONF_TEMPERATURE_STEP = "temperature_step"
 CONF_TEMP_MAX = "max_temp"
 CONF_TEMP_MIN = "min_temp"
-CONF_MAX_TEMP_DP = "max_temperature_dp"
-CONF_MIN_TEMP_DP = "min_temperature_dp"
 CONF_TEMP_MAX = "max_temperature_const"
 CONF_TEMP_MIN = "min_temperature_const"
+CONF_MAX_TEMP_DP = "max_temperature_dp"  # deprecated
+CONF_MIN_TEMP_DP = "min_temperature_dp"  # deprecated
 CONF_PRECISION = "precision"
 CONF_TARGET_PRECISION = "target_precision"
 CONF_HVAC_MODE_DP = "hvac_mode_dp"
@@ -159,7 +164,7 @@ CONF_RESTORE_ON_RECONNECT = "restore_on_reconnect"
 
 # Categories
 ENTITY_CATEGORY = {
-    "Controls": None,
+    "None": None,
     "Configuration": EntityCategory.CONFIG,
     "Diagnostic": EntityCategory.DIAGNOSTIC,
 }

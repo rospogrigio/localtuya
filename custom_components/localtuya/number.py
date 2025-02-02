@@ -3,8 +3,12 @@ import logging
 from functools import partial
 
 import voluptuous as vol
-from homeassistant.components.number import DOMAIN, NumberEntity
-from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
+from homeassistant.components.number import DOMAIN, NumberEntity, DEVICE_CLASSES_SCHEMA
+from homeassistant.const import (
+    CONF_DEVICE_CLASS,
+    STATE_UNKNOWN,
+    CONF_UNIT_OF_MEASUREMENT,
+)
 
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
@@ -40,9 +44,11 @@ def flow_schema(dps):
             vol.Coerce(float),
             vol.Range(min=0.0, max=1000000.0),
         ),
-        vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
-        vol.Required(CONF_PASSIVE_ENTITY): bool,
+        vol.Optional(CONF_RESTORE_ON_RECONNECT, default=False): bool,
+        vol.Optional(CONF_PASSIVE_ENTITY, default=False): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
+        vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
+        vol.Optional(CONF_UNIT_OF_MEASUREMENT): vol.Any(None, str),
     }
 
 
@@ -96,6 +102,11 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
     def native_step(self) -> float:
         """Return the maximum value."""
         return self._step_size
+
+    @property
+    def native_unit_of_measurement(self):
+        """Return the unit of measurement of this entity, if any."""
+        return self._config.get(CONF_UNIT_OF_MEASUREMENT)
 
     @property
     def device_class(self):
