@@ -196,6 +196,7 @@ class TuyaCloudApi:
 
     async def get_device_functions(self, device_id) -> dict[str, dict]:
         """Pull Devices Properties and Specifications to devices_list"""
+        device_data = {}
         get_data = [
             self.async_get_device_specifications(device_id),
             self.async_get_device_query_properties(device_id),

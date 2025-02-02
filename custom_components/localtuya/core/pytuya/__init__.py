@@ -260,6 +260,9 @@ class ContextualLogger:
         self._logger = None
         self._enable_debug = False
 
+        self._reset_warning = int(time.time())
+        self._last_warning = ""
+
     def set_logger(self, logger, device_id, enable_debug=False):
         """Set base logger to use."""
         self._enable_debug = enable_debug
@@ -271,13 +274,20 @@ class ContextualLogger:
             return
         return self._logger.log(logging.DEBUG, msg, *args)
 
-    def info(self, msg, *args):
-        """Info level log."""
+    def info(self, msg, *args, clear_warning=False):
+        """Info level log. clear_warning to re-enable warings msgs if duplicated"""
+        if clear_warning:
+            self._last_warning = ""
+
         return self._logger.log(logging.INFO, msg, *args)
 
     def warning(self, msg, *args):
         """Warning method log."""
-        return self._logger.log(logging.WARNING, msg, *args)
+        if msg != self._last_warning:
+            self._last_warning = msg
+            return self._logger.log(logging.WARNING, msg, *args)
+        else:
+            self.info(msg)
 
     def error(self, msg, *args):
         """Error level log."""
@@ -1163,11 +1173,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     # return self.error_json(ERR_JSON, payload)
 
             if "data unvalid" in payload:
-                self.dev_type = "type_0d"
-                self.debug(
-                    "'data unvalid' error detected: switching to dev_type %r",
-                    self.dev_type,
-                )
+                if self.version <= 3.3:
+                    self.dev_type = "type_0d"
+                    self.debug(
+                        "'data unvalid' error detected: switching to dev_type %r",
+                        self.dev_type,
+                    )
                 return None
         elif not payload.startswith(b"{"):
             self.debug("Unexpected payload=%r", payload)
@@ -1179,13 +1190,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             json_payload = json.loads(payload)
         except Exception as ex:
-            if len(payload) == 0:  # No respones probably worng Local_Key
-                raise ValueError("Connected but no respones localkey is incorrect?")
             if "devid not" in payload:  # DeviceID Not found.
                 raise ValueError("DeviceID Not found")
             else:
                 raise DecodeError(
-                    "could not decrypt data: wrong local_key? (exception: %s)" % ex
+                    f"could not decrypt data: wrong local_key? (exception: {ex}, payload: {payload})"
                 )
             # json_payload = self.error_json(ERR_JSON, payload)
 

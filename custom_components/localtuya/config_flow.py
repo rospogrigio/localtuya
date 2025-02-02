@@ -347,7 +347,12 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
         conf_protocol = data[CONF_PROTOCOL_VERSION]
         auto_protocol = conf_protocol == "auto"
         # If sub device we will search if gateway is existed if not create new connection.
-        if cid and (existed_interface := localtuya_devices.get(data[CONF_HOST])):
+        if (
+            cid
+            and (existed_interface := localtuya_devices.get(data[CONF_HOST]))
+            and existed_interface.connected
+            and not existed_interface.is_connecting
+        ):
             interface = existed_interface._interface
             close = False
         else:
