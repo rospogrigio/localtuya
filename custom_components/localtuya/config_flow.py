@@ -9,7 +9,7 @@ from .helpers import templates, _col_to_select
 
 import homeassistant.helpers.config_validation as cv
 
-# import homeassistant.helpers.entity_registry as er  # Disabled it because no need to delete registry.
+import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
 from homeassistant.helpers.selector import (
@@ -996,16 +996,21 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     # finished editing device. Let's store the new config entry....
                     dev_id = self.device_data[CONF_DEVICE_ID]
                     new_data = self.config_entry.data.copy()
-                    # entry_id = self.config_entry.entry_id
-                    # removing entities from registry (they will be recreated)
-                    # ent_reg = er.async_get(self.hass)
-                    # reg_entities = {
-                    #     ent.unique_id: ent.entity_id
-                    #     for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
-                    #     if dev_id in ent.unique_id
-                    # }
-                    # for entity_id in reg_entities.values():
-                    #     ent_reg.async_remove(entity_id)
+                    entry_id = self.config_entry.entry_id
+                    # Removing the unwanted entites.
+                    entitesNames = [
+                        name[CONF_FRIENDLY_NAME]
+                        for name in self.device_data[CONF_ENTITIES]
+                    ]
+                    ent_reg = er.async_get(self.hass)
+                    reg_entities = {
+                        ent.unique_id: ent.entity_id
+                        for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
+                        if dev_id in ent.unique_id
+                        and ent.original_name not in entitesNames
+                    }
+                    for entity_id in reg_entities.values():
+                        ent_reg.async_remove(entity_id)
 
                     new_data[CONF_DEVICES][dev_id] = self.device_data
                     new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))

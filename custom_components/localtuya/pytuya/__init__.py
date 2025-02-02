@@ -230,6 +230,7 @@ payload_dict = {
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command
             "command": {"protocol": 5, "t": "int", "data": {"cid": ""}},
         },
+        CONTROL_NEW: {"command": {"protocol": 5, "t": "int", "data": {"cid": ""}}},
         DP_QUERY: {"command_override": DP_QUERY_NEW},
     },
     "v3.5": {
@@ -237,6 +238,7 @@ payload_dict = {
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command
             "command": {"protocol": 5, "t": "int", "data": {"cid": ""}},
         },
+        CONTROL_NEW: {"command": {"protocol": 5, "t": "int", "data": {"cid": ""}}},
         DP_QUERY: {"command_override": DP_QUERY_NEW},
     },
 }
@@ -1373,7 +1375,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if "dpId" in json_data:
                 json_data["dpId"] = data
             elif "data" in json_data:
-                json_data["data"] = {"dps": data}
+                json_data["data"].update({"dps": data})  # We don't want to remove CID
             else:
                 json_data["dps"] = data
         elif self.dev_type == "type_0d" and command == DP_QUERY:

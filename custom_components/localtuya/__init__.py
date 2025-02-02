@@ -144,10 +144,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
             # device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
             # if not device.connected:
             #     hass.create_task(device.async_connect())
-        elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                hass.create_task(device.async_connect())
+        # elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
+        #     device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
+        #     if not device.connected:
+        #         hass.create_task(device.async_connect())
 
     def _shutdown(event):
         """Clean up resources when shutting down."""
@@ -290,6 +290,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
         await async_remove_orphan_entities(hass, entry)
         await hass.config_entries.async_forward_entry_setups(entry, platforms)
+        for dev_id in device_ids:
+            hass.create_task(hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect())
 
     await setup_entities(entry.data[CONF_DEVICES].keys())
     unsub_listener = entry.add_update_listener(update_listener)
