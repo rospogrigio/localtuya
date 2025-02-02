@@ -146,7 +146,6 @@ HVAC_SWING_MODE_SETS = {
         SWING_ON: True,
         SWING_OFF: False,
     }
->>>>>>> 5f2c027c1e9421a93dcc937bf151b9456add04c6
 }
 PRESET_SETS = {
     "Manual/Holiday/Program": {
