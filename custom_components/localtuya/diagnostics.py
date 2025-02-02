@@ -11,8 +11,8 @@ from homeassistant.const import CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_DEVICES
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
+from . import HassLocalTuyaData
 from .const import CONF_LOCAL_KEY, CONF_USER_ID, DOMAIN
-from .common import HassLocalTuyaData
 
 CLOUD_DEVICES = "cloud_devices"
 DEVICE_CONFIG = "device_config"

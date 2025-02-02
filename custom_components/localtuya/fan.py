@@ -22,7 +22,7 @@ from homeassistant.util.percentage import (
     ranged_value_to_percentage,
 )
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_FAN_DIRECTION,
     CONF_FAN_DIRECTION_FWD,
@@ -53,7 +53,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaFan(LocalTuyaEntity, FanEntity):
+class LocalTuyaFan(LocalTuyaEntity, FanEntity):
     """Representation of a Tuya fan."""
 
     def __init__(
@@ -260,4 +260,4 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             _LOGGER.debug("Fan current_direction : %s > %s", value, self._direction)
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaFan, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaFan, flow_schema)

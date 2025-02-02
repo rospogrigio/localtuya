@@ -13,7 +13,7 @@ from homeassistant.components.switch import (
 )
 from homeassistant.const import CONF_DEVICE_CLASS
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     ATTR_CURRENT,
     ATTR_CURRENT_CONSUMPTION,
@@ -45,7 +45,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
+class LocalTuyaSwitch(LocalTuyaEntity, SwitchEntity):
     """Representation of a Tuya switch."""
 
     _attr_device_class = SwitchDeviceClass.SWITCH
@@ -100,4 +100,4 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         return False
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSwitch, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSwitch, flow_schema)

@@ -1,4 +1,5 @@
 """Class to perform requests to Tuya Cloud APIs."""
+
 import asyncio
 import functools
 import hashlib
@@ -11,6 +12,8 @@ import requests
 from requests.adapters import HTTPAdapter, Retry
 
 _LOGGER = logging.getLogger(__name__)
+
+DEVICES_UPDATE_INTERVAL = 300
 
 
 # Signature algorithm.
@@ -43,6 +46,8 @@ class TuyaCloudApi:
 
         self.device_list = {}
         self.cached_device_list = {}
+
+        self._last_devices_update = int(time.time())
 
     def generate_payload(self, method, timestamp, url, headers, body=None):
         """Generate signed payload for requests."""
@@ -153,8 +158,12 @@ class TuyaCloudApi:
         self._access_token = resp.json()["result"]["access_token"]
         return "ok"
 
-    async def async_get_devices_list(self) -> str | None:
-        """Obtain the list of devices associated to a user."""
+    async def async_get_devices_list(self, force_update=False) -> str | None:
+        """Obtain the list of devices associated to a user. - force_update will ignore last update check."""
+
+        if not force_update and (int(time.time()) - self._last_devices_update) < 0:
+            return _LOGGER.debug(f"Devices has been updated a minutes ago.")
+
         resp = await self.async_make_request(
             "GET", url=f"/v1.0/users/{self._user_id}/devices"
         )
@@ -181,6 +190,7 @@ class TuyaCloudApi:
         ]
         # await asyncio.run(*get_functions)
 
+        self._last_devices_update = int(time.time()) + DEVICES_UPDATE_INTERVAL
         return "ok"
 
     async def async_get_device_specifications(self, device_id) -> dict[str, dict]:

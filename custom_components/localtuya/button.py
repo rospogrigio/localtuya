@@ -1,11 +1,12 @@
 """Platform to locally control Tuya-based button devices."""
+
 import logging
 from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.button import DOMAIN, ButtonEntity
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_PASSIVE_ENTITY
 
 _LOGGER = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaButton(LocalTuyaEntity, ButtonEntity):
+class LocalTuyaButton(LocalTuyaEntity, ButtonEntity):
     """Representation of a Tuya button."""
 
     def __init__(
@@ -37,4 +38,4 @@ class LocaltuyaButton(LocalTuyaEntity, ButtonEntity):
         await self._device.set_dp(True, self._dp_id)
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaButton, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaButton, flow_schema)

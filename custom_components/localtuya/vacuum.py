@@ -17,7 +17,7 @@ from homeassistant.components.vacuum import (
     StateVacuumEntity,
 )
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_BATTERY_DP,
     CONF_CLEAN_AREA_DP,
@@ -84,11 +84,11 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
+class LocalTuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
     """Tuya vacuum device."""
 
     def __init__(self, device, config_entry, switchid, **kwargs):
-        """Initialize a new LocaltuyaVacuum."""
+        """Initialize a new LocalTuyaVacuum."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
         self._battery_level = None
@@ -271,4 +271,4 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
                 self._state = STATE_ERROR
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaVacuum, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaVacuum, flow_schema)

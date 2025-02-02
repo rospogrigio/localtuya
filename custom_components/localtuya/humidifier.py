@@ -27,7 +27,7 @@ CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP = "humidifier_current_humidity_dp"
 CONF_HUMIDIFIER_MODE_DP = "humidifier_mode_dp"
 CONF_HUMIDIFIER_AVAILABLE_MODES = "humidifier_available_modes"
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
+class LocalTuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     """Representation of a Localtuya Humidifier."""
 
     _dp_mode = CONF_HUMIDIFIER_MODE_DP
@@ -153,4 +153,4 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
                 self._current_mode = "unknown"
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaHumidifier, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaHumidifier, flow_schema)

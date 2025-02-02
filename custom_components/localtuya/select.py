@@ -8,7 +8,7 @@ from homeassistant.components.select import DOMAIN, SelectEntity
 from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
 from homeassistant.helpers import selector
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_DEFAULT_VALUE,
     CONF_OPTIONS,
@@ -30,7 +30,7 @@ def flow_schema(dps):
 _LOGGER = logging.getLogger(__name__)
 
 
-class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
+class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
     """Representation of a Tuya Enumeration."""
 
     def __init__(
@@ -112,4 +112,4 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         return self._valid_options[0]
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSelect, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSelect, flow_schema)

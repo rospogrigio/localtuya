@@ -1,4 +1,5 @@
 """Platform to present any Tuya DP as a number."""
+
 import logging
 from functools import partial
 
@@ -10,7 +11,7 @@ from homeassistant.const import (
     CONF_UNIT_OF_MEASUREMENT,
 )
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_DEFAULT_VALUE,
     CONF_MAX_VALUE,
@@ -55,7 +56,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
+class LocalTuyaNumber(LocalTuyaEntity, NumberEntity):
     """Representation of a Tuya Number."""
 
     def __init__(
@@ -122,4 +123,4 @@ class LocaltuyaNumber(LocalTuyaEntity, NumberEntity):
         return self._min_value
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaNumber, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaNumber, flow_schema)

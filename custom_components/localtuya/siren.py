@@ -1,11 +1,12 @@
 """Platform to present any Tuya DP as a siren."""
+
 import logging
 from functools import partial
 
 import voluptuous as vol
 from homeassistant.components.siren import DOMAIN, SirenEntity, SirenEntityFeature
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_STATE_ON
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaSiren(LocalTuyaEntity, SirenEntity):
+class LocalTuyaSiren(LocalTuyaEntity, SirenEntity):
     """Representation of a Tuya siren."""
 
     _attr_supported_features = SirenEntityFeature.TURN_ON | SirenEntityFeature.TURN_OFF
@@ -66,4 +67,4 @@ class LocaltuyaSiren(LocalTuyaEntity, SirenEntity):
             self._is_on = False
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSiren, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSiren, flow_schema)

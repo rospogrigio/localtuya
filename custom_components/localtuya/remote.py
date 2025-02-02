@@ -29,7 +29,7 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.storage import Store
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_RECEIVE_DP, CONF_KEY_STUDY_DP
 
 NSDP_CONTROL = "control"  # The control commands

@@ -1,36 +1,36 @@
 """The LocalTuya integration."""
 
 import asyncio
+from dataclasses import dataclass
 import logging
 import time
 from datetime import timedelta
+from typing import Any, NamedTuple
 
 import homeassistant.helpers.config_validation as cv
+import homeassistant.helpers.device_registry as dr
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import (
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
-    CONF_DEVICE_ID,
     CONF_DEVICES,
+    CONF_DEVICE_ID,
     CONF_ENTITIES,
     CONF_HOST,
     CONF_ID,
     CONF_PLATFORM,
     CONF_REGION,
-    CONF_USERNAME,
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
-import homeassistant.helpers.device_registry as dr
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.service import async_register_admin_service
 
-from .cloud_api import TuyaCloudApi
-from .common import HassLocalTuyaData, TuyaDevice, async_config_entry_by_device_id
+from .coordinator import TuyaDevice, HassLocalTuyaData, TuyaCloudApi
 from .config_flow import ENTRIES_VERSION, config_schema
 from .const import (
     ATTR_UPDATED_AT,
@@ -42,6 +42,7 @@ from .const import (
     DATA_DISCOVERY,
     DOMAIN,
 )
+
 from .discovery import TuyaDiscovery
 
 _LOGGER = logging.getLogger(__name__)
@@ -392,8 +393,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass_data: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
 
     for dev in hass_data.devices.values():
-        # dev.closed = True
-        # if dev.connected:
         disconnect_devices.append(asyncio.create_task(dev.close()))
         for entity in dev._device_config.entities:
             platforms[entity[CONF_PLATFORM]] = True
@@ -509,3 +508,17 @@ def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
 
     if ha_device_id:
         return dr.async_get(hass).async_get(ha_device_id).disabled
+
+
+@callback
+def async_config_entry_by_device_id(hass: HomeAssistant, device_id):
+    """Look up config entry by device id."""
+    current_entries = hass.config_entries.async_entries(DOMAIN)
+    for entry in current_entries:
+        if device_id in entry.data[CONF_DEVICES]:
+            return entry
+        # Search for gateway_id
+        for dev_conf in entry.data[CONF_DEVICES].values():
+            if (gw_id := dev_conf.get(CONF_GATEWAY_ID)) and gw_id == device_id:
+                return entry
+    return None

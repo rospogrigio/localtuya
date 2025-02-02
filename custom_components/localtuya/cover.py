@@ -15,7 +15,7 @@ from homeassistant.components.cover import (
 )
 from homeassistant.const import CONF_DEVICE_CLASS
 from .config_flow import _col_to_select
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_COMMANDS_SET,
     CONF_CURRENT_POSITION_DP,
@@ -81,11 +81,11 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
+class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     """Tuya cover device."""
 
     def __init__(self, device, config_entry, switchid, **kwargs):
-        """Initialize a new LocaltuyaCover."""
+        """Initialize a new LocalTuyaCover."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         commands_set = DEF_CMD_SET
         if self.has_config(CONF_COMMANDS_SET):
@@ -308,4 +308,4 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self.async_write_ha_state()
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaCover, flow_schema)

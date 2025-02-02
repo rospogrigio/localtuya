@@ -22,7 +22,7 @@ from homeassistant.components.light import (
 )
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_BRIGHTNESS_LOWER,
     CONF_BRIGHTNESS_UPPER,
@@ -154,7 +154,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaLight(LocalTuyaEntity, LightEntity):
+class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     """Representation of a Tuya light."""
 
     def __init__(
@@ -533,4 +533,4 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             self._effect = SCENE_MUSIC
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaLight, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaLight, flow_schema)

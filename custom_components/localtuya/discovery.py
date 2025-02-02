@@ -5,6 +5,7 @@ based on tuya-convert.py from tuya-convert:
 
 Maintained by @xZetsubou
 """
+
 import asyncio
 import json
 import logging
@@ -14,7 +15,7 @@ from socket import inet_aton
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from .common import pytuya
+from .entity import pytuya
 
 _LOGGER = logging.getLogger(__name__)
 

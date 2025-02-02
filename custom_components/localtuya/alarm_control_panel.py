@@ -1,4 +1,5 @@
 """Platform to present any Tuya DP as a Alarm."""
+
 from enum import StrEnum
 import logging
 from functools import partial
@@ -13,20 +14,13 @@ from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntityFeature,
 )
 from homeassistant.const import (
-    STATE_UNKNOWN,
     STATE_ALARM_DISARMED,
     STATE_ALARM_ARMED_HOME,
     STATE_ALARM_ARMED_AWAY,
-    STATE_ALARM_ARMED_NIGHT,
-    STATE_ALARM_ARMED_VACATION,
-    STATE_ALARM_ARMED_CUSTOM_BYPASS,
-    STATE_ALARM_PENDING,
-    STATE_ALARM_ARMING,
-    STATE_ALARM_DISARMING,
     STATE_ALARM_TRIGGERED,
 )
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_ALARM_SUPPORTED_STATES
 
 _LOGGER = logging.getLogger(__name__)

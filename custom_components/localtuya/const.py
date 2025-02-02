@@ -1,9 +1,19 @@
 """Constants for localtuya integration."""
 
-from homeassistant.const import EntityCategory, Platform
+from dataclasses import dataclass
+from typing import Any
+from homeassistant.const import (
+    CONF_DEVICE_ID,
+    CONF_ENTITIES,
+    CONF_FRIENDLY_NAME,
+    CONF_HOST,
+    CONF_ID,
+    CONF_SCAN_INTERVAL,
+    EntityCategory,
+    Platform,
+)
 
 DOMAIN = "localtuya"
-
 DATA_DISCOVERY = "discovery"
 
 # Order on priority
@@ -38,6 +48,10 @@ ATTR_UPDATED_AT = "updated_at"
 CONF_TUYA_IP = "ip"
 CONF_TUYA_GWID = "gwId"
 CONF_TUYA_VERSION = "version"
+
+# Status Payloads.
+RESTORE_STATES = {"0": "restore"}
+
 
 # config flow
 CONF_LOCAL_KEY = "local_key"
@@ -189,3 +203,26 @@ DEFAULT_CATEGORIES = {
     "CONFIG": ["select", "number", "button"],
     "DIAGNOSTIC": ["sensor", "binary_sensor"],
 }
+
+
+@dataclass
+class DeviceConfig:
+    """Represent the main configuration for LocalTuya device."""
+
+    device_config: dict[str, Any]
+
+    def __post_init__(self) -> None:
+        self.id: str = self.device_config[CONF_DEVICE_ID]
+        self.host: str = self.device_config[CONF_HOST]
+        self.local_key: str = self.device_config[CONF_LOCAL_KEY]
+        self.entities: list = self.device_config[CONF_ENTITIES]
+        self.protocol_version: str = self.device_config[CONF_PROTOCOL_VERSION]
+        self.sleep_time: int = self.device_config.get(CONF_DEVICE_SLEEP_TIME, 0)
+        self.scan_interval: int = self.device_config.get(CONF_SCAN_INTERVAL, 0)
+        self.enable_debug: bool = self.device_config.get(CONF_ENABLE_DEBUG, False)
+        self.name: str = self.device_config.get(CONF_FRIENDLY_NAME)
+        self.node_id: str | None = self.device_config.get(CONF_NODE_ID)
+        self.model: str = self.device_config.get(CONF_MODEL, "Tuya generic")
+        self.reset_dps: str = self.device_config.get(CONF_RESET_DPIDS, "")
+        self.manual_dps: str = self.device_config.get(CONF_MANUAL_DPS, "")
+        self.dps_strings: list = self.device_config.get(CONF_DPS_STRINGS, [])

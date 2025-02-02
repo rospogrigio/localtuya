@@ -1,4 +1,5 @@
 """Platform to present any Tuya DP as a binary sensor."""
+
 import logging
 from functools import partial
 
@@ -10,7 +11,7 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.const import CONF_DEVICE_CLASS
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import CONF_STATE_ON
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ def flow_schema(dps):
     }
 
 
-class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
+class LocalTuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
     """Representation of a Tuya binary sensor."""
 
     def __init__(
@@ -65,5 +66,5 @@ class LocaltuyaBinarySensor(LocalTuyaEntity, BinarySensorEntity):
 
 
 async_setup_entry = partial(
-    async_setup_entry, DOMAIN, LocaltuyaBinarySensor, flow_schema
+    async_setup_entry, DOMAIN, LocalTuyaBinarySensor, flow_schema
 )
