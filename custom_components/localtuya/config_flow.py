@@ -248,10 +248,11 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
     """Return list of friendly DPS values."""
     strs = []
 
-    # Merge DPS found on cloud with local dps strings.
-    # for dp, func in cloud_dp_codes.items():
-    #     if dp not in dps_data:
-    #         dps_data[dp] = f"{func.get('value')}, cloud pull"
+    # Merge DPs that found through cloud with local.
+    # These DPs probably doesn't have local states, so we assume there functions are buttons.
+    for dp, func in cloud_dp_codes.items():
+        if dp not in dps_data and str(func.get("value")).lower() in ["false", "true"]:
+            dps_data[dp] = f"{func.get('value')}, tip: button entity"
 
     for dp, value in dps_data.items():
         if (dp_data := cloud_dp_codes.get(dp)) and (code := dp_data.get("code")):
