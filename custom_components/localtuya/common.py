@@ -19,6 +19,7 @@ from homeassistant.const import (
     STATE_UNKNOWN,
     CONF_ENTITY_CATEGORY,
     EntityCategory,
+    CONF_TYPE,
 )
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import (
@@ -292,6 +293,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                     timedelta(seconds=int(self._dev_config_entry[CONF_SCAN_INTERVAL])),
                 )
 
+            self._is_closing = False
             self.info(f"Successfully connected to {self._dev_config_entry[CONF_HOST]}")
 
         self._connect_task = None
@@ -362,12 +364,50 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def status_updated(self, status):
         """Device updated status."""
+        self._handle_event(self._status, status)
         self._status.update(status)
         self._dispatch_status()
 
     def _dispatch_status(self):
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
         async_dispatcher_send(self._hass, signal, self._status)
+
+    def _handle_event(self, old_status, new_status):
+        """Handle events in HA when devices updated."""
+
+        def fire_event(event, data: dict):
+            event_data = {
+                CONF_DEVICE_ID: self._dev_config_entry[CONF_DEVICE_ID],
+                CONF_TYPE: event,
+            }
+            event_data.update(data)
+            # Send an event with status, The default length of event without data is 2.
+            if len(event_data) > 2:
+                self._hass.bus.async_fire(f"localtuya_{event}", event_data)
+
+        event = "states_update"
+        device_triggered = "device_triggered"
+        device_dp_triggered = "device_dp_triggered"
+
+        # Device Initializing. if not old_states.
+        # States update event.
+        if old_status and old_status != new_status:
+            data = {"old_states": old_status, "new_states": new_status}
+            fire_event(event, data)
+
+        # Device triggered event.
+        if old_status and new_status is not None:
+            event = device_triggered
+            data = {CONF_TYPE: event, "states": new_status}
+            fire_event(event, data)
+
+            if self._interface is not None:
+                if len(self._interface.dispatched_dps) == 1:
+                    event = device_dp_triggered
+                    dp_trigger = list(self._interface.dispatched_dps)[0]
+                    dp_value = self._interface.dispatched_dps.get(dp_trigger)
+                    data = {CONF_TYPE: event, "dp": dp_trigger, "value": dp_value}
+                    fire_event(event, data)
 
     @callback
     def disconnected(self):
@@ -383,6 +423,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             # self._connect_task.cancel()
             self._connect_task = None
         self.warning("Disconnected - waiting for discovery broadcast")
+        # If it's disconnect by unexpected error.
+        if self._is_closing is not True:
+            self._is_closing = True
+            self._hass.create_task(self.async_connect())
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):

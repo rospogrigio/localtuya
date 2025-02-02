@@ -29,7 +29,7 @@ Credits
     For protocol reverse engineering
   * PyTuya https://github.com/clach04/python-tuya by clach04
     The origin of this python module (now abandoned)
-  * Tuya Protocol 3.4 Support by uzlonewolf
+  * Tuya Protocol 3.4 and 3.5 Support by uzlonewolf
     Enhancement to TuyaMessage logic for multi-payload messages and Tuya Protocol 3.4 support
   * TinyTuya https://github.com/jasonacox/tinytuya by jasonacox, uzlonewolf
     Several CLI tools and code for Tuya devices
@@ -230,7 +230,6 @@ payload_dict = {
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command
             "command": {"protocol": 5, "t": "int", "data": {"cid": ""}},
         },
-        CONTROL_NEW: {"command": {"protocol": 5, "t": "int", "data": {"cid": ""}}},
         DP_QUERY: {"command_override": DP_QUERY_NEW},
     },
     "v3.5": {
@@ -238,7 +237,6 @@ payload_dict = {
             "command_override": CONTROL_NEW,  # Uses CONTROL_NEW command
             "command": {"protocol": 5, "t": "int", "data": {"cid": ""}},
         },
-        CONTROL_NEW: {"command": {"protocol": 5, "t": "int", "data": {"cid": ""}}},
         DP_QUERY: {"command_override": DP_QUERY_NEW},
     },
 }
@@ -417,7 +415,6 @@ def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=No
                 payload,
                 use_base64=False,
                 decode_text=False,
-                verify_padding=False,
                 iv=iv,
                 header=data[4:header_len],
                 tag=crc,
@@ -584,7 +581,13 @@ class MessageDispatcher(ContextualLogger):
     async def wait_for(self, seqno, cmd, timeout=5):
         """Wait for response to a sequence number to be received and return it."""
         if seqno in self.listeners:
+            self.error(f"listener exists for {seqno}")
+            return
             raise Exception(f"listener exists for {seqno}")
+
+        # This is for >= 3.4 devices [workaround].
+        if cmd == CONTROL_NEW and self.version >= 3.4:
+            seqno += 2
 
         self.debug("Command %d waiting for seq. number %d", cmd, seqno)
         self.listeners[seqno] = asyncio.Semaphore(0)
@@ -603,24 +606,45 @@ class MessageDispatcher(ContextualLogger):
         """Add new data to the buffer and try to parse messages."""
         self.buffer += data
         header_len = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
+        prefix_len = len(PREFIX_55AA_BIN)
 
         while self.buffer:
             # Check if enough data for measage header
             if len(self.buffer) < header_len:
                 break
 
+            prefix_offset_55AA = self.buffer.find(PREFIX_55AA_BIN)
+            prefix_offset_6699 = self.buffer.find(PREFIX_6699_BIN)
+
+            if prefix_offset_55AA < 0 and prefix_offset_6699 < 0:
+                self.buffer = self.buffer[1 - prefix_len :]
+            else:
+                prefix_offset = (
+                    prefix_offset_6699 if prefix_offset_55AA < 0 else prefix_offset_55AA
+                )
+                self.buffer = self.buffer[prefix_offset:]
+
             header = parse_header(self.buffer)
             hmac_key = self.local_key if self.version >= 3.4 else None
+            no_retcode = False
             msg = unpack_message(
-                self.buffer, header=header, hmac_key=hmac_key, logger=self
+                self.buffer,
+                header=header,
+                hmac_key=hmac_key,
+                no_retcode=no_retcode,
+                logger=self,
             )
             self.buffer = self.buffer[header_len - 4 + header.length :]
             self._dispatch(msg)
 
     def _dispatch(self, msg):
         """Dispatch a message to someone that is listening."""
+        # ON devices >= 3.4 the seqno get conflict with the waited seqno.
+        # The devices sends cmds 8 and 9 usually before NEW_CONTROL which increase the seqno.
+        # ^ This needs to be handle in better way, The fix atm is just workaround.
+
         self.debug("Dispatching message CMD %r %s", msg.cmd, msg)
-        if msg.seqno in self.listeners:
+        if msg.seqno in self.listeners and msg.cmd != STATUS:
             # self.debug("Dispatching sequence number %d", msg.seqno)
             sem = self.listeners[msg.seqno]
             if isinstance(sem, asyncio.Semaphore):
@@ -667,6 +691,12 @@ class MessageDispatcher(ContextualLogger):
             else:
                 self.debug("Got status update")
                 self.listener(msg)
+                # workdaround for >= v3.4 devices until find prper way to wait seqno correctly.
+                if msg.seqno in self.listeners:
+                    sem = self.listeners[msg.seqno]
+                    if isinstance(sem, asyncio.Semaphore):
+                        self.listeners[msg.seqno] = msg
+                        sem.release()
         else:
             if msg.cmd == CONTROL_NEW:
                 self.debug("Got ACK message for command %d: will ignore it", msg.cmd)
@@ -753,6 +783,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.local_nonce = b"0123456789abcdef"  # not-so-random random key
         self.remote_nonce = b""
         self.dps_whitelist = UPDATE_DPS_WHITELIST
+        self.dispatched_dps = {}  # Store payload so we can trigger an event in HA.
 
     def set_version(self, protocol_version):
         """Set the device version and eventually start available DPs detection."""
@@ -785,16 +816,20 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if msg.seqno > 0:
                 self.seqno = msg.seqno + 1
             decoded_message = self._decode_payload(msg.payload)
+            if "data" in decoded_message and "dps" in decoded_message:
+                decoded_message.pop("data")
             if "dps" in decoded_message:
                 if "cid" in decoded_message and decoded_message["cid"] != self.node_id:
                     return
-                # Special case for >= 3.4 devices.
-                if "data" in decoded_message:
-                    if (
-                        "cid" in decoded_message["data"]
-                        and decoded_message["data"]["cid"] != self.node_id
-                    ):
-                        return
+                self.dps_cache.update(decoded_message["dps"])
+            # Special case for >= 3.4 devices.
+            elif "data" in decoded_message:
+                if (
+                    "cid" in decoded_message["data"]
+                    and decoded_message["data"]["cid"] != self.node_id
+                ):
+                    return
+
                 self.dps_cache.update(decoded_message["dps"])
 
             listener = self.listener and self.listener()
@@ -967,6 +1002,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     async def status(self):
         """Return device status."""
         status = await self.exchange(DP_QUERY)
+
         if status and "dps" in status:
             self.dps_cache.update(status["dps"])
         return self.dps_cache
@@ -1162,6 +1198,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         ):
             json_payload["dps"] = json_payload["data"]["dps"]
 
+        # We will store the payload to trigger an event in HA.
+        if "dps" in json_payload:
+            self.dispatched_dps = json_payload["dps"]
         return json_payload
 
     async def _negotiate_session_key(self):
@@ -1182,18 +1221,19 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             return False
 
         payload = rkey.payload
-        try:
-            # self.debug("decrypting %r using %r", payload, self.real_local_key)
-            cipher = AESCipher(self.real_local_key)
-            payload = cipher.decrypt(payload, False, decode_text=False)
-        except Exception as ex:
-            self.debug(
-                "session key step 2 decrypt failed, payload=%r with len:%d (%s)",
-                payload,
-                len(payload),
-                ex,
-            )
-            return False
+        if self.version == 3.4:
+            try:
+                # self.debug("decrypting %r using %r", payload, self.real_local_key)
+                cipher = AESCipher(self.real_local_key)
+                payload = cipher.decrypt(payload, False, decode_text=False)
+            except Exception as ex:
+                self.debug(
+                    "session key step 2 decrypt failed, payload=%r with len:%d (%s)",
+                    payload,
+                    len(payload),
+                    ex,
+                )
+                return False
 
         self.debug("decrypted session key negotiation step 2: payload=%r", payload)
 
@@ -1221,9 +1261,17 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # self.debug("Session nonce XOR'd: %r" % self.local_key)
 
         cipher = AESCipher(self.real_local_key)
-        self.local_key = self.dispatcher.local_key = cipher.encrypt(
-            self.local_key, False, pad=False
-        )
+        if self.version == 3.4:
+            self.local_key = self.dispatcher.local_key = cipher.encrypt(
+                self.local_key, False, pad=False
+            )
+        else:
+            iv = self.local_nonce[:12]
+            self.debug("Session IV: %r", iv)
+            self.local_key = self.dispatcher.local_key = cipher.encrypt(
+                self.local_key, use_base64=False, pad=False, iv=iv
+            )[12:28]
+
         self.debug("Session key negotiate success! session key: %r", self.local_key)
         return True
 
@@ -1240,6 +1288,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 # add the 3.x header
                 payload = self.version_header + payload
             self.debug("final payload for cmd %r: %r", msg.cmd, payload)
+
             if self.version >= 3.5:
                 iv = True
                 # seqno cmd retcode payload crc crc_good, prefix, iv
@@ -1250,6 +1299,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 data = pack_message(msg, hmac_key=self.local_key)
                 self.debug("payload encrypted=%r", binascii.hexlify(data))
                 return data
+
             payload = self.cipher.encrypt(payload, False)
         elif self.version >= 3.2:
             # expect to connect and then disconnect to set new
@@ -1375,7 +1425,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if "dpId" in json_data:
                 json_data["dpId"] = data
             elif "data" in json_data:
-                json_data["data"].update({"dps": data})  # We don't want to remove CID
+                json_data["data"]["dps"] = data  # We don't want to remove CID
             else:
                 json_data["dps"] = data
         elif self.dev_type == "type_0d" and command == DP_QUERY:

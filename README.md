@@ -9,6 +9,7 @@ A Home Assistant custom Integration for local handling of Tuya-based devices.
   * [Adding the Integration](#adding-the-integration)
   * [Integration Options](#integration-options)
   * [Add Devices](#add-devices)
+  * [Templates](https://github.com/xZetsubou/hass-localtuya/discussions/13)
 - [Debugging](#debugging)
 - [Notes](#notes)
 - [Credits](#credits)
@@ -259,9 +260,8 @@ data:
 </details> 
 
 
+## Debugging
 <details><summary>Debugging</summary>
-
-# Debugging
 
 Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
 
@@ -291,13 +291,17 @@ The Cloud API account configuration is not mandatory (LocalTuya can work also wi
     
 # Credits:
 
-NameLessJedi https://github.com/NameLessJedi/localtuya-homeassistant and mileperhour https://github.com/mileperhour/localtuya-homeassistant being the major sources of inspiration, and whose code for switches is substantially unchanged.
+[Rospogrigio](https://github.com/rospogrigio), The original maintainer of localtuya. this fork made when upstream version was `v5.2.1` 
 
-TradeFace, for being the only one to provide the correct code for communication with the cover (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): https://github.com/TradeFace/tuya/
+[NameLessJedi](https://github.com/NameLessJedi/localtuya-homeassistant) and [mileperhour](https://github.com/mileperhour/localtuya-homeassistant) being the major sources of inspiration, and whose code for switches is substantially unchanged.
+
+[TradeFace](https://github.com/TradeFace/tuya/), for being the only one to provide the correct code for communication with the cover (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): 
 
 sean6541, for the working (standard) Python Handler for Tuya devices.
 
-jasonacox, for the TinyTuya project from where I could import the code to communicate with devices using protocol 3.4.
+[jasonacox](https://github.com/jasonacox), for the TinyTuya project from where I big help and refrences to upgrade integration.
+
+[uzlonewolf](https://github.com/uzlonewolf), for maintaining in TinyTuya who improved the tool so much and introduce new features like new protocols etc..
 
 postlund, for the ideas, for coding 95% of the refactoring and boosting the quality of this repo to levels hard to imagine (by me, at least) and teaching me A LOT of how things work in Home Assistant.
 

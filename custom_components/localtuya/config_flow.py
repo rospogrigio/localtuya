@@ -362,6 +362,7 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                     data[CONF_ENABLE_DEBUG],
                     data.get(CONF_NODE_ID, None),
                 )
+
                 # Break the loop if input isn't auto.
                 if not auto_protocol:
                     break
@@ -372,6 +373,10 @@ async def validate_input(hass: core.HomeAssistant, entry_id, data):
                     # Set the conf_protocol to the worked version to return it and update self.device_data.
                     conf_protocol = version
                     break
+            # If connection to host is failed raise wrong address.
+            except OSError as ex:
+                if ex.errno == errno.EHOSTUNREACH:
+                    raise CannotConnect
             except:
                 continue
 
@@ -512,8 +517,11 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not res:
                 return await self._create_entry(user_input)
             errors["base"] = res["reason"]
-            # if "1106" in res["msg"]:
-            #     error = "Wrong User ID Premssion Denid!"
+            # 1004 = Secret, 1106 = USER ID, 2009 = Client ID
+            if "1106" in res["msg"]:
+                res["msg"] = f"{res['msg']} Check UserID or country code!"
+            if "1004" in res["msg"]:
+                res["msg"] = f"{res['msg']} Check Secret Key!"
             placeholders = {"msg": res["msg"]}
 
         defaults = {}
@@ -752,16 +760,24 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         ].get("productKey")
                 # Handle Inputs on edit device mode.
                 if self.editing_device:
-                    dev_config = {}
+                    dev_config: dict = self.config_entry.data[CONF_DEVICES].get(
+                        dev_id, {}
+                    )
                     if user_input.get(EXPORT_CONFIG):
                         dev_config = self.config_entry.data[CONF_DEVICES][dev_id].copy()
                         templates.export_config(
                             dev_config, self.device_data[CONF_FRIENDLY_NAME]
                         )
                         return self.async_create_entry(title="", data={})
-                    # We will restore device-Model if it's already existed!
-                    if dev_config.get(CONF_MODEL):
-                        self.device_data[CONF_MODEL] = dev_config.get(CONF_MODEL)
+                    # We will restore device details if it's already existed!
+                    for res_conf in [CONF_MODEL, CONF_PRODUCT_KEY]:
+                        if dev_config.get(res_conf):
+                            self.device_data[res_conf] = dev_config.get(res_conf)
+                    # Remove the values that assigned as "-"
+                    for rm_conf in [CONF_RESET_DPIDS, CONF_MANUAL_DPS]:
+                        if rm_conf in user_input and user_input[rm_conf] in ["-", " "]:
+                            self.device_data.pop(rm_conf)
+
                     if user_input[CONF_ENABLE_ADD_ENTITIES]:
                         self.editing_device = False
                         user_input[CONF_DEVICE_ID] = dev_id
@@ -801,7 +817,6 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                             for entity in device_config[CONF_ENTITIES]
                             if int(entity[CONF_ID]) in entity_ids
                         ]
-                        # _LOGGER.debug("Edit Device Conf Data: %s", self.device_data)
                         return await self.async_step_configure_entity()
 
                 valid_data = await validate_input(
@@ -837,6 +852,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 if self.use_template
                 else self.config_entry.data[CONF_DEVICES][dev_id].copy()
             )
+
             self.nodeID = defaults.get(CONF_NODE_ID, None)
             cloud_devs = self.hass.data[DOMAIN][self.config_entry.entry_id][
                 DATA_CLOUD

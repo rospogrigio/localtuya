@@ -248,7 +248,7 @@
                     "color_temp": "Color Temperature",
                     "color_temp_reverse": "Color Temperature Reverse",
                     "color": "Color",
-                    "color_mode": "Color Mode",
+                    "color_mode": "Color Mode aka Work Mode",
                     "color_temp_min_kelvin": "Minimum Color Temperature in K",
                     "color_temp_max_kelvin": "Maximum Color Temperature in K",
                     "music_mode": "Music mode available",
