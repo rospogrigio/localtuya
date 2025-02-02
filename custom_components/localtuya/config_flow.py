@@ -61,13 +61,29 @@ from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
-ENTRIES_VERSION = 2
+def _col_to_select(opt_list: dict, multi_select = False, is_dps = False):
+    """Convert collections to SelectSelectorConfig."""
+    if type(opt_list) == dict:
+        return SelectSelector(SelectSelectorConfig(
+            options=[SelectOptionDict(value=str(k), label=l) for l, k in opt_list.items()],
+            mode=SelectSelectorMode.DROPDOWN,
+        ))
+    elif type(opt_list) == list:
+            # value used the same method as func available_dps_string, no spaces values.
+            return SelectSelector(SelectSelectorConfig(
+                options=[SelectOptionDict(value=str(l).split(' ')[0] if is_dps == True else str(l)
+                                        , label=str(l)) for l in opt_list],
+                mode=SelectSelectorMode.DROPDOWN, multiple = True if multi_select == True else False,
+            ))
+
+
+ENTRIES_VERSION = 3
 
 PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"
 SELECTED_DEVICE = "selected_device"
 
-CUSTOM_DEVICE = "..."
+CUSTOM_DEVICE = {"Add custom device" : "..."}
 
 CONF_ACTIONS = {
     CONF_ADD_DEVICE: "Add a new device",
@@ -83,7 +99,7 @@ CONFIGURE_SCHEMA = vol.Schema(
 
 CLOUD_SETUP_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_REGION, default="eu"): vol.In(["eu", "us", "cn", "in"]),
+        vol.Required(CONF_REGION, default="eu"): _col_to_select(["eu", "us", "cn", "in"]),
         vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_CLIENT_SECRET): cv.string,
         vol.Optional(CONF_USER_ID): cv.string,
@@ -100,7 +116,7 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Required(CONF_DEVICE_ID): cv.string,
         vol.Optional(CONF_DEVICE_NODE_ID): cv.string,
         vol.Required(CONF_LOCAL_KEY): cv.string,
-        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
+        vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): _col_to_select(
             ["3.1", "3.2", "3.3", "3.4"]
         ),
         vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
@@ -111,35 +127,20 @@ DEVICE_SCHEMA = vol.Schema(
 )
 
 PICK_ENTITY_SCHEMA = vol.Schema(
-    {vol.Required(PLATFORM_TO_ADD, default="switch"): vol.In(PLATFORMS)}
+    {vol.Required(PLATFORM_TO_ADD, default="switch"): _col_to_select(PLATFORMS)}
 )
-
-def _col_to_select(opt_list: dict, multi_select = False, is_dps = False):
-    """Convert collections to SelectSelectorConfig."""
-    if type(opt_list) == dict:
-        return SelectSelector(SelectSelectorConfig(
-            options=[SelectOptionDict(value=str(k), label=l) for k, l in opt_list.items()],
-            mode=SelectSelectorMode.DROPDOWN,
-        ))
-    elif type(opt_list) == list:
-            # value used the same method as func available_dps_string, no spaces values.
-            return SelectSelector(SelectSelectorConfig(
-                options=[SelectOptionDict(value=str(l).split(' ')[0] if is_dps == True else str(l)
-                                        , label=str(l)) for l in opt_list],
-                mode=SelectSelectorMode.DROPDOWN, multiple = True if multi_select == True else False,
-            ))
 
 def devices_schema(discovered_devices, cloud_devices_list, add_custom_device=True):
     """Create schema for devices step."""
     devices = {}
-    for dev_id, dev_host in discovered_devices.items():
+    for dev_host, dev_id in discovered_devices.items():
         dev_name = dev_id
         if dev_id in cloud_devices_list.keys():
             dev_name = cloud_devices_list[dev_id][CONF_NAME]
-        devices[dev_id] = f"{dev_name} ({dev_host})"
+        devices[f"{dev_name} ({dev_host})"] = dev_id
 
     if add_custom_device:
-        devices.update({CUSTOM_DEVICE: CUSTOM_DEVICE})
+        devices.update(CUSTOM_DEVICE)
 
     # devices.update(
     #     {
@@ -147,7 +148,7 @@ def devices_schema(discovered_devices, cloud_devices_list, add_custom_device=Tru
     #         for ent in entries
     #     }
     # )
-    return vol.Schema({vol.Required(SELECTED_DEVICE): vol.In(devices)})
+    return vol.Schema({vol.Required(SELECTED_DEVICE, default=list(devices.values())[0]): _col_to_select(devices)})
 
 
 def options_schema(entities):
@@ -161,7 +162,7 @@ def options_schema(entities):
             vol.Required(CONF_HOST): cv.string,
             vol.Required(CONF_LOCAL_KEY): cv.string,
             vol.Optional(CONF_DEVICE_NODE_ID): cv.string,
-            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): vol.In(
+            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): _col_to_select(
                 ["3.1", "3.2", "3.3", "3.4"]
             ),
             vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
@@ -170,7 +171,7 @@ def options_schema(entities):
             vol.Optional(CONF_RESET_DPIDS): cv.string,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
-            ): cv.multi_select(entity_names),
+            ): cv.multi_select(entity_names),# _col_to_select(entity_names, multi_select=True)
             vol.Required(CONF_ENABLE_ADD_ENTITIES, default=False): bool,
         }
     )
@@ -218,9 +219,9 @@ def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
     schema = {}
     if yaml:
         # In YAML mode we force the specified platform to match flow schema
-        schema[vol.Required(CONF_PLATFORM)] = vol.In([platform])
+        schema[vol.Required(CONF_PLATFORM)] = _col_to_select([platform])
     if allow_id:
-        schema[vol.Required(CONF_ID)] = vol.In(dps_strings)
+        schema[vol.Required(CONF_ID)] = _col_to_select(dps_strings, is_dps=True)
     schema[vol.Required(CONF_FRIENDLY_NAME)] = str
     schema[vol.Required(CONF_CATEGORY_ENTITY, default=str(default_category(platform)))] = _col_to_select(ENTITY_CATEGORY)
     return vol.Schema(schema).extend(flow_schema(platform, dps_strings))
@@ -536,7 +537,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         self.selected_device = None
         errors = {}
         if user_input is not None:
-            if user_input[SELECTED_DEVICE] != CUSTOM_DEVICE:
+            if user_input[SELECTED_DEVICE] != CUSTOM_DEVICE["Add custom device"]:
                 self.selected_device = user_input[SELECTED_DEVICE]
 
             return await self.async_step_configure_device()
@@ -559,7 +560,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 errors["base"] = "discovery_failed"
 
         devices = {
-            dev_id: dev["ip"]
+            dev["ip"]: dev_id
             for dev_id, dev in self.discovered_devices.items()
             if dev["gwId"] not in self.config_entry.data[CONF_DEVICES]
         }
@@ -587,7 +588,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         devices = {}
         for dev_id, configured_dev in self.config_entry.data[CONF_DEVICES].items():
-            devices[dev_id] = configured_dev[CONF_HOST]
+            devices[configured_dev[CONF_HOST]] = dev_id
 
         return self.async_show_form(
             step_id="edit_device",
@@ -646,7 +647,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         self.entities = [
                             entity
                             for entity in device_config[CONF_ENTITIES]
-                            if entity[CONF_ID] in entity_ids
+                            if int(entity[CONF_ID]) in entity_ids
                         ]
                         return await self.async_step_configure_entity()
 
@@ -760,10 +761,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         if user_input is not None:
             entity = strip_dps_values(user_input, self.dps_strings)
-            entity[CONF_ID] = self.current_entity[CONF_ID]
+            entity[CONF_ID] = int(self.current_entity[CONF_ID])
             entity[CONF_PLATFORM] = self.current_entity[CONF_PLATFORM]
             self.device_data[CONF_ENTITIES].append(entity)
-
             if len(self.entities) == len(self.device_data[CONF_ENTITIES]):
                 self.hass.config_entries.async_update_entry(
                     self.config_entry,
@@ -782,7 +782,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 schema, self.dps_strings, **self.current_entity
             ),
             description_placeholders={
-                "id": self.current_entity[CONF_ID],
+                "id": int(self.current_entity[CONF_ID]),
                 "platform": self.current_entity[CONF_PLATFORM],
             },
         )
@@ -793,24 +793,23 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             if self.editing_device:
                 entity = strip_dps_values(user_input, self.dps_strings)
-                entity[CONF_ID] = self.current_entity[CONF_ID]
+                entity[CONF_ID] = int(self.current_entity[CONF_ID])
                 entity[CONF_PLATFORM] = self.current_entity[CONF_PLATFORM]
                 self.device_data[CONF_ENTITIES].append(entity)
-
                 if len(self.entities) == len(self.device_data[CONF_ENTITIES]):
                     # finished editing device. Let's store the new config entry....
                     dev_id = self.device_data[CONF_DEVICE_ID]
                     new_data = self.config_entry.data.copy()
                     entry_id = self.config_entry.entry_id
                     # removing entities from registry (they will be recreated)
-                    ent_reg = er.async_get(self.hass)
-                    reg_entities = {
-                        ent.unique_id: ent.entity_id
-                        for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
-                        if dev_id in ent.unique_id
-                    }
-                    for entity_id in reg_entities.values():
-                        ent_reg.async_remove(entity_id)
+                    # ent_reg = er.async_get(self.hass)
+                    # reg_entities = {
+                    #     ent.unique_id: ent.entity_id
+                    #     for ent in er.async_entries_for_config_entry(ent_reg, entry_id)
+                    #     if dev_id in ent.unique_id
+                    # }
+                    # for entity_id in reg_entities.values():
+                    #     ent_reg.async_remove(entity_id)
 
                     new_data[CONF_DEVICES][dev_id] = self.device_data
                     new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
@@ -834,7 +833,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             )
             schema = schema_defaults(schema, self.dps_strings, **self.current_entity)
             placeholders = {
-                "entity": f"entity with DP {self.current_entity[CONF_ID]}",
+                "entity": f"entity with DP {int(self.current_entity[CONF_ID])}",
                 "platform": self.current_entity[CONF_PLATFORM],
             }
         else:

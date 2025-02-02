@@ -1,7 +1,8 @@
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
 ### Since main dev is probably busy, I made this fork to merge some ignored PRs that I need, also I'll try to keep it up-to-date with master, so I can't promise that this fork is gonna be up-to-date all the time
-
+> Discussions are available.
+> 
 A Home Assistant custom Integration for local handling of Tuya-based devices.
 
 This custom integration updates device status via pushing updates instead of polling, so status updates are fast (even when manually operated).
