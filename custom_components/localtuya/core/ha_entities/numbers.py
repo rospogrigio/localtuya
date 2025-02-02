@@ -7,7 +7,12 @@
 """
 
 from homeassistant.components.number import NumberDeviceClass
-from homeassistant.const import PERCENTAGE, UnitOfTime, CONF_UNIT_OF_MEASUREMENT
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfTime,
+    UnitOfPower,
+    CONF_UNIT_OF_MEASUREMENT,
+)
 
 from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
 from ...const import CONF_MIN_VALUE, CONF_MAX_VALUE, CONF_STEPSIZE, CONF_SCALING
@@ -326,6 +331,28 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Switch Timer",
             custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
+        # CZ - Energy monitor?
+        LocalTuyaEntity(
+            id=DPCode.WARN_POWER,
+            icon="mdi:alert-outline",
+            entity_category=EntityCategory.CONFIG,
+            name="Power Wanring Limit",
+            custom_configs=localtuya_numbers(0, 50000, 1, 1, UnitOfPower.WATT),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.WARN_POWER1,
+            icon="mdi:alert-outline",
+            entity_category=EntityCategory.CONFIG,
+            name="Power 1 Wanring Limit",
+            custom_configs=localtuya_numbers(0, 50000, 1, 1, UnitOfPower.WATT),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.WARN_POWER2,
+            icon="mdi:alert-outline",
+            entity_category=EntityCategory.CONFIG,
+            name="Power 2 Wanring Limit",
+            custom_configs=localtuya_numbers(0, 50000, 1, 1, UnitOfPower.WATT),
+        ),
     ),
     # Smart Lock
     # https://developer.tuya.com/en/docs/iot/s?id=Kb0o2xhlkxbet
@@ -591,6 +618,31 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.TEMPACTIVATE,
             name="Calibration swing",
             custom_configs=localtuya_numbers(1, 9),
+        ),
+    ),
+    # Alarm Host
+    # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
+    "mal": (
+        LocalTuyaEntity(
+            id=DPCode.DELAY_SET,
+            name="Delay Setting",
+            custom_configs=localtuya_numbers(0, 65535),
+            icon="mdi:clock-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ALARM_TIME,
+            name="Duration",
+            custom_configs=localtuya_numbers(0, 65535),
+            icon="mdi:alarm",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ALARM_DELAY_TIME,
+            name="Delay Alarm",
+            custom_configs=localtuya_numbers(0, 65535),
+            icon="mdi:history",
+            entity_category=EntityCategory.CONFIG,
         ),
     ),
 }

@@ -832,8 +832,91 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             ),
         ),
     ),
+    # Alarm Host
+    # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
+    "mal": (
+        LocalTuyaEntity(
+            id=DPCode.ZONE_ATTRIBUTE,
+            entity_category=EntityCategory.CONFIG,
+            name="Zone Attribute",
+            custom_configs=localtuya_selector(
+                {
+                    "MODE_HOME_ARM": "Home Arm",
+                    "MODE_ARM": "Arm",
+                    "MODE_24": "24H",
+                    "MODE_DOORBELL": "Doorbell",
+                    "MODE_24_SILENT": "Sielnt",
+                    "HOME_ARM_NO_DELAY": "Home, Arm No delay",
+                    "ARM_NO_DELAY": "Arm No delay",
+                }
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MASTER_STATE,
+            entity_category=EntityCategory.CONFIG,
+            name="Host Status",
+            custom_configs=localtuya_selector({"normal": "Normal", "alarm": "Alarm"}),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SUB_CLASS,
+            entity_category=EntityCategory.CONFIG,
+            name="Sub-device category",
+            custom_configs=localtuya_selector(
+                {
+                    "remote_controller": "Remote Controller",
+                    "detector": "Detector",
+                    "socket": "Socket",
+                }
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SUB_TYPE,
+            entity_category=EntityCategory.CONFIG,
+            name="Sub-device type",
+            custom_configs=localtuya_selector(
+                {
+                    "OTHER": "Other",
+                    "DOOR": "Door",
+                    "PIR": "Pir",
+                    "SOS": "SoS",
+                    "ROOM": "Room",
+                    "WINDOW": "Window",
+                    "BALCONY": "Balcony",
+                    "FENCE": "Fence",
+                    "SMOKE": "Smoke",
+                    "GAS": "Gas",
+                    "CO": "CO",
+                    "WATER": "Water",
+                }
+            ),
+        ),
+    ),
+    # Smart Water Meter
+    # https://developer.tuya.com/en/docs/iot/f?id=Ka8n052xu7w4c
+    "znsb": (
+        LocalTuyaEntity(
+            id=DPCode.REPORT_PERIOD_SET,
+            entity_category=EntityCategory.CONFIG,
+            name="Report Period",
+            custom_configs=localtuya_selector(
+                {
+                    "1h": "1 Hours",
+                    "2h": "2 Hours",
+                    "3h": "3 Hours",
+                    "4h": "4 Hours",
+                    "6h": "6 Hours",
+                    "8h": "8 Hours",
+                    "12h": "12 Hours",
+                    "24h": "24 Hours",
+                    "48h": "48 Hours",
+                    "72h": "72 Hours",
+                }
+            ),
+            icon="mdi:file-chart-outline",
+        ),
+    ),
 }
-# Wireless Switch  # also can come as knob switch.
+# Wireless Switch  # also can come as knob switch. # and scene switch.
 # https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5
 SELECTS["wxkg"] = (
     LocalTuyaEntity(
@@ -844,6 +927,76 @@ SELECTS["wxkg"] = (
         custom_configs=localtuya_selector(
             {"brightness": "Brightness", "temperature": "Temperature"}
         ),
+    ),
+    LocalTuyaEntity(
+        id=DPCode.SWITCH1_VALUE,
+        name="Switch 1",
+        icon="mdi:square-outline",
+        entity_category=EntityCategory.CONFIG,
+        custom_configs=localtuya_selector(
+            {
+                "single_click": "Single click",
+                "double_click": "Double click",
+                "long_press": "Long Press",
+            }
+        ),
+        condition_contains_any=["single_click", "double_click", "long_press"],
+    ),
+    LocalTuyaEntity(
+        id=DPCode.SWITCH2_VALUE,
+        name="Switch 2",
+        icon="mdi:palette-outline",
+        entity_category=EntityCategory.CONFIG,
+        custom_configs=localtuya_selector(
+            {
+                "single_click": "Single click",
+                "double_click": "Double click",
+                "long_press": "Long Press",
+            }
+        ),
+        condition_contains_any=["single_click", "double_click", "long_press"],
+    ),
+    LocalTuyaEntity(
+        id=DPCode.SWITCH3_VALUE,
+        name="Switch 3",
+        icon="mdi:palette-outline",
+        entity_category=EntityCategory.CONFIG,
+        custom_configs=localtuya_selector(
+            {
+                "single_click": "Single click",
+                "double_click": "Double click",
+                "long_press": "Long Press",
+            }
+        ),
+        condition_contains_any=["single_click", "double_click", "long_press"],
+    ),
+    LocalTuyaEntity(
+        id=DPCode.SWITCH4_VALUE,
+        name="Switch 4",
+        icon="mdi:palette-outline",
+        entity_category=EntityCategory.CONFIG,
+        custom_configs=localtuya_selector(
+            {
+                "single_click": "Single click",
+                "double_click": "Double click",
+                "long_press": "Long Press",
+            }
+        ),
+        condition_contains_any=["single_click", "double_click", "long_press"],
+    ),
+    LocalTuyaEntity(
+        id=DPCode.SWITCH5_VALUE,
+        name="Switch 5",
+        icon="mdi:palette-outline",
+        entity_category=EntityCategory.CONFIG,
+        custom_configs=localtuya_selector(
+            {
+                "single_click": "Single click",
+                "double_click": "Double click",
+                "long_press": "Long Press",
+            }
+        ),
+        condition_contains_any=["single_click", "double_click", "long_press"],
     ),
     *SELECTS["kg"],
 )

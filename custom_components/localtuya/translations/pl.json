@@ -173,7 +173,7 @@
                     "mode_dp": "DP trybu (zazwyczaj 27)",
                     "modes": "Lista trybów",
                     "return_mode": "Tryb powrotu do domu",
-                    "fan_speed_dp": "DP prędkości wentylatora (zazwyczaj 30)",
+                    "fan_speed_dp": "(Opcjonalnie) DP prędkości wentylatora",
                     "fan_speeds": "Lista prędkości wentylatorów (oddzielone przecinkami)",
                     "clean_time_dp": "DP czasu czyszczenia(zazwyczaj 33)",
                     "clean_area_dp": "DP obszaru czyszczenia (zazwyczaj 32)",
@@ -218,6 +218,7 @@
                     "hvac_action_set": "(opcjonalnie) Zestaw bieżących działań HVAC",
                     "preset_dp": "(opcjonalnie) DP ustawień wstępnych",
                     "preset_set": "(opcjonalnie) Zestaw ustawień wstępnych",
+                    "fan_speed_list": "(Optional) Fan supported speeds, separate entries by comma ','",
                     "eco_dp": "(opcjonalnie) DP trybu eco",
                     "eco_value": "(opcjonalnie) Tryb eco",
                     "heuristic_action": "(opcjonalnie) Włącz działanie heurystyczne",
@@ -233,7 +234,8 @@
                     "humidifier_mode_dp": "(opcjonalnie) DP ustawienia trybu",
                     "humidifier_set_humidity_dp": "(opcjonalnie) DP ustawienia wilgotności",
                     "min_humidity": "Ustaw minimalną obsługiwaną wilgotność",
-                    "max_humidity": "Ustaw maksymalną obsługiwaną wilgotność"
+                    "max_humidity": "Ustaw maksymalną obsługiwaną wilgotność",
+                    "alarm_supported_states": "States supported by the device"
                 },
                 "data_description": {
                     "hvac_mode_set":"Każda linia reprezentuje [ hvac_mode: device_value ] [Obsługiwane tryby HVAC](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
@@ -241,6 +243,7 @@
                     "preset_set":"Każda linia reprezentuje [ device_value: friendly name ]",
                     "scene_values":"Każda linia reprezentuje [ device_value: friendly name ]",
                     "select_options":"Każda linia reprezentuje [ device_value: friendly name ]",
+                    "alarm_supported_states":"Each line represents [ supported state: device value ] [Supported States](https://developers.home-assistant.io/docs/core/entity/alarm-control-panel/#states)",
                     "humidifier_available_modes":"Każda linia reprezentuje [ device_value: friendly name ]",
                     "device_class": "Dowiedz się więcej o [Klasach urządzeń](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
                     "state_class": "Dowiedz się więcej o [Klasach stanów](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"

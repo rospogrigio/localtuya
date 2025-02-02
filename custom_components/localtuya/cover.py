@@ -40,6 +40,7 @@ COVER_COMMANDS = {
     "Open, Close and Stop": "open_close_stop",
     "ON, OFF and Stop": "on_off_stop",
     "fz, zz and Stop": "fz_zz_stop",
+    "zz, fz and Stop": "zz_fz_stop",
     "1, 2 and 3": "1_2_3",
     "0, 1 and 2": "0_1_2",
 }

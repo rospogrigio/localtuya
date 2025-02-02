@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based fan devices."""
+
 import logging
 import math
 from functools import partial

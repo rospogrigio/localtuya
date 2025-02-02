@@ -14,22 +14,28 @@ from homeassistant.const import (
     PERCENTAGE,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
-    UnitOfPower,
     UnitOfTime,
     CONF_UNIT_OF_MEASUREMENT,
     UnitOfTemperature,
     UnitOfEnergy,
+    UnitOfVolume,
+    UnitOfElectricPotential,
+    DEGREE,
 )
 
-from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
+from .base import (
+    DPCode,
+    LocalTuyaEntity,
+    EntityCategory,
+    CLOUD_VALUE,
+)
 from ...const import CONF_SCALING as SCALE_FACTOR
 
 
-def localtuya_sensor(unit_of_measurement=None, scale_factor: float = None) -> dict:
+def localtuya_sensor(unit_of_measurement=None, scale_factor: float = 1) -> dict:
     """Define LocalTuya Configs for Sensor."""
     data = {CONF_UNIT_OF_MEASUREMENT: unit_of_measurement}
-    if scale_factor:
-        data.update({SCALE_FACTOR: scale_factor})
+    data.update({SCALE_FACTOR: CLOUD_VALUE(scale_factor, "id", "scale")})
 
     return data
 
@@ -95,6 +101,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Switch 2 Mode",
             icon="mdi:information-slab-circle-outline",
         ),
+        *BATTERY_SENSORS,
     ),
     # Smart panel with switches and zigbee hub ?
     # Not documented
@@ -384,6 +391,146 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
             custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        # CZ - Energy monitor?
+        LocalTuyaEntity(
+            id=DPCode.CUR_CURRENT1,
+            name="Current 1",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CUR_CURRENT2,
+            name="Current 2",
+            device_class=SensorDeviceClass.CURRENT,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CUR_POWER1,
+            name="Power 1",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CUR_POWER2,
+            name="Power 2",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CUR_VOLTAGE1,
+            name="Voltage 1",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CUR_VOLTAGE2,
+            name="Voltage 2",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ADD_ELE1,
+            name="Electricity 1",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ADD_ELE2,
+            name="Electricity 2",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TOTAL_ENERGY,
+            name="Total Energy",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TOTAL_ENERGY1,
+            name="Total Energy 1",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TOTAL_ENERGY2,
+            name="Total Energy 2",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TODAY_ACC_ENERGY,
+            name="Today Energy",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TODAY_ACC_ENERGY1,
+            name="Today Energy 1",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TODAY_ACC_ENERGY2,
+            name="Today Energy 2",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TODAY_ENERGY_ADD,
+            name="Today Energy Increase",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TODAY_ENERGY_ADD1,
+            name="Today Energy 1 Increase",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TODAY_ENERGY_ADD2,
+            name="Today Energy 2 Increase",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.001),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SYNC_REQUEST,
+            name="Sync Request",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DEVICE_STATE1,
+            name="Device 1 State",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DEVICE_STATE2,
+            name="Device 2 State",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.NET_STATE,
+            name="Connection state",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            icon="mdi:network",
         ),
     ),
     # IoT Switch
@@ -1125,6 +1272,88 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             state_class=SensorStateClass.MEASUREMENT,
         ),
         *BATTERY_SENSORS,
+    ),
+    # Alarm Host
+    # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
+    "mal": (
+        LocalTuyaEntity(
+            id=DPCode.SUB_STATE,
+            name="Sub-Device State",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWEREVENT,
+            name="Power Event",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ZONE_NUMBER,
+            name="Zone Number",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.OTHEREVENT,
+            name="Other Event",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+    ),
+    # Smart Water Meter
+    # https://developer.tuya.com/en/docs/iot/f?id=Ka8n052xu7w4c
+    "znsb": (
+        LocalTuyaEntity(
+            id=DPCode.WATER_USE_DATA,
+            name="Total Water Consumption",
+            icon="mdi:water-outline",
+            device_class=SensorDeviceClass.WATER,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfVolume.LITERS, 1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.WATER_TEMP,
+            name="Temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfTemperature.CELSIUS, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOLTAGE_CURRENT,
+            name="Battery",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.01),
+        ),
+    ),
+    # Air conditioner
+    # https://developer.tuya.com/en/docs/iot/categorykt?id=Kaiuz0z71ov2n
+    "kt": (
+        LocalTuyaEntity(
+            id=DPCode.AIR_RETURN,
+            name="AIR Return",
+            icon="mdi:air-filter",
+            custom_configs=localtuya_sensor(DEGREE, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COIL_OUT,
+            name="Coil Out",
+            icon="mdi:heating-coil",
+            custom_configs=localtuya_sensor(DEGREE, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COMPRESSOR_COMMAND,
+            name="Compressor",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FOUT_WAY_VALVE,
+            name="Fout Way Valve",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ODU_FAN_SPEED,
+            name="ODU Fan Speed",
+            icon="mdi:fan",
+        ),
     ),
 }
 
