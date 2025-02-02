@@ -240,13 +240,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "wkcz": (
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # name="humidity",
+            name="Humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # name="temperature",
+            name="Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -1291,14 +1291,14 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Air Conditioner Mate (Smart IR Socket)
     "wnykq": (
         LocalTuyaEntity(
-            id=DPCode.VA_TEMPERATURE,
-            # name="temperature",
+            id=(DPCode.VA_TEMPERATURE, DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+            name="Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
-            id=DPCode.VA_HUMIDITY,
-            # name="humidity",
+            id=(DPCode.VA_HUMIDITY, DPCode.HUMIDITY_VALUE),
+            name="Humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -1472,6 +1472,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+
 
 # Circuit Breaker
 # https://developer.tuya.com/en/docs/iot/dlq?id=Kb0kidk9enyh8

@@ -235,6 +235,7 @@ Then, edit the device that is showing problems and check the "Enable debugging f
 
 </p>
 </details> 
+[𝐑𝐞𝐩𝐨𝐫𝐭𝐢𝐧𝐠 𝐚𝐧 𝐢𝐬𝐬𝐮𝐞](https://xzetsubou.github.io/hass-localtuya/report_issue/)
 
 <!-- ### Notes
 

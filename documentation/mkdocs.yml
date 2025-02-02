@@ -23,13 +23,17 @@ nav:
   - ha_services.md
   - Guides:
     - Usage:
-      - installation.md
-      - configure_add_device.md
-      - configure_edit_device.md
-      - devices_delete.md
+      - usage/installation.md
+      - usage/configure_add_device.md
+      - usage/configure_edit_device.md
+      - usage/devices_delete.md
     - cloud_api.md
   - Development:
     - auto_configure.md
+  - Others:
+      - faq/index.md
+      - report_issue.md
+
 
 extra_css:
   - style/extra.css
