@@ -485,7 +485,7 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # https://developer.tuya.com/en/docs/iot/categorysgbj?id=Kaiuz37tlpbnu
     "sgbj": (
         LocalTuyaEntity(
-            id=DPCode.ALARM_TIME,
+            id=(DPCode.ALARM_TIME, DPCode.ALARMPERIOD),
             name="Alarm duration",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_numbers(1, 60),

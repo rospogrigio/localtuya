@@ -45,7 +45,16 @@ jobs:
         uses: actions/stale@v8
         with:
           stale-issue-message: 'This issue is stale because it has been open 14 days with no activity. Remove stale label or comment or this will be closed in 5 days.'
-          exempt-issue-labels: "master/next-release"
+          exempt-issue-labels: "master/next-release,enhancement,help wanted"
           days-before-stale: 14
           days-before-close: 5
+          stale-issue-label: 'stale'
+
+      - name: "Stale unknown issues"
+        uses: actions/stale@v8
+        with:
+          stale-issue-message: 'This issue is stale because it has been open 30 days with no activity. Remove stale label or comment or this will be closed in 10 days.'
+          only-labels: "enhancement,help wanted"
+          days-before-stale: 30
+          days-before-close: 40
           stale-issue-label: 'stale'

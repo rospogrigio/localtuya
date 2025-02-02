@@ -14,14 +14,14 @@ SIRENS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
     "dgnbj": (
         LocalTuyaEntity(
-            id=DPCode.ALARM_SWITCH,
+            id=(DPCode.ALARM_SWITCH, DPCode.ALARMSWITCH),
         ),
     ),
     # Siren Alarm
     # https://developer.tuya.com/en/docs/iot/categorysgbj?id=Kaiuz37tlpbnu
     "sgbj": (
         LocalTuyaEntity(
-            id=DPCode.ALARM_SWITCH,
+            id=(DPCode.ALARM_SWITCH, DPCode.ALARMSWITCH),
         ),
     ),
     # Smart Camera

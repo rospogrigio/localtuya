@@ -109,10 +109,14 @@ class DPCode(StrEnum):
     ADD_ELE2 = "add_ele2"
     AIR_QUALITY = "air_quality"
     AIR_RETURN = "air_return"
+    ALARMPERIOD = "AlarmPeriod"
+    ALARMSWITCH = "AlarmSwitch"
+    ALARMTYPE = "Alarmtype"
     ALARM_DELAY_TIME = "alarm_delay_time"
     ALARM_LOCK = "alarm_lock"
     ALARM_MESSAGE = "alarm_message"
     ALARM_RINGTONE = "alarm_ringtone"
+    ALARM_SETTING = "alarm_setting"
     ALARM_STATE = "alarm_state"
     ALARM_SWITCH = "alarm_switch"  # Alarm switch
     ALARM_TIME = "alarm_time"  # Alarm time
@@ -141,6 +145,7 @@ class DPCode(StrEnum):
     BASIC_WDR = "basic_wdr"
     BASS_CONTROL = "bass_control"
     BATTERY = "battery"
+    BATTERYSTATUS = "BatteryStatus"
     BATTERY_PERCENTAGE = "battery_percentage"  # Battery percentage
     BATTERY_STATE = "battery_state"  # Battery state
     BATTERY_VALUE = "battery_value"  # Battery value

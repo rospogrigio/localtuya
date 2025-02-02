@@ -73,11 +73,11 @@ class LocalTuyaSwitch(LocalTuyaEntity, SwitchEntity):
         if self.has_config(CONF_CURRENT):
             attrs[ATTR_CURRENT] = self.dp_value(self._config[CONF_CURRENT])
         if self.has_config(CONF_CURRENT_CONSUMPTION):
-            attrs[ATTR_CURRENT_CONSUMPTION] = (
-                self.dp_value(self._config[CONF_CURRENT_CONSUMPTION]) / 10
-            )
+            val_cc = self.dp_value(self._config[CONF_CURRENT_CONSUMPTION])
+            attrs[ATTR_CURRENT_CONSUMPTION] = None if val_cc is None else val_cc / 10
         if self.has_config(CONF_VOLTAGE):
-            attrs[ATTR_VOLTAGE] = self.dp_value(self._config[CONF_VOLTAGE]) / 10
+            val_vol = self.dp_value(self._config[CONF_VOLTAGE])
+            attrs[ATTR_VOLTAGE] = None if val_vol is None else val_vol / 10
 
         # Store the state
         if self._state is not None:

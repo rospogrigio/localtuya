@@ -121,6 +121,7 @@ Once you press "Submit", the connection is tested to check that everything works
 
 ## __𝐅𝐞𝐚𝐭𝐮𝐫𝐞𝐬__
 - Supported Sub-devices - `Devices that function through gateways`
+- Remote entities - `Supports IR remotes through native remote entity`
 - Auto-configure devices - `Requires a cloud API setup`
 - Automatic insertion - `Some fields requires a cloud API setup`
 - Devices discovery - `Discovers Tuya devices on your network`

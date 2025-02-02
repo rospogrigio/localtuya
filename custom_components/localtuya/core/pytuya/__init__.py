@@ -742,7 +742,7 @@ class TuyaListener(ABC):
         """Device disconnected."""
 
     @abstractmethod
-    def subdevice_state(self, state: SubdeviceState):
+    def subdevice_state_updated(self, state: SubdeviceState):
         """Device is offline or online."""
 
 
@@ -755,7 +755,7 @@ class EmptyListener(TuyaListener):
     def disconnected(self, exc=""):
         """Device disconnected."""
 
-    def subdevice_state(self, state: SubdeviceState):
+    def subdevice_state_updated(self, state: SubdeviceState):
         """Device is offline or online."""
 
 
@@ -856,11 +856,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 listener = self.listener and self.listener()
                 if listener is None or (on_devs is None and off_devs is None):
                     return
-                # listener.sub_devices can be changed when an absent sub-device is removed from,
-                # or re-connected sub-deviceis added to it. Such an event causes
-                #     RuntimeError: dictionary changed size during iteration
-                subdevices = dict(listener.sub_devices)
-                for cid, device in subdevices.items():
+                for cid, device in listener.sub_devices.items():
                     if cid in on_devs:
                         device.subdevice_state(SubdeviceState.ONLINE)
                     elif cid in off_devs:
@@ -891,9 +887,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     def _setup_dispatcher(self) -> MessageDispatcher:
         def _status_update(msg, ack=False):
             if msg.seqno > 0:
-                self.seqno = msg.seqno + 1
+                if msg.seqno >= self.seqno:
+                    self.seqno = msg.seqno + 1
                 if ack:
-                    self.debug(f"Got update ack message update seqno only. {msg.seqno}")
+                    self.debug(
+                        f"Got update ack message update seqno only. msg.seqno={msg.seqno} self.seqno={self.seqno}"
+                    )
                     return
 
             decoded_message: dict = self._decode_payload(msg.payload)
@@ -962,6 +961,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
 
+            self.heartbeater = None
             if self.transport is not None:
                 self.clean_up_session()
 
@@ -1013,6 +1013,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.debug("Closing connection")
         self.clean_up_session()
 
+        if self.heartbeater:
+            await self.heartbeater
+
+        if self._sub_devs_query_task:
+            await self._sub_devs_query_task
+
     def clean_up_session(self):
         """Clean up session."""
         self.debug(f"Cleaning up session.")
@@ -1024,11 +1030,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         if self._sub_devs_query_task:
             self._sub_devs_query_task.cancel()
 
-        if self.dispatcher:
-            self.dispatcher.abort()
-
         if self.is_connected:
             self.transport.close()
+
+        if self.dispatcher:
+            self.dispatcher.abort()
 
     async def exchange_quick(self, payload, recv_retries):
         """Similar to exchange() but never retries sending and does not decode the response."""
@@ -1045,8 +1051,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             await self.transport_write(enc_payload)
         except Exception:  # pylint: disable=broad-except
-            await self.close()
-            return None
+            return self.clean_up_session()
+
         while recv_retries:
             try:
                 seqno = MessageDispatcher.SESS_KEY_SEQNO
@@ -1608,7 +1614,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     @property
     def is_connected(self):
-        return not self.transport or not self.transport.is_closing()
+        return self.transport and not self.transport.is_closing()
 
     @property
     def last_command_sent(self):
@@ -1658,7 +1664,7 @@ async def connect(
             )
 
         raise ex
-    except Exception as ex:
+    except (Exception, asyncio.CancelledError) as ex:
         raise ex
     except:
         raise Exception(f"The host refused to connect")

@@ -477,6 +477,35 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 {"low": "LOW", "middle": "MIDDLE", "high": "HIGH", "strong": "MAX"}
             ),
         ),
+        LocalTuyaEntity(
+            id=DPCode.ALARM_SETTING,
+            name="Alarm Setting",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                {"0": "Setting 1", "0": "Setting 2", "2": "Setting 3", "3": "Setting 4"}
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ALARMTYPE,
+            name="Alarm Setting",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                {
+                    "1": "1",
+                    "2": "2",
+                    "3": "3",
+                    "4": "4",
+                    "5": "5",
+                    "6": "6",
+                    "7": "7",
+                    "8": "8",
+                    "9": "9",
+                    "10": "10",
+                    "11": "11",
+                    "12": "12",
+                }
+            ),
+        ),
     ),
     # Smart Camera
     # https://developer.tuya.com/en/docs/iot/categorysp?id=Kaiuz35leyo12
@@ -1040,7 +1069,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                     "MODE_ARM": "Arm",
                     "MODE_24": "24H",
                     "MODE_DOORBELL": "Doorbell",
-                    "MODE_24_SILENT": "Sielnt",
+                    "MODE_24_SILENT": "Silent",
                     "HOME_ARM_NO_DELAY": "Home, Arm No delay",
                     "ARM_NO_DELAY": "Arm No delay",
                 }

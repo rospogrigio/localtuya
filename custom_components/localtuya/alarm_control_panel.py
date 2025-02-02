@@ -12,12 +12,7 @@ from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntity,
     CodeFormat,
     AlarmControlPanelEntityFeature,
-)
-from homeassistant.const import (
-    STATE_ALARM_DISARMED,
-    STATE_ALARM_ARMED_HOME,
-    STATE_ALARM_ARMED_AWAY,
-    STATE_ALARM_TRIGGERED,
+    AlarmControlPanelState,
 )
 
 from .entity import LocalTuyaEntity, async_setup_entry
@@ -36,10 +31,10 @@ class TuyaMode(StrEnum):
 
 
 DEFAULT_SUPPORTED_MODES = {
-    STATE_ALARM_DISARMED: TuyaMode.DISARMED,
-    STATE_ALARM_ARMED_AWAY: TuyaMode.ARM,
-    STATE_ALARM_ARMED_HOME: TuyaMode.HOME,
-    STATE_ALARM_TRIGGERED: TuyaMode.SOS,
+    AlarmControlPanelState.DISARMED: TuyaMode.DISARMED,
+    AlarmControlPanelState.ARMED_AWAY: TuyaMode.ARM,
+    AlarmControlPanelState.ARMED_HOME: TuyaMode.HOME,
+    AlarmControlPanelState.TRIGGERED: TuyaMode.SOS,
 }
 
 
@@ -72,11 +67,11 @@ class LocalTuyaAlarmControlPanel(LocalTuyaEntity, AlarmControlPanelEntity):
         # supported modes
         if supported_modes := self._config.get(CONF_ALARM_SUPPORTED_STATES, {}):
             # Key is HA state and value is Tuya State.
-            if STATE_ALARM_ARMED_AWAY in supported_modes:
+            if AlarmControlPanelState.ARMED_AWAY in supported_modes:
                 self._attr_supported_features |= AlarmControlPanelEntityFeature.ARM_HOME
-            if STATE_ALARM_ARMED_HOME in supported_modes:
+            if AlarmControlPanelState.ARMED_HOME in supported_modes:
                 self._attr_supported_features |= AlarmControlPanelEntityFeature.ARM_AWAY
-            if STATE_ALARM_TRIGGERED in supported_modes:
+            if AlarmControlPanelState.TRIGGERED in supported_modes:
                 self._attr_supported_features |= AlarmControlPanelEntityFeature.TRIGGER
 
         self._state_ha_to_tuya: dict[str, str] = supported_modes
@@ -106,22 +101,22 @@ class LocalTuyaAlarmControlPanel(LocalTuyaEntity, AlarmControlPanelEntity):
 
     async def async_alarm_disarm(self, code: str | None = None) -> None:
         """Send disarm command."""
-        state = self._state_ha_to_tuya.get(STATE_ALARM_DISARMED)
+        state = self._state_ha_to_tuya.get(AlarmControlPanelState.DISARMED)
         await self._device.set_dp(state, self._dp_id)
 
     async def async_alarm_arm_home(self, code: str | None = None) -> None:
         """Send arm home command."""
-        state = self._state_ha_to_tuya.get(STATE_ALARM_ARMED_HOME)
+        state = self._state_ha_to_tuya.get(AlarmControlPanelState.ARMED_HOME)
         await self._device.set_dp(state, self._dp_id)
 
     async def async_alarm_arm_away(self, code: str | None = None) -> None:
         """Send arm away command."""
-        state = self._state_ha_to_tuya.get(STATE_ALARM_ARMED_AWAY)
+        state = self._state_ha_to_tuya.get(AlarmControlPanelState.ARMED_AWAY)
         await self._device.set_dp(state, self._dp_id)
 
     async def async_alarm_trigger(self, code: str | None = None) -> None:
         """Send alarm trigger command."""
-        state = self._state_ha_to_tuya.get(STATE_ALARM_TRIGGERED)
+        state = self._state_ha_to_tuya.get(AlarmControlPanelState.TRIGGERED)
         await self._device.set_dp(state, self._dp_id)
 
     def status_updated(self):

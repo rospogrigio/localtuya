@@ -48,8 +48,6 @@ from .discovery import TuyaDiscovery
 
 _LOGGER = logging.getLogger(__name__)
 
-UNSUB_LISTENER = "unsub_listener"
-
 CONF_DP = "dp"
 CONF_VALUE = "value"
 
@@ -333,10 +331,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             hass, tuya_api.async_connect(), "localtuya-cloudAPI"
         )
 
-    hass_localtuya = HassLocalTuyaData(tuya_api, {}, [])
+    hass_localtuya = HassLocalTuyaData(tuya_api, {})
     hass.data[DOMAIN][entry.entry_id] = hass_localtuya
 
-    async def _setup_devices(entry_devices: dict):
+    def _setup_devices(entry_devices: dict):
         """Setup Localtuya devices object."""
         devices = hass_localtuya.devices
         connect_to_devices = []
@@ -357,49 +355,55 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             # Parent Devices.
             if not (node_id := config.get(CONF_NODE_ID)):
                 devices[host] = (dev := TuyaDevice(hass, entry, config))
-                connect_to_devices.append(asyncio.create_task(dev.async_connect()))
+                connect_to_devices.append(dev)
                 continue
 
             # Sub-Devices
             if not (gateway := devices.get(host)):
                 # Setup sub-device as fake gateway if there is no a gateway exist.
                 devices[host] = (gateway := TuyaDevice(hass, entry, config, True))
-                connect_to_devices.append(asyncio.create_task(gateway.async_connect()))
+                connect_to_devices.append(gateway)
 
             devices[f"{host}_{node_id}"] = (sub_dev := TuyaDevice(hass, entry, config))
             sub_dev.gateway = gateway
             gateway.sub_devices[node_id] = sub_dev
 
-        if connect_to_devices:
-            await asyncio.wait(connect_to_devices, return_when=asyncio.FIRST_COMPLETED)
+        return connect_to_devices
 
-    await _setup_devices(entry.data[CONF_DEVICES])
+    connect_to_devices = _setup_devices(entry.data[CONF_DEVICES])
 
     await async_remove_orphan_entities(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS.values())
 
-    hass_localtuya.unsub_listeners.append(entry.add_update_listener(update_listener))
+    # Note: entry.async_on_unload items are called in LIFO order!
+
+    for dev in connect_to_devices:
+        asyncio.create_task(dev.async_connect())
+        entry.async_on_unload(dev.close)
+
+    entry.async_on_unload(entry.add_update_listener(update_listener))
+
+    async def _shutdown(event):
+        """Clean up resources when shutting down."""
+        for dev in connect_to_devices:
+            await dev.close()
+        _LOGGER.info("Shutdown completed")
+
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _shutdown)
+    )
+
+    _LOGGER.info("Setup completed")
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unloading the Tuya platforms."""
-    # Get used platforms.
-    platforms = {}
-    disconnect_devices = []
-    hass_data: HassLocalTuyaData = hass.data[DOMAIN][entry.entry_id]
-
-    # Unsub listeners.
-    [unsub() for unsub in hass_data.unsub_listeners]
-
-    for dev in hass_data.devices.values():
-        disconnect_devices.append(asyncio.create_task(dev.close()))
-
     # Unload the platforms.
     await hass.config_entries.async_unload_platforms(entry, PLATFORMS.values())
-
     hass.data[DOMAIN].pop(entry.entry_id)
 
+    _LOGGER.info("Unload completed")
     return True
 
 
@@ -467,7 +471,7 @@ async def async_remove_orphan_entities(hass, entry):
 
 @callback
 def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
-    """Return whether if the device disbaled or not."""
+    """Return whether if the device disabled or not."""
     ent_reg = er.async_get(hass)
     entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
     ha_device_id: str = None

@@ -182,11 +182,24 @@ PRESET_SETS = {
         "eco": "ECO",
     },
 }
+from enum import StrEnum
 
 
-TEMPERATURE_CELSIUS = "celsius"
-TEMPERATURE_FAHRENHEIT = "fahrenheit"
-DEFAULT_TEMPERATURE_UNIT = TEMPERATURE_CELSIUS
+class SupportedTemps(StrEnum):
+    C = "celsius"
+    F = "fahrenheit"
+    C_F = f"celsius/fahrenheit"
+    F_C = f"fahrenheit/celsius"
+
+
+SUPPORTED_TEMPERATURES = {
+    UnitOfTemperature.CELSIUS: SupportedTemps.C,
+    UnitOfTemperature.FAHRENHEIT: SupportedTemps.F,
+    f"Target Temperature: {UnitOfTemperature.CELSIUS} | Current Temperature {UnitOfTemperature.FAHRENHEIT}": SupportedTemps.C_F,
+    f"Target Temperature: {UnitOfTemperature.FAHRENHEIT} | Current Temperature {UnitOfTemperature.CELSIUS}": SupportedTemps.F_C,
+}
+
+DEFAULT_TEMPERATURE_UNIT = SupportedTemps.C
 DEFAULT_PRECISION = PRECISION_TENTHS
 DEFAULT_TEMPERATURE_STEP = PRECISION_HALVES
 # Empirically tested to work for AVATTO thermostat
@@ -229,9 +242,6 @@ def flow_schema(dps):
         vol.Optional(CONF_PRESET_SET, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_FAN_SPEED_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_SPEED_LIST, default=FAN_SPEEDS_DEFAULT): str,
-        vol.Optional(CONF_TEMPERATURE_UNIT): _col_to_select(
-            [TEMPERATURE_CELSIUS, TEMPERATURE_FAHRENHEIT]
-        ),
         vol.Optional(CONF_TARGET_PRECISION, default=PRECISION_WHOLE): _col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
@@ -242,43 +252,18 @@ def flow_schema(dps):
 
 # Convertors
 def f_to_c(num):
-    return (num - 32) * 5 / 9
+    return (num - 32) * 5 / 9 if num else num
 
 
 def c_to_f(num):
-    return (num * 1.8) + 32
+    return (num * 1.8) + 32 if num else num
 
 
 def config_unit(unit):
-    if unit == TEMPERATURE_FAHRENHEIT:
+    if unit == SupportedTemps.F:
         return UnitOfTemperature.FAHRENHEIT
     else:
         return UnitOfTemperature.CELSIUS
-
-
-def convert_temperature(num_1, num_2) -> tuple[float, float]:
-    """Take two values and compare them. If one is in Fahrenheit, Convert it to Celsius."""
-    if None in (num_1, num_2):
-        return num_1, num_2
-
-    def perc_diff(value1, value2):
-        """Return the percentage difference between two values"""
-        max_value, min_value = max(value1, value2), min(value1, value2)
-        try:
-            return abs((max_value - min_value) / min_value) * 100
-        except ZeroDivisionError:
-            return 0
-
-    # Check if one value is in Celsius and the other is in Fahrenheit
-    if perc_diff(num_1, num_2) > 160:
-        fahrenheit = max(num_1, num_2)
-        to_celsius = (fahrenheit - 32) * 5 / 9
-        if fahrenheit == num_1:
-            num_1 = to_celsius
-        elif fahrenheit == num_2:
-            num_2 = to_celsius
-
-    return num_1, num_2
 
 
 class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
@@ -359,7 +344,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._max_temp = self._config.get(CONF_MAX_TEMP, DEFAULT_MAX_TEMP)
 
         # Temperture unit
-        self._temperature_unit = config_unit(self._config.get(CONF_TEMPERATURE_UNIT))
+        self._temperature_unit = UnitOfTemperature.CELSIUS
 
     @property
     def supported_features(self):
@@ -623,33 +608,34 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._state = self.dp_value(self._dp_id)
 
         # Update target temperature
-        if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            self._target_temperature = (
-                self.dp_value(CONF_TARGET_TEMPERATURE_DP) * self._precision_target
-            )
+        if self.has_config(CONF_TARGET_TEMPERATURE_DP) and (
+            target_dp_value := self.dp_value(CONF_TARGET_TEMPERATURE_DP)
+        ):
+            self._target_temperature = target_dp_value * self._precision_target
 
         # Update current temperature
-        if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
-            self._current_temperature = (
-                self.dp_value(CONF_CURRENT_TEMPERATURE_DP) * self._precision
-            )
+        if self.has_config(CONF_CURRENT_TEMPERATURE_DP) and (
+            current_dp_temp := self.dp_value(CONF_CURRENT_TEMPERATURE_DP)
+        ):
+            self._current_temperature = current_dp_temp * self._precision
 
         # Force the Current temperature and Target temperature to matching the unit.
-        target_temp, current_temperature = convert_temperature(
-            self._target_temperature, self._current_temperature
-        )
+        config_temp_unit = self._config.get(CONF_TEMPERATURE_UNIT, "")
+        target_unit, *current_unit = config_temp_unit.split("/")
 
-        # if target temperature converted to celsius, then convert all related values to set temperature.
-        if target_temp != self._target_temperature:
-            self._target_temperature = target_temp
-            self._current_temperature = current_temperature
-
-            if not self._target_temp_forced_to_celsius:
-                self._target_temp_forced_to_celsius = True
-                self._min_temp = f_to_c(self._min_temp)
-                self._max_temp = f_to_c(self._max_temp)
-            if self._hass.config.units == US_CUSTOMARY_SYSTEM:
-                self._temperature_unit = UnitOfTemperature.CELSIUS
+        if current_unit:
+            set_temp_unit = UnitOfTemperature.CELSIUS
+            if target_unit == SupportedTemps.F:
+                self._target_temperature = f_to_c(self._target_temperature)
+                if not self._target_temp_forced_to_celsius:
+                    self._target_temp_forced_to_celsius = True
+                    self._min_temp = f_to_c(self._min_temp)
+                    self._max_temp = f_to_c(self._max_temp)
+            else:
+                self._current_temperature = f_to_c(self._current_temperature)
+        else:
+            set_temp_unit = config_unit(config_temp_unit)
+        self._temperature_unit = set_temp_unit
 
         # Update preset states
         if self._has_presets:

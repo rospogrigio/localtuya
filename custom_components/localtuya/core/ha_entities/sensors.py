@@ -54,7 +54,7 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
         custom_configs=localtuya_sensor(PERCENTAGE),
     ),
     LocalTuyaEntity(
-        id=DPCode.BATTERY_STATE,
+        id=(DPCode.BATTERY_STATE, DPCode.BATTERYSTATUS),
         name="Battery Level",
         # name="battery_state",
         icon="mdi:battery",
