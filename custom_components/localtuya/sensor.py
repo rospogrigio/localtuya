@@ -1,6 +1,7 @@
 """Platform to present any Tuya DP as a sensor."""
 import logging
 from functools import partial
+from .config_flow import _col_to_select
 
 import voluptuous as vol
 from homeassistant.components.sensor import DEVICE_CLASSES, DOMAIN, SensorEntity, SensorStateClass
@@ -22,7 +23,7 @@ def flow_schema(dps):
     """Return schema used in config flow."""
     return {
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): str,
-        vol.Optional(CONF_DEVICE_CLASS): vol.In(DEVICE_CLASSES),
+        vol.Optional(CONF_DEVICE_CLASS): _col_to_select(DEVICE_CLASSES),
         vol.Optional(CONF_SCALING): vol.All(
             vol.Coerce(float), vol.Range(min=-1000000.0, max=1000000.0)
         ),

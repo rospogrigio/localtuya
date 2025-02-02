@@ -1,6 +1,7 @@
 """Platform to locally control Tuya-based vacuum devices."""
 import logging
 from functools import partial
+from .config_flow import _col_to_select
 
 import voluptuous as vol
 from homeassistant.components.vacuum import (
@@ -58,22 +59,22 @@ def flow_schema(dps):
     """Return schema used in config flow."""
     return {
         vol.Required(CONF_IDLE_STATUS_VALUE, default=DEFAULT_IDLE_STATUS): str,
-        vol.Required(CONF_POWERGO_DP): vol.In(dps),
+        vol.Required(CONF_POWERGO_DP): _col_to_select(dps, is_dps=True),
         vol.Required(CONF_DOCKED_STATUS_VALUE, default=DEFAULT_DOCKED_STATUS): str,
         vol.Optional(
             CONF_RETURNING_STATUS_VALUE, default=DEFAULT_RETURNING_STATUS
         ): str,
-        vol.Optional(CONF_BATTERY_DP): vol.In(dps),
-        vol.Optional(CONF_MODE_DP): vol.In(dps),
+        vol.Optional(CONF_BATTERY_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_MODE_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_MODES, default=DEFAULT_MODES): str,
         vol.Optional(CONF_RETURN_MODE, default=DEFAULT_RETURN_MODE): str,
-        vol.Optional(CONF_FAN_SPEED_DP): vol.In(dps),
+        vol.Optional(CONF_FAN_SPEED_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_SPEEDS, default=DEFAULT_FAN_SPEEDS): str,
-        vol.Optional(CONF_CLEAN_TIME_DP): vol.In(dps),
-        vol.Optional(CONF_CLEAN_AREA_DP): vol.In(dps),
-        vol.Optional(CONF_CLEAN_RECORD_DP): vol.In(dps),
-        vol.Optional(CONF_LOCATE_DP): vol.In(dps),
-        vol.Optional(CONF_FAULT_DP): vol.In(dps),
+        vol.Optional(CONF_CLEAN_TIME_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CLEAN_AREA_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CLEAN_RECORD_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_LOCATE_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_FAULT_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_PAUSED_STATE, default=DEFAULT_PAUSED_STATE): str,
         vol.Optional(CONF_STOP_STATUS, default=DEFAULT_STOP_STATUS): str,
     }

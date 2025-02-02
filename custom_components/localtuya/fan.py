@@ -2,6 +2,7 @@
 import logging
 import math
 from functools import partial
+from .config_flow import _col_to_select
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -39,9 +40,9 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_FAN_SPEED_CONTROL): vol.In(dps),
-        vol.Optional(CONF_FAN_OSCILLATING_CONTROL): vol.In(dps),
-        vol.Optional(CONF_FAN_DIRECTION): vol.In(dps),
+        vol.Optional(CONF_FAN_SPEED_CONTROL): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_FAN_OSCILLATING_CONTROL): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_FAN_DIRECTION): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_DIRECTION_FWD, default="forward"): cv.string,
         vol.Optional(CONF_FAN_DIRECTION_REV, default="reverse"): cv.string,
         vol.Optional(CONF_FAN_SPEED_MIN, default=1): cv.positive_int,

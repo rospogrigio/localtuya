@@ -3,6 +3,7 @@ import logging
 import textwrap
 from dataclasses import dataclass
 from functools import partial
+from .config_flow import _col_to_select
 
 import homeassistant.util.color as color_util
 import voluptuous as vol
@@ -125,16 +126,16 @@ def map_range(value, from_lower, from_upper, to_lower, to_upper):
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_BRIGHTNESS): vol.In(dps),
-        vol.Optional(CONF_COLOR_TEMP): vol.In(dps),
+        vol.Optional(CONF_BRIGHTNESS): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_COLOR_TEMP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_BRIGHTNESS_LOWER, default=DEFAULT_LOWER_BRIGHTNESS): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=10000)
         ),
         vol.Optional(CONF_BRIGHTNESS_UPPER, default=DEFAULT_UPPER_BRIGHTNESS): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=10000)
         ),
-        vol.Optional(CONF_COLOR_MODE): vol.In(dps),
-        vol.Optional(CONF_COLOR): vol.In(dps),
+        vol.Optional(CONF_COLOR_MODE): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_COLOR): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_COLOR_TEMP_MIN_KELVIN, default=DEFAULT_MIN_KELVIN): vol.All(
             vol.Coerce(int), vol.Range(min=1500, max=8000)
         ),
@@ -146,7 +147,7 @@ def flow_schema(dps):
             default=DEFAULT_COLOR_TEMP_REVERSE,
             description={"suggested_value": DEFAULT_COLOR_TEMP_REVERSE},
         ): bool,
-        vol.Optional(CONF_SCENE): vol.In(dps),
+        vol.Optional(CONF_SCENE): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SCENE_VALUES): str,
         vol.Optional(CONF_SCENE_VALUES_FRIENDLY): str,
         vol.Optional(
