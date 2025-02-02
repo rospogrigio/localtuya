@@ -1091,8 +1091,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             if len(self.entities) == len(self.device_data[CONF_ENTITIES]):
                 return self._update_entry(self.device_data)
 
-        schema = platform_schema(
-            self.current_entity[CONF_PLATFORM], self.dps_strings, allow_id=False
+        schema = await platform_schema(
+            self.hass, self.current_entity[CONF_PLATFORM], self.dps_strings, False
         )
         return self.async_show_form(
             step_id="entity",
@@ -1148,8 +1148,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 return await self.async_step_pick_entity_type(user_input)
 
         if self.editing_device:
-            schema = platform_schema(
-                self.current_entity[CONF_PLATFORM], self.dps_strings, allow_id=False
+            schema = await platform_schema(
+                self.hass, self.current_entity[CONF_PLATFORM], self.dps_strings, False
             )
             schema = schema_defaults(schema, self.dps_strings, **self.current_entity)
             placeholders = {
@@ -1158,7 +1158,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             }
         else:
             available_dps = self.available_dps_strings()
-            schema = platform_schema(self.selected_platform, available_dps)
+            schema = await platform_schema(
+                self.hass, self.selected_platform, available_dps
+            )
             placeholders = {
                 "entity": "an entity",
                 "platform": self.selected_platform,
@@ -1487,7 +1489,9 @@ def gen_dps_strings():
     return [f"{dp} (value: ?)" for dp in range(1, 256)]
 
 
-def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
+async def platform_schema(
+    hass: core.HomeAssistant, platform, dps_strings, allow_id=True, yaml=False
+):
     """Generate input validation schema for a platform."""
     # decide default value of device by platform.
     schema = {}
@@ -1500,7 +1504,15 @@ def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
     schema[
         vol.Required(CONF_ENTITY_CATEGORY, default=str(default_category(platform)))
     ] = _col_to_select(ENTITY_CATEGORY)
-    return vol.Schema(schema).extend(flow_schema(platform, dps_strings))
+
+    try:  # requires HA >= 2024.3 -> Later this will be remove and update HACS version requirement.
+        plat_schema = await hass.async_add_import_executor_job(
+            flow_schema, platform, dps_strings
+        )
+    except AttributeError:
+        plat_schema = flow_schema(platform, dps_strings)
+
+    return vol.Schema(schema).extend(plat_schema)
 
 
 def default_category(_platform):
@@ -1530,26 +1542,6 @@ def strip_dps_values(user_input, dps_strings):
         else:
             stripped[field] = user_input[field]
     return stripped
-
-
-def config_schema():
-    """Build schema used for setting up component."""
-    entity_schemas = [
-        platform_schema(plats, range(1, 256), yaml=True) for plats in PLATFORMS.values()
-    ]
-    return vol.Schema(
-        {
-            DOMAIN: vol.All(
-                cv.ensure_list,
-                [
-                    DEVICE_SCHEMA.extend(
-                        {vol.Required(CONF_ENTITIES): [vol.Any(*entity_schemas)]}
-                    )
-                ],
-            )
-        },
-        extra=vol.ALLOW_EXTRA,
-    )
 
 
 async def validate_input(hass: core.HomeAssistant, entry_id, data):

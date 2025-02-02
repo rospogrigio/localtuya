@@ -369,7 +369,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.CUR_POWER,
@@ -398,14 +398,14 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Current 1",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.CUR_CURRENT2,
             name="Current 2",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
         ),
         LocalTuyaEntity(
             id=DPCode.CUR_POWER1,
@@ -541,7 +541,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(
@@ -947,7 +947,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase C Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
@@ -971,7 +971,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase B",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
@@ -995,7 +995,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Phase C Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
@@ -1308,7 +1308,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             entity_category=EntityCategory.DIAGNOSTIC,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            custom_configs=localtuya_sensor(UnitOfElectricCurrent.MILLIAMPERE),
             # entity_registry_enabled_default=False,
         ),
         LocalTuyaEntity(

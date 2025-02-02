@@ -39,7 +39,7 @@ from homeassistant.const import (
     PRECISION_WHOLE,
     UnitOfTemperature,
 )
-
+from homeassistant.util.unit_system import METRIC_SYSTEM
 from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_CURRENT_TEMPERATURE_DP,
@@ -240,6 +240,31 @@ def flow_schema(dps):
     }
 
 
+def convert_temperature(num_1, num_2) -> tuple[float, float]:
+    """Take two values and compare them. If one is in Fahrenheit, Convert it to Celsius."""
+    if None in (num_1, num_2):
+        return num_1, num_2
+
+    def perc_diff(value1, value2):
+        """Return the percentage difference between two values"""
+        max_value, min_value = max(value1, value2), min(value1, value2)
+        try:
+            return abs((max_value - min_value) / min_value) * 100
+        except ZeroDivisionError:
+            return 0
+
+    # Check if one value is in Celsius and the other is in Fahrenheit
+    if perc_diff(num_1, num_2) > 110:
+        fahrenheit = max(num_1, num_2)
+        to_celsius = (fahrenheit - 32) * 5 / 9
+        if fahrenheit == num_1:
+            num_1 = to_celsius
+        elif fahrenheit == num_2:
+            num_2 = to_celsius
+
+    return num_1, num_2
+
+
 class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     """Tuya climate device."""
 
@@ -256,6 +281,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
         self._target_temperature = None
+        self._target_temp_forced_to_celsius = False
         self._current_temperature = None
         self._hvac_mode = None
         self._fan_mode = None
@@ -313,6 +339,9 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._eco_value = self._config.get(CONF_ECO_VALUE, "ECO")
         self._has_presets = self._eco_dp or (self._preset_dp and self._preset_set)
 
+        self._min_temp = self._config.get(CONF_MIN_TEMP, DEFAULT_MIN_TEMP)
+        self._max_temp = self._config.get(CONF_MAX_TEMP, DEFAULT_MAX_TEMP)
+
     @property
     def supported_features(self):
         """Flag supported features."""
@@ -359,14 +388,13 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     def min_temp(self):
         """Return the minimum temperature."""
         # DEFAULT_MIN_TEMP is in C
-        return self._config.get(CONF_MIN_TEMP, DEFAULT_MIN_TEMP)
+        return self._min_temp
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
         # DEFAULT_MAX_TEMP is in C
-        return self._config.get(CONF_MAX_TEMP, DEFAULT_MAX_TEMP)
->>>>>>> 7a607a65087c9f88dc5f47d10678433d890afda3
+        return self._max_temp
 
     @property
     def hvac_mode(self):
@@ -486,7 +514,13 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         if ATTR_TEMPERATURE in kwargs and self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            temperature = round(kwargs[ATTR_TEMPERATURE] / self._precision_target)
+            temperature = kwargs[ATTR_TEMPERATURE]
+
+            if self._target_temp_forced_to_celsius:
+                # Revert temperture to Fahrenheit it was forced to celsius
+                temperature = round((temperature - 32) * 5 / 9)
+
+            temperature = round(temperature / self._precision_target)
             await self._device.set_dp(
                 temperature, self._config[CONF_TARGET_TEMPERATURE_DP]
             )
@@ -576,6 +610,20 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             self._current_temperature = (
                 self.dp_value(CONF_CURRENT_TEMPERATURE_DP) * self._precision
             )
+
+        # Force the Current temperature and Target temperature to matching the unit.
+        target_temp, self._current_temperature = convert_temperature(
+            self._target_temperature, self._current_temperature
+        )
+
+        # if target temperature converted to celsius, then convert all related values to set temperature.
+        if target_temp != self._target_temperature:
+            self._target_temperature = target_temp
+
+            if self._hass.config.units == METRIC_SYSTEM:
+                self._target_temp_forced_to_celsius = True
+                self._min_temp = round((self._min_temp - 32) * 5 / 9)
+                self._max_temp = round((self._max_temp - 32) * 5 / 9)
 
         # Update preset states
         if self._has_presets:

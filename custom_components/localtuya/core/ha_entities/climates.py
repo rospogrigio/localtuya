@@ -62,10 +62,14 @@ def localtuya_climate(
         CONF_HVAC_MODE_SET: CLOUD_VALUE(
             hvac_mode_set, CONF_HVAC_MODE_DP, "range", dict, MAP_CLIMATE_MODES, True
         ),
-        CONF_MIN_TEMP: CLOUD_VALUE(min_temperature, CONF_TARGET_TEMPERATURE_DP, "min"),
-        CONF_MAX_TEMP: CLOUD_VALUE(max_temperature, CONF_TARGET_TEMPERATURE_DP, "max"),
+        CONF_MIN_TEMP: CLOUD_VALUE(
+            min_temperature, CONF_TARGET_TEMPERATURE_DP, "min", scale=True
+        ),
+        CONF_MAX_TEMP: CLOUD_VALUE(
+            max_temperature, CONF_TARGET_TEMPERATURE_DP, "max", scale=True
+        ),
         CONF_TEMPERATURE_STEP: CLOUD_VALUE(
-            str(temp_step), CONF_TARGET_TEMPERATURE_DP, "step", str
+            str(temp_step), CONF_TARGET_TEMPERATURE_DP, "step", str, scale=True
         ),
         CONF_HVAC_ACTION_SET: CLOUD_VALUE(
             actions_set, CONF_HVAC_ACTION_DP, "range", dict, MAP_CLIMATE_ACTIONS, True
@@ -117,7 +121,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "kt": (
         LocalTuyaEntity(
             id=DPCode.SWITCH,
-            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
             current_temperature_dp=DPCode.TEMP_CURRENT,
             hvac_mode_dp=DPCode.MODE,
             hvac_action_dp=(DPCode.WORK_MODE, DPCode.WORK_STATUS, DPCode.WORK_STATE),
@@ -147,7 +151,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "qn": (
         LocalTuyaEntity(
             id=DPCode.SWITCH,
-            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
             current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
             hvac_mode_dp=DPCode.SWITCH,
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
@@ -174,7 +178,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "rs": (
         LocalTuyaEntity(
             id=DPCode.SWITCH,
-            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
             current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             preset_dp=DPCode.MODE,
@@ -201,7 +205,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "wk": (
         LocalTuyaEntity(
             id=(DPCode.SWITCH, DPCode.MODE),
-            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
             current_temperature_dp=(DPCode.TEMP_CURRENT_F, DPCode.TEMP_CURRENT),
             hvac_mode_dp=(DPCode.SWITCH, DPCode.MODE),
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
@@ -225,7 +229,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "wkf": (
         LocalTuyaEntity(
             id=(DPCode.SWITCH, DPCode.MODE),
-            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
             current_temperature_dp=(DPCode.TEMP_CURRENT_F, DPCode.TEMP_CURRENT),
             hvac_mode_dp=DPCode.MODE,
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),

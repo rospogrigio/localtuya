@@ -348,6 +348,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.debug(f"Success: connected to {host}", force=True)
 
             if self._sub_devices:
+                self._interface.start_sub_devices_heartbeat()
                 for subdevice in self._sub_devices.values():
                     self._hass.async_create_task(subdevice.async_connect())
 

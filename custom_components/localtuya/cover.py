@@ -23,6 +23,7 @@ from .const import (
     CONF_POSITIONING_MODE,
     CONF_SET_POSITION_DP,
     CONF_SPAN_TIME,
+    CONF_STOP_SWITCH_DP,
 )
 
 
@@ -39,6 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 
 COVER_COMMANDS = {
     "Open, Close and Stop": "open_close_stop",
+    "Open, Close and Continue": "open_close_continue",
     "ON, OFF and Stop": "on_off_stop",
     "fz, zz and Stop": "fz_zz_stop",
     "zz, fz and Stop": "zz_fz_stop",
@@ -77,6 +79,7 @@ def flow_schema(dps):
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
+        vol.Optional(CONF_STOP_SWITCH_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_DEVICE_CLASS): DEVICE_CLASSES_SCHEMA,
     }
 
@@ -99,6 +102,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
         self._current_cover_position = 0
         self._current_state_action = STATE_STOPPED  # Default.
         self._set_new_position = int | None
+        self._stop_switch = self._config.get(CONF_STOP_SWITCH_DP, None)
 
     @property
     def supported_features(self):
@@ -229,7 +233,10 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
         self.debug("Launching command %s to cover ", self._stop_cmd)
-        await self._device.set_dp(self._stop_cmd, self._dp_id)
+        command = {self._dp_id: self._stop_cmd}
+        if self._stop_switch is not None:
+            command[self._stop_switch] = True
+        await self._device.set_dps(command)
         self.update_state(STATE_STOPPED)
 
     def status_restored(self, stored_state):

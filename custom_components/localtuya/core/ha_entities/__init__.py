@@ -127,7 +127,6 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                                 continue
 
                         if code and code.lower() in dp_data.split():
-                            _LOGGER.debug(f"Added!!!!: {dp_data}: code: {code}")
                             entity[k] = dp_id
 
                 # Pull dp values from cloud. still unsure to apply this to all.
@@ -167,7 +166,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
     # convert to list of configs
     list_entities = [entities.get(id) for id in sorted_ids]
 
-    _LOGGER.debug(f"{device_name}: Entities configured: {list_entities}")
+    _LOGGER.debug(f"{device_name}: Configured entities: {list_entities}")
     # return []
     return list_entities
 
@@ -214,6 +213,12 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
         pref_type = req_info.prefer_type if valid_type else float
         dp_values["scale"] = pref_type(scale(1, val_scale, float))
 
+        # Scale if requested.
+        if req_info.scale:
+            for v in ("min", "max", "step"):
+                value = dp_values[v]
+                dp_values[v] = pref_type(scale(value, val_scale))
+
         return dp_values
 
     # ENUM Values: range: list of values.
@@ -233,7 +238,10 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
 
 def scale(value: int, scale: int, _type: type = int) -> float:
     """Return scaled value."""
-    return _type(value) / (10**scale)
+    value = _type(value) / (10**scale)
+    if value.is_integer():
+        value = int(value)
+    return value
 
 
 def convert_list(_list: list, req_info: CLOUD_VALUE = str):

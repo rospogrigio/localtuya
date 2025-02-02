@@ -31,7 +31,7 @@ from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.service import async_register_admin_service
 
 from .coordinator import TuyaDevice, HassLocalTuyaData, TuyaCloudApi
-from .config_flow import ENTRIES_VERSION, config_schema
+from .config_flow import ENTRIES_VERSION
 from .const import (
     ATTR_UPDATED_AT,
     CONF_GATEWAY_ID,
@@ -51,8 +51,6 @@ UNSUB_LISTENER = "unsub_listener"
 
 RECONNECT_INTERVAL = timedelta(seconds=5)
 RECONNECT_TASK = "localtuya_reconnect_interval"
-
-CONFIG_SCHEMA = config_schema()
 
 CONF_DP = "dp"
 CONF_VALUE = "value"
@@ -208,6 +206,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 1:
         # This an old version of original integration no nned to put it here.
         pass
+    # Update to version 3
     if config_entry.version == 2:
         # Switch config flow to selectors convert DP IDs from int to str require HA 2022.4.
         _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
@@ -220,8 +219,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                     ent_items[k] = str(v) if type(v) is int else v
                 new_data[CONF_DEVICES][device][CONF_ENTITIES][i].update(ent_items)
                 i = i + 1
-        config_entry.version = 3
-        hass.config_entries.async_update_entry(config_entry, data=new_data)
+        hass.config_entries.async_update_entry(config_entry, data=new_data, version=3)
+    # Update to version 4
     if config_entry.version <= 3:
         # Convert values and friendly name values to dict.
         from .const import (
@@ -298,8 +297,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                     new_entity_data
                 )
                 current_entity += 1
-        config_entry.version = 4
-        hass.config_entries.async_update_entry(config_entry, data=new_data)
+        hass.config_entries.async_update_entry(config_entry, data=new_data, version=4)
 
     _LOGGER.info(
         "Entry %s successfully migrated to version %s.",

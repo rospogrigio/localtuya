@@ -26,6 +26,7 @@ class CLOUD_VALUE:
             Enums: convert the values to [dict or str splitted by comma, default is list].\n
     `remap_values(dict)`: Used to remap dict values, if prefer_type is dict.\n
     `reverse_dict(bool)`: Reverse dict keys, value, if prefer_type is dict.\n
+    `scale(bool)`: For integers, scale final value.\n
     """
 
     default_value: Any
@@ -34,6 +35,7 @@ class CLOUD_VALUE:
     prefer_type: type = None
     remap_values: dict[str, Any] = field(default_factory=dict)
     reverse_dict: bool = False
+    scale: bool = False
 
 
 class LocalTuyaEntity:
@@ -551,6 +553,7 @@ class DPCode(StrEnum):
     SWITCH_SAVE_ENERGY = "switch_save_energy"
     SWITCH_SOUND = "switch_sound"  # Voice switch
     SWITCH_SPRAY = "switch_spray"  # Spraying switch
+    SWITCH_STOP = "switch_stop"
     SWITCH_TYPE_1 = "switch_type_1"
     SWITCH_TYPE_2 = "switch_type_2"
     SWITCH_TYPE_3 = "switch_type_3"
