@@ -173,11 +173,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
             if not device.connected:
                 hass.create_task(device.async_connect())
 
-    async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
-
-    async_register_admin_service(
-        hass,
-    )
     hass.services.async_register(DOMAIN, SERVICE_RELOAD, _handle_reload)
 
     hass.services.async_register(
