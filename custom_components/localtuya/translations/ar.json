@@ -104,6 +104,7 @@
           "add_entities": "إضافة كيان (كيانات) جديدة",
           "manual_dps_strings": "(اختياري) دليل DPS، إذا لم يتم اكتشافه تلقائيًا (مفصولاً بفواصل)",
           "reset_dpids": "(اختياري) معرفات DPID لإرسالها في أمر RESET، إذا لم يستجب الجهاز لطلبات الحالة بعد التشغيل (مفصولة بفواصل)",
+          "device_sleep_time": "(اختياري) وقت سبات الجهاز بالثواني: في حالة أن الجهاز يقوم بإرسال الحالة ثم يدخل في وضع السكون",
           "export_config": "احفظ تكوين الكيان كقالب"
         }
       },
@@ -162,7 +163,7 @@
             "state_off": "Off Value",
             "powergo_dp": "Power DP (usually 25 or 2)",
             "idle_status_value": "Idle Status (comma-separated)",
-            "returning_status_value": "Returning Status",
+            "returning_status_value": "Returning Status (comma-separated)",
             "docked_status_value": "Docked Status (comma-separated)",
             "fault_dp": "Fault DP (usually 11)",
             "battery_dp": "Battery status DP (usually 14)",
@@ -175,6 +176,7 @@
             "clean_area_dp": "Clean Area DP (usually 32)",
             "clean_record_dp": "Clean Record DP (usually 34)",
             "locate_dp": "Locate DP (usually 31)",
+            "pause_dp":"Pause DP",
             "paused_state": "Pause state (pause, paused, etc)",
             "stop_status": "Stop status",
             "brightness": "Brightness (only for white color)",
@@ -231,7 +233,8 @@
             "humidifier_set_humidity_dp": "(Optional) Set Humidity DP",
             "min_humidity": "Set the minimum supported humidity",
             "max_humidity": "Set the maximum supported humidity",
-            "alarm_supported_states": "States supported by the device"
+            "alarm_supported_states": "States supported by the device",
+            "receive_dp":"Receiving signals DP. (default is 202)"
           },
         "data_description": {
             "hvac_mode_set":"Each line represents [ hvac_mode: device_value ] [Supported HVAC Modes](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",

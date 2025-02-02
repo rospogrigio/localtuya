@@ -53,7 +53,7 @@ from hashlib import md5, sha256
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-version_tuple = (2024, 2, 0)
+version_tuple = (2024, 3, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
 __author__ = "rospogrigio, xZetsubou"
 
@@ -152,9 +152,9 @@ PROTOCOL_33_HEADER = PROTOCOL_VERSION_BYTES_33 + PROTOCOL_3x_HEADER
 PROTOCOL_34_HEADER = PROTOCOL_VERSION_BYTES_34 + PROTOCOL_3x_HEADER
 PROTOCOL_35_HEADER = PROTOCOL_VERSION_BYTES_35 + PROTOCOL_3x_HEADER
 MESSAGE_RECV_HEADER_FMT = ">5I"  # 4*uint32: prefix, seqno, cmd, length, retcode
-MESSAGE_HEADER_FMT = (
-    MESSAGE_HEADER_FMT_55AA
-) = ">4I"  # 4*uint32: prefix, seqno, cmd, length [, retcode]
+MESSAGE_HEADER_FMT = MESSAGE_HEADER_FMT_55AA = (
+    ">4I"  # 4*uint32: prefix, seqno, cmd, length [, retcode]
+)
 MESSAGE_HEADER_FMT_6699 = ">IHIII"  # 4*uint32: prefix, unknown, seqno, cmd, length
 MESSAGE_RETCODE_FMT = ">I"  # retcode for received messages
 MESSAGE_END_FMT = MESSAGE_END_FMT_55AA = ">2I"  # 2*uint32: crc, suffix
@@ -377,7 +377,8 @@ def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=No
             header_len + header.length,
             len(data),
         )
-        raise DecodeError("Not enough data to unpack payload")
+        _LOGGER.debug(f"DecodeError:  ( Not enough data to unpack payload )")
+        # raise DecodeError(f"Not enough data to unpack payload: {data}")
 
     end_len = struct.calcsize(end_fmt)
     # the retcode is technically part of the payload, but strip it as we do not want it here
@@ -619,24 +620,30 @@ class MessageDispatcher(ContextualLogger):
     def add_data(self, data):
         """Add new data to the buffer and try to parse messages."""
         self.buffer += data
-        header_len = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
+
+        header_len_55AA = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
+        header_len_6699 = struct.calcsize(MESSAGE_HEADER_FMT_6699)
+        header_len = header_len_55AA
+
         prefix_len = len(PREFIX_55AA_BIN)
 
         while self.buffer:
-            # Check if enough data for measage header
-            if len(self.buffer) < header_len:
-                break
-
             prefix_offset_55AA = self.buffer.find(PREFIX_55AA_BIN)
             prefix_offset_6699 = self.buffer.find(PREFIX_6699_BIN)
 
             if prefix_offset_55AA < 0 and prefix_offset_6699 < 0:
                 self.buffer = self.buffer[1 - prefix_len :]
+                header_len = header_len_55AA
             else:
+                header_len = header_len_6699
                 prefix_offset = (
                     prefix_offset_6699 if prefix_offset_55AA < 0 else prefix_offset_55AA
                 )
                 self.buffer = self.buffer[prefix_offset:]
+
+            # Check if enough data for measage header
+            if len(self.buffer) < header_len:
+                break
 
             header = parse_header(self.buffer)
             hmac_key = self.local_key if self.version >= 3.4 else None
@@ -831,6 +838,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self.seqno = msg.seqno + 1
             decoded_message: dict = self._decode_payload(msg.payload)
             new_states = {}
+            cid = None
 
             if "dps" in decoded_message:
                 if cid := decoded_message.get("cid"):
@@ -1479,6 +1487,73 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         return self.id
 
 
+class api:
+    def __init__(
+        self,
+        host: str,
+        device_id: str,
+        local_key: str,
+        enable_debug: bool,
+        protocol_version: float,
+        listener: TuyaListener = None,
+        timeout: int = 5,
+        port: int = 6668,
+    ) -> None:
+        """
+        attributes:
+        host: The local IP Address of the device.
+        device_id: the ID of the device.
+        local_key: device payload, encryption key.
+        enable_debug: Enable the debug logs for the device.
+        protocol_version: The protocol version of the device # 3.1, 3.2, 3.3, 3.4 or 3.5
+        listener: class listener.
+        """
+        self._device_id = device_id
+        self._host = host
+        self._local_key = local_key
+        self._enable_debug = enable_debug
+        self._protocol_version = protocol_version
+        self._listener = listener
+        self._timeout = timeout
+        self._port = port
+
+        #
+        self.connected: bool
+        self.is_connecting: bool
+        self.enable_reconnect: bool = True
+
+        self.manager: TuyaProtocol
+
+    async def connect(self):
+        if not self.enable_reconnect:
+            return
+        loop = asyncio.get_running_loop()
+        on_connected = loop.create_future()
+        try:
+            _, protocol = await loop.create_connection(
+                lambda: TuyaProtocol(
+                    self._device_id,
+                    self._local_key,
+                    self._protocol_version,
+                    self._enable_debug,
+                    on_connected,
+                    self._listener or EmptyListener(),
+                ),
+                self._host,
+                self._port,
+            )
+        except OSError as ex:
+            raise ValueError(str(ex))
+        except Exception as ex:
+            raise ex
+        except:
+            raise ValueError(f"Unable to connect to the device. try again.")
+
+        await asyncio.wait_for(on_connected, timeout=self._timeout)
+        self.manager = protocol
+        return protocol
+
+
 async def connect(
     address,
     device_id,
@@ -1492,25 +1567,18 @@ async def connect(
     """Connect to a device."""
     loop = asyncio.get_running_loop()
     on_connected = loop.create_future()
-    try:
-        _, protocol = await loop.create_connection(
-            lambda: TuyaProtocol(
-                device_id,
-                local_key,
-                protocol_version,
-                enable_debug,
-                on_connected,
-                listener or EmptyListener(),
-            ),
-            address,
-            port,
-        )
-    except OSError as ex:
-        raise ValueError(str(ex))
-    except Exception as ex:
-        raise ex
-    except:
-        raise ValueError(f"Unable to connect to the device. try again.")
+    _, protocol = await loop.create_connection(
+        lambda: TuyaProtocol(
+            device_id,
+            local_key,
+            protocol_version,
+            enable_debug,
+            on_connected,
+            listener or EmptyListener(),
+        ),
+        address,
+        port,
+    )
 
     await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol

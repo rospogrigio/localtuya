@@ -1,4 +1,5 @@
 """Platform to present any Tuya DP as a sensor."""
+
 import logging
 from functools import partial
 from .config_flow import _col_to_select

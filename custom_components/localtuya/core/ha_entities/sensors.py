@@ -52,10 +52,10 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
     ),
     LocalTuyaEntity(
         id=DPCode.BATTERY_STATE,
+        name="Battery Level",
         # translation_id="battery_state",
         icon="mdi:battery",
         entity_category=EntityCategory.DIAGNOSTIC,
-        custom_configs=localtuya_sensor(PERCENTAGE),
     ),
     LocalTuyaEntity(
         id=DPCode.BATTERY_VALUE,
@@ -825,14 +825,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_sensor(UnitOfTemperature.CELSIUS, 0.01),
         ),
         LocalTuyaEntity(
-            id=DPCode.VA_HUMIDITY,
-            name="Humidity",
-            device_class=SensorDeviceClass.HUMIDITY,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(PERCENTAGE, 0.01),
-        ),
-        LocalTuyaEntity(
-            id=(DPCode.HUMIDITY_VALUE, DPCode.PRM_CONTENT),
+            id=(DPCode.HUMIDITY_VALUE, DPCode.PRM_CONTENT, DPCode.VA_HUMIDITY),
             name="Humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
@@ -1339,6 +1332,19 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Coil Out",
             icon="mdi:heating-coil",
             custom_configs=localtuya_sensor(DEGREE, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DEFROST,
+            name="Defrosting",
+            icon="mdi:snowflake-melt",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN,
+            name="Timer State",
+            icon="mdi:timer-sand",
+            custom_configs=localtuya_sensor(UnitOfTime.MINUTES, 1),
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(

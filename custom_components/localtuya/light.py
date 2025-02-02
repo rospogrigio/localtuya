@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based light devices."""
+
 import logging
 import textwrap
 from dataclasses import dataclass
@@ -290,15 +291,20 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         if self.has_config(CONF_COLOR_TEMP):
             color_modes.add(ColorMode.COLOR_TEMP)
         if self.has_config(CONF_COLOR):
-            color_modes.update({ColorMode.HS, ColorMode.BRIGHTNESS})
-        if self.has_config(CONF_BRIGHTNESS):
-            color_modes.add(ColorMode.BRIGHTNESS)
+            color_modes.add(ColorMode.HS)
+
+        if not color_modes and self.has_config(CONF_BRIGHTNESS):
+            return {ColorMode.BRIGHTNESS}
+
+        if not color_modes:
+            return {ColorMode.ONOFF}
+
         return color_modes
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> LightEntityFeature:
         """Flag supported features."""
-        supports = 0
+        supports = LightEntityFeature(0)
         if self.has_config(CONF_SCENE) or self.has_config(CONF_MUSIC_MODE):
             supports |= LightEntityFeature.EFFECT
         return supports
@@ -342,6 +348,18 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         color_mode = self.__get_color_mode()
         return color_mode is not None and color_mode == self._modes.music
 
+    @property
+    def color_mode(self) -> ColorMode:
+        """Return the color_mode of the light."""
+        if self.is_color_mode:
+            return ColorMode.HS
+        if self.is_white_mode:
+            return ColorMode.COLOR_TEMP
+        if self._brightness:
+            return ColorMode.BRIGHTNESS
+
+        return ColorMode.ONOFF
+
     def __is_color_rgb_encoded(self):
         return len(self.dp_value(CONF_COLOR)) > 12
 
@@ -377,7 +395,11 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             elif kwargs[ATTR_EFFECT] == SCENE_MUSIC:
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_MUSIC
 
-        if ATTR_BRIGHTNESS in kwargs and ColorMode.BRIGHTNESS in color_modes:
+        if ATTR_BRIGHTNESS in kwargs and (
+            ColorMode.BRIGHTNESS in color_modes
+            or self.has_config(CONF_BRIGHTNESS)
+            or self.has_config(CONF_COLOR)
+        ):
             brightness = map_range(
                 int(kwargs[ATTR_BRIGHTNESS]),
                 0,
@@ -467,8 +489,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         supported = self.supported_features
         self._effect = None
 
-        if ColorMode.BRIGHTNESS in self.supported_color_modes:
-            self._brightness = self.dp_value(CONF_BRIGHTNESS)
+        if brightness_dp_value := self.dp_value(CONF_BRIGHTNESS, None):
+            self._brightness = brightness_dp_value
 
         if ColorMode.HS in self.supported_color_modes:
             color = self.dp_value(CONF_COLOR)

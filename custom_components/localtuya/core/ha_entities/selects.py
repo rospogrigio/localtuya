@@ -158,27 +158,51 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.CUP_NUMBER,
             name="Cups",
             icon="mdi:numeric",
-            custom_configs=localtuya_selector("1,2,3,4,5,6,7,8,9,10,11,12"),
+            custom_configs=localtuya_selector(
+                {
+                    "1": "1",
+                    "2": "2",
+                    "3": "3",
+                    "4": "4",
+                    "5": "5",
+                    "6": "6",
+                    "7": "7",
+                    "8": "8",
+                    "9": "9",
+                    "10": "10",
+                    "11": "11",
+                    "12": "12",
+                }
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.CONCENTRATION_SET,
             name="Concentration",
             icon="mdi:altimeter",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_selector("regular,middle,bold"),
+            custom_configs=localtuya_selector(
+                {"regular": "REGULAR", "middle": "MIDDLE", "bold": "BOLD"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.MATERIAL,
             name="Material",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_selector("bean,powder"),
+            custom_configs=localtuya_selector({"bean": "BEAN", "powder": "POWDER"}),
         ),
         LocalTuyaEntity(
             id=DPCode.MODE,
             name="Mode",
             icon="mdi:coffee",
             custom_configs=localtuya_selector(
-                "espresso,americano,machiatto,caffe_latte,cafe_mocha,cappuccino"
+                {
+                    "espresso": "Espresso",
+                    "americano": "Americano",
+                    "machiatto": "Machiatto",
+                    "caffe_latte": "Latte",
+                    "caffe_mocha": "Mocha",
+                    "cappuccino": "Cappuccino",
+                }
             ),
         ),
     ),
@@ -428,21 +452,30 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.ALARM_VOLUME,
             name="Volume",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_selector("low,middle,high,mute"),
+            custom_configs=localtuya_selector(
+                {"low": "LOW", "middle": "MIDDLE", "high": "HIGH", "mute": "MUTE"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.ALARM_STATE,
             name="State",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_selector(
-                "alarm_sound,alarm_light,alarm_sound_light,normal"
+                {
+                    "alarm_sound": "Sound",
+                    "alarm_light": "Light",
+                    "alarm_sound_light": "Sound and Light",
+                    "normal": "NNORMAL",
+                }
             ),
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHT_STATE,
             name="Brightness",
             entity_category=EntityCategory.CONFIG,
-            custom_configs=localtuya_selector("low,middle,high,strong"),
+            custom_configs=localtuya_selector(
+                {"low": "LOW", "middle": "MIDDLE", "high": "HIGH", "strong": "MAX"}
+            ),
         ),
     ),
     # Smart Camera
@@ -560,19 +593,25 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.LED_TYPE_1,
             entity_category=EntityCategory.CONFIG,
             name="Led Type 1",
-            custom_configs=localtuya_selector("led,incandescent,halogen"),
+            custom_configs=localtuya_selector(
+                {"led": "Led", "incandescent": "Incandescent", "halogen": "Halogen"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.LED_TYPE_2,
             entity_category=EntityCategory.CONFIG,
             name="Led Type 2",
-            custom_configs=localtuya_selector("led,incandescent,halogen"),
+            custom_configs=localtuya_selector(
+                {"led": "Led", "incandescent": "Incandescent", "halogen": "Halogen"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.LED_TYPE_3,
             entity_category=EntityCategory.CONFIG,
             name="Led Type 3",
-            custom_configs=localtuya_selector("led,incandescent,halogen"),
+            custom_configs=localtuya_selector(
+                {"led": "Led", "incandescent": "Incandescent", "halogen": "Halogen"}
+            ),
         ),
     ),
     # Dimmer
@@ -582,13 +621,17 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.LED_TYPE_1,
             entity_category=EntityCategory.CONFIG,
             name="Led Type 1",
-            custom_configs=localtuya_selector("led,incandescent,halogen"),
+            custom_configs=localtuya_selector(
+                {"led": "Led", "incandescent": "Incandescent", "halogen": "Halogen"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.LED_TYPE_2,
             entity_category=EntityCategory.CONFIG,
             name="Led Type 2",
-            custom_configs=localtuya_selector("led,incandescent,halogen"),
+            custom_configs=localtuya_selector(
+                {"led": "Led", "incandescent": "Incandescent", "halogen": "Halogen"}
+            ),
         ),
     ),
     # Fingerbot
@@ -597,7 +640,9 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.MODE,
             entity_category=EntityCategory.CONFIG,
             name="Fingerbot Mode",
-            custom_configs=localtuya_selector("click,switch,toggle"),
+            custom_configs=localtuya_selector(
+                {"click": "Click", "switch": "Switch", "toggle": "Toggle"}
+            ),
         ),
     ),
     # Robot Vacuum
@@ -608,14 +653,40 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             icon="mdi:water-opacity",
             name="Water Tank Adjustment",
-            custom_configs=localtuya_selector("low,middle,high,closed"),
+            custom_configs=localtuya_selector(
+                {"low": "Low", "middle": "Middle", "high": "High", "closed": "Closed"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.COLLECTION_MODE,
             entity_category=EntityCategory.CONFIG,
             icon="mdi:air-filter",
             name="Dust Collection Mode",
-            custom_configs=localtuya_selector("small,middle,large"),
+            custom_configs=localtuya_selector(
+                {"small": "Small", "middle": "Middle", "large": "Large"}
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOICE_LANGUAGE,
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:air-filter",
+            name="Dust Collection Mode",
+            custom_configs=localtuya_selector({"cn": "Chinese", "en": "English"}),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DIRECTION_CONTROL,
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:arrow-all",
+            name="Direction",
+            custom_configs=localtuya_selector(
+                {
+                    "foward": "Forward",
+                    "backward": "Backward",
+                    "turn_left": "Left",
+                    "turn_right": "Right",
+                    "stop": "Stop",
+                }
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.MODE,
@@ -623,7 +694,20 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:layers-outline",
             name="Mode",
             custom_configs=localtuya_selector(
-                "standby,random,smart,wall_follow,mop,spiral,left_spiral,right_spiral,right_bow,left_bow,partial_bow,chargego"
+                {
+                    "standby": "StandBy",
+                    "random": "Random",
+                    "smart": "Smart",
+                    "wallfollow": "Follow Wall",
+                    "mop": "Mop",
+                    "spiral": "Spiral",
+                    "left_spiral": "Spiral Left",
+                    "right_spiral": "Spiral Right",
+                    "right_bow": "Bow Right",
+                    "left_bow": "Bow Left",
+                    "partial_bow": "Bow Partial",
+                    "chargego": "Charge",
+                }
             ),
         ),
     ),
@@ -662,7 +746,9 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             icon="mdi:ceiling-fan-light",
             name="Light mode",
-            custom_configs=localtuya_selector("white,colour,colourful"),
+            custom_configs=localtuya_selector(
+                {"white": "White", "colour": "Colour", "colourful": "Colourful"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN,
@@ -713,7 +799,16 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             icon="mdi:spray",
             name="Spraying mode",
-            custom_configs=localtuya_selector("auto,health,baby,sleep,humidity,work"),
+            custom_configs=localtuya_selector(
+                {
+                    "auto": "AUTO",
+                    "health": "Health",
+                    "baby": "BABY",
+                    "sleep": "SLEEP",
+                    "humidity": "HUMIDITY",
+                    "work": "WORK",
+                }
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.LEVEL,
@@ -721,7 +816,18 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:spray",
             name="Spraying level",
             custom_configs=localtuya_selector(
-                "level_1,level_2,level_3,level_4,level_5,level_6,level_7,level_8,level_9,level_10"
+                {
+                    "level_1": "LEVEL 1",
+                    "level_2": "LEVEL 2",
+                    "level_3": "LEVEL 3",
+                    "level_4": "LEVEL 4",
+                    "level_5": "LEVEL 5",
+                    "level_6": "LEVEL 6",
+                    "level_7": "LEVEL 7",
+                    "level_8": "LEVEL 8",
+                    "level_9": "LEVEL 9",
+                    "level_10": "LEVEL 10",
+                }
             ),
         ),
         LocalTuyaEntity(
@@ -729,7 +835,9 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             icon="mdi:lightbulb-multiple",
             name="Mood light",
-            custom_configs=localtuya_selector("1,2,3,4,5"),
+            custom_configs=localtuya_selector(
+                {"1": "1", "2": "2", "3": "3", "4": "4", "5": "5"}
+            ),
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN,
@@ -803,7 +911,16 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             name="Cooking Mode",
             custom_configs=localtuya_selector(
-                "vegetables,meat,shrimp,fish,chicken,drumsticks,beef,rice"
+                {
+                    "vegetables": "Vegetables",
+                    "meat": "Meat",
+                    "shrimp": "Shrimp",
+                    "fish": "Fish",
+                    "chicken": "Chicken",
+                    "drumsticks": "Drumsticks",
+                    "beef": "Beef",
+                    "rice": "Rice",
+                }
             ),
         ),
     ),
@@ -831,6 +948,35 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 {"0": "Internal", "1": "External", "2": "Both"}
             ),
         ),
+    ),
+    # Temperature and Humidity Sensor
+    # https://developer.tuya.com/en/docs/iot/categorywsdcg?id=Kaiuz3hinij34
+    "wsdcg": (
+        LocalTuyaEntity(
+            id=(DPCode.C_F, DPCode.TEMP_UNIT_CONVERT),
+            name="Temperature Unit",
+            icon="mdi:cog",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector({"c": "Celsius", "f": "Fahrenheit"}),
+        ),
+        # LocalTuyaEntity(
+        #     id=DPCode.TEMP_ALARM,
+        #     name="Temperature Alarm",
+        #     entity_category=EntityCategory.CONFIG,
+        #     icon="mdi:bell-alert",
+        #     custom_configs=localtuya_selector(
+        #         {"loweralarm": "Low", "upperalarm": "High", "cancel": "Cancel"}
+        #     ),
+        # ),
+        # LocalTuyaEntity(
+        #     id=DPCode.HUM_ALARM,
+        #     name="Humidity Alarm",
+        #     icon="mdi:bell-alert",
+        #     entity_category=EntityCategory.CONFIG,
+        #     custom_configs=localtuya_selector(
+        #         {"loweralarm": "Low", "upperalarm": "High", "cancel": "Cancel"}
+        #     ),
+        # ),
     ),
     # Alarm Host
     # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
@@ -915,6 +1061,74 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:file-chart-outline",
         ),
     ),
+    # HDMI Sync Box A1
+    "hdmipmtbq": (
+        LocalTuyaEntity(
+            id=DPCode.VIDEO_SCENE,
+            entity_category=EntityCategory.CONFIG,
+            name="Video Type",
+            icon="mdi:camera-burst",
+            custom_configs=localtuya_selector({"game": "Gaming", "movie": "Movies"}),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VIDEO_MODE,
+            entity_category=EntityCategory.CONFIG,
+            name="Video Mode",
+            icon="mdi:format-wrap-square",
+            custom_configs=localtuya_selector(
+                {
+                    "nor_closed": "Nor Closed",
+                    "multiple_colour": "Multi Colors",
+                    "single_colour": "Single Color",
+                }
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VIDEO_INTENSITY,
+            entity_category=EntityCategory.CONFIG,
+            name="Intensity",
+            icon="mdi:television-ambient-light",
+            custom_configs=localtuya_selector(
+                {
+                    "low": "Low",
+                    "middle": "Middle",
+                    "high": "High",
+                    "music": "Music",
+                }
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.STRIP_INPUT_POS,
+            entity_category=EntityCategory.CONFIG,
+            name="Start Position",
+            icon="mdi:vector-square-minus",
+            custom_configs=localtuya_selector(
+                {"low_right": "Low Right", "low_left": "Low Left"}
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.STRIP_DIRECTION,
+            entity_category=EntityCategory.CONFIG,
+            name="Strip Direction",
+            icon="mdi:subdirectory-arrow-right",
+            custom_configs=localtuya_selector(
+                {"clockwise": "Clockwise", "anti_clockwise": "Counter-Clockwise"}
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TV_SIZE,
+            entity_category=EntityCategory.CONFIG,
+            name="TV Size",
+            icon="mdi:move-resize",
+            custom_configs=localtuya_selector(
+                {
+                    "55_to_64_inch": "55 - 64 Inches",
+                    "65_to_74_inch": "65 - 74 Inches",
+                    "above_75_inch": "75 Inches or Above",
+                }
+            ),
+        ),
+    ),
 }
 # Wireless Switch  # also can come as knob switch. # and scene switch.
 # https://developer.tuya.com/en/docs/iot/wxkg?id=Kbeo9t3ryuqm5
@@ -929,7 +1143,7 @@ SELECTS["wxkg"] = (
         ),
     ),
     LocalTuyaEntity(
-        id=DPCode.SWITCH1_VALUE,
+        id=(DPCode.SWITCH1_VALUE, DPCode.SWITCH_TYPE_1),
         name="Switch 1",
         icon="mdi:square-outline",
         entity_category=EntityCategory.CONFIG,
@@ -943,7 +1157,7 @@ SELECTS["wxkg"] = (
         condition_contains_any=["single_click", "double_click", "long_press"],
     ),
     LocalTuyaEntity(
-        id=DPCode.SWITCH2_VALUE,
+        id=(DPCode.SWITCH2_VALUE, DPCode.SWITCH_TYPE_2),
         name="Switch 2",
         icon="mdi:palette-outline",
         entity_category=EntityCategory.CONFIG,
@@ -957,7 +1171,7 @@ SELECTS["wxkg"] = (
         condition_contains_any=["single_click", "double_click", "long_press"],
     ),
     LocalTuyaEntity(
-        id=DPCode.SWITCH3_VALUE,
+        id=(DPCode.SWITCH3_VALUE, DPCode.SWITCH_TYPE_3),
         name="Switch 3",
         icon="mdi:palette-outline",
         entity_category=EntityCategory.CONFIG,
@@ -971,7 +1185,7 @@ SELECTS["wxkg"] = (
         condition_contains_any=["single_click", "double_click", "long_press"],
     ),
     LocalTuyaEntity(
-        id=DPCode.SWITCH4_VALUE,
+        id=(DPCode.SWITCH4_VALUE, DPCode.SWITCH_TYPE_4),
         name="Switch 4",
         icon="mdi:palette-outline",
         entity_category=EntityCategory.CONFIG,
@@ -985,7 +1199,7 @@ SELECTS["wxkg"] = (
         condition_contains_any=["single_click", "double_click", "long_press"],
     ),
     LocalTuyaEntity(
-        id=DPCode.SWITCH5_VALUE,
+        id=(DPCode.SWITCH5_VALUE, DPCode.SWITCH_TYPE_5),
         name="Switch 5",
         icon="mdi:palette-outline",
         entity_category=EntityCategory.CONFIG,

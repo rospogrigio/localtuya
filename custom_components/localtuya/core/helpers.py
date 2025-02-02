@@ -47,7 +47,7 @@ class templates:
                 for key, value in values.items():
                     ent[str(key)] = (
                         str(value)
-                        if type(value) is not bool and type(value) is not float
+                        if not isinstance(value, (bool, float, dict, list))
                         else value
                     )
                 ent[CONF_PLATFORM] = plat

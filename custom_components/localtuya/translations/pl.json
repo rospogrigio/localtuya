@@ -108,6 +108,7 @@
                     "add_entities": "Dodaj nowe encje",
                     "manual_dps_strings": "(Opcjonalnie) Ręczne DPS, jeśli nie zostaną wykryte automatycznie (oddzielone przecinkami)",
                     "reset_dpids": "(Opcjonalnie) Identyfikatory DPID do wysłania polecenia RESET, jeśli urządzenie nie odpowiada na żądania statusu po włączeniu (oddzielone przecinkami)",
+                    "device_sleep_time": "(Optional) Device sleep time in seconds: If the device reports its state, then it goes into sleep",
                     "export_config": "Zapisz konfigurację encji jako szablon"
                 }
             },
@@ -166,7 +167,7 @@
                     "state_off": "Wartość wyłączenia",
                     "powergo_dp": "DP mocy (zazwyczaj 25 or 2)",
                     "idle_status_value": "Stan bezczynności (oddzielone przecinkami)",
-                    "returning_status_value": "Stan powrotu",
+                    "returning_status_value": "Stan powrotu (oddzielone przecinkami)",
                     "docked_status_value": "Stan zadokowania (oddzielone przecinkami)",
                     "fault_dp": "DP błędu (zazwyczaj 11)",
                     "battery_dp": "DP statusu baterii (zazwyczaj 14)",
@@ -179,6 +180,7 @@
                     "clean_area_dp": "DP obszaru czyszczenia (zazwyczaj 32)",
                     "clean_record_dp": "DP zapisu czyszczenia (zazwyczaj 34)",
                     "locate_dp": "DP lokalizacji (zazwyczaj 31)",
+                    "pause_dp":"Pause DP",
                     "paused_state": "Stan pauzy (pauza, itp)",
                     "stop_status": "Status zatrzymania",
                     "brightness": "Jasność (tylko dla koloru białego)",
@@ -235,7 +237,8 @@
                     "humidifier_set_humidity_dp": "(opcjonalnie) DP ustawienia wilgotności",
                     "min_humidity": "Ustaw minimalną obsługiwaną wilgotność",
                     "max_humidity": "Ustaw maksymalną obsługiwaną wilgotność",
-                    "alarm_supported_states": "States supported by the device"
+                    "alarm_supported_states": "States supported by the device",
+                    "receive_dp":"Receiving signals DP. (default is 202)"
                 },
                 "data_description": {
                     "hvac_mode_set":"Każda linia reprezentuje [ hvac_mode: device_value ] [Obsługiwane tryby HVAC](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",

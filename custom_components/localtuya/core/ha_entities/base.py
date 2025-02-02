@@ -21,7 +21,9 @@ class CLOUD_VALUE:
     `default_value`: The value that will be used if it fails to retrieve from the cloud.\n
     `dp_config(str)`: The dp config key that will be used to look for the values into it.\n
     `value_key(str)`: The "key" name of the targeted value.\n
-    `prefer_type(dict | str)`: Used for enums to convert the values to [dict or str splitted by comma, default is list].\n
+    `prefer_type`: Convert values
+            Integer: Type(value) ( int, float or str ).\n
+            Enums: convert the values to [dict or str splitted by comma, default is list].\n
     `remap_values(dict)`: Used to remap dict values, if prefer_type is dict.\n
     `reverse_dict(bool)`: Reverse dict keys, value, if prefer_type is dict.\n
     """
@@ -138,6 +140,7 @@ class DPCode(StrEnum):
     BATTERY_PERCENTAGE = "battery_percentage"  # Battery percentage
     BATTERY_STATE = "battery_state"  # Battery state
     BATTERY_VALUE = "battery_value"  # Battery value
+    BREAK_CLEAN = "break_clean"
     BRIGHTNESS_MAX_1 = "brightness_max_1"
     BRIGHTNESS_MAX_2 = "brightness_max_2"
     BRIGHTNESS_MAX_3 = "brightness_max_3"
@@ -219,11 +222,13 @@ class DPCode(StrEnum):
     C_F = "c_f"  # Temperature unit switching
     DECIBEL_SENSITIVITY = "decibel_sensitivity"
     DECIBEL_SWITCH = "decibel_switch"
+    DEFROST = "defrost"
     DEHUMIDITY_SET_ENUM = "dehumidify_set_enum"
     DEHUMIDITY_SET_VALUE = "dehumidify_set_value"
     DELAY_SET = "delay_set"
     DEVICE_STATE1 = "device_state1"
     DEVICE_STATE2 = "device_state2"
+    DIRECTION_CONTROL = "direction_control"
     DISINFECTION = "disinfection"
     DOORBELL = "doorbell"
     DOORCONTACT_STATE = "doorcontact_state"  # Status of door window sensor
@@ -270,7 +275,11 @@ class DPCode(StrEnum):
     HUMIDITY_INDOOR = "humidity_indoor"  # Indoor humidity
     HUMIDITY_SET = "humidity_set"  # Humidity setting
     HUMIDITY_VALUE = "humidity_value"  # Humidity
+    HUM_ALARM = "hum_alarm"
+    HUM_PERIODIC_REPORT = "hum_periodic_report"
+    HUM_SENSITIVITY = "hum_sensitivity"
     IDU_ERROR = "idu_error"
+    INNERDRY = "innerdry"
     IPC_WORK_MODE = "ipc_work_mode"
     LED_TYPE_1 = "led_type_1"
     LED_TYPE_2 = "led_type_2"
@@ -289,7 +298,11 @@ class DPCode(StrEnum):
     MASTER_MODE = "master_mode"  # alarm mode
     MASTER_STATE = "master_state"  # alarm mode
     MATERIAL = "material"  # Material
+    MAXHUM_SET = "maxhum_set"
+    MAXTEMP_SET = "maxtemp_set"
     MIDDLE_CONFIRM = "middle_confirm"  # cover reset.
+    MINIHUM_SET = "minihum_set"
+    MINITEMP_SET = "minitemp_set"
     MOD = "mod"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MODE = "mode"  # Working mode / Mode
     MODE_1 = "mode_1"  # Working mode / Mode
@@ -432,6 +445,8 @@ class DPCode(StrEnum):
     START = "start"  # Start
     STATUS = "status"
     STERILIZATION = "sterilization"  # Sterilization
+    STRIP_DIRECTION = "strip_direction"
+    STRIP_INPUT_POS = "strip_input_pos"
     SUB_CLASS = "sub_class"
     SUB_STATE = "sub_state"
     SUB_TYPE = "sub_type"
@@ -483,6 +498,11 @@ class DPCode(StrEnum):
     SWITCH_SAVE_ENERGY = "switch_save_energy"
     SWITCH_SOUND = "switch_sound"  # Voice switch
     SWITCH_SPRAY = "switch_spray"  # Spraying switch
+    SWITCH_TYPE_1 = "switch_type_1"
+    SWITCH_TYPE_2 = "switch_type_2"
+    SWITCH_TYPE_3 = "switch_type_3"
+    SWITCH_TYPE_4 = "switch_type_4"
+    SWITCH_TYPE_5 = "switch_type_5"
     SWITCH_USB1 = "switch_usb1"  # USB 1
     SWITCH_USB2 = "switch_usb2"  # USB 2
     SWITCH_USB3 = "switch_usb3"  # USB 3
@@ -500,18 +520,22 @@ class DPCode(StrEnum):
     TEMPER_ALARM = "temper_alarm"  # Tamper alarm
     TEMPFLOOR = "TempFloor"
     TEMPPROGRAM = "tempprogram"
+    TEMP_ALARM = "temp_alarm"
     TEMP_BOILING_C = "temp_boiling_c"
     TEMP_BOILING_F = "temp_boiling_f"
     TEMP_CONTROLLER = "temp_controller"
     TEMP_CURRENT = "temp_current"  # Current temperature in °C
     TEMP_CURRENT_F = "temp_current_f"  # Current temperature in °F
     TEMP_INDOOR = "temp_indoor"  # Indoor temperature in °C
+    TEMP_PERIODIC_REPORT = "temp_periodic_report"
+    TEMP_SENSITIVITY = "temp_sensitivity"
     TEMP_SET = "temp_set"  # Set the temperature in °C
     TEMP_SET_F = "temp_set_f"  # Set the temperature in °F
     TEMP_UNIT_CONVERT = "temp_unit_convert"  # Temperature unit switching
     TEMP_VALUE = "temp_value"  # Color temperature
     TEMP_VALUE_V2 = "temp_value_v2"
     TIM = "tim"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
+    TIMER = "timer"
     TIME_TOTAL = "time_total"
     TODAY_ACC_ENERGY = "today_acc_energy"
     TODAY_ACC_ENERGY1 = "today_acc_energy1"
@@ -530,6 +554,7 @@ class DPCode(StrEnum):
     TOTAL_TIME = "total_time"
     TREBLE_CONTROL = "treble_control"
     TVOC = "tvoc"
+    TV_SIZE = "tv_size"
     UNLOCK_APP = "unlock_app"
     UNLOCK_BLE = "unlock_ble"
     UNLOCK_CARD = "unlock_card"
@@ -557,9 +582,13 @@ class DPCode(StrEnum):
     VA_BATTERY = "va_battery"
     VA_HUMIDITY = "va_humidity"
     VA_TEMPERATURE = "va_temperature"
+    VIDEO_INTENSITY = "video_intensity"
+    VIDEO_MODE = "video_mode"
+    VIDEO_SCENE = "video_scene"
     VOC_STATE = "voc_state"
     VOC_VALUE = "voc_value"
     VOICE_BT_PLAY = "voice_bt_play"
+    VOICE_LANGUAGE = "voice_language"
     VOICE_MIC = "voice_mic"
     VOICE_PLAY = "voice_play"
     VOICE_SWITCH = "voice_switch"
@@ -589,5 +618,8 @@ class DPCode(StrEnum):
     WORK_POWER = "work_power"
     WORK_STATE = "work_state"
     WORK_STATUS = "work_status"
+    Y_MOP = "y_mop"
     ZONE_ATTRIBUTE = "zone_attribute"
     ZONE_NUMBER = "zone_number"
+    IR_SEND = "ir_send"
+    IR_STUDY_CODE = "ir_study_code"

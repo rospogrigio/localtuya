@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based cover devices."""
+
 import asyncio
 import logging
 import time

@@ -288,6 +288,24 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:account-lock",
             entity_category=EntityCategory.CONFIG,
         ),
+        LocalTuyaEntity(
+            id=DPCode.SLEEP,
+            name="Sleep",
+            icon="mdi:sleep",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SHAKE,
+            name="Shake",
+            # icon="mdi:vibrate",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.INNERDRY,
+            name="Inner Dry",
+            icon="mdi:water-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
     ),
     # Sous Vide Cooker
     # https://developer.tuya.com/en/docs/iot/categorymzj?id=Kaiuz2vy130ux
@@ -475,6 +493,24 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.VOICE_SWITCH,
             name="Mute Voice",
             icon="mdi:account-voice",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.RESET_MAP,
+            name="Map Resetting",
+            icon="mdi:backup-restore",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.BREAK_CLEAN,
+            name="Resumable Cleaning",
+            icon="mdi:cog-play-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.Y_MOP,
+            name="Mop Y",
+            icon="mdi:dots-vertical",
             entity_category=EntityCategory.CONFIG,
         ),
     ),

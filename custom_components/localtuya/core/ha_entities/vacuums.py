@@ -5,7 +5,7 @@
     Modified by: xZetsubou
 """
 
-from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
+from .base import DPCode, LocalTuyaEntity, CLOUD_VALUE
 
 CONF_POWERGO_DP = "powergo_dp"
 CONF_IDLE_STATUS_VALUE = "idle_status_value"
@@ -26,8 +26,8 @@ CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
 
 DEFAULT_IDLE_STATUS = "standby,sleep"
-DEFAULT_RETURNING_STATUS = "docking"
-DEFAULT_DOCKED_STATUS = "charging,chargecompleted"
+DEFAULT_RETURNING_STATUS = "docking,to_charge,goto_charge"
+DEFAULT_DOCKED_STATUS = "charging,chargecompleted,charge_done"
 DEFAULT_MODES = "smart,wall_follow,spiral,single"
 DEFAULT_FAN_SPEEDS = "low,normal,high"
 DEFAULT_PAUSED_STATE = "paused"
@@ -35,16 +35,29 @@ DEFAULT_RETURN_MODE = "chargego"
 DEFAULT_STOP_STATUS = "standby"
 
 
-DEFAULT_VALUES = {
-    CONF_IDLE_STATUS_VALUE: DEFAULT_IDLE_STATUS,
-    CONF_DOCKED_STATUS_VALUE: CONF_DOCKED_STATUS_VALUE,
-    CONF_RETURNING_STATUS_VALUE: DEFAULT_RETURNING_STATUS,
-    CONF_MODES: DEFAULT_MODES,
-    CONF_RETURN_MODE: DEFAULT_RETURN_MODE,
-    CONF_FAN_SPEEDS: DEFAULT_FAN_SPEEDS,
-    CONF_PAUSED_STATE: DEFAULT_PAUSED_STATE,
-    CONF_STOP_STATUS: DEFAULT_STOP_STATUS,
-}
+def localtuya_vaccuums(
+    modes: str = None,
+    returning_status_value: str = None,
+    return_mode: str = None,
+    fan_speeds: str = None,
+    paused_state: str = None,
+    stop_status: str = None,
+    idle_status_value: str = None,
+    docked_status_value: str = None,
+) -> dict:
+    """Will return dict with the vacuum localtuya entity configs"""
+    data = {
+        CONF_MODES: CLOUD_VALUE(modes, CONF_MODE_DP, "range", str),
+        CONF_IDLE_STATUS_VALUE: idle_status_value or DEFAULT_IDLE_STATUS,
+        CONF_STOP_STATUS: stop_status or DEFAULT_STOP_STATUS,
+        CONF_PAUSED_STATE: paused_state or DEFAULT_PAUSED_STATE,
+        CONF_FAN_SPEEDS: CLOUD_VALUE(fan_speeds, CONF_FAN_SPEED_DP, "range", str),
+        CONF_RETURN_MODE: return_mode or DEFAULT_RETURN_MODE,
+        CONF_RETURNING_STATUS_VALUE: returning_status_value or DEFAULT_RETURNING_STATUS,
+        CONF_DOCKED_STATUS_VALUE: docked_status_value or CONF_DOCKED_STATUS_VALUE,
+    }
+
+    return data
 
 
 VACUUMS: dict[str, tuple[LocalTuyaEntity, ...]] = {
@@ -52,14 +65,32 @@ VACUUMS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # https://developer.tuya.com/en/docs/iot/fsd?id=K9gf487ck1tlo
     "sd": (
         LocalTuyaEntity(
-            id=(DPCode.SWITCH, DPCode.POWER),
+            id=DPCode.STATUS,
             icon="mdi:robot-vacuum",
-            powergo_dp=DPCode.POWER_GO,
+            powergo_dp=(DPCode.POWER_GO, DPCode.POWER, DPCode.SWITCH),
             battery_dp=(DPCode.BATTERY_PERCENTAGE, DPCode.ELECTRICITY_LEFT),
             mode_dp=DPCode.MODE,
-            clean_time_dp=(DPCode.TOTAL_CLEAN_AREA, DPCode.TOTAL_CLEAN_TIME),
+            fan_speed_dp=DPCode.SUCTION,
+            pause_dp=DPCode.PAUSE,
+            locate_dp=DPCode.SEEK,
+            clean_time_dp=(
+                DPCode.CLEAN_TIME,
+                DPCode.TOTAL_CLEAN_AREA,
+                DPCode.TOTAL_CLEAN_TIME,
+            ),
             clean_area_dp=DPCode.CLEAN_AREA,
             clean_record_dp=DPCode.CLEAN_RECORD,
+            fault_dp=DPCode.FAULT,
+            custom_configs=localtuya_vaccuums(
+                modes=DEFAULT_MODES,
+                returning_status_value=DEFAULT_RETURNING_STATUS,
+                return_mode=DEFAULT_RETURN_MODE,
+                fan_speeds=DEFAULT_FAN_SPEEDS,
+                paused_state=DEFAULT_PAUSED_STATE,
+                stop_status=DEFAULT_STOP_STATUS,
+                idle_status_value=DEFAULT_IDLE_STATUS,
+                docked_status_value=DEFAULT_DOCKED_STATUS,
+            ),
         ),
     ),
 }

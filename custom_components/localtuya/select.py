@@ -1,4 +1,5 @@
 """Platform to present any Tuya DP as an enumeration."""
+
 import logging
 from functools import partial
 
@@ -46,7 +47,14 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
 
         # Set Display options
         options_values, options_display_name = [], []
-        for k, v in self._config.get(CONF_OPTIONS, {}).items():
+        config_options: dict = self._config.get(CONF_OPTIONS)
+        if not isinstance(config_options, dict):
+            # Warn the user in-case he used the wrong format.
+            self.error(
+                f"{self.name} DPiD: {self._dp_id}: Options configured incorrectly! It must be in the format of key-value pairs, where each line follows the structure [device_value: friendly name]"
+            )
+            config_options = {}
+        for k, v in config_options.items():
             options_values.append(k)
             options_display_name.append(v if v else k.replace("_", "").capitalize())
 

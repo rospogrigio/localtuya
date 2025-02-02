@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based switch devices."""
+
 import logging
 from functools import partial
 from .config_flow import _col_to_select

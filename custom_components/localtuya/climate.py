@@ -371,6 +371,9 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def hvac_mode(self):
         """Return current operation ie. heat, cool, idle."""
+        if not self._state:
+            return HVACMode.OFF
+
         return self._hvac_mode
 
     @property
@@ -388,13 +391,14 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def hvac_action(self):
         """Return the current running hvac operation if supported."""
+        if not self._state:
+            return HVACAction.OFF
+
         if not self._conf_hvac_action_dp:
             if self._hvac_mode == HVACMode.COOL:
                 self._hvac_action = HVACAction.COOLING
             if self._hvac_mode == HVACMode.HEAT:
                 self._hvac_action = HVACAction.HEATING
-            if self._hvac_mode == HVACMode.OFF:
-                self._hvac_action = HVACAction.IDLE
             if self._hvac_mode == HVACMode.DRY:
                 self._hvac_action = HVACAction.DRYING
 
@@ -585,18 +589,16 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 else:
                     self._preset_mode = PRESET_NONE
 
+        # If device is off there is no needs to check the states.
+        if not self._state:
+            return
+
         # Update the HVAC Mode
         if self.has_config(CONF_HVAC_MODE_DP):
-            if not self._state:
-                self._hvac_mode = HVACMode.OFF
-            else:
-                for ha_hvac, tuya_value in self._hvac_mode_set.items():
-                    if self.dp_value(CONF_HVAC_MODE_DP) == tuya_value:
-                        self._hvac_mode = ha_hvac
-                        break
-                else:
-                    # in case hvac mode and preset share the same dp
-                    self._hvac_mode = HVACMode.AUTO
+            for ha_hvac, tuya_value in self._hvac_mode_set.items():
+                if self.dp_value(CONF_HVAC_MODE_DP) == tuya_value:
+                    self._hvac_mode = ha_hvac
+                    break
 
         # Update the fan status
         if self.has_config(CONF_HVAC_FAN_MODE_DP):
@@ -620,9 +622,11 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 self._swing_mode = SWING_OFF
 
         # Update the current action
-        for ha_action, tuya_value in self._conf_hvac_action_set.items():
-            if self.dp_value(CONF_HVAC_ACTION_DP) == tuya_value:
-                self._hvac_action = ha_action
+        if self.has_config(CONF_HVAC_ACTION_DP):
+            for ha_action, tuya_value in self._conf_hvac_action_set.items():
+                if self.dp_value(CONF_HVAC_ACTION_DP) == tuya_value:
+                    self._hvac_action = ha_action
+                    break
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaClimate, flow_schema)

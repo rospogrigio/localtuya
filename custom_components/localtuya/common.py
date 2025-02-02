@@ -1,11 +1,13 @@
 """Code shared between all platforms."""
+
 import asyncio
 import logging
 import time
 from datetime import timedelta
-from typing import Callable, Coroutine, NamedTuple
+from typing import Any, Callable, Coroutine, NamedTuple
+from dataclasses import dataclass
 
-from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback
+from homeassistant.core import HomeAssistant, CALLBACK_TYPE, callback, State
 from homeassistant.config_entries import ConfigEntry
 
 from homeassistant.const import (
@@ -21,8 +23,9 @@ from homeassistant.const import (
     STATE_UNKNOWN,
     CONF_ENTITY_CATEGORY,
     EntityCategory,
-    CONF_TYPE,
     CONF_ICON,
+    STATE_UNAVAILABLE,
+    Platform,
 )
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import (
@@ -53,9 +56,14 @@ from .const import (
     ENTITY_CATEGORY,
     CONF_GATEWAY_ID,
     CONF_SCALING,
+    CONF_DEVICE_SLEEP_TIME,
+    CONF_DPS_STRINGS,
+    CONF_MANUAL_DPS,
 )
 
 _LOGGER = logging.getLogger(__name__)
+RESTORE_STATES = {"0": "restore"}
+BYPASS_STATUS = {"0": "bypass"}
 
 
 async def async_setup_entry(
@@ -80,6 +88,9 @@ async def async_setup_entry(
         host = dev_entry.get(CONF_HOST)
         node_id = dev_entry.get(CONF_NODE_ID)
         device_key = f"{host}_{node_id}" if node_id else host
+
+        if device_key not in hass_entry_data.devices:
+            continue
 
         entities_to_setup = [
             entity
@@ -165,11 +176,17 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._sub_devices: dict[str, TuyaDevice] = {}
 
         self._status = {}
+        # Sleep timer, a device that reports the status every x seconds then goes into sleep.
+        self._passive_device = self._device_config.get(CONF_DEVICE_SLEEP_TIME, 0) > 0
+        self._last_update_time: int = int(time.time()) - 5
+        self._pending_status: dict[str, dict[str, Any]] = {}
+
         self.dps_to_request = {}
         self._is_closing = False
         self._connect_task: asyncio.Task | None = None
         self._disconnect_task: Callable[[], None] | None = None
-        self._unsub_interval: Callable[[], None] = None
+        self._unsub_interval: CALLBACK_TYPE[[], None] = None
+        self._shutdown_entities_delay: CALLBACK_TYPE[[], None] = None
         self._entities = []
         self._local_key: str = self._device_config[CONF_LOCAL_KEY]
         self._default_reset_dpids: list | None = None
@@ -205,6 +222,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return whether this is a subdevice or not."""
         return self._node_id and not self._fake_gateway
 
+    @property
+    def is_sleep(self):
+        """Return whether the device is sleep or not."""
+        device_sleep = self._device_config.get(CONF_DEVICE_SLEEP_TIME, 0)
+        last_update = int(time.time()) - self._last_update_time
+        return last_update < device_sleep if device_sleep > 0 else False
+
     async def get_gateway(self):
         """Return the gateway device of this sub device."""
         if not self._node_id:
@@ -229,15 +253,17 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         if not self._is_closing and not self.is_connecting and not self.connected:
             try:
-                self._connect_task = self._hass.async_create_task(
-                    self._make_connection()
-                )
-                await self._connect_task
+                self._connect_task = asyncio.create_task(self._make_connection())
+                if not self.is_sleep:
+                    await self._connect_task
             except (TimeoutError, asyncio.CancelledError):
                 ...
 
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
+        if self.is_sleep and not self._status:
+            self.status_updated(RESTORE_STATES)
+
         name = self._device_config.get(CONF_FRIENDLY_NAME)
         host = name if self.is_subdevice else self._device_config.get(CONF_HOST)
         retry = 0
@@ -251,20 +277,26 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                         return await self.abort_connect()
                     self._interface = gateway._interface
                 else:
-                    self._interface = await pytuya.connect(
-                        self._device_config[CONF_HOST],
-                        self._device_config[CONF_DEVICE_ID],
-                        self._local_key,
-                        float(self._device_config[CONF_PROTOCOL_VERSION]),
-                        self._device_config.get(CONF_ENABLE_DEBUG, False),
-                        self,
+                    self._interface = await asyncio.wait_for(
+                        pytuya.connect(
+                            self._device_config[CONF_HOST],
+                            self._device_config[CONF_DEVICE_ID],
+                            self._local_key,
+                            float(self._device_config[CONF_PROTOCOL_VERSION]),
+                            self._device_config.get(CONF_ENABLE_DEBUG, False),
+                            self,
+                        ),
+                        5,
                     )
                 self._interface.add_dps_to_request(self.dps_to_request)
                 break  # Succeed break while loop
             except Exception as ex:  # pylint: disable=broad-except
-                if not retry < self._connect_max_tries:
-                    self.warning(f"Failed to connect to {host}: {str(ex)}")
                 await self.abort_connect()
+                if not retry < self._connect_max_tries and not self.is_sleep:
+                    self.warning(f"Failed to connect to {host}: {str(ex)}")
+                # if self.is_sleep and not self._status:
+                #     self.status_updated(RESTORE_STATES)
+                #     break
 
         if self._interface is not None:
             try:
@@ -333,6 +365,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 ]
                 await asyncio.gather(*connect_sub_devices)
 
+            if "0" in self._device_config.get(CONF_MANUAL_DPS, "").split(","):
+                self.status_updated(BYPASS_STATUS)
+
+            if self._pending_status:
+                await self.set_dps(self._pending_status)
+                self._pending_status = {}
+
         self._connect_task = None
 
     async def abort_connect(self):
@@ -355,6 +394,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     async def close(self):
         """Close connection and stop re-connect loop."""
         self._is_closing = True
+        if self._shutdown_entities_delay is not None:
+            self._shutdown_entities_delay()
         if self._connect_task is not None:
             self._connect_task.cancel()
             await self._connect_task
@@ -362,7 +403,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._interface is not None:
             await self._interface.close()
             self._interface = None
-        if self._disconnect_task is not None:
+        if self._disconnect_task:
             self._disconnect_task()
         self.debug(
             f"Closed connection with {self._device_config[CONF_FRIENDLY_NAME]}",
@@ -389,11 +430,6 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             )
             self.info(f"local_key updated for device {dev_id}.")
 
-    async def _async_refresh(self, _now):
-        if self._interface is not None:
-            self.debug("Refreshing dps for device")
-            await self._interface.update_dps(cid=self._node_id)
-
     async def set_dp(self, state, dp_index):
         """Change value of a DP of the Tuya device."""
         await self.check_connection()
@@ -403,6 +439,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             except Exception:  # pylint: disable=broad-except
                 self.debug(f"Failed to set DP {dp_index} to {str(state)}", force=True)
         else:
+            if self.is_sleep:
+                return self._pending_status.update({str(dp_index): state})
             self.error(
                 f"Not connected to device {self._device_config[CONF_FRIENDLY_NAME]}"
             )
@@ -416,9 +454,16 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             except Exception:  # pylint: disable=broad-except
                 self.debug(f"Failed to set DPs {states}")
         else:
+            if self.is_sleep:
+                return self._pending_status.update(states)
             self.error(
                 f"Not connected to device {self._device_config[CONF_FRIENDLY_NAME]}"
             )
+
+    async def _async_refresh(self, _now):
+        if self._interface is not None:
+            self.debug("Refreshing dps for device")
+            await self._interface.update_dps(cid=self._node_id)
 
     def _dispatch_status(self):
         signal = f"localtuya_{self._device_config[CONF_DEVICE_ID]}"
@@ -466,6 +511,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._fake_gateway:
             # Fake gateways are only used to pass commands no need to update status.
             return
+        self._last_update_time = int(time.time())
+
         self._handle_event(self._status, status)
         self._status.update(status)
         self._dispatch_status()
@@ -473,10 +520,15 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def disconnected(self):
         """Device disconnected."""
+        sleep_time = self._device_config.get(CONF_DEVICE_SLEEP_TIME, 0)
 
         def shutdown_entities(now=None):
             """Shutdown device entities"""
+            self._shutdown_entities_delay = None
+            if self.is_sleep:
+                return
             if not self.connected:
+                self.debug(f"Disconnected: waiting for discovery broadcast", force=True)
                 signal = f"localtuya_{self._device_config[CONF_DEVICE_ID]}"
                 async_dispatcher_send(self._hass, signal, None)
 
@@ -495,12 +547,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         # If it disconnects unexpectedly.
         if self._is_closing is not True and not self.is_subdevice:
-            self.debug(f"Disconnected - waiting for discovery broadcast", force=True)
-            # Try to quickly reconnect.
+            # Try quick reconnect.
             self._is_closing = False
-            self._config_entry.async_create_task(self._hass, self.async_connect())
+            self._hass.add_job(self.async_connect())
         if not self._is_closing:
-            async_call_later(self._hass, 5, shutdown_entities)
+            self._shutdown_entities_delay = async_call_later(
+                self._hass, sleep_time + 3, shutdown_entities
+            )
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
@@ -522,6 +575,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self._status = {}
         self._state = None
         self._last_state = None
+        self._hass = device._hass
 
         # Default value is available to be provided by Platform entities if required
         self._default_value = self._config.get(CONF_DEFAULT_VALUE)
@@ -537,15 +591,20 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
 
         self.debug(f"Adding {self.entity_id} with configuration: {self._config}")
 
-        state = await self.async_get_last_state()
-        if state:
-            self.status_restored(state)
+        stored_data = await self.async_get_last_state()
+        if stored_data:
+            self.status_restored(stored_data)
 
         def _update_handler(status):
             """Update entity state when status was updated."""
             if status is None:
                 status = {}
             if self._status != status:
+                if status == RESTORE_STATES:
+                    status = {}
+                    self.debug(f"{self.name}: restoring the state: {stored_data.state}")
+                    if stored_data and stored_data.state != STATE_UNAVAILABLE:
+                        status = {self._dp_id: stored_data.state}
                 self._status = status.copy()
                 if status:
                     self.status_updated()
@@ -638,8 +697,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         value = self._config.get(attr, "-1")
         return value is not None and value != "-1"
 
-    def dp_value(self, key):
-        """Return cached value for DPS index or Entity Config Key."""
+    def dp_value(self, key, default=None) -> Any | None:
+        """Return cached value for DPS index or Entity Config Key. else default None"""
         requested_dp = str(key)
         # If requested_dp in DP ID, get cached value.
         if (value := self._status.get(requested_dp)) or value is not None:
@@ -651,7 +710,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
                 return value
 
         if value is None:
-            self.debug(f"{self.name}: is requesting unknown DP Value {key}", force=True)
+            value = default
+            # self.debug(f"{self.name}: is requesting unknown DP Value {key}", force=True)
 
         return value
 
@@ -756,3 +816,25 @@ class HassLocalTuyaData(NamedTuple):
     cloud_data: TuyaCloudApi
     devices: dict[str, TuyaDevice]
     unsub_listeners: list[CALLBACK_TYPE,]
+
+
+@dataclass
+class DeviceConfig:
+    """Represent Main Device Config."""
+
+    device_config: dict[str, Any]
+
+    def __post_init__(self) -> None:
+        self.id: str = self.device_config[CONF_DEVICE_ID]
+        self.host: str = self.device_config[CONF_HOST]
+        self.local_key: str = self.device_config[CONF_LOCAL_KEY]
+        self.entities: list = self.device_config[CONF_ENTITIES]
+        self.protocol_version: str = self.device_config[CONF_PROTOCOL_VERSION]
+        self.sleep_time = self.device_config.get(CONF_DEVICE_SLEEP_TIME, 0)
+        self.scan_interval = self.device_config.get(CONF_SCAN_INTERVAL, 0)
+        self.enable_debug = self.device_config.get(CONF_ENABLE_DEBUG, False)
+        self.name: str = self.device_config.get(CONF_FRIENDLY_NAME)
+        self.node_id = self.device_config.get(CONF_NODE_ID)
+        self.model = self.device_config.get(CONF_MODEL)
+        self.reset_dps = self.device_config.get(CONF_RESET_DPIDS)
+        self.dps_strings = self.device_config.get(CONF_DPS_STRINGS)

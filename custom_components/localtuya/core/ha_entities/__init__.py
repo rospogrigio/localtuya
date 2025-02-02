@@ -41,6 +41,7 @@ from .fans import FANS
 from .humidifiers import HUMIDIFIERS
 from .lights import LIGHTS
 from .numbers import NUMBERS
+from .remotes import REMOTES
 from .selects import SELECTS
 from .sensors import SENSORS
 from .sirens import SIRENS
@@ -58,6 +59,7 @@ DATA_PLATFORMS = {
     Platform.HUMIDIFIER: HUMIDIFIERS,
     Platform.LIGHT: LIGHTS,
     Platform.NUMBER: NUMBERS,
+    Platform.REMOTE: REMOTES,
     Platform.SELECT: SELECTS,
     Platform.SENSOR: SENSORS,
     Platform.SIREN: SIRENS,
@@ -66,6 +68,9 @@ DATA_PLATFORMS = {
 }
 
 _LOGGER = logging.getLogger(__name__)
+
+TUYA_CATEGORY = "category"
+DEVICE_CLOUD_DATA = "device_cloud_data"
 
 
 def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dict]:
@@ -77,7 +82,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
         return
 
     device_name: str = localtuya_data.get(CONF_FRIENDLY_NAME).strip()
-    device_cloud_data: dict = localtuya_data.get("device_cloud_data", {})
+    device_cloud_data: dict = localtuya_data.get(DEVICE_CLOUD_DATA, {})
     dps_data = device_cloud_data.get("dps_data", {})
 
     entities = {}
@@ -183,11 +188,17 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
 
     # Integer values: min, max, scale, step
     if dp_values and dp_type == DPType.INTEGER:
+        # We only need the scaling factor, other values will be scaled from via later on.
+        # dp_values["min"] = scale(dp_values.get("min"), val_scale)
+        pref_type = req_info.prefer_type or int
         val_scale = dp_values.get("scale", 1)
-        dp_values["min"] = scale(dp_values.get("min"), val_scale)
-        dp_values["max"] = scale(dp_values.get("max"), val_scale)
-        dp_values["step"] = scale(dp_values.get("step"), val_scale, float)
-        dp_values["scale"] = scale(1, val_scale, float)
+        dp_values["min"] = pref_type(dp_values.get("min"))
+        dp_values["max"] = pref_type(dp_values.get("max"))
+        dp_values["step"] = pref_type(dp_values.get("step"))
+
+        pref_type = req_info.prefer_type or float
+        dp_values["scale"] = pref_type(scale(1, val_scale, float))
+
         return dp_values
 
     # ENUM Values: range: list of values.
@@ -226,8 +237,8 @@ def convert_list(_list: list, req_info: CLOUD_VALUE = str):
         # Return dict {value_1: Value 1, value_2: Value 2, value_3: Value 3}
         to_dict = {}
         for k in _list:
-            if k in req_info.remap_values:
-                k_name = req_info.remap_values.get(k)
+            if k.lower() in req_info.remap_values:
+                k_name = req_info.remap_values.get(k.lower())
             else:
                 # k_name = k.replace("_", " ").capitalize()  # Default name
                 k_name = k  # Default name

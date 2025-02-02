@@ -21,6 +21,7 @@ PLATFORMS = {
     "Humidifier": Platform.HUMIDIFIER,
     "Light": Platform.LIGHT,
     "Number": Platform.NUMBER,
+    "Remote": Platform.REMOTE,
     "Select": Platform.SELECT,
     "Sensor": Platform.SENSOR,
     "Siren": Platform.SIREN,
@@ -61,6 +62,7 @@ CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
+CONF_DEVICE_SLEEP_TIME = "device_sleep_time"
 
 # ALARM
 CONF_ALARM_SUPPORTED_STATES = "alarm_supported_states"
@@ -155,6 +157,7 @@ CONF_FAULT_DP = "fault_dp"
 CONF_PAUSED_STATE = "paused_state"
 CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
+CONF_PAUSE_DP = "pause_dp"
 
 # number
 CONF_MIN_VALUE = "min_value"
@@ -164,6 +167,9 @@ CONF_STEPSIZE = "step_size"
 # select
 CONF_OPTIONS = "select_options"
 CONF_OPTIONS_FRIENDLY = "select_options_friendly"
+
+# Remote
+CONF_RECEIVE_DP = "receive_dp"
 
 # States
 ATTR_STATE = "raw_state"

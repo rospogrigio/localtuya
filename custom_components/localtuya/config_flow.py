@@ -1,4 +1,5 @@
 """Config flow for LocalTuya integration integration."""
+
 import asyncio
 import errno
 import logging
@@ -8,6 +9,7 @@ from importlib import import_module
 from functools import partial
 from collections.abc import Coroutine
 from typing import Any
+from copy import deepcopy
 
 from .core.helpers import (
     templates,
@@ -72,6 +74,7 @@ from .const import (
     ENTITY_CATEGORY,
     PLATFORMS,
     SUPPORTED_PROTOCOL_VERSIONS,
+    CONF_DEVICE_SLEEP_TIME,
 )
 from .discovery import discover
 
@@ -85,6 +88,9 @@ TEMPLATES = "templates"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"
 SELECTED_DEVICE = "selected_device"
 EXPORT_CONFIG = "export_config"
+
+TUYA_CATEGORY = "category"
+DEVICE_CLOUD_DATA = "device_cloud_data"
 
 # Using list method so we can translate options.
 CONFIGURE_MENU = [CONF_ADD_DEVICE, CONF_EDIT_DEVICE, CONF_CONFIGURE_CLOUD]
@@ -116,6 +122,7 @@ DEVICE_SCHEMA = vol.Schema(
         vol.Optional(CONF_SCAN_INTERVAL): int,
         vol.Optional(CONF_MANUAL_DPS): cv.string,
         vol.Optional(CONF_RESET_DPIDS): str,
+        vol.Optional(CONF_DEVICE_SLEEP_TIME): int,
         vol.Optional(CONF_NODE_ID, default=None): vol.Any(None, cv.string),
     }
 )
@@ -178,6 +185,10 @@ def mergeDevicesList(localList: dict, cloudList: dict, addSubDevices=True) -> di
                 continue
             # Make sure the device isn't already in localList.
             if addSubDevices and sub_device:
+                # infrared are ir remote sub-devices
+                if _devData.get(TUYA_CATEGORY, "").startswith("infrared"):
+                    continue
+
                 gateway = get_gateway_by_deviceid(_devID, cloudList)
                 local_gw = localList.get(gateway.id)
                 if local_gw:
@@ -216,6 +227,7 @@ def options_schema(entities):
             vol.Optional(CONF_SCAN_INTERVAL): int,
             vol.Optional(CONF_MANUAL_DPS): cv.string,
             vol.Optional(CONF_RESET_DPIDS): cv.string,
+            vol.Optional(CONF_DEVICE_SLEEP_TIME): int,
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
@@ -252,8 +264,8 @@ def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) 
 
     # Merge DPs that found through cloud with local.
     for dp, func in cloud_dp_codes.items():
-        if dp not in dps_data and (val := str(func.get("value"))):
-            dps_data[dp] = f"{func.get('value')}, cloud pull"
+        if dp not in dps_data and (value := str(func.get("value"))):
+            dps_data[dp] = f"{value}, cloud pull"
 
     for dp, value in dps_data.items():
         if (dp_data := cloud_dp_codes.get(dp)) and (code := dp_data.get("code")):
@@ -920,10 +932,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         node_id = self.nodeID
         device_data = self.cloud_data.device_list.get(dev_id)
         if device_data:
-            category = self.cloud_data.device_list[dev_id].get("category", "")
+            category = self.cloud_data.device_list[dev_id].get(TUYA_CATEGORY, "")
 
         localtuya_data = {
-            "device_cloud_data": device_data,
+            DEVICE_CLOUD_DATA: device_data,
             CONF_DPS_STRINGS: self.dps_strings,
             CONF_FRIENDLY_NAME: self.device_data.get(CONF_FRIENDLY_NAME),
         }
@@ -1130,7 +1142,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     @callback
     def _update_entry(self, new_data, target_obj="", new_title=""):
         """Update entry data and save etnry,"""
-        _data = self.config_entry.data.copy()
+        _data = deepcopy(dict(self.config_entry.data))
         if target_obj:
             _data[target_obj].update(new_data)
         else:
@@ -1148,6 +1160,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         used_dps = [str(entity[CONF_ID]) for entity in self.entities]
         for dp_string in self.dps_strings:
             dp = dp_string.split(" ")[0]
+            # 0 Is only using to bypass status check.
+            if dp == "0":
+                continue
+
             if dp not in used_dps:
                 available_dps.append(dp_string)
         return available_dps
@@ -1223,8 +1239,9 @@ async def setup_localtuya_devices(
         devices.update({dev_id: {**devices_cfg[i], **results[i]}})
 
     # Configure entities.
-    for dev_id, dev_data in devices.copy().items():
+    for dev_id, dev_data in deepcopy(devices).items():
         category = devices_cloud_data[dev_id].get("category")
+        dev_data[DEVICE_CLOUD_DATA] = devices_cloud_data[dev_id]
         if category and (dps_strings := dev_data.get(CONF_DPS_STRINGS, False)):
             dev_entites = gen_localtuya_entities(dev_data, category)
 
