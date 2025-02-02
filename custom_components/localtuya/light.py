@@ -3,10 +3,6 @@
 import base64
 import logging
 import textwrap
-from dataclasses import dataclass
-from functools import partial
-from homeassistant.helpers import selector
-
 import homeassistant.util.color as color_util
 import voluptuous as vol
 
@@ -23,7 +19,6 @@ from homeassistant.components.light import (
     DOMAIN,
     LightEntity,
     LightEntityFeature,
-    ColorMode,
 )
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
@@ -38,7 +33,6 @@ from .const import (
     CONF_COLOR_TEMP_MAX_KELVIN,
     CONF_COLOR_TEMP_MIN_KELVIN,
     CONF_COLOR_TEMP_REVERSE,
-    CONF_COLOR_MODE_SET,
     CONF_MUSIC_MODE,
     CONF_SCENE_VALUES,
 )
@@ -62,12 +56,6 @@ MODE_WHITE = "white"
 SCENE_MUSIC = "Music"
 
 MODES_SET = {"Colour, Music, Scene and White": 0, "Manual, Music, Scene and White": 1}
-
-EFFECTS_MODES = {
-    "Default": MODE_WHITE,
-    "Mode Color": MODE_COLOR,
-    "Mode Scene": MODE_SCENE,
-}
 
 # https://developer.tuya.com/en/docs/iot/dj?id=K9i5ql3v98hn3#title-10-scene_data
 SCENE_LIST_RGBW_255 = {
@@ -245,40 +233,13 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         )
         self._brightness = None if not self._write_only else self._upper_brightness
         self._upper_color_temp = self._upper_brightness
-        self._min_kelvin = int(
-            self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
-        )
-        self._max_kelvin = int(
-            self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
-        )
-        self._color_temp_reverse = self._config.get(
-            CONF_COLOR_TEMP_REVERSE, DEFAULT_COLOR_TEMP_REVERSE
-        )
+
+        self._color_temp_reverse = self._config.get(CONF_COLOR_TEMP_REVERSE, False)
         self._modes = MAP_MODE_SET[int(self._config.get(CONF_COLOR_MODE_SET, 0))]
         self._hs = None
         self._effect = None
         self._effect_list = []
         self._scenes = {}
-
-        custom_scenes = False
-        if self.has_config(CONF_SCENE):
-            if self.has_config(CONF_SCENE_VALUES):
-                values_list = list(self._config.get(CONF_SCENE_VALUES))
-                values_name = list(self._config.get(CONF_SCENE_VALUES).values())
-                custom_scenes = True
-                self._scenes = dict(zip(values_name, values_list))
-            elif int(self._config.get(CONF_SCENE)) < 20:
-                self._scenes = SCENE_LIST_RGBW_255
-            elif self._config.get(CONF_BRIGHTNESS) is None:
-                self._scenes = SCENE_LIST_RGB_1000
-            else:
-                self._scenes = SCENE_LIST_RGBW_1000
-
-            if not custom_scenes:
-                self._scenes = {**EFFECTS_MODES, **self._scenes}
-
-            self._effect_list = list(self._scenes.keys())
-
         self._cached_status = {}
 
         if self._config.get(CONF_MUSIC_MODE):
@@ -396,11 +357,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def effect_list(self):
         """Return the list of supported effects for this light."""
-        if self.is_scene_mode or self.is_music_mode:
-            return self._effect
-        elif (color_mode := self.__get_color_mode()) in self._scenes.values():
-            return self.__find_scene_by_scene_data(color_mode)
-        elif len(self._effect_list) > 0:
+        if len(self._effect_list) > 0:
             return self._effect_list
         return None
 
@@ -434,21 +391,6 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         if self.has_config(CONF_SCENE) or self.has_config(CONF_MUSIC_MODE):
             supports |= LightEntityFeature.EFFECT
         return supports
-
-    @property
-    def color_mode(self) -> ColorMode:
-        """Return the color_mode of the light."""
-        if len(self.supported_color_modes) == 1:
-            return next(iter(self.supported_color_modes))
-
-        if self.is_color_mode:
-            return ColorMode.HS
-        if self.is_white_mode:
-            return ColorMode.COLOR_TEMP
-        if self._brightness:
-            return ColorMode.BRIGHTNESS
-
-        return ColorMode.ONOFF
 
     @property
     def is_white_mode(self):
@@ -650,6 +592,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         if ATTR_COLOR_TEMP_KELVIN in kwargs and ColorMode.COLOR_TEMP in color_modes:
             if brightness is None:
                 brightness = self._brightness
+
             color_temp = map_range(
                 int(kwargs[ATTR_COLOR_TEMP_KELVIN]),
                 self.min_color_temp_kelvin,
