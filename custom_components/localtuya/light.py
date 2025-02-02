@@ -169,6 +169,7 @@ class Mode:
         default = {"Default": self.white}
         return {**default, "Mode Color": self.color, "Mode Scene": self.scene}
 
+
 MAP_MODE_SET = {0: Mode(), 1: Mode(color=MODE_MANUAL)}
 
 

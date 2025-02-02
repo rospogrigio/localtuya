@@ -6,7 +6,12 @@ from functools import partial
 from .config_flow import col_to_select
 
 import voluptuous as vol
-from homeassistant.components.sensor import DEVICE_CLASSES, DOMAIN, SensorEntity, SensorStateClass
+from homeassistant.components.sensor import (
+    DEVICE_CLASSES,
+    DOMAIN,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.components.sensor import (
     DEVICE_CLASSES_SCHEMA,
     DOMAIN,
@@ -78,7 +83,7 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
     def native_value(self):
         """Return sensor state."""
         return self._state
-    
+
     @property
     def state_class(self):
         """Return longterm statistics."""

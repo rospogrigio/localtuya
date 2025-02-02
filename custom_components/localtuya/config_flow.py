@@ -170,7 +170,6 @@ MASS_CONFIGURE_SCHEMA = {vol.Optional(CONF_MASS_CONFIGURE, default=False): bool}
 CUSTOM_DEVICE = {"Add Device Manually": "..."}
 
 
-
 def options_schema(entities):
     """Create schema for options."""
     entity_names = [
