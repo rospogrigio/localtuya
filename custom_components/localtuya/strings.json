@@ -1,7 +1,7 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Device has already been configured.",
+            "already_configured": "This Account ID has already been configured.",
             "unsupported_device_type": "Unsupported device type!"
         },
         "error": {

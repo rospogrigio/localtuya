@@ -1,6 +1,40 @@
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
-#### Since main dev is probably busy, I made this fork to merge some ignored PRs that I need, also I'll try to keep it up-to-date with master, so I can't promise that this fork is gonna be up-to-date all the time
+<details><summary>How to use templates</summary>
+<p>
+
+[Preview!](https://user-images.githubusercontent.com/46300268/260274212-084d8784-df8b-4187-ae67-711e9aac4821.gif)
+```yaml
+Templates:
+The template is basically ready to go configs can be imported instead of choosing configs DPs names etc...
+
+IMPORTANT: 
+there is now valid check atm config so make sure you're importing correct configs.
+
+the configs depends on the platform and what input does platform support read bottom.
+
+THERE Is 2 ways to make template:
+- 1st is write the yaml ur self:
+    [ Keep in mind there is no valid check atm ]
+
+- 2st is to export ur device file from config flow. [ Recommended ]:
+    in HA Dashboard go to [ localtuya -> Configure -> Edit Device * choose the device u want to export
+    Export the device config then submit]
+
+Templates DIR:
+  the configs will be exported in [custom_components/localtuya/templates]
+
+How to import:
+-- When u add new device when the form [ Pick Entity type selection ]
+    Import template Form will show up showing avaliable templates in templates folder.
+
+-- templates in [custom_components/localtuya/templates] 
+    Templates files will load up with HA so adding files will require restarting HA to show up.
+```
+
+</p>
+</details>
+
 > Discussions are available.
 > 
 > useing this fork after ver 2 it won't be possible to install original repo above this one unless you install `1.9.0_rev` then install main repo
@@ -31,10 +65,17 @@ This repository's development began as code from [@NameLessJedi](https://github.
 
 # Installation:
 
-The easiest way, if you are using [HACS](https://hacs.xyz/), is to install LocalTuya through HACS.
+The easiest way and the best, Is using [HACS](https://hacs.xyz/), <br>
+1. Open HACS and navigate to Integrations Section <br>
+2. Open the Overflow Menu (⋮) in the top right corner and click on Custom repositories <br>
+3. Paste `https://github.com/xZetsubou/localtuya` into the input field and select Integration from the category dropdown then click ADD. <br>
+4. Now the integration should be added search in for it and install it! <br>
 
-For manual installation, copy the localtuya folder and all of its contents into your Home Assistant's custom_components folder. This folder is usually inside your `/config` folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at `/usr/share/hassio/homeassistant`. You may need to create the `custom_components` folder and then copy the localtuya folder and all of its contents into it.
 
+Manual installation:
+1. Download the source files from [releases](https://github.com/xZetsubou/localtuya/releases).
+2. Extract/open the archive file go inside the directory `custom_components` and copy localtuya folder.
+3. Paste the folder into `/config/custom_components` you can use `VSCode add-on, SMB < better or ssh` to reach /config folder
 
 # Usage:
 

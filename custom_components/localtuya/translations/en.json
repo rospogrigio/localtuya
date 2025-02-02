@@ -1,7 +1,7 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Device has already been configured.",
+            "already_configured": "This Account ID has already been configured.",
             "device_updated": "Device configuration has been updated!"
         },
         "error": {
@@ -32,7 +32,7 @@
     },
     "options": {
         "abort": {
-            "already_configured": "Device has already been configured.",
+            "already_configured": "This Account ID has already been configured.",
             "device_success": "Device {dev_name} successfully {action}.",
             "no_entities": "Cannot remove all entities from a device.\nIf you want to delete a device, enter it in the Devices menu, click the 3 dots in the 'Device info' frame, and press the Delete button."
         },
