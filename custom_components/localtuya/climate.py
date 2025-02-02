@@ -290,7 +290,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._preset_mode = None
         self._hvac_action = None
         self._precision = float(self._config.get(CONF_PRECISION, DEFAULT_PRECISION))
-        self._conf_hvac_mode_dp = self._config.get(CONF_HVAC_MODE_DP)
         self._conf_hvac_fan_mode_dp = self._config.get(CONF_HVAC_FAN_MODE_DP)
         self._conf_hvac_fan_mode_set = HVAC_FAN_MODE_SETS.get(
             self._config.get(CONF_HVAC_FAN_MODE_SET), {}
@@ -312,13 +311,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         # Presets
         self._preset_dp = self._config.get(CONF_PRESET_DP)
         self._preset_set: dict = self._config.get(CONF_PRESET_SET, {})
-
-        # Sort Modes If the HVAC isn't supported by HA then we add it as preset.
-        if self._preset_dp == self._hvac_mode_dp or not self._preset_dp:
-            for k, v in self._hvac_mode_set.copy().items():
-                if k not in HVACMode:
-                    self._preset_dp = self._hvac_mode_dp
-                    self._preset_set[k] = self._hvac_mode_set.pop(k)
 
         self._preset_name_to_value = {v: k for k, v in self._preset_set.items()}
 
@@ -422,8 +414,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return current operation ie. heat, cool, idle."""
         if not self._is_on:
             return HVACMode.OFF
-        if not self._hvac_mode_dp:
-            return HVACMode.HEAT
 
         return self._hvac_mode
 
@@ -485,12 +475,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def preset_mode(self):
         """Return current preset."""
-        mode = self.dp_value(CONF_HVAC_MODE_DP)
-        if self._preset_dp == self._hvac_mode_dp and (
-            mode in list(self._hvac_mode_set.values())
-        ):
-            return None
-
         return self._preset_mode
 
     @property
@@ -572,9 +556,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             new_states[self._dp_id] = self._state_on
         elif hvac_mode == HVACMode.OFF and HVACMode.OFF not in self._hvac_mode_set:
             new_states[self._dp_id] = self._state_off
-
-        if hvac_mode in self._hvac_mode_set:
-            new_states[self._hvac_mode_dp] = self._hvac_mode_set[hvac_mode]
 
         await self._device.set_dps(new_states)
 
