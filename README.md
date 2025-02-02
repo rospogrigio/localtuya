@@ -1,6 +1,6 @@
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
-### Since main dev is probably busy, I made this fork to merge some ignored PRs that I need, also I'll try to keep it up-to-date with master, so I can't promise that this fork is gonna be up-to-date all the time
+#### Since main dev is probably busy, I made this fork to merge some ignored PRs that I need, also I'll try to keep it up-to-date with master, so I can't promise that this fork is gonna be up-to-date all the time
 > Discussions are available.
 > 
 > useing this fork after ver 2 it won't be possible to install original repo above this one unless you install `1.9.0_rev` then install main repo
