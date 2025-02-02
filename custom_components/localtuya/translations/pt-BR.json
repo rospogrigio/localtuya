@@ -158,6 +158,8 @@
                     "color_temp_max_kelvin": "Temperatura máxima de cor em K",
                     "music_mode": "Modo de música disponível",
                     "scene": "Cena",
+                    "scene_values": "Valores de cena, entradas separadas por um ;",
+                    "scene_values_friendly": "Valores de cena amigáveis ao usuário, entradas separadas por um ;",
                     "select_options": "Entradas válidas, entradas separadas por um ;",
                     "select_options_friendly": "Opções fantasia ​​ao usuário, entradas separadas por um ;",
                     "fan_speed_control": "Dps de controle de velocidade do ventilador",
