@@ -11,7 +11,7 @@
     !!! danger "Important"
         Before adding any device, ensure that `Smart Life` and `Tuya Smart` apps are closed on your phones. Devices shouldn't be added to different local integrations as __some__ Tuya devices can only accept one local connection at a time.
 
-After setting up the integration, you can now manage your devices by `adding` or `editing`<br>
+After setting up the integration, you can now manage your devices by `adding` or `editing` them.<br>
 Go to hub `Configure` (1) a menu will show up (2) Choose `Add new device`
 { .annotate }
 
@@ -20,7 +20,7 @@ Go to hub `Configure` (1) a menu will show up (2) Choose `Add new device`
 
 
 !!! Note "Discovery"
-    By default, `LocalTuya` includes a discovery feature that scans for Tuya devices within the local network, listing them in the config flow. However, this function requires the Home Assistant machine to be connected to the same network as the Tuya devices and might not function across different subnets,
+    By default, `LocalTuya` includes a discovery feature that scans for Tuya devices within the local network and lists them in the config flow. However, this function requires Home Assistant to be connected to the same network as the Tuya devices and to have the same subnets.
 
 1. Selecting `Add new device` will display a new page with the listed discovered devices (1) <br> Select the device you wish to configure, then click on `Submit`.
     {.annotate}

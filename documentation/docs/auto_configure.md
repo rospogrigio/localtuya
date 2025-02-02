@@ -4,7 +4,7 @@ Localtuya can disocver you device entities if cloud is enable because the featur
 By known the `category` we use that to get all the possible entities from stored data.<br> Data stored in `/localtuya/core/tuya_devices` (1)
 {.annotate}
 
-1. Files named with entity type <br> <br> ![](images/dev/tuya_devices_dir.png)
+1. Files are named with entities type <br> <br> ![](images/dev/tuya_devices_dir.png)
 
 ??? info "DPCodes data"
     All known `Codes` are stored in `base.py` in `DPCode Class`. <br>
@@ -12,15 +12,16 @@ By known the `category` we use that to get all the possible entities from stored
 
 
 !!! tip annotate "How to get the `Codes and DP`"
-    You can download your device data your `Home Assistant` by `Downloading Diagnostics`.
+    You can download your device data in your `Home Assistant` by `Downloading Diagnostics`.
 
     1. Download `device` diagnostics `localtuya` from device page. (1) `file -> device_cloud_info`
-    2. Or download `entry` diagnostics `note: contains all devices data` (2) `file -> cloud_devices`
+    2. Or download `entry` diagnostics `note: It contains all devices data` (2) `file -> cloud_devices`
 
-    Inside downloaded `txt file`, in `cloud_data object` look for your `device -> dps_data`
+    Inside downloaded `txt file`, in `cloud_data object` look for your `device_id -> dps_data` (3)
 
 1. ![](images/dev/device_diagnostics.png)
 2. ![](images/dev/entry_diagnostics.png)
+3. TIP: Search for device name instead of `device_id`
 
 _Now that we know the device `category` and `Codes` we can start add the entities._
 
@@ -30,12 +31,12 @@ All files contains `constant dict` (1) includes all known `categories` and possi
 
 1. e.g `COVERS or SWITCHES`
 
-Look for the `category` if it already exist modify it and add the missing `entities`.
+Look for the `category` it already exist modify it and add the missing `entities`.
 
-Using `LocalTuyaEntity class` we pass entity parameters `id` and `DPs Config name as keys and DPCode as values` Config names has to be supported by `localtuya` (1)
+Using `LocalTuyaEntity class` we pass entity parameters `id` and `DPs config name as keys and DPCode as values` Config names has to be supported by `localtuya` (1)
 {.annotate}
 
-1. All entities platforms has `id` config name. but some has more dp configs<br> For example: `cover platforms` has config names for `current_position_dp` and  `set_position_dp`<br> 
+1. All entities platforms has `id` config name. but some has more DPs configs names<br> For example: `cover platforms` has config names for `current_position_dp` and  `set_position_dp`<br> 
 
 <!-- ???+ info "LocalTuyaClass Parameters"
     | Parameter                 |Required   | type          | Description
@@ -67,10 +68,10 @@ Using `LocalTuyaEntity class` we pass entity parameters `id` and `DPs Config nam
     ```python 
     "kg": (
         LocalTuyaEntity(
-            id=DPCode.SWITCH_4, # REQUIRED: id config look for code `switch_4`
-            name="Switch 4", # name the entity: `Switch 4`
-            icon="mdi:icon_name",  # icon of the entity
-            entity_category=EntityCategory.CONFIG, # show entity in this category
+            id=DPCode.SWITCH_4, # REQUIRED: id config name = look DP with code `switch_4`
+            name="Switch 4", # Name the entity: `Switch 4`
+            icon="mdi:icon_name",  # icon for the entity
+            entity_category=EntityCategory.CONFIG, # Show entity in this category
         ),
     ),
     ```
@@ -104,7 +105,7 @@ Using `LocalTuyaEntity class` we pass entity parameters `id` and `DPs Config nam
     ),
     ```
 
-    1. current_position_dp will search two possible codes and will take the first `DP` found.
+    1. `current_position_dp` will search for DP of two possible codes and will take the first `DP` found.
 
 
 

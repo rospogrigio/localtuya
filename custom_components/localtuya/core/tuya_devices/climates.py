@@ -24,6 +24,7 @@ from ...const import (
     CONF_PRESET_SET,
     CONF_TARGET_PRECISION,
     CONF_TEMPERATURE_STEP,
+    CONF_HVAC_ADD_OFF,
 )
 
 
@@ -38,8 +39,9 @@ def localtuya_climate(
     echo_value=None,
     preset_set=None,
     unit=None,
-    values_precsion=None,
+    values_precsion=0.1,
     target_precision=None,
+    includes_off_mode=True,
 ) -> dict:
     """Create localtuya climate configs"""
     data = {ATTR_MIN_TEMP: DEFAULT_MIN_TEMP, ATTR_MAX_TEMP: DEFAULT_MAX_TEMP}
@@ -52,13 +54,15 @@ def localtuya_climate(
         CONF_TEMPERATURE_UNIT: unit,
         CONF_PRECISION: values_precsion,
         CONF_TARGET_PRECISION: target_precision,
+        CONF_HVAC_ADD_OFF: includes_off_mode,
     }.items():
         if conf:
             data.update({key: conf})
+
     return data
 
 
-CLIMATES: dict[LocalTuyaEntity] = {
+CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Air conditioner
     # https://developer.tuya.com/en/docs/iot/categorykt?id=Kaiuz0z71ov2n
     "kt": (
@@ -67,14 +71,14 @@ CLIMATES: dict[LocalTuyaEntity] = {
             target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
             current_temperature_dp=DPCode.TEMP_CURRENT,
             hvac_mode_dp=DPCode.MODE,
-            hvac_action_dp=(DPCode.WORK_MODE, DPCode.WORK_STATUS),
+            hvac_action_dp=(DPCode.WORK_MODE, DPCode.WORK_STATUS, DPCode.WORK_STATE),
             custom_configs=localtuya_climate(
                 hvac_mode_set="auto/cold/hot/wet",
                 temp_step=1,
                 actions_set="heating/cooling",
                 unit=UNIT_C,
-                values_precsion=1,
-                target_precision=1,
+                values_precsion=1.0,
+                target_precision=1.0,
             ),
         )
     ),
@@ -86,13 +90,12 @@ CLIMATES: dict[LocalTuyaEntity] = {
             target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
             current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
             preset_dp=DPCode.MODE,
-            hvac_action_dp=DPCode.WORK_STATE,
+            hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             custom_configs=localtuya_climate(
                 temp_step=1,
                 actions_set="heating/warming",
-                unit=UNIT_C,
-                values_precsion=1,
-                target_precision=1,
+                values_precsion=1.0,
+                target_precision=1.0,
                 preset_set="auto/smart",
             ),
         )
@@ -105,36 +108,36 @@ CLIMATES: dict[LocalTuyaEntity] = {
             target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
             current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
             preset_dp=DPCode.MODE,
-            hvac_action_dp=DPCode.WORK_STATE,
+            hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             custom_configs=localtuya_climate(
                 temp_step=1,
                 actions_set="heating/warming",
                 unit=UNIT_C,
-                values_precsion=1,
-                target_precision=1,
+                values_precsion=1.0,
+                target_precision=1.0,
                 preset_set="auto/manual/smart/comfortable/eco",
             ),
-        )
+        ),
     ),
     # Thermostat
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf45ld5l0t9
     "wk": (
         LocalTuyaEntity(
-            id=DPCode.SWITCH,
+            id=(DPCode.SWITCH, DPCode.MODE),
             target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
-            current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
-            hvac_mode_dp=DPCode.SWITCH,
-            hvac_action_dp=DPCode.WORK_STATE,
+            current_temperature_dp=(DPCode.TEMP_CURRENT_F, DPCode.TEMP_CURRENT),
+            hvac_mode_dp=(DPCode.SWITCH, DPCode.MODE),
+            hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             preset_dp=DPCode.MODE,
             custom_configs=localtuya_climate(
                 hvac_mode_set="True/False",
                 temp_step=1,
                 actions_set="True/False",
                 unit=UNIT_C,
-                values_precsion=1,
-                target_precision=1,
+                values_precsion=1.0,
+                target_precision=1.0,
             ),
-        )
+        ),
     ),
     # Thermostatic Radiator Valve
     # Not documented
@@ -142,7 +145,7 @@ CLIMATES: dict[LocalTuyaEntity] = {
         LocalTuyaEntity(
             id=(DPCode.SWITCH, DPCode.MODE),
             target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
-            current_temperature_dp=DPCode.TEMP_CURRENT,
+            current_temperature_dp=(DPCode.TEMP_CURRENT_F, DPCode.TEMP_CURRENT),
             hvac_mode_dp=DPCode.MODE,
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             custom_configs=localtuya_climate(
@@ -150,9 +153,9 @@ CLIMATES: dict[LocalTuyaEntity] = {
                 temp_step=1,
                 actions_set="opened/closed",
                 unit=UNIT_C,
-                values_precsion=1,
-                target_precision=1,
+                values_precsion=1.0,
+                target_precision=1.0,
             ),
-        )
+        ),
     ),
 }

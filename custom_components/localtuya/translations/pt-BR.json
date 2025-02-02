@@ -83,7 +83,7 @@
                     "client_id": "ID do Cliente",
                     "client_secret": "Segredo do Cliente",
                     "user_id": "ID do Usuário",
-                    "user_name": "Nome de Usuário",
+                    "username": "Nome de Usuário",
                     "no_cloud": "Desativar a API de Nuvem?"
                 }
             },
@@ -133,12 +133,9 @@
             },
             "choose_template":{
                 "title": "Importar arquivo de modelo",
-                "description": "Os arquivos de modelo estão localizados no diretório 'templates'.",
+                "description": "Os arquivos de modelo estão localizados no diretório 'templates' ([Mais Informações](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
                 "data": {
                     "templates": "Escolher modelo"
-                },
-                "data_description": {
-                    "templates": "Você pode inserir o nome do arquivo manualmente se ele não aparecer. Os modelos podem ser encontrados e compartilhados com outros no GitHub ([Mais Informações](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {
@@ -213,6 +210,7 @@
                     "temperature_unit": "Temperature Unit (optional)",
                     "hvac_mode_dp": "HVAC Mode DP (optional)",
                     "hvac_mode_set": "HVAC Mode Set (optional)",
+                    "hvac_add_off": "(Optional) Include `OFF` in HVAC Modes",
                     "hvac_action_dp": "HVAC Current Action DP (optional)",
                     "hvac_action_set": "HVAC Current Action Set (optional)",
                     "preset_dp": "Presets DP (optional)",

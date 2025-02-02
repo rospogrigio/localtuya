@@ -52,9 +52,8 @@ from hashlib import md5, sha256
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from Crypto.Cipher import AES
 
-version_tuple = (10, 0, 0)
+version_tuple = (2023, 12, 0)
 version = version_string = __version__ = "%d.%d.%d" % version_tuple
 __author__ = "rospogrigio"
 
@@ -269,9 +268,9 @@ class ContextualLogger:
         self._enable_debug = enable_debug
         self._logger = TuyaLoggingAdapter(logger, {"device_id": device_id})
 
-    def debug(self, msg, *args):
-        """Debug level log."""
-        if not self._enable_debug:
+    def debug(self, msg, *args, force=False):
+        """Debug level log for device. force will ignore device debug check."""
+        if not self._enable_debug and not force:
             return
         return self._logger.log(logging.DEBUG, msg, *args)
 
@@ -287,8 +286,8 @@ class ContextualLogger:
         if msg != self._last_warning:
             self._last_warning = msg
             return self._logger.log(logging.WARNING, msg, *args)
-        else:
-            self.info(msg)
+        # else:
+        #     self.info(msg)
 
     def error(self, msg, *args):
         """Error level log."""
@@ -505,20 +504,17 @@ class AESCipher:
 
     def encrypt(self, raw, use_base64=True, pad=True, iv=False, header=None):
         """Encrypt data to be sent to device."""
-        encryptor = self.cipher.encryptor()
         if iv:
             if iv is True:
                 if _LOGGER.isEnabledFor(logging.DEBUG):
                     iv = b"0123456789ab"
                 else:
                     iv = str(time.time() * 10)[:12].encode("utf8")
-            cipher = AES.new(self.key, mode=AES.MODE_GCM, nonce=iv)
-            # cipher = Cipher(algorithms.AES(key), modes.ECB(), default_backend())
-            # cipher = AES.new(self.key, mode=AES.MODE_GCM, nonce=iv)
+            encryptor = Cipher(algorithms.AES(self.key), modes.GCM(iv)).encryptor()
             if header:
-                cipher.update(header)
-            crypted_text, tag = cipher.encrypt_and_digest(raw)
-            crypted_text = cipher.nonce + crypted_text + tag
+                encryptor.authenticate_additional_data(header)
+            crypted_text = encryptor.update(raw) + encryptor.finalize()
+            crypted_text = iv + crypted_text + encryptor.tag
         else:
             encryptor = self.cipher.encryptor()
             if pad:
@@ -538,16 +534,21 @@ class AESCipher:
             if iv is True:
                 iv = enc[:12]
                 enc = enc[12:]
-            cipher = AES.new(self.key, AES.MODE_GCM, nonce=iv)
-            if header:
-                cipher.update(header)
-            if tag:
-                raw = cipher.decrypt_and_verify(enc, tag)
+            if tag is None:
+                decryptor = Cipher(
+                    algorithms.AES(self.key), modes.CTR(iv + b"\x00\x00\x00\x02")
+                ).decryptor()
             else:
-                raw = cipher.decrypt(enc)
+                decryptor = Cipher(
+                    algorithms.AES(self.key), modes.GCM(iv, tag)
+                ).decryptor()
+            if header and (tag is not None):
+                decryptor.authenticate_additional_data(header)
+            raw = decryptor.update(enc) + decryptor.finalize()
         else:
             decryptor = self.cipher.decryptor()
-            raw = self._unpad(decryptor.update(enc) + decryptor.finalize())
+            raw = decryptor.update(enc) + decryptor.finalize()
+            raw = self._unpad(raw)
 
         return raw.decode("utf-8") if decode_text else raw
 
@@ -574,7 +575,7 @@ class MessageDispatcher(ContextualLogger):
         """Initialize a new MessageBuffer."""
         super().__init__()
         self.buffer = b""
-        self.listeners = {}
+        self.listeners: dict[str, asyncio.Semaphore] = {}
         self.listener = listener
         self.version = protocol_version
         self.local_key = local_key
@@ -883,9 +884,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     def connection_lost(self, exc):
         """Disconnected from device."""
-        if exc:
-            self.info(f"Lost connection due to: {exc}")
-        self.debug("Connection lost: %s", exc)
+        self.debug("Connection lost: %s", exc, force=True)
         self.real_local_key = self.local_key
         try:
             listener = self.listener and self.listener()
@@ -1368,27 +1367,34 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """
         json_data = command_override = None
 
-        if command in payload_dict[self.dev_type]:
-            if "command" in payload_dict[self.dev_type][command]:
-                json_data = payload_dict[self.dev_type][command]["command"].copy()
-            if "command_override" in payload_dict[self.dev_type][command]:
-                command_override = payload_dict[self.dev_type][command][
-                    "command_override"
-                ]
+        # Create a deep copy of payload_dict. otherwise, the original references will be overwritten
+        def deepcopy_dict(_dict: dict):
+            output = _dict.copy()
+            for key, value in output.items():
+                output[key] = deepcopy_dict(value) if isinstance(value, dict) else value
+            return output
+
+        payloads = deepcopy_dict(payload_dict)
+
+        if command in payloads[self.dev_type]:
+            if "command" in payloads[self.dev_type][command]:
+                json_data = payloads[self.dev_type][command]["command"].copy()
+            if "command_override" in payloads[self.dev_type][command]:
+                command_override = payloads[self.dev_type][command]["command_override"]
 
         if self.dev_type != "type_0a":
             if (
                 json_data is None
-                and command in payload_dict["type_0a"]
-                and "command" in payload_dict["type_0a"][command]
+                and command in payloads["type_0a"]
+                and "command" in payloads["type_0a"][command]
             ):
-                json_data = payload_dict["type_0a"][command]["command"].copy()
+                json_data = payloads["type_0a"][command]["command"].copy()
             if (
                 command_override is None
-                and command in payload_dict["type_0a"]
-                and "command_override" in payload_dict["type_0a"][command]
+                and command in payloads["type_0a"]
+                and "command_override" in payloads["type_0a"][command]
             ):
-                command_override = payload_dict["type_0a"][command]["command_override"]
+                command_override = payloads["type_0a"][command]["command_override"]
 
         if command_override is None:
             command_override = command

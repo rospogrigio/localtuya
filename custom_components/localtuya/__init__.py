@@ -374,7 +374,7 @@ def reconnectTask(hass: HomeAssistant, entry: ConfigEntry):
         """Try connecting to devices not already connected to."""
         for dev in hass_localtuya.tuya_devices.values():
             if not dev.connected:
-                hass.async_create_task(dev.async_connect())
+                entry.async_create_task(dev.async_connect())
 
     # Add unsub callbeack in unsub_listeners object.
     hass_localtuya.unsub_listeners.append(

@@ -38,7 +38,7 @@ def localtuya_fan(fwd, rev, order, dp_type):
     return data
 
 
-FANS: dict[LocalTuyaEntity] = {
+FANS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Fan
     "fs": (
         LocalTuyaEntity(

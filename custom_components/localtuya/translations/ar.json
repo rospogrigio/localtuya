@@ -65,7 +65,8 @@
           "title": "اختيار الجهاز للتكوين",
           "description": "يتم اكتشاف الأجهزة المتوافقة مع Tuya على شبكتك المحلية تلقائيًا بمجرد إعدادها في تطبيق Tuya. إذا لم تر الجهاز الذي تتوقعه، اختر `إضافة الجهاز يدويًا` من القائمة المنسدلة.",
           "data": {
-              "selected_device": "الأجهزة المكتشفة"
+            "selected_device": "الأجهزة المكتشفة",
+            "mass_configure": "ضبط جميع الأجهزة المتعرف عليها تلقائيًا"
           }
       },
       "edit_device": {
@@ -133,12 +134,9 @@
       },
       "choose_template": {
         "title": "استيراد ملف القالب",
-        "description": "توجد ملفات القالب في المجلد `templates`.",
+        "description": "توجد ملفات القالب في المجلد `templates` ([لمعلومات أكثر](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
         "data": {
           "templates": "اختيار القالب"
-        },
-        "data_description": {
-          "templates": "يمكنك إدخال اسم ملف القالب يدويًا إذا لم يظهر.\n"
         }
       },
       "configure_entity": {

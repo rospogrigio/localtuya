@@ -50,7 +50,7 @@ FAULT_SENSOR = (
 )
 
 
-BINARY_SENSORS: dict[LocalTuyaEntity] = {
+BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Multi-functional Sensor
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
     "dgnbj": (

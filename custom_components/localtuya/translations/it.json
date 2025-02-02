@@ -24,7 +24,7 @@
                     "client_id": "ID client",
                     "client_secret": "Segreto client",
                     "user_id": "ID utente",
-                    "user_name": "Nome utente",
+                    "username": "Nome utente",
                     "no_cloud": "Disabilitare l'API Cloud?"
                 }
             }
@@ -83,7 +83,7 @@
                     "client_id": "ID client",
                     "client_secret": "Segreto client",
                     "user_id": "ID utente",
-                    "user_name": "Nome utente",
+                    "username": "Nome utente",
                     "no_cloud": "Disabilitare l'API Cloud?"
                 }
             },
@@ -136,12 +136,9 @@
             },
             "choose_template": {
                 "title": "Importa file modello",
-                "description": "I file modello si trovano nella directory `templates`.",
+                "description": "I file modello si trovano nella directory `templates` ([Maggiori informazioni](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
                 "data": {
                     "templates": "Scegli modello"
-                },
-                "data_description": {
-                    "templates": "Puoi inserire manualmente il nome del file se non viene visualizzato.\nI modelli possono essere trovati e condivisi con altri su GitHub ([Maggiori informazioni](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {
@@ -216,6 +213,7 @@
                     "temperature_unit": "Temperature Unit (optional)",
                     "hvac_mode_dp": "HVAC Mode DP (optional)",
                     "hvac_mode_set": "HVAC Mode Set (optional)",
+                    "hvac_add_off": "(Optional) Include `OFF` in HVAC Modes",
                     "hvac_action_dp": "HVAC Current Action DP (optional)",
                     "hvac_action_set": "HVAC Current Action Set (optional)",
                     "preset_dp": "Presets DP (optional)",

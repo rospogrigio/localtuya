@@ -1,21 +1,30 @@
-"""Tuya Devices
-    This works similar to HA Tuya, is get the category and search for the categories 
-    categories data has been modified to works with localtuya
+"""
+    Tuya Devices: https://xzetsubou.github.io/hass-localtuya/auto_configure/
 
-    How to add your device?:
-    e.g. Cover device:
-        1. make sure your device category isn't exists if you will create new one. you can modifiy existed categories
-        2. This configs are main "id" repaired, "icon" opt, "device_class" opt, "state_class" opt, "name" prefer.
-        in order to add device you need  to device the localtuya config and the code value:
-            example: "3 ( code: percent_state , value: 0 )" <- Download diagnostics from HA Device page.
-                current_state_dp=DPCode.PERCENT_STATE < This will map and "percent_state" code to current_state_dp config.
+    This functionality is similar to HA Tuya, as it retrieves the category and searches for the corresponding categories. 
+    The categories data has been improved & modified to work seamlessly with localtuya
 
-            if the config is not DPS then this will be inserted through "custom_configs" < this used to inject any config into entity config
-                example: custom_configs={"positioning_mode": "position"} I hope you got the idea :D
+    Device Data: You can obtain all the data for your device from Home Assistant by directly downloading the diagnostics or using entry diagnostics.
+        Alternative: Use Tuya IoT.
+
+    Add a new device or modify an existing one:
+        1. Make sure the device category doesn't already exist. If you are creating a new one, you can modify existing categories.
+        2. In order to add a device, you need to specify the category of the device you want to add inside the entity type dictionary.
+    
+    Add entities to devices:
+        1. Open the file with the name of the entity type on which you want to make changes [e.g. switches.py] and search for your device category.
+        2. You can add entities inside the tuple value of the dictionary by including LocalTuyaEntity and passing the parameters for the entity configurations.
+        3. These configurations include "id" (required), "icon" (optional), "device_class" (optional), "state_class" (optional), and "name" (optional) [Using COVERS as an example]
+            Example: "3 ( code: percent_state , value: 0 )" - Refer to the Device Data section above for more details.
+                current_state_dp = DPCode.PERCENT_STATE < This maps the "percent_state" code DP to the current_state_dp configuration.
+
+            If the configuration is not DPS, it will be inserted through "custom_configs". This is used to inject any configuration into the entity configuration
+                Example: custom_configs={"positioning_mode": "position"}. I hope that clarifies the concept
+        Check for more details at the URL above
 """
 
-
-from .base import LocalTuyaEntity, CONF_DPS_STRINGS
+import json
+from .base import LocalTuyaEntity, CONF_DPS_STRINGS, CLOUD_VALUE, DPType
 from enum import Enum
 from homeassistant.const import Platform, CONF_FRIENDLY_NAME, CONF_PLATFORM, CONF_ID
 
@@ -36,7 +45,6 @@ from .sensors import SENSORS
 from .sirens import SIRENS
 from .switches import SWITCHES
 from .vacuums import VACUUMS
-
 
 # The supported PLATFORMS [ Platform: Data ]
 DATA_PLATFORMS = {
@@ -59,25 +67,27 @@ DATA_PLATFORMS = {
 _LOGGER = logging.getLogger(__name__)
 
 
-def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | list:
-    """Create localtuya configs using the data that provided from TUYA"""
+def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dict]:
+    """Return localtuya entities using the data that provided from TUYA"""
     detected_dps: list = localtuya_data.get(CONF_DPS_STRINGS)
-    device_name: str = localtuya_data.get(CONF_FRIENDLY_NAME).strip()
-    device_cloud_data: dict = localtuya_data.get("device_cloud_data")
-    ent_data: LocalTuyaEntity
 
     if not tuya_category or not detected_dps:
+        _LOGGER.debug(f"Missing category: {tuya_category} or DPS: {detected_dps}")
         return
-    # if dps_data := device_cloud_data.get("dps_data"):
-    #     detected_dps = merge_local_cloud_dps(detected_dps, dps_data)
+
+    device_name: str = localtuya_data.get(CONF_FRIENDLY_NAME).strip()
+    device_cloud_data: dict = localtuya_data.get("device_cloud_data", {})
+    dps_data = device_cloud_data.get("dps_data", {})
 
     entities = {}
 
     for platform, tuya_data in DATA_PLATFORMS.items():
+        # TODO: Refactor needed here.
         if cat_data := tuya_data.get(tuya_category):
             for ent_data in cat_data:
                 main_confs = ent_data.data
                 localtuya_conf = ent_data.localtuya_conf
+                entity_configs = ent_data.entity_configs
                 # Conditions
                 contains_any: list[str] = ent_data.contains_any
                 local_entity = {}
@@ -106,23 +116,37 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
                             # Same method we use in config_flow to get dp.
                             local_entity[k] = dp_data.split(" ")[0]
 
-                        # used_dp += 1
+                # Pull dp values from cloud. still unsure to apply this to all.
+                # This is due to the fact that some local values may not same with the values provided from cloud.
+                # For now, this is applied only to numbers values.
+                for k, v in entity_configs.items():
+                    if isinstance(v, CLOUD_VALUE):
+                        config_dp = local_entity.get(v.dp_config)
+                        dp_values = get_dp_values(config_dp, dps_data) or {}
+
+                        # special case for lights
+                        # if v.value_key in dp_values and "kelvin" in k:
+                        #     value = dp_values.get(v.value_key)
+                        #     dp_values[v.value_key] = convert_to_kelvin(value)
+
+                        local_entity[k] = dp_values.get(v.value_key, v.default_value)
+                    else:
+                        local_entity[k] = v
+
                 if local_entity:
                     # Entity most contains ID
                     if not local_entity.get(CONF_ID):
+                        _LOGGER.debug(f"{device_name}: Missing ID for: {local_entity}")
                         continue
                     # Workaround to Prevent duplicated id.
                     if local_entity[CONF_ID] in entities:
+                        _LOGGER.debug(f"{device_name}: Duplicated ID: {local_entity}")
                         continue
-
-                    # Prevent duplicated friendly_name e.g. [switch_switch]
-                    # if name := main_confs.get(CONF_FRIENDLY_NAME):
-                    #     if name.split()[0].lower() in device_name.split()[-1].lower():
-                    #         main_confs[CONF_FRIENDLY_NAME] = ""
 
                     local_entity.update(main_confs)
                     local_entity[CONF_PLATFORM] = platform
                     entities[local_entity.get(CONF_ID)] = local_entity
+                    _LOGGER.debug(f"{device_name}: Entity configured: {local_entity}")
 
     # sort entites by id
     sorted_ids = sorted(entities, key=int)
@@ -130,6 +154,8 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
     # convert to list of configs
     list_entities = [entities.get(id) for id in sorted_ids]
 
+    _LOGGER.debug(f"{device_name}: Entities configured: {list_entities}")
+    # return []
     return list_entities
 
 
@@ -143,15 +169,44 @@ def parse_enum(dp_code):
     return parsed_dp_code
 
 
-def merge_local_cloud_dps(dps_strings: list, cloud_dps_data: dict[str, dict]):
-    """Merge founded dps_string with dps_data in cloud data"""
-    merged_list = dps_strings
-    dps_strings_dict = {dp.split(" ", 1)[0]: dp.split(" ", 1)[1] for dp in dps_strings}
+def get_dp_values(dp, dps_data):
+    """Get DP Values"""
+    if not dp or not dps_data:
+        return
 
-    for dp, value in cloud_dps_data.items():
-        if dp not in dps_strings_dict:
-            merged_list.append(
-                f"{dp} ( code: {value.get('code')} , value: {value.get('value')} )"
-            )
+    dp_data = dps_data.get(dp, {})
+    dp_values = dp_data.get("values")
+    dp_type = dp_data.get("type")
 
-    return sorted(merged_list, key=lambda i: int(i.split()[0]))
+    if not dp_values or not (dp_values := json.loads(dp_values)):
+        return
+
+    # Integer values: min, max, scale, step
+    if dp_values and dp_type == DPType.INTEGER:
+        val_scale = dp_values.get("scale", 1)
+        dp_values["min"] = scale(dp_values.get("min"), val_scale)
+        dp_values["max"] = scale(dp_values.get("max"), val_scale)
+        dp_values["step"] = scale(dp_values.get("step"), val_scale, float)
+        dp_values["scale"] = scale(1, val_scale, float)
+        return dp_values
+
+
+def scale(value: int, scale: int, _type: type = int) -> float:
+    """Return scaled value."""
+    return _type(value) / (10**scale)
+
+
+def convert_to_kelvin(value):
+    """Convert Tuya color temperature to kelvin"""
+    # Given data points
+    v0, k0 = 0, 2700  # (0, 2700)
+    v1, k1 = 1000, 6500  # (1000, 6500)
+
+    # Calculate slope (m) and y-intercept (b) using the given points
+    m = (k1 - k0) / (v1 - v0)
+    b = k0 - m * v0
+
+    # Use the linear equation to calculate the color temperature (K)
+    kelvin = m * value + b
+
+    return kelvin

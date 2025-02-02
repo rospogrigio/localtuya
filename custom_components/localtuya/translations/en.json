@@ -65,14 +65,14 @@
                 "title": "Choose device to configure",
                 "description": "Compatible Tuya devices on your local network are discovered automatically once they have been set-up in the Tuya app. If you can't see the device you expected, choose `Add device manually` from the dropdown.",
                 "data": {
-                    "selected_device": "Discovered devices"
+                    "selected_device": "Discovered devices",
+                    "mass_configure": "Configure all recognized devices automatically"
                 }
             },
             "edit_device": {
                 "title": "Reconfigure existing device",
                 "description": "Select the device you wish to re-configure.",
                 "data": {
-<<<<<<< HEAD
                     "selected_device": "Configured Devices",
                     "id": "ID",
                     "friendly_name": "Friendly name",
@@ -164,9 +164,13 @@
                     "client_id": "Client ID",
                     "client_secret": "Client Secret",
                     "user_id": "User ID",
-                    "user_name": "Username",
+                    "username": "Username",
                     "no_cloud": "Disable Cloud API?"
                 }
+            },
+            "confirm": {
+                "title": "Confirmation",
+                "description": "{message}"
             },
             "configure_device": {
                 "title": "Configure device connectivity",
@@ -215,12 +219,9 @@
             },
             "choose_template":{
                 "title": "Import template file",
-                "description": "Template files are located in the `templates` directory.",
+                "description": "Template files are located in the `templates` directory ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
                 "data": {
                     "templates": "Choose template"
-                },
-                "data_description": {
-                    "templates": "You can enter the file name manually if it didn't shows up.\nTemplates can be found and shared with others on GitHub ([More Info](https://github.com/xZetsubou/hass-localtuya/discussions/13))."
                 }
             },
             "configure_entity": {
@@ -238,10 +239,10 @@
                     "set_position_dp": "Set Position (for *position* mode only)",
                     "position_inverted": "Invert 0-100 position (for *position* mode only)",
                     "span_time": "Full opening time, in secs. (for *timed* mode only)",
-                    "unit_of_measurement": "Unit of Measurement (optional)",
+                    "unit_of_measurement": "(Optional) Unit of Measurement",
                     "device_class": "(Optional) Device Class",
                     "state_class": "(Optional) State Class",
-                    "scaling": "Scaling Factor",
+                    "scaling": "(Optional) Scaling Factor",
                     "state_on": "On Value",
                     "state_off": "Off Value",
                     "powergo_dp": "Power DP (usually 25 or 2)",
@@ -310,6 +311,22 @@
                     "eco_dp": "Eco DP (optional)",
                     "eco_value": "Eco value (optional)",
                     "heuristic_action": "Enable heuristic action (optional)",
+                    "temperature_step": "(Optional) Temperature Step",
+                    "min_temperature": "Min Temperature",
+                    "max_temperature": "Max Temperature",
+                    "precision": "Precision (optional, for DPs values)",
+                    "target_precision": "Target Precision (optional, for DP values)",
+                    "temperature_unit": "(Optional) Temperature Unit",
+                    "hvac_mode_dp": "(Optional) HVAC Mode DP",
+                    "hvac_mode_set": "(Optional) HVAC Mode Set",
+                    "hvac_add_off": "(Optional) Include `OFF` in HVAC Modes",
+                    "hvac_action_dp": "(Optional) HVAC Current Action DP",
+                    "hvac_action_set": "(Optional) HVAC Current Action Set",
+                    "preset_dp": "(Optional) Presets DP",
+                    "preset_set": "(Optional) Presets Set",
+                    "eco_dp": "(Optional) Eco DP",
+                    "eco_value": "(Optional) Eco value",
+                    "heuristic_action": "(Optional) Enable heuristic action",
                     "dps_default_value": "(Optional) Default value when un-initialised",
                     "restore_on_reconnect": "Restore the last value set in Home Assistant after lost connection?",
                     "min_value": "Minimum Value",
@@ -317,10 +334,10 @@
                     "step_size": "Minimum increment between numbers",
                     "is_passive_entity": "Passive entity? (requires integration to send initialisation value)",
                     "entity_category": "Show the entity in this category",
-                    "humidifier_available_modes": "(optional) Avaliable modes in device, separate entries by comma ','",
-                    "humidifier_current_humidity_dp": "(optional) Current Humidity DP",
-                    "humidifier_mode_dp": "(optional) Set mode DP",
-                    "humidifier_set_humidity_dp": "(optional) Set Humidity DP",
+                    "humidifier_available_modes": "(Optional) Avaliable modes in device, separate entries by comma ','",
+                    "humidifier_current_humidity_dp": "(Optional) Current Humidity DP",
+                    "humidifier_mode_dp": "(Optional) Set mode DP",
+                    "humidifier_set_humidity_dp": "(Optional) Set Humidity DP",
                     "min_humidity": "Set the minimum supported humidity",
                     "max_humidity": "Set the maximum supported humidity"
                 },

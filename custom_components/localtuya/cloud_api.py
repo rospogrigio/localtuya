@@ -179,7 +179,7 @@ class TuyaCloudApi:
         return r_json["result"], "ok"
 
     async def async_get_device_query_properties(self, device_id) -> dict[dict, str]:
-        """Obtain the DP ID mappings for a device correctly!."""
+        """Obtain the DP ID mappings for a device correctly! Note: This won't works if the subscription expired."""
         resp = await self.async_make_request(
             "GET", url=f"/v2.0/cloud/thing/{device_id}/shadow/properties"
         )
@@ -214,6 +214,8 @@ class TuyaCloudApi:
             for func in specs[0].get("functions", {}):
                 if str(func.get("dp_id")) in device_data:
                     device_data[str(func["dp_id"])].update(func)
+                elif dp_id := func.get("dp_id"):
+                    device_data[str(dp_id)] = func
 
         if device_data:
             self.device_list[device_id]["dps_data"] = device_data

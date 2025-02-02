@@ -81,10 +81,8 @@ class LocaltuyaSensor(LocalTuyaEntity, SensorEntity):
     def status_updated(self):
         """Device status was updated."""
         state = self.dp_value(self._dp_id)
-        scale_factor = self._config.get(CONF_SCALING)
-        if scale_factor is not None and isinstance(state, (int, float)):
-            state = round(state * scale_factor, DEFAULT_PRECISION)
-        self._state = state
+
+        self._state = self.scale(state)
 
     # No need to restore state for a sensor
     async def restore_state_when_connected(self):

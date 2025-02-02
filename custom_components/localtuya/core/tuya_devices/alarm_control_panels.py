@@ -10,7 +10,7 @@ from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
 
 # All descriptions can be found here:
 # https://developer.tuya.com/en/docs/iot/standarddescription?id=K9i5ql6waswzq
-ALARMS: dict[LocalTuyaEntity] = {
+ALARMS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Alarm Host
     # https://developer.tuya.com/en/docs/iot/categorymal?id=Kaiuz33clqxaf
     "mal": (

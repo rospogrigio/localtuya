@@ -380,6 +380,63 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SwitchDeviceClass.OUTLET,
         ),
     ),
+    # Smart panel with switches and zigbee hub ?
+    # Not documented
+    "dgnzk": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            name="Switch",
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH_1, DPCode.SWITCH1),
+            name="Switch 1",
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH_2, DPCode.SWITCH2),
+            name="Switch 2",
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH_3, DPCode.SWITCH3),
+            name="Switch 3",
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH_4, DPCode.SWITCH4),
+            name="Switch 4",
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH_5, DPCode.SWITCH5),
+            name="Switch 5",
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH_6, DPCode.SWITCH6),
+            name="Switch 6",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOICE_PLAY,
+            name="Voice",
+            icon="mdi:play",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOICE_BT_PLAY,
+            name="BT Voice",
+            icon="mdi:play",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.MUTE,
+            name="Mute",
+            icon="mdi:volume-off",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.VOICE_MIC,
+            name="Microphone",
+            icon="mdi:microphone-off",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_WELCOME,
+            name="Welcome",
+            icon="mdi:human-greeting",
+        ),
+    ),
     # Unknown product with switch capabilities
     # Fond in some diffusers, plugs and PIR flood lights
     # Not documented

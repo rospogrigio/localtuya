@@ -21,7 +21,7 @@ def localtuya_humidifier(modes):
     return data
 
 
-HUMIDIFIERS: dict[LocalTuyaEntity] = {
+HUMIDIFIERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Dehumidifier
     # https://developer.tuya.com/en/docs/iot/categorycs?id=Kaiuz1vcz4dha
     "cs": (

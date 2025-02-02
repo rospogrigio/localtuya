@@ -7,7 +7,7 @@
 
 from .base import DPCode, LocalTuyaEntity, CONF_DEVICE_CLASS, EntityCategory
 
-BUTTONS: dict[LocalTuyaEntity] = {
+BUTTONS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Curtain
     # Note: Multiple curtains isn't documented
     # https://developer.tuya.com/en/docs/iot/categorycl?id=Kaiuz1hnpo7df

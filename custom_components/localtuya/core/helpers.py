@@ -57,7 +57,7 @@ class templates:
         return entities
 
     @classmethod
-    def export_config(cls, config, config_name: str):
+    def export_config(cls, config: dict, config_name: str):
         """Create a yaml config file for localtuya."""
         export_config = []
         for cfg in config[CONF_ENTITIES]:
@@ -86,7 +86,7 @@ class templates:
 
 
 ################################
-## Global config config flows ##
+##       config flows         ##
 ################################
 from homeassistant.helpers.selector import (
     SelectSelector,
@@ -99,7 +99,9 @@ from ..const import CONF_LOCAL_KEY, CONF_NODE_ID
 GATEWAY = NamedTuple("Gateway", [("id", str), ("data", dict)])
 
 
-def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=False):
+def _col_to_select(
+    opt_list: dict | list, multi_select=False, is_dps=False, custom_value=False
+) -> SelectSelector:
     """Convert collections to SelectSelectorConfig."""
     if type(opt_list) == dict:
         return SelectSelector(
@@ -109,6 +111,7 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=Fals
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
                 custom_value=custom_value,
+                multiple=True if multi_select else False,
             )
         )
     elif type(opt_list) == list:
@@ -123,6 +126,7 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=Fals
                     for kv in opt_list
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
+                custom_value=custom_value,
                 multiple=True if multi_select else False,
             )
         )
@@ -145,4 +149,4 @@ def get_gateway_by_deviceid(device_id: str, cloud_data: dict) -> GATEWAY:
 ###############################
 #    Auto configure device    #
 ###############################
-from .tuya_devices import generate_tuya_device
+from .tuya_devices import gen_localtuya_entities

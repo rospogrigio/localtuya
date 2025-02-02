@@ -5,41 +5,43 @@
     Credits: official HA Tuya integration.
     Modified by: xZetsubou
 """
+from typing import Any
+from .base import DPCode, LocalTuyaEntity, EntityCategory, CLOUD_VALUE
+from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
-from .base import DPCode, LocalTuyaEntity, EntityCategory, update_dict
-
-
-# copied from const.py for now..
-CONF_BRIGHTNESS_LOWER = "brightness_lower"
-CONF_BRIGHTNESS_UPPER = "brightness_upper"
-CONF_COLOR_TEMP_MIN_KELVIN = "color_temp_min_kelvin"
-CONF_COLOR_TEMP_MAX_KELVIN = "color_temp_max_kelvin"
-CONF_COLOR_TEMP_REVERSE = "color_temp_reverse"
-CONF_MUSIC_MODE = "music_mode"
+from ...const import (
+    CONF_BRIGHTNESS_LOWER,
+    CONF_BRIGHTNESS_UPPER,
+    CONF_COLOR_TEMP_MIN_KELVIN,
+    CONF_COLOR_TEMP_MAX_KELVIN,
+    CONF_COLOR_TEMP_REVERSE,
+    CONF_MUSIC_MODE,
+)
 
 
 def localtuya_light(
     lower=29, upper=1000, min_kv=2700, max_kv=6500, temp_reverse=False, music_mode=False
-):
+) -> dict[str, Any | CLOUD_VALUE]:
     """Define localtuya light configs"""
     data = {
-        CONF_BRIGHTNESS_LOWER: lower,
-        CONF_BRIGHTNESS_UPPER: upper,
-        CONF_COLOR_TEMP_MIN_KELVIN: min_kv,
-        CONF_COLOR_TEMP_MAX_KELVIN: max_kv,
+        CONF_BRIGHTNESS_LOWER: CLOUD_VALUE(lower, CONF_BRIGHTNESS, "min"),
+        CONF_BRIGHTNESS_UPPER: CLOUD_VALUE(upper, CONF_BRIGHTNESS, "max"),
+        CONF_COLOR_TEMP_MIN_KELVIN: min_kv,  # CLOUD_VALUE(min_kv, CONF_COLOR_TEMP, "min")
+        CONF_COLOR_TEMP_MAX_KELVIN: max_kv,  # CLOUD_VALUE(max_kv, CONF_COLOR_TEMP, "max")
         CONF_COLOR_TEMP_REVERSE: temp_reverse,
         CONF_MUSIC_MODE: music_mode,
     }
+
     return data
 
 
-LIGHTS: dict[LocalTuyaEntity] = {
+LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Curtain Switch
     # https://developer.tuya.com/en/docs/iot/category-clkg?id=Kaiuz0gitil39
     "clkg": (
         LocalTuyaEntity(
             id=DPCode.SWITCH_BACKLIGHT,
-            name="backlight",
+            name="State light",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False),
         ),
@@ -155,7 +157,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
     "kg": (
         LocalTuyaEntity(
             id=DPCode.SWITCH_BACKLIGHT,
-            name="backlight",
+            name="State light",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False),
         ),
@@ -165,7 +167,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
     "kj": (
         LocalTuyaEntity(
             id=DPCode.LIGHT,
-            name="backlight",
+            name="State light",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False),
         ),
@@ -175,7 +177,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
     "kt": (
         LocalTuyaEntity(
             id=DPCode.LIGHT,
-            name="backlight",
+            name="State light",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False),
         ),
@@ -211,7 +213,7 @@ LIGHTS: dict[LocalTuyaEntity] = {
     "qn": (
         LocalTuyaEntity(
             id=DPCode.LIGHT,
-            name="backlight",
+            name="State light",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False),
         ),

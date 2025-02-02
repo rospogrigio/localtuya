@@ -113,11 +113,13 @@ class Mode:
 MAP_MODE_SET = {0: Mode(), 1: Mode(color=MODE_MANUAL)}
 
 
-def map_range(value, from_lower, from_upper, to_lower, to_upper):
+def map_range(value, from_lower, from_upper, to_lower=0, to_upper=255, reverse=False):
     """Map a value in one range to another."""
     if value == None:
         return 0
-    mapped = (int(value) - from_lower) * (to_upper - to_lower) / (
+    if reverse:
+        value = from_upper - value + from_lower
+    mapped = (value - from_lower) * (to_upper - to_lower) / (
         from_upper - from_lower
     ) + to_lower
     return round(min(max(mapped, to_lower), to_upper))
@@ -146,10 +148,7 @@ def flow_schema(dps):
         vol.Optional(CONF_SCENE): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SCENE_VALUES): str,
         vol.Optional(CONF_SCENE_VALUES_FRIENDLY): str,
-        vol.Optional(
-            CONF_MUSIC_MODE,
-            default=False,
-        ): bool,
+        vol.Optional(CONF_MUSIC_MODE, default=False): bool,
     }
 
 
@@ -175,11 +174,11 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             self._config.get(CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS)
         )
         self._upper_color_temp = self._upper_brightness
-        self._max_mired = color_util.color_temperature_kelvin_to_mired(
-            int(self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN))
+        self._min_kelvin = int(
+            self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
         )
-        self._min_mired = color_util.color_temperature_kelvin_to_mired(
-            int(self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN))
+        self._max_kelvin = int(
+            self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
         )
         self._color_temp_reverse = self._config.get(
             CONF_COLOR_TEMP_REVERSE, DEFAULT_COLOR_TEMP_REVERSE
@@ -245,17 +244,19 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def color_temp(self):
         """Return the color_temp of the light."""
-        if self.has_config(CONF_COLOR_TEMP) and self.is_white_mode:
-            color_temp_value = (
+        if self._color_temp is None:
+            return
+        if self.has_config(CONF_COLOR_TEMP):
+            color_temp = (
                 self._upper_color_temp - self._color_temp
                 if self._color_temp_reverse
                 else self._color_temp
             )
             return int(
-                self._max_mired
+                self.max_mireds
                 - (
-                    ((self._max_mired - self._min_mired) / self._upper_color_temp)
-                    * color_temp_value
+                    ((self.max_mireds - self.min_mireds) / self._upper_color_temp)
+                    * color_temp
                 )
             )
         return None
@@ -263,12 +264,12 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def min_mireds(self):
         """Return color temperature min mireds."""
-        return self._min_mired
+        return color_util.color_temperature_kelvin_to_mired(self._max_kelvin)
 
     @property
     def max_mireds(self):
         """Return color temperature max mireds."""
-        return self._max_mired
+        return color_util.color_temperature_kelvin_to_mired(self._min_kelvin)
 
     @property
     def effect(self):
@@ -455,15 +456,15 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 brightness = self._brightness
             mired = int(kwargs[ColorMode.COLOR_TEMP])
             if self._color_temp_reverse:
-                mired = self._max_mired - (mired - self._min_mired)
-            if mired < self._min_mired:
-                mired = self._min_mired
-            elif mired > self._max_mired:
-                mired = self._max_mired
+                mired = self.max_mireds - (mired - self.min_mireds)
+            if mired < self.min_mireds:
+                mired = self.min_mireds
+            elif mired > self.max_mireds:
+                mired = self.max_mireds
             color_temp = int(
                 self._upper_color_temp
-                - (self._upper_color_temp / (self._max_mired - self._min_mired))
-                * (mired - self._min_mired)
+                - (self._upper_color_temp / (self.max_mireds - self.min_mireds))
+                * (mired - self.min_mireds)
             )
             states[self._config.get(CONF_COLOR_MODE)] = MODE_WHITE
             states[self._config.get(CONF_BRIGHTNESS)] = brightness

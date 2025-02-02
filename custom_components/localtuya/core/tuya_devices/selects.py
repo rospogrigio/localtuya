@@ -22,6 +22,39 @@ def localtuya_selector(options, options_name=None):
 
 
 SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
+    # Smart panel with switches and zigbee hub ?
+    # Not documented
+    "dgnzk": (
+        LocalTuyaEntity(
+            id=DPCode.SOURCE,
+            name="Source",
+            icon="mdi:volume-source",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                "cloud,local,aux,bluetooth", "Cloud,Local,Aux,Bluetooth"
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.PLAY_MODE,
+            name="Mode",
+            icon="mdi:cog-outline",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                "order,repeat_all,repeat_one,random",
+                "Order,Repeat ALL,Repeat One,Random",
+            ),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SOUND_EFFECTS,
+            name="Sound Effects",
+            icon="mdi:sine-wave",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                "normal,pop,opera,classical,jazz,rock,folk,heavy_metal,hip_hop,wave",
+                "Normal,POP,Opera,Classical,Jazz,Rock,Folk,Heavy Metal,Hip Hop,Wave",
+            ),
+        ),
+    ),
     # Multi-functional Sensor
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
     "dgnbj": (

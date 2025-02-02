@@ -26,7 +26,7 @@ def localtuya_cover(cmd_set, position_mode=None, inverted=False):
     return data
 
 
-COVERS: dict[LocalTuyaEntity] = {
+COVERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # Curtain
     # Note: Multiple curtains isn't documented
     # https://developer.tuya.com/en/docs/iot/categorycl?id=Kaiuz1hnpo7df

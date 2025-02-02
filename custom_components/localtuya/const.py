@@ -19,7 +19,7 @@ PLATFORMS = {
     "Humidifier": Platform.HUMIDIFIER,
     "Light": Platform.LIGHT,
     "Number": Platform.NUMBER,
-    "Selector": Platform.SELECT,
+    "Select": Platform.SELECT,
     "Sensor": Platform.SENSOR,
     "Siren": Platform.SIREN,
     "Switch": Platform.SWITCH,
@@ -127,6 +127,7 @@ CONF_PRESET_SET = "preset_set"
 CONF_HEURISTIC_ACTION = "heuristic_action"
 CONF_HVAC_ACTION_DP = "hvac_action_dp"
 CONF_HVAC_ACTION_SET = "hvac_action_set"
+CONF_HVAC_ADD_OFF = "hvac_add_off"
 CONF_ECO_DP = "eco_dp"
 CONF_ECO_VALUE = "eco_value"
 
@@ -152,7 +153,7 @@ CONF_STOP_STATUS = "stop_status"
 # number
 CONF_MIN_VALUE = "min_value"
 CONF_MAX_VALUE = "max_value"
-CONF_STEPSIZE_VALUE = "step_size"
+CONF_STEPSIZE = "step_size"
 
 # select
 CONF_OPTIONS = "select_options"
