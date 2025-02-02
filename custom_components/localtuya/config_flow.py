@@ -310,7 +310,7 @@ def config_schema():
     )
 
 
-async def validate_input(hass: core.HomeAssistant, entry_id, data):
+async def validate_input(hass: HomeAssistant, entry_id, data):
     """Validate the user input allows us to connect."""
     detected_dps = {}
     error = None
