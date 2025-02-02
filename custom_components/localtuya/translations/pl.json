@@ -192,10 +192,8 @@
                     "color_temp_max_kelvin": "Maksymalna temperatura barwowa w K",
                     "music_mode": "Dostępny tryb muzyczny",
                     "scene": "Scena",
-                    "scene_values": "Wartości scen, wpisy oddziel przecinkami ','",
-                    "scene_values_friendly": "Przyjazne dla użytkownika wartości scen, wpisy oddziel przecinkami ','",
-                    "select_options": "Prawidłowe wpisy, oddzielaj wpisy przecinkami ','",
-                    "select_options_friendly": "Opcje przyjazne dla użytkownika, wpisy oddzielaj przecinkami ','",
+                    "scene_values": "Wartości scen",
+                    "select_options": "Prawidłowe wpisy",
                     "fan_speed_control": "DP Kontroli prędkości wentylatora",
                     "fan_oscillating_control": "DP Sterowania oscylacyjnego wentylatora",
                     "fan_speed_min": "minimalna prędkość wentylatora",
@@ -238,6 +236,11 @@
                     "max_humidity": "Ustaw maksymalną obsługiwaną wilgotność"
                 },
                 "data_description": {
+                    "hvac_mode_set":"Każda linia reprezentuje [ hvac_mode: device_value ] [Obsługiwane tryby HVAC](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
+                    "hvac_action_set":"Każda linia reprezentuje [ hvac_action: device_value ] [Obsługiwane działania HVAC](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-action)",
+                    "preset_set":"Każda linia reprezentuje [ device_value: friendly name ]",
+                    "scene_values":"Każda linia reprezentuje [ device_value: friendly name ]",
+                    "select_options":"Każda linia reprezentuje [ device_value: friendly name ]",
                     "device_class": "Dowiedz się więcej o [Klasach urządzeń](https://www.home-assistant.io/docs/configuration/customizing-devices/#device-class)",
                     "state_class": "Dowiedz się więcej o [Klasach stanów](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
                 }

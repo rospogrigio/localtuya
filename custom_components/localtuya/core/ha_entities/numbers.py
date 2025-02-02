@@ -160,6 +160,13 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Light 4 Timer",
             custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
         ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Light 4 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, 1, UnitOfTime.SECONDS),
+        ),
     ),
     # Human Presence Sensor
     # https://developer.tuya.com/en/docs/iot/categoryhps?id=Kaiuz42yhn1hs
@@ -377,9 +384,9 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.TIM,
-            icon="mdi:signal-distance-variant",
+            icon="mdi:timer-10",
             entity_category=EntityCategory.CONFIG,
-            name="Hold Time",
+            name="Timer Duration",
             custom_configs=localtuya_numbers(10, 900, 1, 1, UnitOfTime.SECONDS),
         ),
         LocalTuyaEntity(

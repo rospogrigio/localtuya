@@ -84,9 +84,13 @@ class TuyaCloudApi:
         full_url = self._base_url + url
         # _LOGGER.debug("\n" + method + ": [%s]", full_url)
 
+        request_timeout = 3
         if method == "GET":
             func = functools.partial(
-                requests.get, full_url, headers=dict(default_par, **headers)
+                requests.get,
+                full_url,
+                headers=dict(default_par, **headers),
+                timeout=request_timeout,
             )
         elif method == "POST":
             func = functools.partial(
@@ -94,6 +98,7 @@ class TuyaCloudApi:
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
+                timeout=request_timeout,
             )
             # _LOGGER.debug("BODY: [%s]", body)
         elif method == "PUT":
@@ -102,9 +107,14 @@ class TuyaCloudApi:
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
+                timeout=request_timeout,
             )
 
-        resp = await self._hass.async_add_executor_job(func)
+        try:
+            resp = await self._hass.async_add_executor_job(func)
+        except requests.exceptions.ReadTimeout as ex:
+            _LOGGER.debug(f"Requests read timeout: {ex}")
+            return
         # r = json.dumps(r.json(), indent=2, ensure_ascii=False) # Beautify the format
         return resp
 
@@ -120,6 +130,9 @@ class TuyaCloudApi:
             self._token_expire_time = 0
             return "Request failed, status ConnectionError"
 
+        if not resp:
+            self._token_expire_time = 0
+            return
         if not resp.ok:
             return "Request failed, status " + str(resp.status)
 
@@ -156,8 +169,11 @@ class TuyaCloudApi:
         self.device_list = {dev["id"]: dev for dev in r_json["result"]}
 
         # Get Devices DPS Data.
-        get_functions = [self.get_device_functions(devid) for devid in self.device_list]
-        await asyncio.gather(*get_functions)
+        get_functions = [
+            self._hass.async_create_task(self.get_device_functions(devid))
+            for devid in self.device_list
+        ]
+        # await asyncio.run(*get_functions)
 
         return "ok"
 
@@ -195,6 +211,25 @@ class TuyaCloudApi:
 
         return r_json["result"], "ok"
 
+    async def async_get_device_query_things_data_model(
+        self, device_id
+    ) -> dict[str, dict]:
+        """Obtain the DP ID mappings for a device."""
+        resp = await self.async_make_request(
+            "GET", url=f"/v2.0/cloud/thing/{device_id}/model"
+        )
+
+        if not resp:
+            return
+        if not resp.ok:
+            return {}, "Request failed, status " + str(resp.status)
+
+        r_json = resp.json()
+        if not r_json["success"]:
+            return {}, f"Error {r_json['code']}: {r_json['msg']}"
+
+        return r_json["result"], "ok"
+
     async def get_device_functions(self, device_id) -> dict[str, dict]:
         """Pull Devices Properties and Specifications to devices_list"""
         cached = device_id in self.cached_device_list
@@ -206,8 +241,9 @@ class TuyaCloudApi:
         get_data = [
             self.async_get_device_specifications(device_id),
             self.async_get_device_query_properties(device_id),
+            self.async_get_device_query_things_data_model(device_id),
         ]
-        specs, query_props = await asyncio.gather(*get_data)
+        specs, query_props, query_model = await asyncio.gather(*get_data)
         if query_props[1] == "ok":
             device_data = {str(p["dp_id"]): p for p in query_props[0].get("properties")}
         if specs[1] == "ok":
@@ -216,6 +252,27 @@ class TuyaCloudApi:
                     device_data[str(func["dp_id"])].update(func)
                 elif dp_id := func.get("dp_id"):
                     device_data[str(dp_id)] = func
+        if query_model[1] == "ok":
+            model_data = json.loads(query_model[0]["model"])
+            services = model_data.get("services", [{}])[0]
+            properties = services.get("properties")
+            for dp_data in properties if properties else {}:
+                refactored = {
+                    "id": dp_data.get("abilityId"),
+                    # "code": dp_data.get("code"),
+                    "accessMode": dp_data.get("accessMode"),
+                    # values: json.loads later
+                    "values": str(dp_data.get("typeSpec")).replace("'", '"'),
+                }
+                if str(dp_data["abilityId"]) in device_data:
+                    device_data[str(dp_data["abilityId"])].update(refactored)
+                else:
+                    refactored["code"] = dp_data.get("code")
+                    device_data[str(dp_data["abilityId"])] = refactored
+
+        if "28841002" in str(query_props[1]):
+            # No permissions This affect auto configure feature.
+            self.device_list[device_id]["localtuya_note"] = str(query_props[1])
 
         if device_data:
             self.device_list[device_id]["dps_data"] = device_data
@@ -228,12 +285,11 @@ class TuyaCloudApi:
         if (res := await self.async_get_access_token()) and res != "ok":
             _LOGGER.error("Cloud API connection failed: %s", res)
             return "authentication_failed", res
-
-        if (res := await self.async_get_devices_list()) and res != "ok":
+        if res and (res := await self.async_get_devices_list()) and res != "ok":
             _LOGGER.error("Cloud API connection failed: %s", res)
             return "device_list_failed", res
-
-        _LOGGER.info("Cloud API connection succeeded.")
+        if res:
+            _LOGGER.info("Cloud API connection succeeded.")
         return True, res
 
     @property

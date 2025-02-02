@@ -211,6 +211,84 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                 i = i + 1
         config_entry.version = new_version
         hass.config_entries.async_update_entry(config_entry, data=new_data)
+    if config_entry.version <= 3:
+        # Convert values and friendly name values to dict.
+        from .const import (
+            Platform,
+            CONF_OPTIONS,
+            CONF_HVAC_MODE_SET,
+            CONF_HVAC_ACTION_SET,
+            CONF_PRESET_SET,
+            CONF_SCENE_VALUES,
+            # Deprecated
+            CONF_SCENE_VALUES_FRIENDLY,
+            CONF_OPTIONS_FRIENDLY,
+            CONF_HVAC_ADD_OFF,
+        )
+        from .climate import (
+            RENAME_HVAC_MODE_SETS,
+            RENAME_ACTION_SETS,
+            RENAME_PRESET_SETS,
+            HVAC_OFF,
+        )
+
+        def convert_str_to_dict(list1: str, list2: str = ""):
+            to_dict = {}
+            if not isinstance(list1, str):
+                return list1
+            list1, list2 = list1.replace(";", ","), list2.replace(";", ",")
+            v, v_fn = list1.split(","), list2.split(",")
+            for k in range(len(v)):
+                to_dict[v[k]] = (
+                    v_fn[k] if k < len(v_fn) and v_fn[k] else v[k].capitalize()
+                )
+            return to_dict
+
+        new_data = config_entry.data.copy()
+        for device in new_data[CONF_DEVICES]:
+            current_entity = 0
+            for entity in new_data[CONF_DEVICES][device][CONF_ENTITIES]:
+                new_entity_data = {}
+                if entity[CONF_PLATFORM] == Platform.SELECT:
+                    # Merge 2 Lists Values and Values friendly names into dict.
+                    v_fn = entity.get(CONF_OPTIONS_FRIENDLY, "")
+                    if v := entity.get(CONF_OPTIONS):
+                        new_entity_data[CONF_OPTIONS] = convert_str_to_dict(v, v_fn)
+                if entity[CONF_PLATFORM] == Platform.LIGHT:
+                    v_fn = entity.get(CONF_SCENE_VALUES_FRIENDLY, "")
+                    if v := entity.get(CONF_SCENE_VALUES):
+                        new_entity_data[CONF_SCENE_VALUES] = convert_str_to_dict(
+                            v, v_fn
+                        )
+                if entity[CONF_PLATFORM] == Platform.CLIMATE:
+                    # Merge 2 Lists Values and Values friendly names into dict.
+                    climate_to_dict = {}
+                    for conf, new_values in (
+                        (CONF_HVAC_MODE_SET, RENAME_HVAC_MODE_SETS),
+                        (CONF_HVAC_ACTION_SET, RENAME_ACTION_SETS),
+                        (CONF_PRESET_SET, RENAME_PRESET_SETS),
+                    ):
+                        climate_to_dict[conf] = {}
+                        if hvac_set := entity.get(conf, ""):
+                            if entity.get(CONF_HVAC_ADD_OFF, False):
+                                if conf == CONF_HVAC_MODE_SET:
+                                    climate_to_dict[conf].update(HVAC_OFF)
+                            if not isinstance(conf, str):
+                                continue
+                            hvac_set = hvac_set.replace("/", ",")
+                            for i in hvac_set.split(","):
+                                for k, v in new_values.items():
+                                    if i in k:
+                                        new_v = True if i == "True" else i
+                                        new_v = False if i == "False" else new_v
+                                        climate_to_dict[conf].update({v: new_v})
+                    new_entity_data = climate_to_dict
+                new_data[CONF_DEVICES][device][CONF_ENTITIES][current_entity].update(
+                    new_entity_data
+                )
+                current_entity += 1
+        config_entry.version = new_version
+        hass.config_entries.async_update_entry(config_entry, data=new_data)
 
     _LOGGER.info(
         "Entry %s successfully migrated to version %s.",

@@ -5,12 +5,12 @@ from functools import partial
 import voluptuous as vol
 from homeassistant.components.select import DOMAIN, SelectEntity
 from homeassistant.const import CONF_DEVICE_CLASS, STATE_UNKNOWN
+from homeassistant.helpers import selector
 
 from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_DEFAULT_VALUE,
     CONF_OPTIONS,
-    CONF_OPTIONS_FRIENDLY,
     CONF_PASSIVE_ENTITY,
     CONF_RESTORE_ON_RECONNECT,
 )
@@ -19,8 +19,7 @@ from .const import (
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Required(CONF_OPTIONS): str,
-        vol.Optional(CONF_OPTIONS_FRIENDLY): str,
+        vol.Required(CONF_OPTIONS, default={}): selector.ObjectSelector(),
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
         vol.Required(CONF_PASSIVE_ENTITY): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
@@ -44,47 +43,23 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
         self._state = STATE_UNKNOWN
         self._state_friendly = ""
-        self._valid_options = self._config.get(CONF_OPTIONS).split(";")
-        # We split using comma, we still gonna use ; a little bit old configure devices.
-        if "," in self._config.get(CONF_OPTIONS):
-            self._valid_options = self._config.get(CONF_OPTIONS).split(",")
 
         # Set Display options
-        self._display_options = []
-        display_options_str = ""
-        if CONF_OPTIONS_FRIENDLY in self._config:
-            display_options_str = self._config.get(CONF_OPTIONS_FRIENDLY).strip()
-        _LOGGER.debug("Display Options Configured: %s", display_options_str)
+        options_values, options_display_name = [], []
+        for k, v in self._config.get(CONF_OPTIONS, {}).items():
+            options_values.append(k)
+            options_display_name.append(v if v else k.replace("_", "").capitalize())
 
-        if display_options_str.find(";") >= 0:
-            self._display_options = display_options_str.split(";")
-        elif display_options_str.find(",") >= 0:
-            self._display_options = display_options_str.split(",")
-        elif len(display_options_str.strip()) > 0:
-            self._display_options.append(display_options_str)
-        else:
-            # Default display string to raw string
-            _LOGGER.debug("No Display options configured - defaulting to raw values")
-            self._display_options = self._valid_options
+        self._valid_options = options_values
+        self._display_options = options_display_name
 
-        # Remove white spaces on the start
-        self._display_options = [opt.lstrip() for opt in self._display_options]
-        self._valid_options = [opt.lstrip() for opt in self._valid_options]
+        _LOGGER.debug("Display Options Configured: %s", options_display_name)
 
         _LOGGER.debug(
             "Total Raw Options: %s - Total Display Options: %s",
             str(len(self._valid_options)),
             str(len(self._display_options)),
         )
-        if len(self._valid_options) > len(self._display_options):
-            # If list of display items smaller than list of valid items,
-            # then default remaining items to be the raw value
-            _LOGGER.debug(
-                "Valid options is larger than display options - \
-                           filling up with raw values"
-            )
-            for i in range(len(self._display_options), len(self._valid_options)):
-                self._display_options.append(self._valid_options[i])
 
     @property
     def current_option(self) -> str:

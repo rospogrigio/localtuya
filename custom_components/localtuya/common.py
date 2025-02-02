@@ -283,8 +283,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 status = await self._interface.status(cid=self._node_id)
                 if status is None:  # and not self.is_subdevice
                     raise Exception("Failed to retrieve status")
-                if not self._interface.heartbeater:
-                    self._interface.start_heartbeat()
+                self._interface.start_heartbeat()
                 self.status_updated(status)
 
             except UnicodeDecodeError as e:
@@ -376,7 +375,10 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         await cloud_api.async_get_devices_list()
         cloud_devs = cloud_api.device_list
         if dev_id in cloud_devs:
-            self._local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
+            cloud_localkey = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
+            if not cloud_localkey or self._local_key == cloud_localkey:
+                return
+            self._local_key = cloud_localkey
             new_data = self._config_entry.data.copy()
             new_data[CONF_DEVICES][dev_id][CONF_LOCAL_KEY] = self._local_key
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))

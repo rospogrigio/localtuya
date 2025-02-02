@@ -77,7 +77,7 @@ from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
-ENTRIES_VERSION = 3
+ENTRIES_VERSION = 4
 
 PLATFORM_TO_ADD = "platform_to_add"
 USE_TEMPLATE = "use_template"
@@ -586,13 +586,14 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         placeholders = {}
         if user_input is not None:
+            username = user_input.get(CONF_USERNAME)
             if user_input.get(CONF_NO_CLOUD):
                 new_data = self.config_entry.data.copy()
                 new_data.update(user_input)
                 for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
                     new_data[i] = ""
 
-                return self._update_entry(new_data, new_data.get(CONF_USERNAME))
+                return self._update_entry(new_data, new_title=username)
 
             cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
 
@@ -605,7 +606,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         model = cloud_devs[dev_id].get(CONF_PRODUCT_NAME)
                         new_data[CONF_DEVICES][dev_id][CONF_MODEL] = model
 
-                return self._update_entry(new_data, new_data.get(CONF_USERNAME))
+                return self._update_entry(new_data, new_title=username)
 
             errors["base"] = res["reason"]
             placeholders = {"msg": res["msg"]}
@@ -1136,7 +1137,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             _data.update(new_data)
         _data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
 
-        self.hass.config_entries.async_update_entry(self.config_entry, data=_data)
+        self.hass.config_entries.async_update_entry(
+            self.config_entry, data=_data, title=new_title or self.config_entry.title
+        )
         return self.async_create_entry(title=new_title, data={})
 
     def available_dps_strings(self):

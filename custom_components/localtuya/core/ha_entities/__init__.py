@@ -123,8 +123,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                 for k, v in localtuya_entity_configs.items():
                     if isinstance(v, CLOUD_VALUE):
                         config_dp = local_entity.get(v.dp_config)
-                        pref_type = v.prefer_type
-                        dp_values = get_dp_values(config_dp, dps_data, pref_type) or {}
+                        dp_values = get_dp_values(config_dp, dps_data, v) or {}
 
                         # special case for lights
                         # if v.value_key in dp_values and "kelvin" in k:
@@ -170,7 +169,7 @@ def parse_enum(dp_code: Enum) -> str:
     return parsed_dp_code
 
 
-def get_dp_values(dp: str, dps_data: dict, prefer_type: type = None) -> dict:
+def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict:
     """Get DP Values"""
     if not dp or not dps_data:
         return
@@ -195,7 +194,7 @@ def get_dp_values(dp: str, dps_data: dict, prefer_type: type = None) -> dict:
     if dp_values and dp_type == DPType.ENUM:
         dp_values["min"] = dp_values.get("range", [])[0]  # first value
         dp_values["max"] = dp_values.get("range", [])[-1]  # Last value
-        dp_values["range"] = convert_list(dp_values.get("range"), prefer_type)
+        dp_values["range"] = convert_list(dp_values.get("range"), req_info)
         return dp_values
 
 
@@ -204,10 +203,12 @@ def scale(value: int, scale: int, _type: type = int) -> float:
     return _type(value) / (10**scale)
 
 
-def convert_list(_list: list, prefer_type: dict | str = str):
+def convert_list(_list: list, req_info: CLOUD_VALUE = str):
     """Return list to dict values."""
     if not _list:
         return ""
+
+    prefer_type = req_info.prefer_type
 
     if prefer_type == str:
         # Return str "value1,value2,value3"
@@ -216,7 +217,18 @@ def convert_list(_list: list, prefer_type: dict | str = str):
 
     if prefer_type == dict:
         # Return dict {value_1: Value 1, value_2: Value 2, value_3: Value 3}
-        to_dict = {v: v.replace("_", " ").capitalize() for v in _list}
+        to_dict = {}
+        for k in _list:
+            k_name = k.replace("_", " ").capitalize()  # Default name
+            if isinstance(req_info.default_value, dict):
+                k_name = req_info.default_value.get(k, k_name)
+            if remaped_value := req_info.remap_values.get(k):
+                k_name = remaped_value
+
+            if req_info.reverse_dict:
+                to_dict.update({k_name: k})
+            else:
+                to_dict.update({k: k_name})
         return to_dict
 
     # otherwise return prefer type list

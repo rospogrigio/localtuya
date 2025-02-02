@@ -571,12 +571,14 @@ class MessageDispatcher(ContextualLogger):
     RESET_SEQNO = -101
     SESS_KEY_SEQNO = -102
 
-    def __init__(self, dev_id, listener, protocol_version, local_key, enable_debug):
+    def __init__(
+        self, dev_id, callback_status_update, protocol_version, local_key, enable_debug
+    ):
         """Initialize a new MessageBuffer."""
         super().__init__()
         self.buffer = b""
         self.listeners: dict[str, asyncio.Semaphore] = {}
-        self.listener = listener
+        self.callback_status_update = callback_status_update
         self.version = protocol_version
         self.local_key = local_key
         self.set_logger(_LOGGER, dev_id, enable_debug)
@@ -702,7 +704,7 @@ class MessageDispatcher(ContextualLogger):
                     )
             else:
                 self.debug("Got status update")
-                self.listener(msg)
+                self.callback_status_update(msg)
                 # workdaround for >= v3.4 devices until find prper way to wait seqno correctly.
                 if msg.seqno in self.listeners:
                     sem = self.listeners[msg.seqno]
@@ -881,7 +883,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             self.transport = None
             transport.close()
 
-        self.heartbeater = self.loop.create_task(heartbeat_loop())
+        if self.heartbeater is None:
+            # Prevent duplicates heartbeat task
+            self.heartbeater = self.loop.create_task(heartbeat_loop())
 
     def data_received(self, data):
         """Received data from device."""
