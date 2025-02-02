@@ -3,7 +3,7 @@
 import logging
 import math
 from functools import partial
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
@@ -41,9 +41,9 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_FAN_SPEED_CONTROL): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_FAN_OSCILLATING_CONTROL): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_FAN_DIRECTION): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_FAN_SPEED_CONTROL): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_FAN_OSCILLATING_CONTROL): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_FAN_DIRECTION): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_DIRECTION_FWD, default="forward"): cv.string,
         vol.Optional(CONF_FAN_DIRECTION_REV, default="reverse"): cv.string,
         vol.Optional(CONF_FAN_SPEED_MIN, default=1): cv.positive_int,
@@ -70,8 +70,8 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         self._direction = None
         self._percentage = None
         self._speed_range = (
-            self._config.get(CONF_FAN_SPEED_MIN),
-            self._config.get(CONF_FAN_SPEED_MAX),
+            int(self._config.get(CONF_FAN_SPEED_MIN, 1)),
+            int(self._config.get(CONF_FAN_SPEED_MAX, 9)),
         )
         self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split(",")
 
@@ -194,11 +194,8 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         if self.has_config(CONF_FAN_DIRECTION):
             features |= FanEntityFeature.DIRECTION
 
-        try:  # requires HA >= 2024.8.0
-            features |= FanEntityFeature.TURN_OFF
-            features |= FanEntityFeature.TURN_ON
-        except AttributeError:
-            pass
+        features |= FanEntityFeature.TURN_OFF
+        features |= FanEntityFeature.TURN_ON
 
         return features
 

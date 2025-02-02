@@ -2,14 +2,14 @@
 Helpers functions for HASS-LocalTuya.
 """
 
+import asyncio
+import logging
+import os.path
 from enum import Enum
 from fnmatch import fnmatch
 from typing import NamedTuple
-import logging
-import os.path
-import yaml
 
-from homeassistant.util.yaml import load_yaml
+from homeassistant.util.yaml import load_yaml, dump
 from homeassistant.const import CONF_PLATFORM, CONF_ENTITIES
 
 
@@ -24,15 +24,24 @@ _LOGGER = logging.getLogger(__name__)
 #          Templates          #
 ###############################
 class templates:
+
+    def yaml_dump(config, fname: str | None = None) -> JSON_TYPE:
+        """Save yaml config."""
+        try:
+            with open(fname, "w", encoding="utf-8") as conf_file:
+                return conf_file.write(dump(config))
+        except UnicodeDecodeError as exc:
+            _LOGGER.error("Unable to save file %s: %s", fname, exc)
+
     def list_templates():
         """Return the available templates files."""
         dir = os.path.dirname(templates_dir.__file__)
         files = {}
-        for p, d, f in os.walk(dir):
-            for file in sorted(f):
-                if fnmatch(file, "*yaml") or fnmatch(file, "*yml"):
-                    # fn = str(file).replace(".yaml", "").replace("_", " ")
-                    files[file] = file
+        for e in sorted(os.scandir(dir), key=lambda e: e.name):
+            file: str = e.name.lower()
+            if e.is_file() and (fnmatch(file, "*yaml") or fnmatch(file, "*yml")):
+                # fn = str(file).replace(".yaml", "").replace("_", " ")
+                files[e.name] = e.name
         return files
 
     def import_config(filename):
@@ -74,15 +83,8 @@ class templates:
         fname = fname.replace(" ", "_")
         template_dir = os.path.dirname(templates_dir.__file__)
         template_file = os.path.join(template_dir, fname)
-        _config = cls.yaml_dump(export_config, template_file)
 
-    def yaml_dump(config, fname: str | None = None) -> JSON_TYPE:
-        """Save yaml config."""
-        try:
-            with open(fname, "w", encoding="utf-8") as conf_file:
-                return yaml.dump(config, conf_file)
-        except UnicodeDecodeError as exc:
-            _LOGGER.error("Unable to save file %s: %s", fname, exc)
+        cls.yaml_dump(export_config, template_file)
 
 
 ################################

@@ -26,7 +26,7 @@ By known the `category` we use that to get all the possible entities from stored
 _Now that we know the device `category` and `Codes` we can start add the entities._
 
 In `/localtuya/core/ha_entities` open the file named with `entity type` you want to add.<br>
-All files contains `constant dict` (1) includes all known `categories` and possible entites.<br>
+All files contains `constant dict` (1) includes all known `categories` and possible entities.<br>
 {.annotate}
 
 1. e.g `COVERS or SWITCHES`

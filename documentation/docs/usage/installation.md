@@ -28,5 +28,5 @@ If you haven't added the repository to `HACS`.
     a. If you prefer not to set up the cloud API, check `Disable Cloud API?`
 
     b. If you've set up a `cloud` account, you should have all the necessary information
-    <br> [Get authentication data](cloud_api.md/#get-authorization-data).
+    <br> [Get authentication data](../cloud_api.md/#get-authorization-data).
 

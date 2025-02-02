@@ -293,7 +293,7 @@ class ContextualLogger:
         return self._logger.log(logging.DEBUG, msg, *args)
 
     def info(self, msg, *args, clear_warning=False):
-        """Info level log. clear_warning to re-enable warings msgs if duplicated"""
+        """Info level log. clear_warning to re-enable warnings msgs if duplicated"""
         if clear_warning:
             self._last_warning = ""
 
@@ -811,7 +811,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.remote_nonce = b""
         self.dps_whitelist = UPDATE_DPS_WHITELIST
         self.dispatched_dps = {}  # Store payload so we can trigger an event in HA.
-        self._last_command_sent = 1
+        self._last_command_sent = 1  # The time last command was sent
+        self._write_lock = asyncio.Lock()  # To serialize writes
         self.enable_debug(enable_debug)
 
     def set_version(self, protocol_version):
@@ -858,11 +859,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     return
                 for cid, device in listener.sub_devices.items():
                     if cid in on_devs:
-                        device.subdevice_state(SubdeviceState.ONLINE)
+                        device.subdevice_state_updated(SubdeviceState.ONLINE)
                     elif cid in off_devs:
-                        device.subdevice_state(SubdeviceState.OFFLINE)
+                        device.subdevice_state_updated(SubdeviceState.OFFLINE)
                     else:
-                        device.subdevice_state(SubdeviceState.ABSENT)
+                        device.subdevice_state_updated(SubdeviceState.ABSENT)
             except asyncio.CancelledError:
                 pass
 
@@ -998,15 +999,12 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def transport_write(self, data):
         """Write data on transport, ensure that no massive requests happen all at once."""
-        wait = 0
-        while self.last_command_sent < 0.050:
-            await asyncio.sleep(0.010)
-            wait += 1
-            if wait >= 10:
-                break
+        async with self._write_lock:
+            while self.last_command_sent < 0.050:
+                await asyncio.sleep(0.010)
 
-        self._last_command_sent = time.time()
-        self.transport.write(data)
+            self._last_command_sent = time.time()
+            self.transport.write(data)
 
     async def close(self):
         """Close connection and abort all outstanding listeners."""
@@ -1307,7 +1305,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     self.debug("payload was not string type and decoding failed")
                     return self.error_json(ERR_JSON, payload)
 
-            if "data unvalid" in payload:
+            if "data unvalid" in payload:  # codespell:ignore
                 if self.version <= 3.3:
                     self.dev_type = "type_0d"
                     self.debug(

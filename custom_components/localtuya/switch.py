@@ -2,7 +2,7 @@
 
 import logging
 from functools import partial
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 
 import voluptuous as vol
 from homeassistant.components.switch import (
@@ -33,13 +33,13 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_CURRENT): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_CURRENT_CONSUMPTION): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_VOLTAGE): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT_CONSUMPTION): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_VOLTAGE): col_to_select(dps, is_dps=True),
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
         vol.Required(CONF_PASSIVE_ENTITY): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
-        vol.Optional(CONF_DEVICE_CLASS): _col_to_select(
+        vol.Optional(CONF_DEVICE_CLASS): col_to_select(
             [sc.value for sc in SwitchDeviceClass]
         ),
     }

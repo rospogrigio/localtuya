@@ -164,7 +164,7 @@ def gen_localtuya_entities(localtuya_data: dict, tuya_category: str) -> list[dic
                     entities[entity.get(CONF_ID)] = entity
                     _LOGGER.debug(f"{device_name}: Entity configured: {entity}")
 
-    # sort entites by id
+    # sort entities by id
     sorted_ids = sorted(entities, key=int)
 
     # convert to list of configs
@@ -192,7 +192,7 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
 
     dp_data = dps_data.get(dp, {})
     dp_values = dp_data.get("values")
-    dp_type = dp_data.get("type")
+    dp_type = dp_data.get("type", "").capitalize()
 
     if not dp_values or not (dp_values := json.loads(dp_values)):
         return
@@ -250,7 +250,7 @@ def scale(value: int, scale: int, _type: type = int) -> float:
     return value
 
 
-def convert_list(_list: list, req_info: CLOUD_VALUE = str):
+def convert_list(_list: list, req_info: CLOUD_VALUE):
     """Return list to dict values."""
     if not _list:
         return []

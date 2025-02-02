@@ -1,14 +1,12 @@
 """Class to perform requests to Tuya Cloud APIs."""
 
+import aiohttp
 import asyncio
-import functools
 import hashlib
 import hmac
 import json
 import logging
 import time
-
-import requests
 from requests.adapters import HTTPAdapter, Retry
 
 
@@ -51,13 +49,13 @@ class CustomAdapter(logging.LoggerAdapter):
 class TuyaCloudApi:
     """Class to send API calls."""
 
-    def __init__(self, hass, region_code, client_id, secret, user_id):
+    def __init__(self, region_code, client_id, secret, user_id):
         """Initialize the class."""
         self._logger = CustomAdapter(
             logging.getLogger(__name__), {"prefix": user_id[:3] + "..." + user_id[-3:]}
         )
 
-        self._hass = hass
+        self._session: aiohttp.ClientSession = None
         self._client_id = client_id
         self._secret = secret
         self._user_id = user_id
@@ -115,46 +113,33 @@ class TuyaCloudApi:
             "sign_method": "HMAC-SHA256",
         }
         full_url = self._base_url + url
-        max_retries = 3
-        request_timeout = 3
 
-        # Create requests session.
-        request_session = requests.Session()
-        # Setup retries configuration
-        retries = Retry(total=max_retries, backoff_factor=0.3)
-        request_session.mount(full_url, HTTPAdapter(max_retries=retries))
-        if method == "GET":
-            func = functools.partial(
-                request_session.get,
-                full_url,
-                headers=dict(default_par, **headers),
-                timeout=request_timeout,
-            )
-        elif method == "POST":
-            func = functools.partial(
-                request_session.post,
-                full_url,
-                headers=dict(default_par, **headers),
-                data=json.dumps(body),
-                timeout=request_timeout,
-            )
-            # self._logger.debug("BODY: [%s]", body)
-        elif method == "PUT":
-            func = functools.partial(
-                request_session.put,
-                full_url,
-                headers=dict(default_par, **headers),
-                data=json.dumps(body),
-                timeout=request_timeout,
-            )
-
+        session = aiohttp.ClientSession() if self._session.closed else self._session
         try:
-            resp = await self._hass.async_add_executor_job(func)
-        except requests.exceptions.ReadTimeout as ex:
-            self._logger.debug(f"Requests read timeout: {ex}")
-            return
-        # r = json.dumps(r.json(), indent=2, ensure_ascii=False) # Beautify the format
-        return resp
+            if method == "GET":
+                async with session.get(
+                    full_url, headers=dict(default_par, **headers)
+                ) as resp:
+                    return await resp.json()
+
+            if method == "POST":
+                async with session.post(
+                    full_url,
+                    headers=dict(default_par, **headers),
+                    data=json.dumps(body),
+                ) as resp:
+                    return await resp.json()
+
+            if method == "PUT":
+                async with session.put(
+                    full_url,
+                    headers=dict(default_par, **headers),
+                    data=json.dumps(body),
+                ) as resp:
+                    return await resp.json()
+        finally:
+            if session != self._session:
+                await session.close()
 
     async def async_get_access_token(self) -> str | None:
         """Obtain a valid access token."""
@@ -164,33 +149,25 @@ class TuyaCloudApi:
 
         try:
             resp = await self.async_make_request("GET", "/v1.0/token?grant_type=1")
-        except requests.exceptions.ConnectionError:
+        except (aiohttp.ClientError, aiohttp.ClientConnectionError, TimeoutError) as ex:
             self._token_expire_time = 0
-            return "Request failed, status ConnectionError"
+            return ex
 
-        if not resp:
+        if not resp["success"]:
             self._token_expire_time = 0
-            return
-        if not resp.ok:
-            return "Request failed, status " + str(resp.status)
+            return f"Error {resp['code']}: {resp['msg']}"
 
-        r_json = resp.json()
-        if not r_json["success"]:
-            return f"Error {r_json['code']}: {r_json['msg']}"
-
-        req_results = r_json["result"]
+        req_results = resp["result"]
 
         expire_time = int(req_results.get("expire_time", 3600))
         self._token_expire_time = int(time.time()) + expire_time
-        self._access_token = resp.json()["result"]["access_token"]
+        self._access_token = resp["result"]["access_token"]
         return "ok"
 
     async def async_get_devices_list(self, force_update=False) -> str | None:
         """Obtain the list of devices associated to a user. - force_update will ignore last update check."""
         interval = (
-            DEVICES_UPDATE_INTERVAL
-            if not force_update
-            else DEVICES_UPDATE_INTERVAL_FORCED
+            DEVICES_UPDATE_INTERVAL_FORCED if force_update else DEVICES_UPDATE_INTERVAL
         )
         if (
             self.device_list
@@ -198,94 +175,84 @@ class TuyaCloudApi:
         ):
             return self._logger.debug(f"Devices has been updated a minutes ago.")
 
-        resp = await self.async_make_request(
-            "GET", url=f"/v1.0/users/{self._user_id}/devices"
-        )
+        try:
+            resp = await self.async_make_request(
+                "GET", url=f"/v1.0/users/{self._user_id}/devices"
+            )
+        except (aiohttp.ClientError, aiohttp.ClientConnectionError, TimeoutError) as ex:
+            self._logger.debug(f"Failed to update devices list due to: {ex}")
 
-        if not resp:
-            return
-        if not resp.ok:
-            return "Request failed, status " + str(resp.status)
+        if not resp["success"]:
+            return f"Error {resp['code']}: {resp['msg']}"
 
-        r_json = resp.json()
-        if not r_json["success"]:
-            # self._logger.debug(
-            #     "Request failed, reply is %s",
-            #     json.dumps(r_json, indent=2, ensure_ascii=False)
-            # )
-            return f"Error {r_json['code']}: {r_json['msg']}"
-
-        self.device_list = {dev["id"]: dev for dev in r_json["result"]}
-
-        # Get Devices DPS Data.
-        get_functions = [
-            self._hass.async_create_task(self.get_device_functions(devid))
-            for devid in self.device_list
-        ]
-        # await asyncio.run(*get_functions)
+        self.device_list.update({dev["id"]: dev for dev in resp["result"]})
 
         self._last_devices_update = int(time.time())
         return "ok"
 
+    async def async_get_devices_dps_query(self):
+        """Update All the devices dps_data."""
+        # Get Devices DPS Data.
+        async with aiohttp.ClientSession() as self._session:
+            await asyncio.wait(
+                asyncio.create_task(self.async_get_device_functions(devid))
+                for devid in self.device_list
+            )
+            return "ok"
+
     async def async_get_device_specifications(self, device_id) -> dict[str, dict]:
         """Obtain the DP ID mappings for a device."""
-        resp = await self.async_make_request(
-            "GET", url=f"/v1.1/devices/{device_id}/specifications"
-        )
 
-        if not resp:
-            return
-        if not resp.ok:
-            return {}, "Request failed, status " + str(resp.status)
+        try:
+            resp = await self.async_make_request(
+                "GET", url=f"/v1.1/devices/{device_id}/specifications"
+            )
+        except (aiohttp.ClientError, aiohttp.ClientConnectionError, TimeoutError) as ex:
+            self._logger.debug(f"Failed to get device specs due to: {ex}")
 
-        r_json = resp.json()
-        if not r_json["success"]:
-            return {}, f"Error {r_json['code']}: {r_json['msg']}"
+        if not resp["success"]:
+            return {}, f"Error {resp['code']}: {resp['msg']}"
 
-        return r_json["result"], "ok"
+        return resp["result"], "ok"
 
     async def async_get_device_query_properties(self, device_id) -> dict[dict, str]:
         """Obtain the DP ID mappings for a device correctly! Note: This won't works if the subscription expired."""
-        resp = await self.async_make_request(
-            "GET", url=f"/v2.0/cloud/thing/{device_id}/shadow/properties"
-        )
 
-        if not resp:
-            return
-        if not resp.ok:
-            return {}, "Request failed, status " + str(resp.status)
+        try:
+            resp = await self.async_make_request(
+                "GET", url=f"/v2.0/cloud/thing/{device_id}/shadow/properties"
+            )
+        except (aiohttp.ClientError, aiohttp.ClientConnectionError, TimeoutError) as ex:
+            self._logger.debug(f"Failed to get device query due to: {ex}")
 
-        r_json = resp.json()
-        if not r_json["success"]:
-            return {}, f"Error {r_json['code']}: {r_json['msg']}"
+        if not resp["success"]:
+            return {}, f"Error {resp['code']}: {resp['msg']}"
 
-        return r_json["result"], "ok"
+        return resp["result"], "ok"
 
     async def async_get_device_query_things_data_model(
         self, device_id
     ) -> dict[str, dict]:
         """Obtain the DP ID mappings for a device."""
-        resp = await self.async_make_request(
-            "GET", url=f"/v2.0/cloud/thing/{device_id}/model"
-        )
 
-        if not resp:
-            return
-        if not resp.ok:
-            return {}, "Request failed, status " + str(resp.status)
+        try:
+            resp = await self.async_make_request(
+                "GET", url=f"/v2.0/cloud/thing/{device_id}/model"
+            )
+        except (aiohttp.ClientError, aiohttp.ClientConnectionError, TimeoutError) as ex:
+            self._logger.debug(f"Failed to get device model data due to: {ex}")
 
-        r_json = resp.json()
-        if not r_json["success"]:
-            return {}, f"Error {r_json['code']}: {r_json['msg']}"
+        if not resp["success"]:
+            return {}, f"Error {resp['code']}: {resp['msg']}"
 
-        return r_json["result"], "ok"
+        return resp["result"], "ok"
 
-    async def get_device_functions(self, device_id) -> dict[str, dict]:
+    async def async_get_device_functions(self, device_id) -> dict[str, dict]:
         """Pull Devices Properties and Specifications to devices_list"""
         cached = device_id in self.cached_device_list
         if cached and (dps_data := self.cached_device_list[device_id].get("dps_data")):
             self.device_list[device_id]["dps_data"] = dps_data
-            return
+            return dps_data
 
         device_data = {}
         get_data = [
@@ -295,7 +262,7 @@ class TuyaCloudApi:
         ]
         try:
             specs, query_props, query_model = await asyncio.gather(*get_data)
-        except requests.exceptions.ConnectionError as ex:
+        except (Exception,) as ex:
             self._logger.debug(f"Failed to get DPS functions for {device_id} - {ex}")
             return
 
@@ -337,15 +304,16 @@ class TuyaCloudApi:
 
     async def async_connect(self):
         """Connect to cloudAPI"""
-        if (res := await self.async_get_access_token()) and res != "ok":
-            self._logger.error("Cloud API connection failed: %s", res)
-            return "authentication_failed", res
-        if res and (res := await self.async_get_devices_list()) and res != "ok":
-            self._logger.error("Cloud API connection failed: %s", res)
-            return "device_list_failed", res
-        if res:
-            self._logger.info("Cloud API connection succeeded.")
-        return True, res
+        async with aiohttp.ClientSession() as self._session:
+            if (res := await self.async_get_access_token()) and res != "ok":
+                self._logger.warning("Cloud API connection failed: %s", res)
+                return "authentication_failed", res
+            if res and (res := await self.async_get_devices_list()) and res != "ok":
+                self._logger.warning("Cloud API connection failed: %s", res)
+                return "device_list_failed", res
+            if res:
+                self._logger.info("Cloud API connection succeeded.")
+            return True, res
 
     @property
     def token_validate(self):

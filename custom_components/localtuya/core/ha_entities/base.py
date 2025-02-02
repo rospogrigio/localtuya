@@ -23,7 +23,7 @@ class CLOUD_VALUE:
     `value_key(str)`: The "key" name of the targeted value.\n
     `prefer_type`: Convert values
             Integer: Type(value) ( int, float or str ).\n
-            Enums: convert the values to [dict or str splitted by comma, default is list].\n
+            Enums: convert the values to [dict or str split by comma, default is list].\n
     `remap_values(dict)`: Used to remap dict values, if prefer_type is dict.\n
     `reverse_dict(bool)`: Reverse dict keys, value, if prefer_type is dict.\n
     `scale(bool)`: For integers, scale final value.\n
@@ -122,15 +122,19 @@ class DPCode(StrEnum):
     ALARM_TIME = "alarm_time"  # Alarm time
     ALARM_VOLUME = "alarm_volume"  # Alarm volume
     ALL_ENERGY = "all_energy"
-    AMBIEN = "ambien"
+    AMBIEN = "ambien"  # codespell:ignore
     ANGLE_HORIZONTAL = "angle_horizontal"
     ANGLE_VERTICAL = "angle_vertical"
     ANION = "anion"  # Ionizer unit
     ANTILOCK_STATUS = "antilock_status"
+    APN = "apn"
+    APN_USER_NAME = "apn_user_name"
+    APN_USER_PASSWORD = "apn_user_password"
     APPOINTMENT_TIME = "appointment_time"
     ARMING_SWITCH = "arming_switch"
     ARM_DOWN_PERCENT = "arm_down_percent"
     ARM_UP_PERCENT = "arm_up_percent"
+    AUTH_PASSWORD = "auth_password"
     AUTOMATIC_LOCK = "automatic_lock"
     AUTO_CLEAN = "auto_clean"
     AUTO_LOCK_TIME = "auto_lock_time"
@@ -165,10 +169,19 @@ class DPCode(StrEnum):
     BRIGHT_VALUE_4 = "bright_value_4"
     BRIGHT_VALUE_V2 = "bright_value_v2"
     CALLPHONE = "callphone"
+    CARD_BALANCE = "card_balance"
     CH2O_STATE = "ch2o_state"
     CH2O_VALUE = "ch2o_value"
     CH4_SENSOR_STATE = "ch4_sensor_state"
     CH4_SENSOR_VALUE = "ch4_sensor_value"
+    CHARGE_CARD_NO1 = "charge_card_no1"
+    CHARGE_CARD_NO2 = "charge_card_no2"
+    CHARGE_ELECTRIC_QUANTITY = "charge_electric_quantity"
+    CHARGE_MONEY = "charge_money"
+    CHARGE_PATTERN = "charge_pattern"
+    CHARGE_POWER1 = "charge_power1"
+    CHARGE_POWER2 = "charge_power2"
+    CHARGING_STATE = "charging_state"
     CHILDLOCK = "childlock"
     CHILD_LOCK = "child_lock"  # Child lock
     CISTERN = "cistern"
@@ -188,6 +201,7 @@ class DPCode(StrEnum):
     COLOR_DATA_V2 = "color_data_v2"
     COLOUR_DATA = "colour_data"  # Colored light mode
     COLOUR_DATA_HSV = "colour_data_hsv"  # Colored light mode
+    COLOUR_DATA_RAW = "colour_data_raw"  # Colored light mode for BLE
     COLOUR_DATA_V2 = "colour_data_v2"  # Colored light mode
     COMPRESSOR_COMMAND = "compressor_command"
     CONCENTRATION_SET = "concentration_set"  # Concentration setting
@@ -218,6 +232,7 @@ class DPCode(StrEnum):
     CO_STATE = "co_state"
     CO_STATUS = "co_status"
     CO_VALUE = "co_value"
+    CP = "cp"
     CRUISE_MODE = "cruise_mode"
     CRY_DETECTION_SWITCH = "cry_detection_switch"
     CUP_NUMBER = "cup_number"  # NUmber of cups
@@ -244,6 +259,7 @@ class DPCode(StrEnum):
     DEHUMIDITY_SET_ENUM = "dehumidify_set_enum"
     DEHUMIDITY_SET_VALUE = "dehumidify_set_value"
     DELAY_SET = "delay_set"
+    DEVICE_NUMBER = "device_number"
     DEVICE_STATE1 = "device_state1"
     DEVICE_STATE2 = "device_state2"
     DIRECTION_A = "direction_a"
@@ -260,10 +276,15 @@ class DPCode(StrEnum):
     DOWN_CONFIRM = "down_confirm"  # cover reset.
     DO_NOT_DISTURB = "do_not_disturb"
     DUSTER_CLOTH = "duster_cloth"
+    EARTH_TEST = "earth_test"
     ECO = "eco"
     ECO2 = "eco2"
     EDGE_BRUSH = "edge_brush"
     ELECTRICITY_LEFT = "electricity_left"
+    ELECTRICITY_PHASE_A = "electricity_phase_a"
+    ELECTRICITY_PHASE_B = "electricity_phase_b"
+    ELECTRICITY_PHASE_C = "electricity_phase_c"
+    ELECTRICITY_TOTAL = "electricity_total"
     EMISSION = "emission"
     ENERGY = "energy"
     ENERGY_A_CALIBRATION_FWD = "energy_a_calibration_fwd"
@@ -281,6 +302,8 @@ class DPCode(StrEnum):
     ENERGY_REVERSE_A = "energy_reverse_a"
     ENERGY_REVERSE_B = "energy_reverse_b"
     ENERGY_REVERSE_C = "energy_reverse_c"
+    EQUIPMENT_TIME = "equipment_time"
+    ERRO = "erro"  # codespell:ignore
     FAN_BEEP = "fan_beep"  # Sound
     FAN_COOL = "fan_cool"  # Cool wind
     FAN_COUNTDOWN = "fan_countdown"
@@ -311,6 +334,7 @@ class DPCode(StrEnum):
     GAS_SENSOR_STATE = "gas_sensor_state"
     GAS_SENSOR_STATUS = "gas_sensor_status"
     GAS_SENSOR_VALUE = "gas_sensor_value"
+    HEAT_WD = "heat_wd"
     HIGHTPROTECTVALUE = "hightprotectvalue"
     HIJACK = "hijack"
     HUMIDIFIER = "humidifier"  # Humidification
@@ -331,8 +355,11 @@ class DPCode(StrEnum):
     IPC_WORK_MODE = "ipc_work_mode"
     IR_SEND = "ir_send"
     IR_STUDY_CODE = "ir_study_code"
+    IS_LOGIN = "is_login"
     KEY_STUDY = "key_study"
     KNOB_SWITCH_MODE_1 = "knob_switch_mode_1"
+    LCD_ONOF = "lcd_onof"
+    LEDLIGHT = "ledlight"
     LED_TYPE_1 = "led_type_1"
     LED_TYPE_2 = "led_type_2"
     LED_TYPE_3 = "led_type_3"
@@ -345,6 +372,8 @@ class DPCode(StrEnum):
     LIQUID_LEVEL_PERCENT = "liquid_level_percent"
     LIQUID_STATE = "liquid_state"
     LOADSTATUS = "loadstatus"
+    LOAD_BALANCING_CURRENT = "load_balancing_current"
+    LOAD_BALANCING_STATE = "load_balancing_state"
     LOCK = "lock"  # Lock / Child lock
     LOCK_MOTOR_STATE = "lock_motor_state"
     LOWER_TEMP = "lower_temp"
@@ -357,10 +386,12 @@ class DPCode(StrEnum):
     MASTER_MODE = "master_mode"  # alarm mode
     MASTER_STATE = "master_state"  # alarm mode
     MATERIAL = "material"  # Material
+    MATERIAL_TYPE = "material_type"
     MAXHUM_SET = "maxhum_set"
     MAXTEMP_SET = "maxtemp_set"
     MAX_HUMI = "max_humi"
     MAX_SET = "max_set"
+    MEASUREMENT_MODEL = "measurement_model"
     MIDDLE_CONFIRM = "middle_confirm"  # cover reset.
     MINIHUM_SET = "minihum_set"
     MINITEMP_SET = "minitemp_set"
@@ -387,8 +418,11 @@ class DPCode(StrEnum):
     MUFFLING = "muffling"  # Muffling
     MUTE = "mute"
     NEAR_DETECTION = "near_detection"
+    NETWORK_MODEL = "network_model"
     NET_STATE = "net_state"
     NORMAL_OPEN_SWITCH = "normal_open_switch"
+    OCPP_TLS = "ocpp_tls"
+    OCPP_URL = "ocpp_url"
     ODU_FAN_SPEED = "odu_fan_speed"
     OPEN_CLOSE = "open_close"
     OPPOSITE = "opposite"
@@ -398,6 +432,7 @@ class DPCode(StrEnum):
     OVERCHARGE_SWITCH = "overcharge_switch"
     OXYGEN = "oxygen"  # Oxygen bar
     PAUSE = "pause"
+    PEN_PROTECT = "pen_protect"
     PERCENT_CONTROL = "percent_control"
     PERCENT_CONTROL_2 = "percent_control_2"
     PERCENT_CONTROL_3 = "percent_control_3"
@@ -410,6 +445,7 @@ class DPCode(StrEnum):
     PHASE_B = "phase_b"
     PHASE_C = "phase_c"
     PHOTO_MODE = "photo_mode"
+    PILE_NUMBER = "pile_number"
     PIR = "pir"  # Motion sensor
     PIR_SENSITIVITY = "pir_sensitivity"
     PIR_STATE = "pir_state"
@@ -454,9 +490,12 @@ class DPCode(StrEnum):
     PTZ_CONTROL = "ptz_control"
     PTZ_STOP = "ptz_stop"
     PUMP_RESET = "pump_reset"  # Water pump reset
+    PVRPM = "pvrpm"
     PV_CURRENT = "pv_current"
     PV_POWER = "pv_power"
     PV_VOLT = "pv_volt"
+    QR_CODE_PREFIX = "qr_code_prefix"
+    RATED_CURRENT = "rated_current"
     RECORD_MODE = "record_mode"
     RECORD_SWITCH = "record_switch"  # Recording switch
     RELAY_STATUS = "relay_status"
@@ -504,6 +543,7 @@ class DPCode(StrEnum):
     SCENE_8 = "scene_8"
     SCENE_9 = "scene_9"
     SCENE_DATA = "scene_data"  # Colored light mode
+    SCENE_DATA_RAW = "scene_data_raw"  # Colored light mode for BLE
     SCENE_DATA_V2 = "scene_data_v2"  # Colored light mode
     SEEK = "seek"
     SENS = "sens"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
@@ -527,6 +567,7 @@ class DPCode(StrEnum):
     SOUND_MODE = "sound_mode"
     SOURCE = "source"
     SPEED = "speed"  # Speed level
+    SPEEK = "speek"
     SPRAY_MODE = "spray_mode"  # Spraying mode
     SPRAY_VOLUME = "spray_volume"  # Dehumidifier
     STA = "sta"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
@@ -652,6 +693,11 @@ class DPCode(StrEnum):
     TOTAL_PM = "total_pm"
     TOTAL_POWER = "total_power"
     TOTAL_TIME = "total_time"
+    TOUCH_WARNING = "touch_warning"
+    TRANSACTION_ENERGY = "transaction_energy"
+    TRANSACTION_MONRY = "transaction_monry"
+    TRANSACTION_STATUS = "transaction_status"
+    TRANSACTION_TIME = "transaction_time"
     TREBLE_CONTROL = "treble_control"
     TVOC = "tvoc"
     TV_SIZE = "tv_size"
@@ -675,15 +721,18 @@ class DPCode(StrEnum):
     UNLOCK_SWITCH = "unlock_switch"
     UNLOCK_TEMPORARY = "unlock_temporary"
     UNLOCK_VOICE_REMOTE = "unlock_voice_remote"
+    UPDATE_PASSWORD = "update_password"
     UPPER_TEMP = "upper_temp"
     UPPER_TEMP_F = "upper_temp_f"
     UP_CONFIRM = "up_confirm"  # cover reset.
+    USB_BZ = "usb_bz"
     USE_TIME = "use_time"
     USE_TIME_ONE = "use_time_one"
     UV = "uv"  # UV sterilization
     VA_BATTERY = "va_battery"
     VA_HUMIDITY = "va_humidity"
     VA_TEMPERATURE = "va_temperature"
+    VERSION_NUMBER = "version_number"
     VIDEO_INTENSITY = "video_intensity"
     VIDEO_MODE = "video_mode"
     VIDEO_SCENE = "video_scene"
@@ -699,6 +748,9 @@ class DPCode(StrEnum):
     VOLTAGE_A = "voltage_a"
     VOLTAGE_COEF = "voltage_coef"
     VOLTAGE_CURRENT = "voltage_current"
+    VOLTAGE_PHASE_A = "voltage_phase_a"
+    VOLTAGE_PHASE_B = "voltage_phase_b"
+    VOLTAGE_PHASE_C = "voltage_phase_c"
     VOLUME_SET = "volume_set"
     WARM = "warm"  # Heat preservation
     WARM_TIME = "warm_time"  # Heat preservation time

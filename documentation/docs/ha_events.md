@@ -21,7 +21,7 @@ that can be used on automation or monitoring your device behaviour from [Develop
 | `localtuya_device_dp_triggered`   | `#!json {"data": {"device_id", "dp", "value"} }`              
 | `localtuya_states_update`         | `#!json {"data": {"device_id", "old_states", "new_states"} }` 
 
-Exaples 
+Examples 
 === "localtuya_device_triggered"
 
     ```yaml

@@ -30,8 +30,8 @@ This is a separate account from the one you made for the app. You cannot log in 
 ### Link devices by app account
 
 1. Navigate to the `Devices` tab.
-2. Click `Link Tuya App Account` > `Add App Account`.
-  ![](https://www.home-assistant.io/images/integrations/tuya/image_003.png)
+2. Click `Link App Account` > `Add App Account`.
+  ![](./images/cloud_link_account.png)
 3. Scan the QR code that appears using the `Tuya Smart` app or `Smart Life` app using the 'Me' section of the app.
 
     ![](https://www.home-assistant.io/images/integrations/tuya/image_004.png)

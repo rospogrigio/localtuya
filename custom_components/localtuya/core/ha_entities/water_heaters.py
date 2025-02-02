@@ -64,23 +64,7 @@ def localtuya_water_heater(
 
 
 WATER_HEATERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
-    # Heater
-    # https://developer.tuya.com/en/docs/iot/f?id=K9gf46epy4j82
-    "qn": (
-        LocalTuyaEntity(
-            id=DPCode.SWITCH,
-            target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
-            current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
-            target_temperature_low_dp=(DPCode.TEMP_LOW, DPCode.LOWER_TEMP),
-            target_temperature_high_dp=(DPCode.TEMP_UP, DPCode.UPPER_TEMP),
-            mode_dp=DPCode.MODE,
-            fan_speed_dp=(DPCode.FAN_SPEED_ENUM, DPCode.WINDSPEED),
-            custom_configs=localtuya_water_heater(
-                current_precsion=0.1, target_precision=0.1
-            ),
-        ),
-    ),
-    # Heater
+    # Water Heater
     # https://developer.tuya.com/en/docs/iot/categoryrs?id=Kaiuz0nfferyx
     "rs": (
         LocalTuyaEntity(

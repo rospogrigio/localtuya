@@ -2,7 +2,7 @@
 
 import logging
 from functools import partial
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 from homeassistant.helpers import selector
 
 import voluptuous as vol
@@ -36,11 +36,11 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_HUMIDIFIER_SET_HUMIDITY_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP): _col_to_select(
+        vol.Optional(CONF_HUMIDIFIER_SET_HUMIDITY_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP): col_to_select(
             dps, is_dps=True
         ),
-        vol.Optional(CONF_HUMIDIFIER_MODE_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_HUMIDIFIER_MODE_DP): col_to_select(dps, is_dps=True),
         vol.Required(ATTR_MIN_HUMIDITY, default=DEFAULT_MIN_HUMIDITY): int,
         vol.Required(ATTR_MAX_HUMIDITY, default=DEFAULT_MAX_HUMIDITY): int,
         vol.Optional(

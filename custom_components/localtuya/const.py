@@ -237,3 +237,6 @@ class DeviceConfig:
         self.reset_dps: str = self.device_config.get(CONF_RESET_DPIDS, "")
         self.manual_dps: str = self.device_config.get(CONF_MANUAL_DPS, "")
         self.dps_strings: list = self.device_config.get(CONF_DPS_STRINGS, [])
+
+    def as_dict(self):
+        return self._device_config

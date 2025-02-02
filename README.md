@@ -258,7 +258,7 @@ The Cloud API account configuration is not mandatory (LocalTuya can work also wi
 
 sean6541, for the working (standard) Python Handler for Tuya devices.
 
-[jasonacox](https://github.com/jasonacox), for the TinyTuya project from where I big help and refrences to upgrade integration.
+[jasonacox](https://github.com/jasonacox), for the TinyTuya project from where I big help and references to upgrade integration.
 
 [uzlonewolf](https://github.com/uzlonewolf), for maintaining in TinyTuya who improved the tool so much and introduce new features like new protocols etc..
 

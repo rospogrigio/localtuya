@@ -155,32 +155,31 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
     ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/f?id=K9gf46epy4j82
-    ## Converted to Water Heaters
-    # "qn": (
-    #     LocalTuyaEntity(
-    #         id=DPCode.SWITCH,
-    #         target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
-    #         current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
-    #         hvac_mode_dp=DPCode.SWITCH,
-    #         hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
-    #         preset_dp=DPCode.MODE,
-    #         fan_speed_dp=(DPCode.FAN_SPEED_ENUM, DPCode.WINDSPEED),
-    #         custom_configs=localtuya_climate(
-    #             hvac_mode_set={
-    #                 HVACMode.OFF: False,
-    #                 HVACMode.HEAT: True,
-    #             },
-    #             temp_step=1,
-    #             actions_set={
-    #                 HVACAction.HEATING: True,
-    #                 HVACAction.IDLE: False,
-    #             },
-    #             values_precsion=0.1,
-    #             target_precision=0.1,
-    #             preset_set={},
-    #         ),
-    #     ),
-    # ),
+    "qn": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            target_temperature_dp=(DPCode.TEMP_SET, DPCode.TEMP_SET_F),
+            current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+            hvac_mode_dp=DPCode.SWITCH,
+            hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
+            preset_dp=DPCode.MODE,
+            fan_speed_dp=(DPCode.FAN_SPEED_ENUM, DPCode.WINDSPEED),
+            custom_configs=localtuya_climate(
+                hvac_mode_set={
+                    HVACMode.OFF: False,
+                    HVACMode.HEAT: True,
+                },
+                temp_step=1,
+                actions_set={
+                    HVACAction.HEATING: True,
+                    HVACAction.IDLE: False,
+                },
+                values_precsion=0.1,
+                target_precision=0.1,
+                preset_set={},
+            ),
+        ),
+    ),
     # Heater
     # https://developer.tuya.com/en/docs/iot/categoryrs?id=Kaiuz0nfferyx
     ## Converted to Water Heaters

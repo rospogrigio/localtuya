@@ -140,7 +140,7 @@ Each platform has its unique configuration page with different sets of configura
 ##### Create templates
 There are two ways to create templates
 
-1. Export a configured device from the [Reconfigure existing device](/usage/configure_edit_device) step
+1. Export a configured device from the [Reconfigure existing device](../configure_edit_device) step
 2. Manually write the configuration __`YAML`__ file `Not Recommended`
 
 ??? example "`Cover` template example"

@@ -2,7 +2,7 @@
 
 import logging
 from functools import partial
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 from homeassistant.helpers import selector
 
 import voluptuous as vol
@@ -60,21 +60,21 @@ OFF_MODE = "Off"
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_TARGET_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_TARGET_TEMPERATURE_LOW_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_TARGET_TEMPERATURE_HIGH_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_TARGET_TEMPERATURE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_TARGET_TEMPERATURE_LOW_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_TARGET_TEMPERATURE_HIGH_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_MIN_TEMP, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
         vol.Optional(CONF_MAX_TEMP, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
-        vol.Optional(CONF_PRECISION, default=str(DEFAULT_PRECISION)): _col_to_select(
+        vol.Optional(CONF_PRECISION, default=str(DEFAULT_PRECISION)): col_to_select(
             PERCISION_SET
         ),
         vol.Optional(
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
-        ): _col_to_select(PERCISION_SET),
-        vol.Optional(CONF_MODE_DP): _col_to_select(dps, is_dps=True),
+        ): col_to_select(PERCISION_SET),
+        vol.Optional(CONF_MODE_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_MODES, default={}): selector.ObjectSelector(),
-        vol.Optional(CONF_TEMPERATURE_UNIT): _col_to_select(
+        vol.Optional(CONF_TEMPERATURE_UNIT): col_to_select(
             [TEMPERATURE_CELSIUS, TEMPERATURE_FAHRENHEIT]
         ),
     }

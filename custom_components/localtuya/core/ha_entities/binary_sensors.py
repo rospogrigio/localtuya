@@ -80,6 +80,24 @@ FAULT_SENSOR = (
 
 
 BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
+    # Fan
+    # https://developer.tuya.com/en/docs/iot/categoryfs?id=Kaiuz1xweel1c
+    "fs": (
+        LocalTuyaEntity(
+            id=DPCode.ERRO,  # codespell:ignore
+            name="Error",
+            device_class=BinarySensorDeviceClass.PROBLEM,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            custom_configs=ON_1,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.USB_BZ,
+            name="USB",
+            device_class=BinarySensorDeviceClass.PLUG,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            custom_configs=STATE_TRUE,
+        ),
+    ),
     # Multi-functional Sensor
     # https://developer.tuya.com/en/docs/iot/categorydgnbj?id=Kaiuz3yorvzg3
     "dgnbj": (

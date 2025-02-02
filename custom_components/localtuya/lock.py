@@ -3,7 +3,7 @@
 import logging
 from functools import partial
 from typing import Any
-from .config_flow import _col_to_select
+from .config_flow import col_to_select
 
 import voluptuous as vol
 from homeassistant.components.lock import DOMAIN, LockEntity
@@ -17,8 +17,8 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_LOCK_STATE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_JAMMED_DP): _col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_LOCK_STATE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_JAMMED_DP): col_to_select(dps, is_dps=True),
     }
 
 

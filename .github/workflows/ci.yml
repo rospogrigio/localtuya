@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  PY_VERSION: "3.13"
+  CACHE_VERSION: 1
+
+jobs:
+  base:
+    name: Prepare dependences
+    runs-on: ubuntu-latest
+    outputs:
+      PY_PATH: ${{ steps.setup-outsputs.outputs.PY_PATH }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.PY_VERSION}}
+      
+      - name: "Setup outputs"
+        id: setup-outsputs
+        run: echo "PY_PATH=${{env.pythonLocation}}" >> $GITHUB_OUTPUT
+
+      - name: "Cache dependencies"
+        id: cache-dependencies
+        uses: actions/cache@v4.2.0
+        with:
+          path: ${{env.pythonLocation}}
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}_${{env.CACHE_VERSION}}
+
+      - name: "Install dependencies"
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        run: pip install -r requirements_test.txt
+
+
+
+  black:
+    name: Black codestyle
+    runs-on: ubuntu-latest
+    needs: base
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Restore Python
+        uses: actions/cache/restore@v4.2.0
+        with:
+          path: ${{needs.base.outputs.PY_PATH}}
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}_${{env.CACHE_VERSION}}
+
+      - name: "Black codestyle check"
+        run: ${{needs.base.outputs.PY_PATH}}/bin/black --check --diff .
+
+  codespell:
+    name: "Codespell check"
+    runs-on: ubuntu-latest
+    needs: base
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Restore Python
+        uses: actions/cache/restore@v4.2.0
+        with:
+          path: ${{needs.base.outputs.PY_PATH}}
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}_${{env.CACHE_VERSION}}
+
+      - name: "Codespell check"
+        run: ${{needs.base.outputs.PY_PATH}}/bin/codespell
+
+  pytest:
+    name: "Pytest"
+    runs-on: ubuntu-latest
+    needs: base
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Restore Python
+        uses: actions/cache/restore@v4.2.0
+        with:
+          path: ${{needs.base.outputs.PY_PATH}}
+          fail-on-cache-miss: true
+          key: ${{ runner.os }}-pip-dependencies-${{ hashFiles('requirements.txt') }}_${{env.CACHE_VERSION}}
+
+      - name: "Pytest"
+        run: |
+          ${{needs.base.outputs.PY_PATH}}/bin/pytest --cov --disable-warnings -s
