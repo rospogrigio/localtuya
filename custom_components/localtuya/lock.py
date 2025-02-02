@@ -50,7 +50,7 @@ class LocalTuyaLock(LocalTuyaEntity, LockEntity):
         if (lock_state := self.dp_value(CONF_LOCK_STATE_DP)) or lock_state is not None:
             state = lock_state
 
-        self._attr_is_locked = state not in (False, "closed", "close", None)
+        self._attr_is_locked = state in (False, "closed", "close", None)
 
         if jammed := self.dp_value(CONF_JAMMED_DP, False):
             self._attr_is_jammed = jammed

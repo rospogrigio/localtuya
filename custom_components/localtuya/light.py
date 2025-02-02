@@ -57,6 +57,11 @@ SCENE_MUSIC = "Music"
 
 MODES_SET = {"Colour, Music, Scene and White": 0, "Manual, Music, Scene and White": 1}
 
+EFFECTS_MODES = {
+    "Default": MODE_WHITE,
+    "Mode Color": MODE_COLOR,
+    "Mode Scene": MODE_SCENE,
+}
 SCENE_LIST_RGBW_1000 = {
     "Night": "000e0d0000000000000000c80000",
     "Read": "010e0d0000000000000003e801f4",
@@ -94,7 +99,7 @@ SCENE_LIST_RGB_1000 = {
     + "e800000000",
     "Dazzling": "06464601000003e803e800000000464601007803e803e80000000046460100f003e80"
     + "3e800000000",
-    "Music": "07464602000003e803e800000000464602007803e803e80000000046460200f003e803e8"
+    "Gorgeous": "07464602000003e803e800000000464602007803e803e80000000046460200f003e803e8"
     + "00000000464602003d03e803e80000000046460200ae03e803e800000000464602011303e803e80"
     + "0000000",
 }
@@ -147,7 +152,7 @@ def flow_schema(dps):
         ),
         vol.Optional(CONF_COLOR_TEMP_REVERSE, default=DEFAULT_COLOR_TEMP_REVERSE): bool,
         vol.Optional(CONF_SCENE): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_SCENE_VALUES): selector.ObjectSelector(),
+        vol.Optional(CONF_SCENE_VALUES, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_MUSIC_MODE, default=False): bool,
     }
 
@@ -189,10 +194,12 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         self._effect_list = []
         self._scenes = {}
 
+        custom_scenes = False
         if self.has_config(CONF_SCENE):
             if self.has_config(CONF_SCENE_VALUES):
                 values_list = list(self._config.get(CONF_SCENE_VALUES))
                 values_name = list(self._config.get(CONF_SCENE_VALUES).values())
+                custom_scenes = True
                 self._scenes = dict(zip(values_name, values_list))
             elif int(self._config.get(CONF_SCENE)) < 20:
                 self._scenes = SCENE_LIST_RGBW_255
@@ -200,6 +207,10 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
                 self._scenes = SCENE_LIST_RGB_1000
             else:
                 self._scenes = SCENE_LIST_RGBW_1000
+
+            if not custom_scenes:
+                self._scenes = {**EFFECTS_MODES, **self._scenes}
+
             self._effect_list = list(self._scenes.keys())
 
         if self._config.get(CONF_MUSIC_MODE):
@@ -215,11 +226,15 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         """Return the brightness of the light."""
         brightness = self._brightness
         if brightness is not None and (self.is_color_mode or self.is_white_mode):
-            if self._upper_brightness >= 1000: 
+            if self._upper_brightness >= 1000:
                 # Round to the nearest 10th, since Tuya does that.
                 # If the value is less than 5, it will round down to 0.
                 # So instead, we take _lower_brightness, which is < 5 in this case.
-                brightness = (brightness + 5) // 10 * 10 if brightness >= 5 else self._lower_brightness
+                brightness = (
+                    (brightness + 5) // 10 * 10
+                    if brightness >= 5
+                    else self._lower_brightness
+                )
             return map_range(
                 brightness, self._lower_brightness, self._upper_brightness, 0, 255
             )
@@ -272,6 +287,8 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         """Return the current effect for this light."""
         if self.is_scene_mode or self.is_music_mode:
             return self._effect
+        elif (color_mode := self.__get_color_mode()) in self._scenes.values():
+            return self.__find_scene_by_scene_data(color_mode)
         return None
 
     @property
@@ -395,7 +412,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
             effect = kwargs[ATTR_EFFECT]
             scene = self._scenes.get(effect)
             if scene is not None:
-                if scene.startswith(MODE_SCENE):
+                if scene.startswith(MODE_SCENE) or scene in (MODE_WHITE, MODE_COLOR):
                     states[self._config.get(CONF_COLOR_MODE)] = scene
                 else:
                     states[self._config.get(CONF_COLOR_MODE)] = MODE_SCENE

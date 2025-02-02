@@ -46,6 +46,7 @@ import logging
 import struct
 import time
 import weakref
+from enum import Enum
 from abc import ABC, abstractmethod
 from typing import Self
 from collections import namedtuple
@@ -115,6 +116,12 @@ class DecodeError(Exception):
     pass
 
 
+class SubdeviceState(Enum):
+    ONLINE = 1
+    OFFLINE = 2
+    ABSENT = 3
+
+
 # Tuya Command Types
 # Reference:
 # https://github.com/tuya/tuya-iotos-embeded-sdk-wifi-ble-bk7231n/blob/master/sdk/include/lan_protocol.h
@@ -181,8 +188,7 @@ NO_PROTOCOL_HEADER_CMDS = [
     LAN_EXT_STREAM,
 ]
 
-HEARTBEAT_INTERVAL = 10
-HEARTBEAT_SUB_DEVICES_INTERVAL = 30
+HEARTBEAT_INTERVAL = 9
 
 # DPS that are known to be safe to use with update_dps (0x12) command
 UPDATE_DPS_WHITELIST = [18, 19, 20]  # Socket (Wi-Fi)
@@ -735,6 +741,10 @@ class TuyaListener(ABC):
     def disconnected(self, exc=""):
         """Device disconnected."""
 
+    @abstractmethod
+    def subdevice_state(self, state: SubdeviceState):
+        """Device is offline or online."""
+
 
 class EmptyListener(TuyaListener):
     """Listener doing nothing."""
@@ -745,11 +755,12 @@ class EmptyListener(TuyaListener):
     def disconnected(self, exc=""):
         """Device disconnected."""
 
+    def subdevice_state(self, state: SubdeviceState):
+        """Device is offline or online."""
+
 
 class TuyaProtocol(asyncio.Protocol, ContextualLogger):
     """Implementation of the Tuya protocol."""
-
-    HEARTBEAT_SKIP = 5
 
     def __init__(
         self,
@@ -793,7 +804,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.dispatcher = self._setup_dispatcher()
         self.on_connected = on_connected
         self.heartbeater: asyncio.Task | None = None
-        self.sub_devices_hb: asyncio.Task | None = None
         self._sub_devs_query_task: asyncio.Task | None = None
         self.dps_cache = {}
         self.sub_devices_states = {"online": [], "offline": []}
@@ -822,7 +832,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         try:
             spayload = json.dumps(payload)
             # spayload = payload.replace('\"','').replace('\'','')
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             spayload = '""'
 
         vals = (error_codes[number], str(number), spayload)
@@ -842,13 +852,21 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
                 self.debug(f"Sub-Devices States Update: {self.sub_devices_states}")
                 on_devs = self.sub_devices_states.get("online")
+                off_devs = self.sub_devices_states.get("offline")
                 listener = self.listener and self.listener()
-                if listener is None or on_devs is None:
+                if listener is None or (on_devs is None and off_devs is None):
                     return
-                for cid, device in listener.sub_devices.items():
-                    if cid not in on_devs:
-                        self.debug(f"Sub-device disconnected: {cid}")
-                        device.disconnected("Device is offline")
+                # listener.sub_devices can be changed when an absent sub-device is removed from,
+                # or re-connected sub-deviceis added to it. Such an event causes
+                #     RuntimeError: dictionary changed size during iteration
+                subdevices = dict(listener.sub_devices)
+                for cid, device in subdevices.items():
+                    if cid in on_devs:
+                        device.subdevice_state(SubdeviceState.ONLINE)
+                    elif cid in off_devs:
+                        device.subdevice_state(SubdeviceState.OFFLINE)
+                    else:
+                        device.subdevice_state(SubdeviceState.ABSENT)
             except asyncio.CancelledError:
                 pass
 
@@ -864,10 +882,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             updated_states["online"] = list(set(cached_on_devs + on_devs))
             updated_states["offline"] = list(set(cached_off_devs + off_devs))
 
-            self.sub_devices_states = updated_states
-
             if self._sub_devs_query_task is not None:
                 self._sub_devs_query_task.cancel()
+
+            self.sub_devices_states = updated_states
             self._sub_devs_query_task = self.loop.create_task(_action())
 
     def _setup_dispatcher(self) -> MessageDispatcher:
@@ -899,12 +917,16 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             listener = self.listener and self.listener()
             if listener is not None:
                 if cid:
-                    listener = listener.sub_devices.get(cid, listener)
-                    device = self.dps_cache.get(cid, {})
+                    # Don't pass sub-device's payload to the (fake)gateway!
+                    if not (listener := listener.sub_devices.get(cid, None)):
+                        return self.debug(
+                            f'Payload for missing sub-device discarded: "{decoded_message}"'
+                        )
+                    status = self.dps_cache.get(cid, {})
                 else:
-                    device = self.dps_cache.get("parent", {})
+                    status = self.dps_cache.get("parent", {})
 
-                listener.status_updated(device)
+                listener.status_updated(status)
 
         return MessageDispatcher(self.id, _status_update, self.version, self.local_key)
 
@@ -913,23 +935,29 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.transport = transport
         self.on_connected.set_result(True)
 
-    def start_heartbeat(self):
-        """Start the heartbeat transmissions with the device."""
+    def keep_alive(self, is_gateway: bool = False):
+        """
+        Start the heartbeat transmissions with the device.
+            is_gateway: will use subdevices_query as heartbeat.
+        """
 
-        async def heartbeat_loop():
+        async def keep_alive_loop(action):
             """Continuously send heart beat updates."""
-            self.debug("Started heartbeat loop")
+            self.debug("Started keep alive loop.")
+            fail_attempt = 0
             while True:
                 try:
-                    # if self.last_command_sent > self.HEARTBEAT_SKIP:
-                    await self.heartbeat()
                     await asyncio.sleep(HEARTBEAT_INTERVAL)
+                    await action()
+                    fail_attempt = 0
                 except asyncio.CancelledError:
                     self.debug("Stopped heartbeat loop")
-                    raise
-                except asyncio.TimeoutError:
-                    self.debug("Heartbeat failed due to timeout, disconnecting")
                     break
+                except asyncio.TimeoutError:
+                    fail_attempt += 1
+                    if fail_attempt >= 2:
+                        self.debug("Heartbeat failed due to timeout, disconnecting")
+                        break
                 except Exception as ex:  # pylint: disable=broad-except
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
@@ -937,32 +965,18 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if self.transport is not None:
                 self.clean_up_session()
 
+            self.debug("Stopped heartbeat loop")
+
         if self.heartbeater is None:
             # Prevent duplicates heartbeat task
-            self.heartbeater = self.loop.create_task(heartbeat_loop())
-
-    def start_sub_devices_heartbeat(self):
-        """Update the states of subdevices every 30sec. this function only be called once."""
-
-        async def loop():
-            """Continuously send heart beat updates."""
-            self.debug("Start a heartbeat for sub-devices")
-            # This will break if main "heartbeat" stopped
-            while True:
-                try:
-                    # Reset the state before every reuqest.
-                    self.sub_devices_states = {"online": [], "offline": []}
-                    await self.subdevices_query()
-                    await asyncio.sleep(HEARTBEAT_SUB_DEVICES_INTERVAL)
-                except asyncio.CancelledError:
-                    break
-                except Exception as ex:
-                    self.debug(f"Sub-devices heartbeat failed: {ex}")
-                    if self.transport is None:
-                        break
-
-        if not self.sub_devices_hb:
-            self.sub_devices_hb = self.loop.create_task(loop())
+            self.heartbeater = self.loop.create_task(
+                keep_alive_loop(
+                    # Ver. 3.3 gateways don't respond to subdevice query
+                    self.subdevices_query
+                    if is_gateway and self.version >= 3.4
+                    else self.heartbeat
+                )
+            )
 
     def data_received(self, data):
         """Received data from device."""
@@ -977,17 +991,16 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.clean_up_session()
 
         try:
-            listener = self.listener and self.listener()
             if listener is not None:
                 listener.disconnected(exc or "Connection lost")
         except Exception:  # pylint: disable=broad-except
             self.exception("Failed to call disconnected callback")
 
-    async def transport_write(self, data, command_delay=True):
-        """Write data on transport, The 'command_delay' will ensure that no massive requests happen all at once."""
+    async def transport_write(self, data):
+        """Write data on transport, ensure that no massive requests happen all at once."""
         wait = 0
-        while command_delay and self.last_command_sent < 0.050:
-            await asyncio.sleep(0.060)
+        while self.last_command_sent < 0.050:
+            await asyncio.sleep(0.010)
             wait += 1
             if wait >= 10:
                 break
@@ -1005,11 +1018,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.debug(f"Cleaning up session.")
         self.real_local_key = self.local_key
 
-        if self.sub_devices_hb:
-            self.sub_devices_hb.cancel()
-
         if self.heartbeater:
             self.heartbeater.cancel()
+
+        if self._sub_devs_query_task:
+            self._sub_devs_query_task.cancel()
 
         if self.dispatcher:
             self.dispatcher.abort()
@@ -1031,7 +1044,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         try:
             await self.transport_write(enc_payload)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             await self.close()
             return None
         while recv_retries:
@@ -1040,7 +1053,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 msg = await self.dispatcher.wait_for(seqno, payload.cmd)
                 # for 3.4 devices, we get the starting seqno with the SESS_KEY_NEG_RESP message
                 self.seqno = msg.seqno
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 msg = None
             if msg and len(msg.payload) != 0:
                 return msg
@@ -1057,7 +1070,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 )
         return None
 
-    async def exchange(self, command, dps=None, nodeID=None, delay=True, payload=None):
+    async def exchange(self, command, dps=None, nodeID=None, payload=None):
         """Send and receive a message, returning response from device."""
         if not self.is_connected:
             return None
@@ -1086,7 +1099,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         enc_payload = self._encode_message(payload)
 
-        await self.transport_write(enc_payload, delay)
+        try:
+            await self.transport_write(enc_payload)
+        except Exception:  # pylint: disable=broad-except
+            return self.clean_up_session()
         msg = await self.dispatcher.wait_for(seqno, payload.cmd)
         if msg is None:
             self.debug("Wait was aborted for seqno %d", seqno)
@@ -1113,7 +1129,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def status(self, cid=None):
         """Return device status."""
-        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid, delay=False)
+        status: dict = await self.exchange(command=DP_QUERY, nodeID=cid)
 
         self.dps_cache.setdefault("parent", {})
         if status and "dps" in status:
@@ -1182,6 +1198,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         """Request a list of sub-devices and their status."""
         # Return payload: {"online": [cid1, ...], "offline": [cid2, ...]}
         # "nearby": [cids, ...] can come in payload.
+        self.sub_devices_states = {"online": [], "offline": []}
         payload = self._generate_payload(
             LAN_EXT_STREAM, rawData={"cids": []}, reqType="subdev_online_stat_query"
         )
@@ -1329,6 +1346,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         return json_payload
 
     async def _negotiate_session_key(self):
+        self.remote_nonce = b""
         self.local_key = self.real_local_key
 
         rkey = await self.exchange_quick(

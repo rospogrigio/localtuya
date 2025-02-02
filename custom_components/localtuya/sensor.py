@@ -53,7 +53,7 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
     ):
         """Initialize the Tuya sensor."""
         super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
-        self._state = STATE_UNKNOWN
+        self._state = None
 
     @property
     def native_value(self):

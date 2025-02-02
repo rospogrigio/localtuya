@@ -97,8 +97,9 @@ async def async_setup_entry(
                     )
                 )
     # Once the entities have been created, add to the TuyaDevice instance
-    device.add_entities(entities)
-    async_add_entities(entities)
+    if entities:
+        device.add_entities(entities)
+        async_add_entities(entities)
 
 
 def get_dps_for_platform(flow_schema):

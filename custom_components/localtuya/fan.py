@@ -204,8 +204,11 @@ class LocalTuyaFan(LocalTuyaEntity, FanEntity):
         if self.has_config(CONF_FAN_DIRECTION):
             features |= FanEntityFeature.DIRECTION
 
-        features |= FanEntityFeature.TURN_OFF
-        features |= FanEntityFeature.TURN_ON
+        try:  # requires HA >= 2024.8.0
+            features |= FanEntityFeature.TURN_OFF
+            features |= FanEntityFeature.TURN_ON
+        except AttributeError:
+            pass
 
         return features
 

@@ -41,6 +41,7 @@ from .const import (
     CONF_USER_ID,
     DATA_DISCOVERY,
     DOMAIN,
+    PLATFORMS,
 )
 
 from .discovery import TuyaDiscovery
@@ -323,58 +324,61 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     secret = entry.data[CONF_CLIENT_SECRET]
     user_id = entry.data[CONF_USER_ID]
     tuya_api = TuyaCloudApi(hass, region, client_id, secret, user_id)
-    no_cloud = True
-    if CONF_NO_CLOUD in entry.data:
-        no_cloud = entry.data.get(CONF_NO_CLOUD)
+    no_cloud = entry.data.get(CONF_NO_CLOUD, True)
+
     if no_cloud:
-        _LOGGER.info("Cloud API account not configured.")
-        # wait 1 second to make sure possible migration has finished
-        # await asyncio.sleep(1)
+        _LOGGER.info(f"Cloud API account not configured.")
     else:
         entry.async_create_background_task(
             hass, tuya_api.async_connect(), "localtuya-cloudAPI"
         )
 
-    async def setup_entities(entry_devices: dict):
-        platforms = set()
-        devices: dict[str, TuyaDevice] = {}
-        for dev_id, config in entry_devices.items():
+    hass_localtuya = HassLocalTuyaData(tuya_api, {}, [])
+    hass.data[DOMAIN][entry.entry_id] = hass_localtuya
+
+    async def _setup_devices(entry_devices: dict):
+        """Setup Localtuya devices object."""
+        devices = hass_localtuya.devices
+        connect_to_devices = []
+
+        # Sort parent devices first then sub-devices.
+        sorted_devices = dict(
+            sorted(
+                entry_devices.items(), key=lambda k: 1 if k[1].get(CONF_NODE_ID) else 0
+            )
+        )
+
+        for dev_id, config in sorted_devices.items():
             if check_if_device_disabled(hass, entry, dev_id):
                 continue
+
             host = config.get(CONF_HOST)
-            entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
-            platforms = platforms.union(
-                set(entity[CONF_PLATFORM] for entity in entities)
-            )
 
-            if node_id := config.get(CONF_NODE_ID):
-                # Setup sub device as gateway if there is no gateway exist.
-                if host not in devices:
-                    devices[host] = TuyaDevice(hass, entry, config, True)
+            # Parent Devices.
+            if not (node_id := config.get(CONF_NODE_ID)):
+                devices[host] = (dev := TuyaDevice(hass, entry, config))
+                connect_to_devices.append(asyncio.create_task(dev.async_connect()))
+                continue
 
-                host = f"{host}_{node_id}"
+            # Sub-Devices
+            if not (gateway := devices.get(host)):
+                # Setup sub-device as fake gateway if there is no a gateway exist.
+                devices[host] = (gateway := TuyaDevice(hass, entry, config, True))
+                connect_to_devices.append(asyncio.create_task(gateway.async_connect()))
 
-            devices[host] = TuyaDevice(hass, entry, config)
-
-        hass_localtuya = HassLocalTuyaData(tuya_api, devices, [])
-        hass.data[DOMAIN][entry.entry_id] = hass_localtuya
-
-        await async_remove_orphan_entities(hass, entry)
-        await hass.config_entries.async_forward_entry_setups(entry, platforms)
-
-        # Connect to tuya devices.
-        connect_to_devices = [
-            asyncio.create_task(device.async_connect())
-            for device in hass_localtuya.devices.values()
-        ]
-        # Update listener: add to unsub_listeners
-        entry_update = entry.add_update_listener(update_listener)
-        hass_localtuya.unsub_listeners.append(entry_update)
+            devices[f"{host}_{node_id}"] = (sub_dev := TuyaDevice(hass, entry, config))
+            sub_dev.gateway = gateway
+            gateway.sub_devices[node_id] = sub_dev
 
         if connect_to_devices:
             await asyncio.wait(connect_to_devices, return_when=asyncio.FIRST_COMPLETED)
 
-    await setup_entities(entry.data[CONF_DEVICES])
+    await _setup_devices(entry.data[CONF_DEVICES])
+
+    await async_remove_orphan_entities(hass, entry)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS.values())
+
+    hass_localtuya.unsub_listeners.append(entry.add_update_listener(update_listener))
     return True
 
 
@@ -390,11 +394,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     for dev in hass_data.devices.values():
         disconnect_devices.append(asyncio.create_task(dev.close()))
-        for entity in dev._device_config.entities:
-            platforms[entity[CONF_PLATFORM]] = True
 
     # Unload the platforms.
-    await hass.config_entries.async_unload_platforms(entry, platforms)
+    await hass.config_entries.async_unload_platforms(entry, PLATFORMS.values())
 
     hass.data[DOMAIN].pop(entry.entry_id)
 
@@ -465,7 +467,7 @@ async def async_remove_orphan_entities(hass, entry):
 
 @callback
 def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
-    """Return whether if the device disbaled or not"""
+    """Return whether if the device disbaled or not."""
     ent_reg = er.async_get(hass)
     entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
     ha_device_id: str = None
@@ -475,8 +477,8 @@ def check_if_device_disabled(hass: HomeAssistant, entry: ConfigEntry, dev_id):
             ha_device_id = entitiy.device_id
             break
 
-    if ha_device_id:
-        return dr.async_get(hass).async_get(ha_device_id).disabled
+    if ha_device_id and (device := dr.async_get(hass).async_get(ha_device_id)):
+        return device.disabled
 
 
 @callback

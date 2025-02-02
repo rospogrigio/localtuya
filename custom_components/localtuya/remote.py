@@ -240,15 +240,13 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
             if control == ControlMode.SEND_IR:
                 command[self._dp_id] = ControlMode.STUDY_KEY.value
                 command[self._dp_key_study] = base64_code
-
+                command["13"] = 0
         else:
             command = {NSDP_CONTROL: control}
-
             if control == ControlMode.SEND_IR:
                 command[NSDP_TYPE] = 0
                 command[NSDP_HEAD] = ""  # also known as ir_code
                 command[NSDP_KEY1] = base64_code  # also code: key_code
-
             command = {self._dp_id: json.dumps(command)}
 
         self.debug(f"Sending IR Command: {command}")
