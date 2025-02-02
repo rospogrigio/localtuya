@@ -402,7 +402,7 @@ async def validate_input(hass: HomeAssistant, entry_id, data):
             detected_dps = {}
 
         # if manual DPs are set, merge these.
-        # detected_dps_device used to pervent user from bypass handshake manual dps.
+        # detected_dps_device used to prevent user from bypass handshake manual dps.
         detected_dps_device = detected_dps.copy()
         _LOGGER.debug("Detected DPS: %s", detected_dps)
         if CONF_MANUAL_DPS in data:
@@ -440,7 +440,7 @@ async def validate_input(hass: HomeAssistant, entry_id, data):
     # won't work in this case
     if not bypass_connection and error:
         raise error
-    # If bypass handshake. otherwise raise faild to make handshake with device.
+    # If bypass handshake. otherwise raise failed to make handshake with device.
     # --- Cloud: We will use the DPS found on cloud if exists.
     # --- No cloud: user will have to input the DPS manually.
     if not detected_dps_device and not (
