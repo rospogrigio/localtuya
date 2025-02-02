@@ -63,10 +63,14 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
     """Create localtuya configs using the data that provided from TUYA"""
     detected_dps: list = localtuya_data.get(CONF_DPS_STRINGS)
     device_name: str = localtuya_data.get(CONF_FRIENDLY_NAME).strip()
+    device_cloud_data: dict = localtuya_data.get("device_cloud_data")
     ent_data: LocalTuyaEntity
 
     if not tuya_category or not detected_dps:
         return
+    if dps_data := device_cloud_data.get("dps_data"):
+        detected_dps = merge_local_cloud_dps(detected_dps, dps_data)
+
     entities = {}
 
     for platform, tuya_data in DATA_PLATFORMS.items():
@@ -137,3 +141,17 @@ def parse_enum(dp_code):
         parsed_dp_code = dp_code
 
     return parsed_dp_code
+
+
+def merge_local_cloud_dps(dps_strings: list, cloud_dps_data: dict[str, dict]):
+    """Merge founded dps_string with dps_data in cloud data"""
+    merged_list = dps_strings
+    dps_strings_dict = {dp.split(" ", 1)[0]: dp.split(" ", 1)[1] for dp in dps_strings}
+
+    for dp, value in cloud_dps_data.items():
+        if dp not in dps_strings_dict:
+            merged_list.append(
+                f"{dp} ( code: {value.get('code')} , value: {value.get('value')} )"
+            )
+
+    return sorted(merged_list, key=lambda i: int(i.split()[0]))

@@ -244,15 +244,22 @@ def schema_defaults(schema, dps_list=None, **defaults):
     return copy
 
 
-def dps_string_list(dps_data, cloud_dp_codes):
+def dps_string_list(dps_data: dict[str, dict], cloud_dp_codes: dict[str, dict]) -> list:
     """Return list of friendly DPS values."""
     strs = []
+
+    # Merge DPS found on cloud with local dps strings.
+    # for dp, func in cloud_dp_codes.items():
+    #     if dp not in dps_data:
+    #         dps_data[dp] = f"{func.get('value')}, cloud pull"
+
     for dp, value in dps_data.items():
         if (dp_data := cloud_dp_codes.get(dp)) and (code := dp_data.get("code")):
             strs.append(f"{dp} ( code: {code} , value: {value} )")
         else:
             strs.append(f"{dp} ( value: {value} )")
-    return strs
+
+    return sorted(strs, key=lambda i: int(i.split()[0]))
 
 
 def gen_dps_strings():
@@ -899,13 +906,14 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         dev_id = self.selected_device
         category = None
         node_id = self.nodeID
-        device_data = dev_id in self.cloud_data.device_list
+        device_data = self.cloud_data.device_list.get(dev_id)
         if device_data:
             category = self.cloud_data.device_list[dev_id].get("category", "")
 
         localtuya_data = {
-            CONF_FRIENDLY_NAME: self.device_data.get(CONF_FRIENDLY_NAME),
+            "device_cloud_data": device_data,
             CONF_DPS_STRINGS: self.dps_strings,
+            CONF_FRIENDLY_NAME: self.device_data.get(CONF_FRIENDLY_NAME),
         }
 
         dev_data = generate_tuya_device(localtuya_data, category)

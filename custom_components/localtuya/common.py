@@ -444,8 +444,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         def fire_event(event, data: dict):
             event_data = {
-                CONF_DEVICE_ID: deviceID or self._device_config[CONF_DEVICE_ID],
-                CONF_TYPE: event,
+                CONF_DEVICE_ID: deviceID or self._device_config[CONF_DEVICE_ID]
             }
             event_data.update(data)
             # Send an event with status, The default length of event without data is 2.
@@ -465,7 +464,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         # Device triggered event.
         if old_status and new_status is not None:
             event = device_triggered
-            data = {CONF_TYPE: event, "states": new_status}
+            data = {"states": new_status}
             fire_event(event, data)
 
             if self._interface is not None:
@@ -473,7 +472,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                     event = device_dp_triggered
                     dp_trigger = list(self._interface.dispatched_dps)[0]
                     dp_value = self._interface.dispatched_dps.get(dp_trigger)
-                    data = {CONF_TYPE: event, "dp": dp_trigger, "value": dp_value}
+                    data = {"dp": dp_trigger, "value": dp_value}
                     fire_event(event, data)
 
     @callback
@@ -505,6 +504,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     """Representation of a Tuya entity."""
 
+    _attr_device_class = None
     _attr_has_entity_name = True
     _attr_should_poll = False
 
@@ -608,6 +608,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def available(self) -> bool:
         """Return if device is available or not."""
+        if (platform := self._config.get(CONF_PLATFORM)) and platform == "button":
+            return True
         return str(self._dp_id) in self._status
 
     @property
@@ -629,7 +631,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def device_class(self):
         """Return the class of this device."""
-        return self._config.get(CONF_DEVICE_CLASS, None)
+        return self._config.get(CONF_DEVICE_CLASS, self._attr_device_class)
 
     def has_config(self, attr) -> bool:
         """Return if a config parameter has a valid value."""

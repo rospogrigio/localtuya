@@ -47,6 +47,8 @@ def flow_schema(dps):
 class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
     """Representation of a Tuya switch."""
 
+    _attr_device_class = SwitchDeviceClass.SWITCH
+
     def __init__(
         self,
         device,

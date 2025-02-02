@@ -116,7 +116,7 @@ class LocaltuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
     def available_modes(self):
         """Return the list of presets that this device supports."""
         if modes := self._config.get(self._available_modes, None):
-            modes = [v.lstrip() for v in modes.strip(",")]
+            modes = [v.lstrip() for v in modes.split(",")]
 
         return modes
 

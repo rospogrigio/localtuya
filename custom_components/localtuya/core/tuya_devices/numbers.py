@@ -92,6 +92,38 @@ NUMBERS: dict[LocalTuyaEntity] = {
             custom_configs=localtuya_numbers(0, 10),
         ),
     ),
+    # Light
+    # https://developer.tuya.com/en/docs/iot/categorydj?id=Kaiuyzy3eheyy
+    "dj": (
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN_1,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Light 1 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN_2,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Light 2 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN_3,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Light 3 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.COUNTDOWN_4,
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            name="Light 4 Timer",
+            custom_configs=localtuya_numbers(0, 86400, 1, UnitOfTime.SECONDS),
+        ),
+    ),
     # Human Presence Sensor
     # https://developer.tuya.com/en/docs/iot/categoryhps?id=Kaiuz42yhn1hs
     "hps": (
