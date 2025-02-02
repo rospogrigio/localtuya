@@ -23,14 +23,21 @@ def flow_schema(dps):
 class LocaltuyaButton(LocalTuyaEntity, ButtonEntity):
     """Representation of a Tuya button."""
 
-    def __init__(self,device,config_entry,buttonid,**kwargs,):
+    def __init__(
+        self,
+        device,
+        config_entry,
+        buttonid,
+        **kwargs,
+    ):
         """Initialize the Tuya button."""
         super().__init__(device, config_entry, buttonid, _LOGGER, **kwargs)
         self._state = None
         _LOGGER.debug("Initialized button [%s]", self.name)
 
     async def async_press(self):
-        """Press the button"""
+        """Press the button."""
         await self._device.set_dp(True, self._dp_id)
+
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaButton, flow_schema)

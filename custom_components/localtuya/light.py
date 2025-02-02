@@ -194,10 +194,17 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._scenes = {}
 
         if self.has_config(CONF_SCENE):
-            if (self.has_config(CONF_SCENE_VALUES) and
-                self.has_config(CONF_SCENE_VALUES_FRIENDLY)):
-                values_list = [value.strip() for value in self._config.get(CONF_SCENE_VALUES).split(";")]
-                friendly_values_list = [value.strip() for value in self._config.get(CONF_SCENE_VALUES_FRIENDLY).split(";")]
+            if self.has_config(CONF_SCENE_VALUES) and self.has_config(
+                CONF_SCENE_VALUES_FRIENDLY
+            ):
+                values_list = [
+                    value.strip()
+                    for value in self._config.get(CONF_SCENE_VALUES).split(";")
+                ]
+                friendly_values_list = [
+                    value.strip()
+                    for value in self._config.get(CONF_SCENE_VALUES_FRIENDLY).split(";")
+                ]
                 self._scenes = dict(zip(friendly_values_list, values_list))
             elif self._config.get(CONF_SCENE) < 20:
                 self._scenes = SCENE_LIST_RGBW_255

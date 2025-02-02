@@ -20,7 +20,6 @@ PLATFORMS = [
     "switch",
     "vacuum",
 ]
-
 TUYA_DEVICES = "tuya_devices"
 
 ATTR_CURRENT = "current"
@@ -151,14 +150,14 @@ CONF_RESTORE_ON_RECONNECT = "restore_on_reconnect"
 
 # Categories
 ENTITY_CATEGORY = {
-    "Controls" : None,
-    "Configuration" : EntityCategory.CONFIG,
-    "Diagnostic" : EntityCategory.DIAGNOSTIC
+    "Controls": None,
+    "Configuration": EntityCategory.CONFIG,
+    "Diagnostic": EntityCategory.DIAGNOSTIC,
 }
 
 # Default Categories
 DEFAULT_CATEGORIES = {
-    "CONTROL" : ['switch', 'climate','fan','vacuum','light'],
-    "CONFIG" : ['select','number','button'],
-    "DIAGNOSTIC" : ['sensor','binary_sensor']
+    "CONTROL": ["switch", "climate", "fan", "vacuum", "light"],
+    "CONFIG": ["select", "number", "button"],
+    "DIAGNOSTIC": ["sensor", "binary_sensor"],
 }

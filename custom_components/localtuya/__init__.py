@@ -223,21 +223,20 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             hass.config_entries.async_update_entry(stored_entries[0], data=new_data)
             await hass.config_entries.async_remove(config_entry.entry_id)
     if config_entry.version == 2:
-        """ Switch config flow to selectors convert DP IDs from int to str `require HA 2022.4 ` """
+        # Switch config flow to selectors convert DP IDs from int to str require HA 2022.4.
         _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
         if config_entry.entry_id == stored_entries[0].entry_id:
             new_data = stored_entries[0].data.copy()
             for device in new_data[CONF_DEVICES]:
                 i = 0
-                if new_data[CONF_DEVICES][device][CONF_ENTITIES] is not None:
-                    for _ent in new_data[CONF_DEVICES][device][CONF_ENTITIES]:
-                        ent_items = {}
-                        for k, v in _ent.items():
-                            ent_items[k] = str(v) if type(v) == type(1) else v
-                        new_data[CONF_DEVICES][device][CONF_ENTITIES][i].update(ent_items)
-                        i = i + 1
+                for _ent in new_data[CONF_DEVICES][device][CONF_ENTITIES]:
+                    ent_items = {}
+                    for k, v in _ent.items():
+                        ent_items[k] = str(v) if isinstance(v, int) else v
+                    new_data[CONF_DEVICES][device][CONF_ENTITIES][i].update(ent_items)
+                    i = i + 1
             config_entry.version = new_version
-            hass.config_entries.async_update_entry(config_entry,  data=new_data)
+            hass.config_entries.async_update_entry(config_entry, data=new_data)
 
     _LOGGER.info(
         "Entry %s successfully migrated to version %s.",

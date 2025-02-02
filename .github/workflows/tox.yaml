@@ -16,7 +16,7 @@ jobs:
         platform:
           - ubuntu-latest
         python-version:
-          - 3.9
+          - '3.10'
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}

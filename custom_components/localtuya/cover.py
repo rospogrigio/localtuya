@@ -12,7 +12,7 @@ from homeassistant.components.cover import (
     CoverEntity,
 )
 from .config_flow import _col_to_select
-from .common import LocalTuyaEntity, async_setup_entry 
+from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_COMMANDS_SET,
     CONF_CURRENT_POSITION_DP,
@@ -35,31 +35,35 @@ _LOGGER = logging.getLogger(__name__)
 
 
 COVER_COMMANDS = {
-    "ON, OFF and Stop" : "on_off_stop",
-    'Open, Close and Stop' : "open_close_stop",
-    'fz,zz and Stop' : "fz_zz_stop",
-    '1,2 and 3' : "1_2_3",
-    '0,1 and 2' : '0_1_2',
+    "ON, OFF and Stop": "on_off_stop",
+    "Open, Close and Stop": "open_close_stop",
+    "fz,zz and Stop": "fz_zz_stop",
+    "1,2 and 3": "1_2_3",
+    "0,1 and 2": "0_1_2",
 }
 
 COVER_MODES = {
-    "None": 'none',
-    "Position": 'position',
-    "Timed": 'timed',
+    "None": "none",
+    "Position": "position",
+    "Timed": "timed",
 }
 
 COVER_TIMEOUT_TOLERANCE = 3.0
 
-DEFAULT_COMMANDS_SET = list(COVER_COMMANDS.values())[0]
-DEFAULT_POSITIONING_MODE = list(COVER_MODES.values())[0]
+DEF_CMD_SET = list(COVER_COMMANDS.values())[0]
+DEF_POS_MODE = list(COVER_MODES.values())[0]
 DEFAULT_SPAN_TIME = 25.0
 
 
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_COMMANDS_SET, default=DEFAULT_COMMANDS_SET): _col_to_select(COVER_COMMANDS),
-        vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): _col_to_select(COVER_MODES),
+        vol.Optional(CONF_COMMANDS_SET, default=DEF_CMD_SET): _col_to_select(
+            COVER_COMMANDS
+        ),
+        vol.Optional(CONF_POSITIONING_MODE, default=DEF_POS_MODE): _col_to_select(
+            COVER_MODES
+        ),
         vol.Optional(CONF_CURRENT_POSITION_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_SET_POSITION_DP): _col_to_select(dps, is_dps=True),
         vol.Optional(CONF_POSITION_INVERTED, default=False): bool,
@@ -75,7 +79,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def __init__(self, device, config_entry, switchid, **kwargs):
         """Initialize a new LocaltuyaCover."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
-        commands_set = DEFAULT_COMMANDS_SET
+        commands_set = DEF_CMD_SET
         if self.has_config(CONF_COMMANDS_SET):
             commands_set = self._config[CONF_COMMANDS_SET]
         self._open_cmd = commands_set.split("_")[0]
@@ -85,15 +89,16 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._state = self._stop_cmd
         self._previous_state = self._state
         self._current_cover_position = 0
-        
-        self._current_state_action = STATE_STOPPED # Default.
+        self._current_state_action = STATE_STOPPED  # Default.
         self._set_new_position = int | None
         _LOGGER.debug("Initialized cover [%s]", self.name)
 
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
+        supported_features = (
+            CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP
+        )
         if self._config[CONF_POSITIONING_MODE] != COVER_MODES["None"]:
             supported_features = supported_features | CoverEntityFeature.SET_POSITION
         return supported_features
@@ -104,17 +109,21 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         state = self._current_state_action
         curr_pos = self.current_cover_position
         # Reset STATE when cover is fully closed or fully opened.
-        if (state == STATE_CLOSING and curr_pos == 0) or (state == STATE_OPENING and curr_pos == 100):
+        if (state == STATE_CLOSING and curr_pos == 0) or (
+            state == STATE_OPENING and curr_pos == 100
+        ):
             self._current_state_action = STATE_STOPPED
         # in case cover moving by set position cmd.
-        if (self._current_state_action == STATE_SET_CLOSING
-            or self._current_state_action == STATE_SET_OPENING):
+        if (
+            self._current_state_action == STATE_SET_CLOSING
+            or self._current_state_action == STATE_SET_OPENING
+        ):
             set_pos = self._set_new_position
             # Reset state whenn cover reached the position.
-            if curr_pos - set_pos < 5 and curr_pos - set_pos >= -5 :
-                self._current_state_action = STATE_STOPPED 
+            if curr_pos - set_pos < 5 and curr_pos - set_pos >= -5:
+                self._current_state_action = STATE_STOPPED
         return self._current_state_action
-    
+
     @property
     def current_cover_position(self):
         """Return current cover position in percent."""
@@ -175,7 +184,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 )
             # Give it a moment, to make sure hass updated current pos.
             await asyncio.sleep(0.1)
-            self.update_state(STATE_SET_CMD,converted_position)
+            self.update_state(STATE_SET_CMD, converted_position)
 
     async def async_stop_after_timeout(self, delay_sec):
         """Stop the cover if timeout (max movement span) occurred."""
@@ -195,7 +204,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 )
             )
         self.update_state(STATE_OPENING)
-
 
     async def async_close_cover(self, **kwargs):
         """Close cover."""
@@ -271,7 +279,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._last_state = self._state
 
     def update_state(self, action, position=None):
-        """ update cover current states """
+        """Update cover current states."""
         state = self._current_state_action
         # using Commands.
         if position is None:
@@ -291,5 +299,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 self._current_state_action = STATE_STOPPED
         # Write state data.
         self.async_write_ha_state()
+
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)
