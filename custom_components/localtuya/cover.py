@@ -8,7 +8,8 @@ import voluptuous as vol
 from homeassistant.components.cover import (
     ATTR_POSITION,
     DOMAIN,
-    CoverEntity, CoverEntityFeature,
+    CoverEntityFeature,
+    CoverEntity,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -20,6 +21,15 @@ from .const import (
     CONF_SET_POSITION_DP,
     CONF_SPAN_TIME,
 )
+
+
+# cover states.
+STATE_OPENING = "opening"
+STATE_CLOSING = "closing"
+STATE_STOPPED = "stopped"
+STATE_SET_CMD = "moving"
+STATE_SET_OPENING = "set_opeing"
+STATE_SET_CLOSING = "set_closing"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,6 +81,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._state = self._stop_cmd
         self._previous_state = self._state
         self._current_cover_position = 0
+        
+        self._current_state_action = STATE_STOPPED # Default.
+        self._set_new_position = int | None
         _LOGGER.debug("Initialized cover [%s]", self.name)
 
     @property
@@ -82,6 +95,23 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         return supported_features
 
     @property
+    def _current_state(self) -> str:
+        """Return the current state of the cover."""
+        state = self._current_state_action
+        curr_pos = self.current_cover_position
+        # Reset STATE when cover is fully closed or fully opened.
+        if (state == STATE_CLOSING and curr_pos == 0) or (state == STATE_OPENING and curr_pos == 100):
+            self._current_state_action = STATE_STOPPED
+        # in case cover moving by set position cmd.
+        if (self._current_state_action == STATE_SET_CLOSING
+            or self._current_state_action == STATE_SET_OPENING):
+            set_pos = self._set_new_position
+            # Reset state whenn cover reached the position.
+            if curr_pos - set_pos < 5 and curr_pos - set_pos >= -5 :
+                self._current_state_action = STATE_STOPPED 
+        return self._current_state_action
+    
+    @property
     def current_cover_position(self):
         """Return current cover position in percent."""
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE:
@@ -91,29 +121,28 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_opening(self):
         """Return if cover is opening."""
-        state = self._state
-        return state == self._open_cmd
+        state = self._current_state
+        return state == STATE_SET_OPENING or state == STATE_OPENING
 
     @property
     def is_closing(self):
         """Return if cover is closing."""
-        state = self._state
-        return state == self._close_cmd
+        state = self._current_state
+        return state == STATE_SET_CLOSING or state == STATE_CLOSING
 
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_NONE:
-            return False
-
-        if self._current_cover_position == 0:
-            return True
-        if self._current_cover_position == 100:
-            return False
-        return False
+            return None
+        return self.current_cover_position == 0 and self._current_state == STATE_STOPPED
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
+        # Update device values IF the device is moving at the moment.
+        if self._current_state != STATE_STOPPED:
+            await self.async_stop_cover()
+
         self.debug("Setting cover position: %r", kwargs[ATTR_POSITION])
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_TIMED:
             newpos = float(kwargs[ATTR_POSITION])
@@ -124,9 +153,11 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             if newpos > currpos:
                 self.debug("Opening to %f: delay %f", newpos, mydelay)
                 await self.async_open_cover()
+                self.update_state(STATE_OPENING)
             else:
                 self.debug("Closing to %f: delay %f", newpos, mydelay)
                 await self.async_close_cover()
+                self.update_state(STATE_CLOSING)
             self.hass.async_create_task(self.async_stop_after_timeout(mydelay))
             self.debug("Done")
 
@@ -134,11 +165,13 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             converted_position = int(kwargs[ATTR_POSITION])
             if self._config[CONF_POSITION_INVERTED]:
                 converted_position = 100 - converted_position
-
             if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
                 await self._device.set_dp(
                     converted_position, self._config[CONF_SET_POSITION_DP]
                 )
+            # Give it a moment, to make sure hass updated current pos.
+            await asyncio.sleep(0.1)
+            self.update_state(STATE_SET_CMD,converted_position)
 
     async def async_stop_after_timeout(self, delay_sec):
         """Stop the cover if timeout (max movement span) occurred."""
@@ -157,6 +190,8 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                     self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE
                 )
             )
+        self.update_state(STATE_OPENING)
+
 
     async def async_close_cover(self, **kwargs):
         """Close cover."""
@@ -170,11 +205,13 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                     self._config[CONF_SPAN_TIME] + COVER_TIMEOUT_TOLERANCE
                 )
             )
+        self.update_state(STATE_CLOSING)
 
     async def async_stop_cover(self, **kwargs):
         """Stop the cover."""
         self.debug("Launching command %s to cover ", self._stop_cmd)
         await self._device.set_dp(self._stop_cmd, self._dp_id)
+        self.update_state(STATE_STOPPED)
 
     def status_restored(self, stored_state):
         """Restore the last stored cover status."""
@@ -229,5 +266,26 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         if (self._state is not None) and (not self._device.is_connecting):
             self._last_state = self._state
 
+    def update_state(self, action, position=None):
+        """ update cover current states """
+        state = self._current_state_action
+        # using Commands.
+        if position is None:
+            self._current_state_action = action
+        # Set position cmd, check if target position weither close or open
+        if action == STATE_SET_CMD and position is not None:
+            curr_pos = self.current_cover_position
+            self._set_new_position = position
+            pos_diff = position - curr_pos
+            # Prevent stuck state when interrupted on middle of cmd
+            if state == STATE_STOPPED:
+                if pos_diff > 0:
+                    self._current_state_action = STATE_SET_OPENING
+                elif pos_diff < 0:
+                    self._current_state_action = STATE_SET_CLOSING
+            else:
+                self._current_state_action = STATE_STOPPED
+        # Write state data.
+        self.async_write_ha_state()
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)
