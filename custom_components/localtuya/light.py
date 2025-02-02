@@ -351,6 +351,9 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def color_mode(self) -> ColorMode:
         """Return the color_mode of the light."""
+        if len(self.supported_color_modes) == 1:
+            return next(iter(self.supported_color_modes))
+
         if self.is_color_mode:
             return ColorMode.HS
         if self.is_white_mode:

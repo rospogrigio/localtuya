@@ -873,86 +873,23 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             # translation_id="total_energy",
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.01),
         ),
         LocalTuyaEntity(
-            id=DPCode.PHASE_A,
-            name="Phase C Current",
-            device_class=SensorDeviceClass.CURRENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_A,
-            name="Phase C Power",
-            device_class=SensorDeviceClass.POWER,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_A,
-            name="Phase A Voltage",
-            device_class=SensorDeviceClass.VOLTAGE,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_B,
-            name="Phase B Current",
-            device_class=SensorDeviceClass.CURRENT,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_B,
-            name="Phase B Power",
-            device_class=SensorDeviceClass.POWER,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_B,
-            name="Phase B Voltage",
-            device_class=SensorDeviceClass.VOLTAGE,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_C,
-            name="Phase C Current",
-            device_class=SensorDeviceClass.CURRENT,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_C,
-            name="Phase C Power",
-            device_class=SensorDeviceClass.POWER,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
-        ),
-        LocalTuyaEntity(
-            id=DPCode.PHASE_C,
-            name="Phase C Voltage",
-            device_class=SensorDeviceClass.VOLTAGE,
-            state_class=SensorStateClass.MEASUREMENT,
-            custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
-        ),
-    ),
-    # Circuit Breaker
-    # https://developer.tuya.com/en/docs/iot/dlq?id=Kb0kidk9enyh8
-    "dlq": (
-        LocalTuyaEntity(
-            id=DPCode.TOTAL_FORWARD_ENERGY,
-            # translation_id="total_energy",
+            id=DPCode.REVERSE_ENERGY_TOTAL,
+            name="Total Reverse Energy",
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.01),
         ),
+        ## PHASE X Are probably encrypted values. since it duplicated it probably raw dict data.
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
             name="Phase C Current",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
@@ -960,6 +897,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_A,
@@ -967,13 +905,15 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
-            name="Phase B Current",
+            name="Phase B",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
@@ -981,6 +921,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_B,
@@ -988,6 +929,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
@@ -995,6 +937,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricCurrent.AMPERE),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
@@ -1002,6 +945,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.POWER,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.PHASE_C,
@@ -1009,6 +953,113 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             custom_configs=localtuya_sensor(UnitOfElectricPotential.VOLT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        ## PHASE X Are probably encrypted values. since it duplicated it probably raw dict data.
+        LocalTuyaEntity(
+            id=DPCode.POWER_A,
+            name="Power A",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_B,
+            name="Power B",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_C,
+            name="Power C",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfPower.WATT, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_FORWORD_A,
+            name="Energy A",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_FORWORD_B,
+            name="Energy B",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.ENERGY_FORWORD_C,
+            name="Energy C",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.ENERGY_REVERSE_A, DPCode.ENERGY_RESERSE_A),
+            name="Reverse Energy A",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.ENERGY_REVERSE_B, DPCode.ENERGY_RESERSE_B),
+            name="Reverse Energy B",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.ENERGY_REVERSE_C, DPCode.ENERGY_RESERSE_C),
+            name="Reverse Energy C",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.1),
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.POWER_FACTOR, DPCode.POWER_FACTOR_A),
+            name="Power Factor A",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_FACTOR_B,
+            name="Power Factor B",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER_FACTOR_C,
+            name="Power Factor C",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DIRECTION_A,
+            name="Direction A",
+            icon="mdi:arrow-up-down",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DIRECTION_B,
+            name="Direction B",
+            icon="mdi:arrow-up-down",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DIRECTION_C,
+            name="Direction C",
+            icon="mdi:arrow-up-down",
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
     ),
     # Robot Vacuum
@@ -1362,6 +1413,10 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
     ),
 }
+
+# Circuit Breaker
+# https://developer.tuya.com/en/docs/iot/dlq?id=Kb0kidk9enyh8
+SENSORS["dlq"] = SENSORS["zndb"]
 
 # Socket (duplicate of `kg`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s
