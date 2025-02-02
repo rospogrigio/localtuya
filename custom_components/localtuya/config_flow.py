@@ -30,7 +30,7 @@ from homeassistant.const import (
 from homeassistant.core import callback
 
 from .cloud_api import TuyaCloudApi
-from .common import pytuya, LocalTuyaEntity
+from .common import pytuya
 from .const import (
     ATTR_UPDATED_AT,
     CONF_ACTION,
@@ -114,21 +114,20 @@ PICK_ENTITY_SCHEMA = vol.Schema(
     {vol.Required(PLATFORM_TO_ADD, default="switch"): vol.In(PLATFORMS)}
 )
 
-def _col_to_select(opt_list: dict):
+def _col_to_select(opt_list: dict, multi_select = False, is_dps = False):
     """Convert collections to SelectSelectorConfig."""
     if type(opt_list) == dict:
         return SelectSelector(SelectSelectorConfig(
             options=[SelectOptionDict(value=str(k), label=l) for k, l in opt_list.items()],
             mode=SelectSelectorMode.DROPDOWN,
         ))
-    else:
-        if type(opt_list) == type(None):
-            return 
-        # value used the same method as func available_dps_string, no spaces values.
-        return SelectSelector(SelectSelectorConfig(
-            options=[SelectOptionDict(value=str(l).split(" ")[0], label=str(l)) for l in opt_list],
-            mode=SelectSelectorMode.DROPDOWN,
-        ))
+    elif type(opt_list) == list:
+            # value used the same method as func available_dps_string, no spaces values.
+            return SelectSelector(SelectSelectorConfig(
+                options=[SelectOptionDict(value=str(l).split(' ')[0] if is_dps == True else str(l)
+                                        , label=str(l)) for l in opt_list],
+                mode=SelectSelectorMode.DROPDOWN, multiple = True if multi_select == True else False,
+            ))
 
 def devices_schema(discovered_devices, cloud_devices_list, add_custom_device=True):
     """Create schema for devices step."""
