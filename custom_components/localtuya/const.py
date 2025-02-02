@@ -1,4 +1,5 @@
 """Constants for localtuya integration."""
+from homeassistant.const import EntityCategory
 
 DOMAIN = "localtuya"
 
@@ -48,6 +49,7 @@ CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"
 CONF_RESET_DPIDS = "reset_dpids"
 CONF_PASSIVE_ENTITY = "is_passive_entity"
+CONF_CATEGORY_ENTITY = "device_category"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -144,3 +146,17 @@ CONF_OPTIONS_FRIENDLY = "select_options_friendly"
 # States
 ATTR_STATE = "raw_state"
 CONF_RESTORE_ON_RECONNECT = "restore_on_reconnect"
+
+# Categories
+ENTITY_CATEGORY = {
+    None:"Controls",
+    EntityCategory.CONFIG:"Configuration",
+    EntityCategory.DIAGNOSTIC:"Diagnostic"
+}
+
+# Default Categories
+DEFAULT_CATEGORIES = {
+    "CONTROL" : ['switch', 'climate','fan','vacuum','light'],
+    "CONFIG" : ['select','number'],
+    "DIAGNOSTIC" : ['sensor','binary_sensor']
+}
