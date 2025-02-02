@@ -181,7 +181,8 @@
                     "entities": "Entities (uncheck an entity to remove it)",
                     "add_entities": "Add more entities in 'edit device' mode",
                     "manual_dps_strings": "Manual DPS to add (separated by commas ',') - used when detection is not working (optional)",
-                    "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)"
+                    "reset_dpids": "DPIDs to send in RESET command (separated by commas ',')- Used when device does not respond to status requests after turning on (optional)",
+                    "export_config": "Export the device config."
                 }
             },
             "pick_entity_type": {
@@ -189,7 +190,8 @@
                 "description": "Please pick the type of entity you want to add.",
                 "data": {
                     "platform_to_add": "Platform",
-                    "no_additional_entities": "Do not add any more entities"
+                    "no_additional_entities": "Do not add any more entities",
+                    "use_template" : "Import template file"
                 }
             },
             "configure_entity": {
@@ -284,7 +286,7 @@
                     "max_value": "Maximum Value",
                     "step_size": "Minimum increment between numbers",
                     "is_passive_entity": "Passive entity - requires integration to send initialisation value",
-                    "device_category": "Show the entity in this categroy"
+                    "entity_category": "Show the entity in this categroy"
                 }
             }
         }

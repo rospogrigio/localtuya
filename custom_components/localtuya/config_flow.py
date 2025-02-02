@@ -104,6 +104,7 @@ PLATFORM_TO_ADD = "platform_to_add"
 USE_TEMPLATE = "use_template"
 TEMPLATES = "templates"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"
+SELECTED_DEVICE = "selected_device"
 EXPORT_CONFIG = "export_config"
 
 CUSTOM_DEVICE = {"Add custom device": "..."}
@@ -350,18 +351,23 @@ async def validate_input(hass: core.HomeAssistant, data):
                 reset_ids,
             )
         try:
-            detected_dps = await interface.detect_available_dps()
-        except Exception as ex:
-            try:
+            # If reset dpids set - then assume reset is needed before status.
+            if (reset_ids is not None) and (len(reset_ids) > 0):
                 _LOGGER.debug(
-                    "Initial state update failed (%s), trying reset command", ex
+                    "Resetting command for DP IDs: %s",
+                    reset_ids,
                 )
-                if len(reset_ids) > 0:
-                    await interface.reset(reset_ids)
-                    detected_dps = await interface.detect_available_dps()
-            except Exception as ex:
-                _LOGGER.debug("No DPS able to be detected: %s", ex)
-                detected_dps = {}
+                # Assume we want to request status updated for the same set of DP_IDs as the reset ones.
+                interface.set_updatedps_list(reset_ids)
+
+                # Reset the interface
+                await interface.reset(reset_ids)
+
+            # Detect any other non-manual DPS strings
+            detected_dps = await interface.detect_available_dps()
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.debug("No DPS able to be detected")
+            detected_dps = {}
 
         # if manual DPs are set, merge these.
         _LOGGER.debug("Detected DPS: %s", detected_dps)

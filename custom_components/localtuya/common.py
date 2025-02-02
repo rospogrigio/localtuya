@@ -1,6 +1,5 @@
 """Code shared between all platforms."""
 import asyncio
-import json.decoder
 import logging
 import time
 from datetime import timedelta
@@ -212,42 +211,41 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         if self._interface is not None:
             try:
-                try:
-                    self.debug("Retrieving initial state")
-                    status = await self._interface.status()
-                    if status is None:
-                        raise Exception("Failed to retrieve status")
+                # If reset dpids set - then assume reset is needed before status.
+                if (self._default_reset_dpids is not None) and (
+                    len(self._default_reset_dpids) > 0
+                ):
+                    self.debug(
+                        "Resetting command for DP IDs: %s",
+                        self._default_reset_dpids,
+                    )
+                    # Assume we want to request status updated for the same set of DP_IDs as the reset ones.
+                    self._interface.set_updatedps_list(self._default_reset_dpids)
 
-                    self._interface.start_heartbeat()
-                    self.status_updated(status)
+                    # Reset the interface
+                    await self._interface.reset(self._default_reset_dpids)
 
-                except Exception as ex:
-                    if (self._default_reset_dpids is not None) and (
-                        len(self._default_reset_dpids) > 0
-                    ):
-                        self.debug(
-                            "Initial state update failed, trying reset command "
-                            + "for DP IDs: %s",
-                            self._default_reset_dpids,
-                        )
-                        await self._interface.reset(self._default_reset_dpids)
+                self.debug("Retrieving initial state")
+                status = await self._interface.status()
+                if status is None:
+                    raise Exception("Failed to retrieve status")
 
-                        self.debug("Update completed, retrying initial state")
-                        status = await self._interface.status()
-                        if status is None or not status:
-                            raise Exception("Failed to retrieve status") from ex
+                self._interface.start_heartbeat()
+                self.status_updated(status)
 
-                        self._interface.start_heartbeat()
-                        self.status_updated(status)
-                    else:
-                        self.error("Initial state update failed, giving up: %r", ex)
-                        if self._interface is not None:
-                            await self._interface.close()
-                            self._interface = None
+            except UnicodeDecodeError as e:  # pylint: disable=broad-except
+                self.exception(
+                    f"Connect to {self._dev_config_entry[CONF_HOST]} failed: %s",
+                    type(e),
+                )
+                if self._interface is not None:
+                    await self._interface.close()
+                    self._interface = None
 
-            except (UnicodeDecodeError, json.decoder.JSONDecodeError) as ex:
-                self.warning("Initial state update failed (%s), trying key update", ex)
-                await self.update_local_key()
+            except Exception as e:  # pylint: disable=broad-except
+                self.exception(f"Connect to {self._dev_config_entry[CONF_HOST]} failed")
+                if "json.decode" in str(type(e)):
+                    await self.update_local_key()
 
                 if self._interface is not None:
                     await self._interface.close()
@@ -304,6 +302,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
     async def _async_refresh(self, _now):
         if self._interface is not None:
+            self.debug("Refreshing dps for device")
             await self._interface.update_dps()
 
     async def close(self):

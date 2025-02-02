@@ -6,8 +6,11 @@ import yaml
 from fnmatch import fnmatch
 from homeassistant.util.yaml import load_yaml
 
-
-from homeassistant.const import CONF_PLATFORM, CONF_ENTITIES
+from homeassistant.const import (
+    CONF_PLATFORM,
+    CONF_ENTITIES,
+    CONF_DEVICE_CLASS,
+)
 import custom_components.localtuya.templates as templates_dir
 
 JSON_TYPE = list | dict | str
@@ -48,6 +51,9 @@ def create_tuya_config(filename):
 def export_tuya_config(config, config_name):
     export_config = []
     for cfg in config[CONF_ENTITIES]:
+        # Special case device_classes
+        if CONF_DEVICE_CLASS in cfg.keys():
+            cfg[CONF_DEVICE_CLASS] = cfg.get(CONF_DEVICE_CLASS).split("/ /")[0]
         ents = {cfg[CONF_PLATFORM]: cfg}
         export_config.append(ents)
     fname = config_name + ".yaml" if not config_name.endswith(".yaml") else config_name
