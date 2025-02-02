@@ -179,11 +179,10 @@ class TuyaCloudApi:
             resp = await self.async_make_request(
                 "GET", url=f"/v1.0/users/{self._user_id}/devices"
             )
+            if not resp["success"]:
+                return f"Error {resp['code']}: {resp['msg']}"
         except (aiohttp.ClientError, aiohttp.ClientConnectionError, TimeoutError) as ex:
             self._logger.debug(f"Failed to update devices list due to: {ex}")
-
-        if not resp["success"]:
-            return f"Error {resp['code']}: {resp['msg']}"
 
         self.device_list.update({dev["id"]: dev for dev in resp["result"]})
 
