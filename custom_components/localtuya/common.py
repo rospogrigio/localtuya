@@ -15,6 +15,7 @@ from homeassistant.const import (
     CONF_PLATFORM,
     CONF_SCAN_INTERVAL,
     STATE_UNKNOWN,
+    CONF_ENTITY_CATEGORY,
     EntityCategory,
 )
 from homeassistant.core import callback
@@ -41,7 +42,6 @@ from .const import (
     DATA_CLOUD,
     DOMAIN,
     TUYA_DEVICES,
-    CONF_CATEGORY_ENTITY,
     DEFAULT_CATEGORIES,
 )
 
@@ -488,8 +488,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def entity_category(self) -> str:
         """Return the category of the entity."""
-        if self.has_config(CONF_CATEGORY_ENTITY):
-            category = self._config[CONF_CATEGORY_ENTITY]
+        if self.has_config(CONF_ENTITY_CATEGORY):
+            category = self._config[CONF_ENTITY_CATEGORY]
             if EntityCategory.CONFIG in category:
                 category = EntityCategory.CONFIG
             elif EntityCategory.DIAGNOSTIC in category:
