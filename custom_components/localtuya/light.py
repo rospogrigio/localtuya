@@ -5,7 +5,6 @@ import logging
 import textwrap
 from dataclasses import dataclass
 from functools import partial
-from .config_flow import _col_to_select
 from homeassistant.helpers import selector
 
 import homeassistant.util.color as color_util

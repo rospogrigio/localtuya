@@ -181,7 +181,7 @@ def options_schema(entities):
             vol.Required(CONF_HOST): cv.string,
             vol.Required(CONF_LOCAL_KEY): cv.string,
             vol.Optional(CONF_DEVICE_NODE_ID): cv.string,
-            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): _col_to_select(
+            vol.Required(CONF_PROTOCOL_VERSION, default="3.3"): col_to_select(
                 sorted(SUPPORTED_PROTOCOL_VERSIONS)
             ),
             vol.Required(CONF_ENABLE_DEBUG, default=False): bool,
@@ -192,7 +192,7 @@ def options_schema(entities):
             vol.Required(
                 CONF_ENTITIES, description={"suggested_value": entity_names}
             ): cv.multi_select(entity_names),
-            # _col_to_select(entity_names, multi_select=True)
+            # col_to_select(entity_names, multi_select=True)
             vol.Required(CONF_ENABLE_ADD_ENTITIES, default=False): bool,
             vol.Optional(EXPORT_CONFIG, default=False): bool,
         }
@@ -250,13 +250,13 @@ def platform_schema(platform, dps_strings, allow_id=True, yaml=False):
     schema = {}
     if yaml:
         # In YAML mode we force the specified platform to match flow schema
-        schema[vol.Required(CONF_PLATFORM)] = _col_to_select([platform])
+        schema[vol.Required(CONF_PLATFORM)] = col_to_select([platform])
     if allow_id:
-        schema[vol.Required(CONF_ID)] = _col_to_select(dps_strings, is_dps=True)
+        schema[vol.Required(CONF_ID)] = col_to_select(dps_strings, is_dps=True)
     schema[vol.Optional(CONF_FRIENDLY_NAME, default="")] = vol.Any(None, cv.string)
     schema[
         vol.Required(CONF_ENTITY_CATEGORY, default=str(default_category(platform)))
-    ] = _col_to_select(ENTITY_CATEGORY)
+    ] = col_to_select(ENTITY_CATEGORY)
     return vol.Schema(schema).extend(flow_schema(platform, dps_strings))
 
 

@@ -210,23 +210,23 @@ FAN_SPEEDS_DEFAULT = "auto,low,middle,high"
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_TARGET_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_TEMPERATURE_STEP, default=PRECISION_WHOLE): _col_to_select(
+        vol.Optional(CONF_TARGET_TEMPERATURE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT_TEMPERATURE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_TEMPERATURE_STEP, default=PRECISION_WHOLE): col_to_select(
             SUPPORTED_PRECISIONS
         ),
         vol.Optional(CONF_TEMP_MIN, default=DEFAULT_MIN_TEMP): vol.Coerce(float),
         vol.Optional(CONF_TEMP_MAX, default=DEFAULT_MAX_TEMP): vol.Coerce(float),
-        vol.Optional(CONF_MAX_TEMP_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_MIN_TEMP_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_PRECISION, default=PRECISION_WHOLE): _col_to_select(
+        vol.Optional(CONF_MAX_TEMP_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_MIN_TEMP_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_PRECISION, default=PRECISION_WHOLE): col_to_select(
             SUPPORTED_PRECISIONS
         ),
         vol.Optional(
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
-        ): _col_to_select(SUPPORTED_PRECISIONS),
-        vol.Optional(CONF_HVAC_MODE_DP): _col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_HVAC_FAN_MODE_DP): _col_to_select(dps, is_dps=True),
+        ): col_to_select(SUPPORTED_PRECISIONS),
+        vol.Optional(CONF_HVAC_MODE_DP): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_HVAC_FAN_MODE_DP): col_to_select(dps, is_dps=True),
         vol.Optional(
             CONF_HVAC_MODE_SET, default=HVAC_MODE_SETS
         ): selector.ObjectSelector(),
@@ -240,7 +240,7 @@ def flow_schema(dps):
         vol.Optional(CONF_PRESET_SET, default={}): selector.ObjectSelector(),
         vol.Optional(CONF_FAN_SPEED_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_SPEED_LIST, default=FAN_SPEEDS_DEFAULT): str,
-        vol.Optional(CONF_TARGET_PRECISION, default=PRECISION_WHOLE): _col_to_select(
+        vol.Optional(CONF_TARGET_PRECISION, default=PRECISION_WHOLE): col_to_select(
             [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
         ),
         vol.Optional(CONF_HVAC_ADD_OFF, default=True): bool,
