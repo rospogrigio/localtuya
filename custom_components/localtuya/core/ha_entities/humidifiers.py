@@ -13,7 +13,13 @@ from .base import (
     EntityCategory,
     CLOUD_VALUE,
 )
-from homeassistant.components.humidifier import HumidifierDeviceClass
+from homeassistant.components.humidifier import (
+    HumidifierDeviceClass,
+    ATTR_MAX_HUMIDITY,
+    ATTR_MIN_HUMIDITY,
+    DEFAULT_MAX_HUMIDITY,
+    DEFAULT_MIN_HUMIDITY,
+)
 
 CONF_HUMIDIFIER_SET_HUMIDITY_DP = "humidifier_set_humidity_dp"
 CONF_HUMIDIFIER_CURRENT_HUMIDITY_DP = "humidifier_current_humidity_dp"
@@ -25,9 +31,15 @@ def localtuya_humidifier(modes):
     """Define localtuya fan configs"""
 
     data = {
-        "humidifier_available_modes": CLOUD_VALUE(
+        CONF_HUMIDIFIER_AVAILABLE_MODES: CLOUD_VALUE(
             modes, CONF_HUMIDIFIER_MODE_DP, "range", dict
-        )
+        ),
+        ATTR_MIN_HUMIDITY: CLOUD_VALUE(
+            DEFAULT_MIN_HUMIDITY, CONF_HUMIDIFIER_SET_HUMIDITY_DP, "min"
+        ),
+        ATTR_MAX_HUMIDITY: CLOUD_VALUE(
+            DEFAULT_MAX_HUMIDITY, CONF_HUMIDIFIER_SET_HUMIDITY_DP, "max"
+        ),
     }
     return data
 

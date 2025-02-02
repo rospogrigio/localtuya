@@ -902,6 +902,36 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 {"small": "Low", "middle": "Medium", "large": "High"}
             ),
         ),
+        LocalTuyaEntity(
+            id=DPCode.FAN_SPEED_ENUM,
+            name="Fan Speed",
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:fan",
+            custom_configs=localtuya_selector({"low": "Low", "high": "High"}),
+        ),
+    ),
+    # Water Detector
+    # https://developer.tuya.com/en/docs/iot/categorysj?id=Kaiuz3iub2sli
+    "sj": (
+        LocalTuyaEntity(
+            id=(DPCode.C_F, DPCode.TEMP_UNIT_CONVERT),
+            name="Temperature Unit",
+            icon="mdi:cog",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector({"c": "Celsius", "f": "Fahrenheit"}),
+        ),
+    ),
+    # Water Valve
+    "sfkzq": (
+        LocalTuyaEntity(
+            id=DPCode.SMART_WEATHER,
+            name="Smart Weather Mode",
+            icon="mdi:cog",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_selector(
+                {"cloudy": "Cloudy", "rainy": "Rainy", "snowy": "Snowy"}
+            ),
+        ),
     ),
     # sous vide cookers
     # https://developer.tuya.com/en/docs/iot/f?id=K9r2v9hgmyk3h

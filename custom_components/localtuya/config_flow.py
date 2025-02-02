@@ -694,11 +694,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 configured_Devices.append(devID)
 
         for dev_id, dev in allDevices.items():
-            if dev[CONF_TUYA_GWID] not in configured_Devices:
+            if dev_id not in configured_Devices:
                 if dev.get(CONF_NODE_ID, None) is not None:
                     devices[dev_id] = "Sub Device"
                 else:
-                    devices[dev_id] = dev[CONF_TUYA_IP]
+                    devices[dev_id] = dev.get(CONF_TUYA_IP, "")
 
         return self.async_show_form(
             step_id="add_device",

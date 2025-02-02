@@ -80,7 +80,7 @@ class LocalTuyaRemote(LocalTuyaEntity, RemoteEntity):
         self._dp_send = str(self._config.get(self._dp_id, RemoteDP.DP_SEND))
         self._dp_recieve = str(self._config.get(CONF_RECEIVE_DP, RemoteDP.DP_RECIEVE))
 
-        self._device_id = self._device_config[CONF_DEVICE_ID]
+        self._device_id = self._device_config.id
 
         # self._attr_activity_list: list = []
         # self._attr_current_activity: str | None = None

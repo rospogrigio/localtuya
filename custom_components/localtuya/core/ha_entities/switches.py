@@ -514,6 +514,19 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Water Valve
+    "sfkzq": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+            icon="mdi:valve",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_WEATHER,
+            name="Smart Weather",
+            icon="mdi:auto-mode",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
     # Siren Alarm
     # https://developer.tuya.com/en/docs/iot/categorysgbj?id=Kaiuz37tlpbnu
     "sgbj": (

@@ -620,32 +620,33 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             name="Calibration swing",
             custom_configs=localtuya_numbers(1, 9),
         ),
-    ),  # Temperature and Humidity Sensor
+    ),
+    # Temperature and Humidity Sensor
     # https://developer.tuya.com/en/docs/iot/categorywsdcg?id=Kaiuz3hinij34
     "wsdcg": (
         LocalTuyaEntity(
-            id=DPCode.MAXTEMP_SET,
+            id=(DPCode.MAXTEMP_SET, DPCode.UPPER_TEMP, DPCode.UPPER_TEMP_F),
             name="Max Temperature",
             icon="mdi:thermometer-high",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_numbers(-200, 600, unit=UnitOfTemperature.CELSIUS),
         ),
         LocalTuyaEntity(
-            id=DPCode.MINITEMP_SET,
+            id=(DPCode.MINITEMP_SET, DPCode.LOWER_TEMP, DPCode.LOWER_TEMP_F),
             name="Min Temperature",
             icon="mdi:thermometer-low",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_numbers(-200, 600, unit=UnitOfTemperature.CELSIUS),
         ),
         LocalTuyaEntity(
-            id=DPCode.MAXHUM_SET,
+            id=(DPCode.MAXHUM_SET, DPCode.MAX_HUMI),
             name="Max Humidity",
             icon="mdi:water-percent",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_numbers(0, 100, unit=PERCENTAGE),
         ),
         LocalTuyaEntity(
-            id=DPCode.MINIHUM_SET,
+            id=(DPCode.MINIHUM_SET, DPCode.MIN_HUMI),
             name="Min Humidity",
             icon="mdi:water-percent",
             entity_category=EntityCategory.CONFIG,
@@ -839,6 +840,13 @@ NUMBERS["wxkg"] = (
     *NUMBERS["kg"],
 )
 
+# Water Valve
+NUMBERS["sfkzq"] = NUMBERS["kg"]
+
+# Water Detector
+# https://developer.tuya.com/en/docs/iot/categorysj?id=Kaiuz3iub2sli
+NUMBERS["sj"] = NUMBERS["wsdcg"]
+
 # Circuit Breaker
 # https://developer.tuya.com/en/docs/iot/dlq?id=Kb0kidk9enyh8
 NUMBERS["dlq"] = NUMBERS["zndb"]
@@ -851,6 +859,7 @@ NUMBERS["hdmipmtbq"] = NUMBERS["dj"]
 NUMBERS["cjkg"] = NUMBERS["kg"]
 
 NUMBERS["cz"] = NUMBERS["kg"]
+NUMBERS["tdq"] = NUMBERS["kg"]
 NUMBERS["pc"] = NUMBERS["kg"]
 
 # Locker

@@ -621,7 +621,7 @@ class MessageDispatcher(ContextualLogger):
         """Add new data to the buffer and try to parse messages."""
         self.buffer += data
 
-        header_len_55AA = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
+        header_len_55AA = struct.calcsize(MESSAGE_HEADER_FMT_55AA)
         header_len_6699 = struct.calcsize(MESSAGE_HEADER_FMT_6699)
         header_len = header_len_55AA
 
@@ -1117,11 +1117,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             # in the requested range
             self.dps_to_request = {"1": None}
             self.add_dps_to_request(range(*dps_range))
-            try:
-                data = await self.status(cid=cid)
-            except Exception as ex:
-                self.exception("Failed to get status: %s", ex)
-                raise
+            data = await self.status(cid=cid)
             # if "dps" in data:
             if cid and cid in data:
                 self.dps_cache.update({cid: data[cid]})
@@ -1487,73 +1483,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         return self.id
 
 
-class api:
-    def __init__(
-        self,
-        host: str,
-        device_id: str,
-        local_key: str,
-        enable_debug: bool,
-        protocol_version: float,
-        listener: TuyaListener = None,
-        timeout: int = 5,
-        port: int = 6668,
-    ) -> None:
-        """
-        attributes:
-        host: The local IP Address of the device.
-        device_id: the ID of the device.
-        local_key: device payload, encryption key.
-        enable_debug: Enable the debug logs for the device.
-        protocol_version: The protocol version of the device # 3.1, 3.2, 3.3, 3.4 or 3.5
-        listener: class listener.
-        """
-        self._device_id = device_id
-        self._host = host
-        self._local_key = local_key
-        self._enable_debug = enable_debug
-        self._protocol_version = protocol_version
-        self._listener = listener
-        self._timeout = timeout
-        self._port = port
-
-        #
-        self.connected: bool
-        self.is_connecting: bool
-        self.enable_reconnect: bool = True
-
-        self.manager: TuyaProtocol
-
-    async def connect(self):
-        if not self.enable_reconnect:
-            return
-        loop = asyncio.get_running_loop()
-        on_connected = loop.create_future()
-        try:
-            _, protocol = await loop.create_connection(
-                lambda: TuyaProtocol(
-                    self._device_id,
-                    self._local_key,
-                    self._protocol_version,
-                    self._enable_debug,
-                    on_connected,
-                    self._listener or EmptyListener(),
-                ),
-                self._host,
-                self._port,
-            )
-        except OSError as ex:
-            raise ValueError(str(ex))
-        except Exception as ex:
-            raise ex
-        except:
-            raise ValueError(f"Unable to connect to the device. try again.")
-
-        await asyncio.wait_for(on_connected, timeout=self._timeout)
-        self.manager = protocol
-        return protocol
-
-
 async def connect(
     address,
     device_id,
@@ -1567,18 +1496,25 @@ async def connect(
     """Connect to a device."""
     loop = asyncio.get_running_loop()
     on_connected = loop.create_future()
-    _, protocol = await loop.create_connection(
-        lambda: TuyaProtocol(
-            device_id,
-            local_key,
-            protocol_version,
-            enable_debug,
-            on_connected,
-            listener or EmptyListener(),
-        ),
-        address,
-        port,
-    )
+    try:
+        _, protocol = await loop.create_connection(
+            lambda: TuyaProtocol(
+                device_id,
+                local_key,
+                protocol_version,
+                enable_debug,
+                on_connected,
+                listener or EmptyListener(),
+            ),
+            address,
+            port,
+        )
+    except OSError as ex:
+        raise ValueError(str(ex))
+    except Exception as ex:
+        raise str(ex)
+    except:
+        raise Exception(f"The host refused to connect")
 
     await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol

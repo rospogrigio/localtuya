@@ -53,7 +53,7 @@ BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
     LocalTuyaEntity(
         id=DPCode.BATTERY_STATE,
         name="Battery Level",
-        # translation_id="battery_state",
+        # name="battery_state",
         icon="mdi:battery",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -117,74 +117,74 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "dgnbj": (
         LocalTuyaEntity(
             id=DPCode.GAS_SENSOR_VALUE,
-            # translation_id="gas",
+            # name="gas",
             icon="mdi:gas-cylinder",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CH4_SENSOR_VALUE,
-            # translation_id="gas",
+            # name="gas",
             name="Methane",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VOC_VALUE,
-            # translation_id="voc",
+            # name="voc",
             device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.PM25_VALUE,
-            # translation_id="pm25",
+            # name="pm25",
             device_class=SensorDeviceClass.PM25,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CO_VALUE,
-            # translation_id="carbon_monoxide",
+            # name="carbon_monoxide",
             icon="mdi:molecule-co",
             device_class=SensorDeviceClass.CO,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,
-            # translation_id="carbon_dioxide",
+            # name="carbon_dioxide",
             icon="mdi:molecule-co2",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CH2O_VALUE,
-            # translation_id="formaldehyde",
+            # name="formaldehyde",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHT_STATE,
-            # translation_id="luminosity",
+            # name="luminosity",
             icon="mdi:brightness-6",
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHT_VALUE,
-            # translation_id="illuminance",
+            # name="illuminance",
             icon="mdi:brightness-6",
             device_class=SensorDeviceClass.ILLUMINANCE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.SMOKE_SENSOR_VALUE,
-            # translation_id="smoke_amount",
+            # name="smoke_amount",
             icon="mdi:smoke-detector",
             entity_category=EntityCategory.DIAGNOSTIC,
             state_class=SensorStateClass.MEASUREMENT,
@@ -196,19 +196,19 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "bh": (
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="current_temperature",
+            # name="current_temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT_F,
-            # translation_id="current_temperature",
+            # name="current_temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.STATUS,
-            # translation_id="status",
+            # name="status",
         ),
     ),
     # CO2 Detector
@@ -216,19 +216,19 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "co2bj": (
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,
-            # translation_id="carbon_dioxide",
+            # name="carbon_dioxide",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -240,13 +240,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "wkcz": (
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -256,7 +256,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "cobj": (
         LocalTuyaEntity(
             id=DPCode.CO_VALUE,
-            # translation_id="carbon_monoxide",
+            # name="carbon_monoxide",
             device_class=SensorDeviceClass.CO,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -267,7 +267,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "cwwsq": (
         LocalTuyaEntity(
             id=DPCode.FEED_REPORT,
-            # translation_id="last_amount",
+            # name="last_amount",
             icon="mdi:counter",
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -277,36 +277,36 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "hjjcy": (
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,
-            # translation_id="carbon_dioxide",
+            # name="carbon_dioxide",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CH2O_VALUE,
-            # translation_id="formaldehyde",
+            # name="formaldehyde",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VOC_VALUE,
-            # translation_id="voc",
+            # name="voc",
             device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.PM25_VALUE,
-            # translation_id="pm25",
+            # name="pm25",
             device_class=SensorDeviceClass.PM25,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -316,37 +316,37 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "jqbj": (
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,
-            # translation_id="carbon_dioxide",
+            # name="carbon_dioxide",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VOC_VALUE,
-            # translation_id="voc",
+            # name="voc",
             device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.PM25_VALUE,
-            # translation_id="pm25",
+            # name="pm25",
             device_class=SensorDeviceClass.PM25,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VA_HUMIDITY,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VA_TEMPERATURE,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CH2O_VALUE,
-            # translation_id="formaldehyde",
+            # name="formaldehyde",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         *BATTERY_SENSORS,
@@ -356,7 +356,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "jwbj": (
         LocalTuyaEntity(
             id=DPCode.CH4_SENSOR_VALUE,
-            # translation_id="methane",
+            # name="methane",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         *BATTERY_SENSORS,
@@ -573,30 +573,30 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "ldcg": (
         LocalTuyaEntity(
             id=DPCode.BRIGHT_STATE,
-            # translation_id="luminosity",
+            # name="luminosity",
             icon="mdi:brightness-6",
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHT_VALUE,
-            # translation_id="illuminance",
+            # name="illuminance",
             device_class=SensorDeviceClass.ILLUMINANCE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,
-            # translation_id="carbon_dioxide",
+            # name="carbon_dioxide",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -613,13 +613,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "mzj": (
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="current_temperature",
+            # name="current_temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.STATUS,
-            # translation_id="sous_vide_status",
+            # name="sous_vide_status",
         ),
         LocalTuyaEntity(
             id=DPCode.REMAIN_TIME,
@@ -634,7 +634,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "pir": (
         LocalTuyaEntity(
             id=DPCode.PM25_VALUE,
-            # translation_id="pm25",
+            # name="pm25",
             device_class=SensorDeviceClass.PM25,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -652,48 +652,48 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "pm2.5": (
         LocalTuyaEntity(
             id=DPCode.PM25_VALUE,
-            # translation_id="pm25",
+            # name="pm25",
             device_class=SensorDeviceClass.PM25,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CH2O_VALUE,
-            # translation_id="formaldehyde",
+            # name="formaldehyde",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VOC_VALUE,
-            # translation_id="voc",
+            # name="voc",
             device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,
-            # translation_id="carbon_dioxide",
+            # name="carbon_dioxide",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.PM1,
-            # translation_id="pm1",
+            # name="pm1",
             device_class=SensorDeviceClass.PM1,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.PM10,
-            # translation_id="pm10",
+            # name="pm10",
             device_class=SensorDeviceClass.PM10,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -715,7 +715,6 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "rqbj": (
         LocalTuyaEntity(
             id=DPCode.GAS_SENSOR_VALUE,
-            name=None,
             icon="mdi:gas-cylinder",
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -723,7 +722,44 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     ),
     # Water Detector
     # https://developer.tuya.com/en/docs/iot/categorysj?id=Kaiuz3iub2sli
-    "sj": BATTERY_SENSORS,
+    "sj": (
+        LocalTuyaEntity(
+            id=DPCode.WATERSENSOR_STATE,
+            icon="mdi:water",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TEMP_STATUS,
+            name="Temperature Status",
+            icon="mdi:thermometer-check",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.HUMI_STATUS,
+            name="Humidity Status",
+            icon="mdi:water-percent-alert",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER,
+            icon="mdi:power",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            state_class=SensorStateClass.MEASUREMENT,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.HUMIDITY_VALUE,
+            name="Humidity",
+            device_class=SensorDeviceClass.HUMIDITY,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(PERCENTAGE, 0.01),
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+            name="Temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            state_class=SensorStateClass.MEASUREMENT,
+        ),
+        *BATTERY_SENSORS,
+    ),
     # Emergency Button
     # https://developer.tuya.com/en/docs/iot/categorysos?id=Kaiuz3oi6agjy
     "sos": BATTERY_SENSORS,
@@ -732,13 +768,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "sp": (
         LocalTuyaEntity(
             id=DPCode.SENSOR_TEMPERATURE,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.SENSOR_HUMIDITY,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -750,6 +786,30 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             state_class=SensorStateClass.MEASUREMENT,
         ),
     ),
+    # Water Valve
+    "sfkzq": (
+        LocalTuyaEntity(
+            id=DPCode.WORK_STATE,
+            name="State",
+            icon="mdi:state-machine",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.USE_TIME_ONE,
+            name="Single Usage Time",
+            icon="mdi:chart-arc",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            custom_configs=localtuya_sensor(unit_of_measurement=UnitOfTime.SECONDS),
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.TIME_USE, DPCode.USE_TIME),
+            name="Usage Time",
+            icon="mdi:chart-arc",
+            entity_category=EntityCategory.DIAGNOSTIC,
+            custom_configs=localtuya_sensor(unit_of_measurement=UnitOfTime.SECONDS),
+        ),
+        *BATTERY_SENSORS,
+    ),
     # Fingerbot
     "szjqr": BATTERY_SENSORS,
     # Solar Light
@@ -760,36 +820,36 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "voc": (
         LocalTuyaEntity(
             id=DPCode.CO2_VALUE,
-            # translation_id="carbon_dioxide",
+            # name="carbon_dioxide",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.PM25_VALUE,
-            # translation_id="pm25",
+            # name="pm25",
             device_class=SensorDeviceClass.PM25,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CH2O_VALUE,
-            # translation_id="formaldehyde",
+            # name="formaldehyde",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_VALUE,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VOC_VALUE,
-            # translation_id="voc",
+            # name="voc",
             device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -800,7 +860,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "wk": {
         LocalTuyaEntity(
             id=(DPCode.TEMP_CURRENT, DPCode.TEMPFLOOR),
-            translation_id="External temperature",
+            name="External temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -833,7 +893,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.BRIGHT_VALUE,
-            translation_id="Illuminance",
+            name="Illuminance",
             device_class=SensorDeviceClass.ILLUMINANCE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -844,7 +904,6 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "ylcg": (
         LocalTuyaEntity(
             id=DPCode.PRESSURE_VALUE,
-            name=None,
             device_class=SensorDeviceClass.PRESSURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -855,7 +914,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "ywbj": (
         LocalTuyaEntity(
             id=DPCode.SMOKE_SENSOR_VALUE,
-            # translation_id="smoke_amount",
+            # name="smoke_amount",
             icon="mdi:smoke-detector",
             entity_category=EntityCategory.DIAGNOSTIC,
             state_class=SensorStateClass.MEASUREMENT,
@@ -870,7 +929,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "zndb": (
         LocalTuyaEntity(
             id=DPCode.FORWARD_ENERGY_TOTAL,
-            # translation_id="total_energy",
+            # name="total_energy",
             device_class=SensorDeviceClass.ENERGY,
             state_class=SensorStateClass.TOTAL_INCREASING,
             custom_configs=localtuya_sensor(UnitOfEnergy.KILO_WATT_HOUR, 0.01),
@@ -1067,55 +1126,55 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "sd": (
         LocalTuyaEntity(
             id=DPCode.CLEAN_AREA,
-            # translation_id="cleaning_area",
+            # name="cleaning_area",
             icon="mdi:texture-box",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.CLEAN_TIME,
-            # translation_id="cleaning_time",
+            # name="cleaning_time",
             icon="mdi:progress-clock",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TOTAL_CLEAN_AREA,
-            # translation_id="total_cleaning_area",
+            # name="total_cleaning_area",
             icon="mdi:texture-box",
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
         LocalTuyaEntity(
             id=DPCode.TOTAL_CLEAN_TIME,
-            # translation_id="total_cleaning_time",
+            # name="total_cleaning_time",
             icon="mdi:history",
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
         LocalTuyaEntity(
             id=DPCode.TOTAL_CLEAN_COUNT,
-            # translation_id="total_cleaning_times",
+            # name="total_cleaning_times",
             icon="mdi:counter",
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
         LocalTuyaEntity(
             id=DPCode.DUSTER_CLOTH,
-            # translation_id="duster_cloth_life",
+            # name="duster_cloth_life",
             icon="mdi:ticket-percent-outline",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.EDGE_BRUSH,
-            # translation_id="side_brush_life",
+            # name="side_brush_life",
             icon="mdi:ticket-percent-outline",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.FILTER_LIFE,
-            # translation_id="filter_life",
+            # name="filter_life",
             icon="mdi:ticket-percent-outline",
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.ROLL_BRUSH,
-            # translation_id="rolling_brush_life",
+            # name="rolling_brush_life",
             icon="mdi:ticket-percent-outline",
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -1125,7 +1184,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "cl": (
         LocalTuyaEntity(
             id=DPCode.TIME_TOTAL,
-            # translation_id="last_operation_duration",
+            # name="last_operation_duration",
             entity_category=EntityCategory.DIAGNOSTIC,
             icon="mdi:progress-clock",
         ),
@@ -1135,25 +1194,25 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "jsq": (
         LocalTuyaEntity(
             id=DPCode.HUMIDITY_CURRENT,
-            # translation_id="humidity",
+            name="Humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            name="Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT_F,
-            # translation_id="temperature",
+            name="Temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.LEVEL_CURRENT,
-            # translation_id="water_level",
+            name="Water Level",
             entity_category=EntityCategory.DIAGNOSTIC,
             icon="mdi:waves-arrow-up",
         ),
@@ -1163,58 +1222,58 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "kj": (
         LocalTuyaEntity(
             id=DPCode.FILTER,
-            # translation_id="filter_utilization",
+            # name="filter_utilization",
             entity_category=EntityCategory.DIAGNOSTIC,
             icon="mdi:ticket-percent-outline",
         ),
         LocalTuyaEntity(
             id=DPCode.PM25,
-            # translation_id="pm25",
+            # name="pm25",
             device_class=SensorDeviceClass.PM25,
             state_class=SensorStateClass.MEASUREMENT,
             icon="mdi:molecule",
         ),
         LocalTuyaEntity(
             id=DPCode.TEMP,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TVOC,
-            # translation_id="total_volatile_organic_compound",
+            # name="total_volatile_organic_compound",
             device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.ECO2,
-            # translation_id="concentration_carbon_dioxide",
+            # name="concentration_carbon_dioxide",
             device_class=SensorDeviceClass.CO2,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.TOTAL_TIME,
-            # translation_id="total_operating_time",
+            # name="total_operating_time",
             icon="mdi:history",
             state_class=SensorStateClass.TOTAL_INCREASING,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.TOTAL_PM,
-            # translation_id="total_absorption_particles",
+            # name="total_absorption_particles",
             icon="mdi:texture-box",
             state_class=SensorStateClass.TOTAL_INCREASING,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         LocalTuyaEntity(
             id=DPCode.AIR_QUALITY,
-            # translation_id="air_quality",
+            # name="air_quality",
             icon="mdi:air-filter",
         ),
     ),
@@ -1223,7 +1282,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "fs": (
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -1233,13 +1292,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "wnykq": (
         LocalTuyaEntity(
             id=DPCode.VA_TEMPERATURE,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.VA_HUMIDITY,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -1295,7 +1354,7 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         LocalTuyaEntity(
             id=DPCode.COUNTDOWN_LEFT,
-            translation_id="Timer Remaining",
+            name="Timer Remaining",
             custom_configs=localtuya_sensor(UnitOfTime.MINUTES),
             icon="mdi:timer",
             entity_category=EntityCategory.DIAGNOSTIC,
@@ -1305,13 +1364,13 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     "zwjcy": (
         LocalTuyaEntity(
             id=DPCode.TEMP_CURRENT,
-            # translation_id="temperature",
+            # name="temperature",
             device_class=SensorDeviceClass.TEMPERATURE,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         LocalTuyaEntity(
             id=DPCode.HUMIDITY,
-            # translation_id="humidity",
+            # name="humidity",
             device_class=SensorDeviceClass.HUMIDITY,
             state_class=SensorStateClass.MEASUREMENT,
         ),

@@ -186,6 +186,10 @@ def get_dp_values(dp: str, dps_data: dict, req_info: CLOUD_VALUE = None) -> dict
     if not dp_values or not (dp_values := json.loads(dp_values)):
         return
 
+    # Some DPS doesn't have the type, in high level data.
+    if not dp_type and (_type := dp_values.get("type")):
+        dp_type = _type.capitalize()
+
     # Integer values: min, max, scale, step
     if dp_values and dp_type == DPType.INTEGER:
         # We only need the scaling factor, other values will be scaled from via later on.

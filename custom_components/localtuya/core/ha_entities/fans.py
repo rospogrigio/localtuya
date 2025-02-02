@@ -70,5 +70,3 @@ FANS["fsd"] = FANS["fs"]
 FANS["fskg"] = FANS["fs"]
 # Air Purifier
 FANS["kj"] = FANS["fs"]
-# Dehumidifier
-# FANS["cs"] = FANS["fs"]
