@@ -24,7 +24,7 @@
                     "client_id": "Client ID",
                     "client_secret": "Client Secret",
                     "user_id": "User ID",
-                    "user_name": "Username",
+                    "username": "Username",
                     "no_cloud": "Disable Cloud API?"
                 }
             }

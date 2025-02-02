@@ -160,7 +160,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         hass: HomeAssistant,
         config_entry: ConfigEntry,
         dev_id: str,
-        gateway=False,
+        fake_gateway=False,
     ):
         """Initialize the cache."""
         super().__init__()
@@ -171,7 +171,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._interface = None
         # For SubDevices
         self._node_id: str = self._device_config.get(CONF_NODE_ID)
-        self._fake_gateway = gateway
+        self._fake_gateway = fake_gateway
         self._gwateway: TuyaDevice = None
         self._sub_devices: dict[str, TuyaDevice] = {}
 
@@ -496,7 +496,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
         # If it's disconnect by unexpected error.
         if self._is_closing is not True and not self.is_subdevice:
-            self.warning(f"Disconnected - waiting for discovery broadcast")
+            self.info(f"Disconnected - waiting for discovery broadcast")
             # Try to quickly reconnect.
             self._is_closing = False
             async_call_later(self._hass, 2, self.async_connect)

@@ -22,7 +22,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, Event
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
@@ -59,7 +59,7 @@ SERVICE_SET_DP = "set_dp"
 SERVICE_SET_DP_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_DEVICE_ID): cv.string,
-        vol.Required(CONF_DP): int,
+        vol.Optional(CONF_DP): int,
         vol.Required(CONF_VALUE): object,
     }
 )
@@ -84,18 +84,22 @@ async def async_setup(hass: HomeAssistant, config: dict):
         ]
         await asyncio.gather(*reload_tasks)
 
-    async def _handle_set_dp(event):
+    async def _handle_set_dp(event: Event):
         """Handle set_dp service call."""
         dev_id = event.data[CONF_DEVICE_ID]
         entry: ConfigEntry = async_config_entry_by_device_id(hass, dev_id)
-        if not entry.entry_id:
+        if not entry or not entry.entry_id:
             raise HomeAssistantError("unknown device id")
 
-        device: TuyaDevice = hass.data[DOMAIN][entry.entry_id].tuya_devices[dev_id]
+        host = entry.data[CONF_DEVICES][dev_id].get(CONF_HOST)
+        device: TuyaDevice = hass.data[DOMAIN][entry.entry_id].tuya_devices[host]
         if not device.connected:
             raise HomeAssistantError("not connected to device")
-
-        await device.set_dp(event.data[CONF_VALUE], event.data[CONF_DP])
+        value = event.data[CONF_VALUE]
+        if isinstance(value, dict):
+            await device.set_dps(value)
+        else:
+            await device.set_dp(value, event.data[CONF_DP])
 
     def _device_discovered(device: dict):
         """Update address of device if it has changed."""
@@ -169,11 +173,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     async_register_admin_service(
         hass,
     )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_RELOAD,
-        _handle_reload,
-    )
+    hass.services.async_register(DOMAIN, SERVICE_RELOAD, _handle_reload)
 
     hass.services.async_register(
         DOMAIN, SERVICE_SET_DP, _handle_set_dp, schema=SERVICE_SET_DP_SCHEMA
@@ -262,7 +262,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             )
 
             if node_id := config.get(CONF_NODE_ID):
-                # Setup sub device as gateway if no gateway not exist.
+                # Setup sub device as gateway if there is no gateway exist.
                 if host not in devices:
                     devices[host] = TuyaDevice(hass, entry, dev_id, True)
 
@@ -270,7 +270,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
             devices[host] = TuyaDevice(hass, entry, dev_id)
 
-        # Unsub listener: callback to unsub
         hass_localtuya = HassLocalTuyaData(tuya_api, devices, [])
         hass.data[DOMAIN][entry.entry_id] = hass_localtuya
 
@@ -281,6 +280,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         connect_to_devices = [
             device.async_connect() for device in hass_localtuya.tuya_devices.values()
         ]
+        # Update listener: add to unsub_listeners
         entry_update = entry.add_update_listener(update_listener)
         hass_localtuya.unsub_listeners.append(entry_update)
 
