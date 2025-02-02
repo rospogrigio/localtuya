@@ -33,6 +33,7 @@ from ...const import (
     CONF_FAN_SPEED_LIST,
     CONF_FAN_SPEED_DP,
     CONF_TARGET_TEMPERATURE_DP,
+    CONF_PRESET_DP,
 )
 
 
@@ -71,7 +72,7 @@ def localtuya_climate(
         ),
         CONF_FAN_SPEED_LIST: CLOUD_VALUE(fans_speeds, CONF_FAN_SPEED_DP, "range", str),
         CONF_ECO_VALUE: echo_value,
-        CONF_PRESET_SET: preset_set,
+        CONF_PRESET_SET: CLOUD_VALUE(preset_set, CONF_PRESET_DP, "range", dict),
         CONF_TEMPERATURE_UNIT: unit,
         CONF_PRECISION: CLOUD_VALUE(
             str(values_precsion), CONF_CURRENT_TEMPERATURE_DP, "scale", str
@@ -148,22 +149,23 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.SWITCH,
             target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
             current_temperature_dp=(DPCode.TEMP_CURRENT, DPCode.TEMP_CURRENT_F),
+            hvac_mode_dp=DPCode.SWITCH,
             hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
             preset_dp=DPCode.MODE,
             fan_speed_dp=(DPCode.FAN_SPEED_ENUM, DPCode.WINDSPEED),
             custom_configs=localtuya_climate(
                 hvac_mode_set={
-                    HVACMode.OFF: "off",
-                    HVACMode.HEAT: "hot",
+                    HVACMode.OFF: False,
+                    HVACMode.HEAT: True,
                 },
                 temp_step=1,
                 actions_set={
-                    HVACAction.HEATING: "heating",
-                    HVACAction.IDLE: "warming",
+                    HVACAction.HEATING: True,
+                    HVACAction.IDLE: False,
                 },
                 values_precsion=0.1,
                 target_precision=0.1,
-                preset_set="auto/smart",
+                preset_set={},
             ),
         ),
     ),
@@ -190,7 +192,7 @@ CLIMATES: dict[str, tuple[LocalTuyaEntity, ...]] = {
                 unit=UNIT_C,
                 values_precsion=0.1,
                 target_precision=0.1,
-                preset_set="auto/manual/smart/comfortable/eco",
+                preset_set={},
             ),
         ),
     ),

@@ -348,7 +348,7 @@ def pack_message(msg, hmac_key=None):
     return data
 
 
-def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=None):
+def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=_LOGGER):
     """Unpack bytes into a TuyaMessage."""
     if header is None:
         header = parse_header(data)
@@ -377,8 +377,7 @@ def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=No
             header_len + header.length,
             len(data),
         )
-        _LOGGER.debug(f"DecodeError:  ( Not enough data to unpack payload )")
-        # raise DecodeError(f"Not enough data to unpack payload: {data}")
+        raise DecodeError(f"Not enough data to unpack payload: {data}")
 
     end_len = struct.calcsize(end_fmt)
     # the retcode is technically part of the payload, but strip it as we do not want it here
@@ -455,7 +454,7 @@ def unpack_message(data, hmac_key=None, header=None, no_retcode=False, logger=No
     )
 
 
-def parse_header(data):
+def parse_header(data, logger=_LOGGER):
     """Unpack bytes into a TuyaHeader."""
     if data[:4] == PREFIX_6699_BIN:
         fmt = MESSAGE_HEADER_FMT_6699
@@ -465,7 +464,9 @@ def parse_header(data):
     header_len = struct.calcsize(fmt)
 
     if len(data) < header_len:
-        raise DecodeError("Not enough data to unpack header")
+        err = "Not enough data to unpack header"
+        logger.error(err)
+        raise DecodeError(err)
 
     unpacked = struct.unpack(fmt, data[:header_len])
     prefix = unpacked[0]
@@ -478,21 +479,15 @@ def parse_header(data):
         # seqno |= unknown << 32
         total_length = payload_len + header_len + len(SUFFIX_6699_BIN)
     else:
-        # log.debug('Header prefix wrong! %08X != %08X', prefix, PREFIX_VALUE)
-        raise DecodeError(
-            "Header prefix wrong! %08X is not %08X or %08X"
-            % (prefix, PREFIX_55AA_VALUE, PREFIX_6699_VALUE)
-        )
+        err = f"Header prefix wrong! {prefix} is not {PREFIX_55AA_VALUE} or {PREFIX_6699_VALUE}"
+        logger.error(err)
+        raise DecodeError(err)
 
     # sanity check. currently the max payload length is somewhere around 300 bytes
     if payload_len > 2000:
-        _LOGGER.debug(
-            f"Header claims the packet size is over 2000 bytes!  It is most likely corrupt.  Claimed size: {payload_len} bytes. fmt: {fmt} unpacked: {unpacked}"
-        )
-        # raise DecodeError(
-        #     "Header claims the packet size is over 2000 bytes!  It is most likely corrupt.  Claimed size: %d bytes. fmt:%s unpacked:%r"
-        #     % (payload_len, fmt, unpacked)
-        # )
+        err = f"Header claims the packet size is over 2000 bytes!  It is most likely corrupt. Claimed size: {payload_len} bytes. fmt: {fmt} unpacked: {unpacked}"
+        logger.error(err)
+        raise DecodeError(err)
 
     return TuyaHeader(prefix, seqno, cmd, payload_len, total_length)
 
@@ -616,29 +611,29 @@ class MessageDispatcher(ContextualLogger):
         """Add new data to the buffer and try to parse messages."""
         self.buffer += data
 
-        header_len_55AA = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
-        header_len_6699 = struct.calcsize(MESSAGE_HEADER_FMT_6699)
-
-        header_len = header_len_55AA
-        prefix_len = len(PREFIX_55AA_BIN)
-
+        header_len = struct.calcsize(MESSAGE_RECV_HEADER_FMT)
         while self.buffer:
-            prefix_offset_55AA = self.buffer.find(PREFIX_55AA_BIN)
-            prefix_offset_6699 = self.buffer.find(PREFIX_6699_BIN)
-
-            if prefix_offset_55AA < 0 and prefix_offset_6699 < 0:
-                self.buffer = self.buffer[1 - prefix_len :]
-            else:
-                prefix_offset = (
-                    prefix_offset_6699 if prefix_offset_55AA < 0 else prefix_offset_55AA
-                )
-                self.buffer = self.buffer[prefix_offset:]
-
             # Check if enough data for measage header
             if len(self.buffer) < header_len:
                 break
 
-            header = parse_header(self.buffer)
+            prefix_offset_55AA = self.buffer.find(PREFIX_55AA_BIN)
+            prefix_offset_6699 = self.buffer.find(PREFIX_6699_BIN)
+            prefixes = (prefix_offset_55AA, prefix_offset_6699)
+
+            # If somehow we got unexpected message, we will ignore it and reset the buffer.
+            if prefix_offset_55AA < 0 and prefix_offset_6699 < 0:
+                self.debug(f"Got unexpected Message prefix: {self.buffer}", force=True)
+                self.buffer = b""
+                break
+
+            # If the prefix is not at the start of the message.
+            if prefix_offset_55AA != 0 and prefix_offset_6699 != 0:
+                self.debug(f"Message prefix offset not at the start {self.buffer}")
+                prefix_offset = min(prefix for prefix in prefixes if not prefix < 0)
+                self.buffer = self.buffer[prefix_offset:]
+
+            header = parse_header(self.buffer, logger=self)
             hmac_key = self.local_key if self.version >= 3.4 else None
             no_retcode = False
             msg = unpack_message(
@@ -648,7 +643,7 @@ class MessageDispatcher(ContextualLogger):
                 no_retcode=no_retcode,
                 logger=self,
             )
-            self.buffer = self.buffer[header_len - 4 + header.length :]
+            self.buffer = self.buffer[header.total_length :]
             self._dispatch(msg)
 
     def _dispatch(self, msg):
@@ -659,18 +654,12 @@ class MessageDispatcher(ContextualLogger):
         if msg.seqno in self.listeners:
             self.debug("Dispatching sequence number %d", msg.seqno)
             self._release_listener(msg.seqno, msg)
-
         if msg.cmd == HEART_BEAT:
             self.debug("Got heartbeat response")
             self._release_listener(self.HEARTBEAT_SEQNO, msg)
         elif msg.cmd == UPDATEDPS:
             self.debug("Got normal updatedps response")
             self._release_listener(self.RESET_SEQNO, msg)
-            if self.RESET_SEQNO not in self.listeners:
-                self.debug(
-                    "Got additional updatedps message without request - skipping: %s",
-                    sem,
-                )
         elif msg.cmd == SESS_KEY_NEG_RESP:
             self.debug("Got key negotiation response")
             self._release_listener(self.SESS_KEY_SEQNO, msg)
@@ -678,7 +667,6 @@ class MessageDispatcher(ContextualLogger):
             if self.RESET_SEQNO in self.listeners:
                 self.debug("Got reset status update")
                 self._release_listener(self.RESET_SEQNO, msg)
-                sem = self.listeners[self.RESET_SEQNO]
             else:
                 self.debug("Got status update")
                 self.callback_status_update(msg)
@@ -702,7 +690,7 @@ class MessageDispatcher(ContextualLogger):
             self.listeners[seqno] = msg
             sem.release()
         else:
-            self.debug("Got additional message without request - skipping: %s", sem)
+            self.debug(f"{seqno} - Got additional message without request: skip {sem}")
 
 
 class TuyaListener(ABC):
@@ -854,8 +842,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             if wait == 10:
                 break
 
-        self._last_command_sent = time.time()
-        self.transport.write(data)
+        if self.transport is not None:
+            self._last_command_sent = time.time()
+            self.transport.write(data)
+        else:
+            await self.close()
 
     def start_heartbeat(self):
         """Start the heartbeat transmissions with the device."""
@@ -878,9 +869,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     self.exception("Heartbeat failed (%s), disconnecting", ex)
                     break
 
-            transport = self.transport
-            self.transport = None
-            transport.close()
+            if self.transport is not None:
+                transport = self.transport
+                self.transport = None
+                transport.close()
 
         if self.heartbeater is None:
             # Prevent duplicates heartbeat task
@@ -1195,10 +1187,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             json_payload = json.loads(payload)
         except Exception as ex:
             if "devid not" in payload:  # DeviceID Not found.
-                raise ValueError("DeviceID Not found")
+                raise ValueError(f"DeviceID [{self.id}] Not found")
             else:
                 raise DecodeError(
-                    f"could not decrypt data: wrong local_key? (exception: {ex}, payload: {payload})"
+                    f"[{self.id}]: could not decrypt data: wrong local_key? (exception: {ex}, payload: {payload})"
                 )
             # json_payload = self.error_json(ERR_JSON, payload)
 
