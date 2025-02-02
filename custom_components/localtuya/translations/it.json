@@ -18,7 +18,7 @@
         "step": {
             "user": {
                 "title": "Configurazione dell'account Cloud API",
-                "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
+                "description": "[Inserisci le credenziali per l'account Cloud API Tuya. (Docs)](https://github.com/xZetsubou/hass-localtuya)",
                 "data": {
                     "region": "Regione del server API",
                     "client_id": "Client ID",
@@ -55,7 +55,7 @@
             "init": {
                 "title": "Configurazione LocalTuya",
                 "description": "Seleziona l'azione desiderata.",
-                "data": {
+                "menu_options": {
                     "add_device": "Aggiungi un nuovo dispositivo",
                     "edit_device": "Modifica un dispositivo",
                     "setup_cloud": "Riconfigurare l'account Cloud API"
@@ -75,7 +75,7 @@
                     "selected_device": "Dispositivi configurati"
                 }
             },
-            "cloud_setup": {
+            "configure_cloud": {
                 "title": "Configurazione dell'account Cloud API",
                 "description": "Inserisci le credenziali per l'account Cloud API Tuya.",
                 "data": {

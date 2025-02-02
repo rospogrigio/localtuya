@@ -9,7 +9,7 @@
             "cannot_connect": "Cannot connect to device. Verify that address is correct and try again.",
             "device_list_failed": "Failed to retrieve device list.\n{msg}",
             "invalid_auth": "Failed to authenticate with device. Verify that device id and local key are correct.",
-            "unknown": "An unknown error occurred. See log for details.",
+            "unknown": "An unknown error occurred. \n{ex}.",
             "entity_already_configured": "Entity with this ID has already been configured.",
             "address_in_use": "Address used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
             "discovery_failed": "Something failed when discovering devices. See log for details.",
@@ -18,7 +18,7 @@
         "step": {
             "user": {
                 "title": "Cloud API account configuration",
-                "description": "Input the credentials for Tuya Cloud API.",
+                "description": "[Input the credentials for Tuya Cloud API. (Docs)](https://github.com/xZetsubou/hass-localtuya)",
                 "data": {
                     "region": "API server region",
                     "client_id": "Client ID",
@@ -41,11 +41,11 @@
             "cannot_connect": "Cannot connect to device. Verify that address is correct and try again.",
             "device_list_failed": "Failed to retrieve device list.\n{msg}",
             "invalid_auth": "Failed to authenticate with device. Verify that device id and local key are correct.",
-            "unknown": "An unknown error occurred. See log for details.",
+            "unknown": "An unknown error occurred. \n{ex}.",
             "entity_already_configured": "Entity with this ID has already been configured.",
             "address_in_use": "Address used for discovery is already in use. Make sure no other application is using it (TCP port 6668).",
             "discovery_failed": "Something failed when discovering devices. See log for details.",
-            "empty_dps": "Connection to device succeeded but no datapoints found, please try again. Create a new issue and include debug logs if problem persists."
+            "empty_dps": "Connection to device succeeded but an issue happend!, please try again, check the logs for Create a new issue and include debug logs if problem persists."
         },
         "step": {
             "yaml_import": {
@@ -54,16 +54,16 @@
             },
             "init": {
                 "title": "LocalTuya Configuration",
-                "description": "Please select the desired action.",
-                "data": {
+                "description": "Please choose the desired action.",
+                "menu_options": {
                     "add_device": "Add a new device",
                     "edit_device": "Edit a device",
-                    "setup_cloud": "Reconfigure Cloud API account"
+                    "cloud_setup": "Reconfigure Cloud API account"
                 }
             },
             "add_device": {
                 "title": "Add a new device",
-                "description": "Pick one of the automatically discovered devices or `...` to manually to add a device.",
+                "description": "Pick one of the automatically discovered devices or Add Device Manually.",
                 "data": {
                     "selected_device": "Discovered Devices"
                 }
@@ -154,7 +154,7 @@
                     "hvac_swing_mode_set": "HVAC Swing Mode Set (optional)"
                 }
             },
-            "cloud_setup": {
+            "configure_cloud": {
                 "title": "Cloud API account configuration",
                 "description": "Input the credentials for Tuya Cloud API.",
                 "data": {
@@ -175,6 +175,7 @@
                     "device_id": "Device ID",
                     "device_node_id": "Sub Device Node ID",
                     "local_key": "Local key",
+                    "node_id": "Node_ID Only for sub devices",
                     "protocol_version": "Protocol Version",
                     "enable_debug": "Enable debugging for this device (debug must be enabled also in configuration.yaml)",
                     "scan_interval": "Scan interval (seconds, only when not updating automatically)",
@@ -192,6 +193,16 @@
                     "platform_to_add": "Platform",
                     "no_additional_entities": "Do not add any more entities",
                     "use_template" : "Import template file"
+                }
+            },
+            "choose_template":{
+                "title": "Template selection",
+                "description": "[Template files are located in the templates directory! (Click for Wiki)](https://github.com/xZetsubou/hass-localtuya/discussions/13)",
+                "data": {
+                    "templates": "Template"
+                },
+                "data_description": {
+                    "templates": "Pick a template from the list above"
                 }
             },
             "configure_entity": {

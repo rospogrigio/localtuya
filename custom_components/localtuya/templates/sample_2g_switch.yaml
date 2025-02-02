@@ -2,7 +2,7 @@
 - switch:
     id: "1"
     friendly_name: "2G Local Switch 1"
-    entity_category: "controls"
+    entity_category: None
     restore_on_reconnect: false
     is_passive_entity: false
     platform: "switch"
@@ -10,7 +10,7 @@
 - switch:
     id: "2"
     friendly_name: "2G Local Switch 2"
-    entity_category: "controls"
+    entity_category: None
     is_passive_entity: false
     platform: "switch"
 ####################################################

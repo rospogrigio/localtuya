@@ -4,6 +4,9 @@ import logging
 import time
 from datetime import timedelta
 
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
+
 from homeassistant.const import (
     CONF_DEVICE_ID,
     CONF_DEVICES,
@@ -31,6 +34,7 @@ from .const import (
     ATTR_UPDATED_AT,
     CONF_DEFAULT_VALUE,
     CONF_ENABLE_DEBUG,
+    CONF_NODE_ID,
     CONF_LOCAL_KEY,
     CONF_DEVICE_NODE_ID,
     CONF_MODEL,
@@ -42,6 +46,7 @@ from .const import (
     DOMAIN,
     TUYA_DEVICES,
     DEFAULT_CATEGORIES,
+    ENTITY_CATEGORY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -84,7 +89,6 @@ async def async_setup_entry(
         ]
 
         if entities_to_setup:
-
             tuyainterface = hass.data[DOMAIN][TUYA_DEVICES][dev_id]
 
             dps_config_fields = list(get_dps_for_platform(flow_schema))
@@ -137,7 +141,7 @@ def async_config_entry_by_device_id(hass, device_id):
 class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     """Cache wrapper for pytuya.TuyaInterface."""
 
-    def __init__(self, hass, config_entry, dev_id):
+    def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry, dev_id: str):
         """Initialize the cache."""
         super().__init__()
         self._hass = hass
@@ -184,7 +188,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
         if not self._is_closing and self._connect_task is None and not self._interface:
-            self._connect_task = asyncio.create_task(self._make_connection())
+            self._connect_task = self._hass.create_task(self._make_connection())
 
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
@@ -197,7 +201,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._local_key,
                 float(self._dev_config_entry[CONF_PROTOCOL_VERSION]),
                 self._dev_config_entry.get(CONF_ENABLE_DEBUG, False),
-                self._dev_config_entry.get(CONF_DEVICE_NODE_ID, ""),
+                self._dev_config_entry.get(CONF_NODE_ID, None),
                 self,
             )
             self._interface.add_dps_to_request(self.dps_to_request)
@@ -500,12 +504,12 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             # Set Default values for unconfigured devices.
             if self.has_config(CONF_PLATFORM):
                 platform = self._config[CONF_PLATFORM]
-            if any(platform in i for i in DEFAULT_CATEGORIES["CONTROL"]):
-                return None
-            elif any(platform in i for i in DEFAULT_CATEGORIES["CONFIG"]):
-                return EntityCategory.CONFIG
-            elif any(platform in i for i in DEFAULT_CATEGORIES["DIAGNOSTIC"]):
-                return EntityCategory.DIAGNOSTIC
+                # Call default_category from config_flow  to set default values!
+                # This will be removed after a while, this is only made to convert who came from main integration.
+                # new users will be forced to choose category from config_flow.
+                from .config_flow import default_category
+
+                return default_category(platform)
         return None
 
     def dps(self, dp_index):
