@@ -30,16 +30,18 @@ async def async_get_config_entry_diagnostics(
     tuya_api = hass_localtuya.cloud_data
     # censoring private information on integration diagnostic data
     for field in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
-        data[field] = f"{data[field][0:3]}...{data[field][-3:]}"
+        data[field] = obfuscate(data[field])
     data[CONF_DEVICES] = copy.deepcopy(entry.data[CONF_DEVICES])
     for dev_id, dev in data[CONF_DEVICES].items():
         local_key = dev[CONF_LOCAL_KEY]
-        local_key_obfuscated = f"{local_key[0:3]}...{local_key[-3:]}"
+        local_key_obfuscated = obfuscate(local_key)
         dev[CONF_LOCAL_KEY] = local_key_obfuscated
     data[CLOUD_DEVICES] = tuya_api.device_list
     for dev_id, dev in data[CLOUD_DEVICES].items():
         local_key = data[CLOUD_DEVICES][dev_id][CONF_LOCAL_KEY]
-        local_key_obfuscated = f"{local_key[0:3]}...{local_key[-3:]}"
+        local_key_obfuscated = obfuscate(local_key)
+        if ip := data[CLOUD_DEVICES][dev_id].get("ip"):
+            data[CLOUD_DEVICES][dev_id]["ip"] = obfuscate(ip, 1, 1)
         data[CLOUD_DEVICES][dev_id][CONF_LOCAL_KEY] = local_key_obfuscated
     return data
 
@@ -66,3 +68,8 @@ async def async_get_device_diagnostics(
 
     # data["log"] = hass.data[DOMAIN][CONF_DEVICES][dev_id].logger.retrieve_log()
     return data
+
+
+def obfuscate(key, start_characters=3, end_characters=3) -> str:
+    """Return obfuscated text by removing characters between [start_characters and end_characters]"""
+    return f"{key[0:start_characters]}...{key[-end_characters:]}"

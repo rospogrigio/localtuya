@@ -1474,10 +1474,9 @@ async def connect(
             port,
         )
     except OSError as ex:
-        if ex.errno == errno.EHOSTUNREACH:
-            raise ValueError(f"The host is unreachable")
+        raise ValueError(str(ex))
     except:
-        raise ValueError(f"Unknown error See the logs for details.")
+        raise ValueError(f"Failed conect to the device, try again and check logs.")
 
     await asyncio.wait_for(on_connected, timeout=timeout)
     return protocol

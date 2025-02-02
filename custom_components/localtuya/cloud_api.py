@@ -139,6 +139,8 @@ class TuyaCloudApi:
             "GET", url=f"/v1.0/users/{self._user_id}/devices"
         )
 
+        if not resp:
+            return
         if not resp.ok:
             return "Request failed, status " + str(resp.status)
 
@@ -164,6 +166,8 @@ class TuyaCloudApi:
             "GET", url=f"/v1.1/devices/{device_id}/specifications"
         )
 
+        if not resp:
+            return
         if not resp.ok:
             return {}, "Request failed, status " + str(resp.status)
 
@@ -179,6 +183,8 @@ class TuyaCloudApi:
             "GET", url=f"/v2.0/cloud/thing/{device_id}/shadow/properties"
         )
 
+        if not resp:
+            return
         if not resp.ok:
             return {}, "Request failed, status " + str(resp.status)
 

@@ -470,9 +470,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             if self._interface is not None:
                 if len(self._interface.dispatched_dps) == 1:
                     event = device_dp_triggered
-                    dp_trigger = list(self._interface.dispatched_dps)[0]
-                    dp_value = self._interface.dispatched_dps.get(dp_trigger)
-                    data = {"dp": dp_trigger, "value": dp_value}
+                    dpid_trigger = list(self._interface.dispatched_dps)[0]
+                    dpid_value = self._interface.dispatched_dps.get(dpid_trigger)
+                    data = {"dp": dpid_trigger, "value": dpid_value}
                     fire_event(event, data)
 
     @callback
@@ -609,7 +609,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     def available(self) -> bool:
         """Return if device is available or not."""
         if (platform := self._config.get(CONF_PLATFORM)) and platform == "button":
-            return True
+            return True if self._status else False
         return str(self._dp_id) in self._status
 
     @property
@@ -650,7 +650,7 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
             if value := self._status.get(conf_key):
                 return value
 
-        if value is None:
+        if value is None and self._config.get(CONF_PLATFORM) != "button":
             self.warning(f"{self.entity_id}: is requesting unknown DP Value {key}")
 
         return value
