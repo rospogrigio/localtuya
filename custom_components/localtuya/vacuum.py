@@ -109,7 +109,6 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
 
         self._fan_speed = ""
         self._cleaning_mode = ""
-        _LOGGER.debug("Initialized vacuum [%s]", self.name)
 
     @property
     def supported_features(self):
@@ -205,7 +204,7 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        state_value = str(self.dps(self._dp_id))
+        state_value = str(self.dp_value(self._dp_id))
 
         if state_value in self._idle_status_list:
             self._state = STATE_IDLE
@@ -219,28 +218,28 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
             self._state = STATE_CLEANING
 
         if self.has_config(CONF_BATTERY_DP):
-            self._battery_level = self.dps_conf(CONF_BATTERY_DP)
+            self._battery_level = self.dp_value(CONF_BATTERY_DP)
 
         self._cleaning_mode = ""
         if self.has_config(CONF_MODES):
-            self._cleaning_mode = self.dps_conf(CONF_MODE_DP)
+            self._cleaning_mode = self.dp_value(CONF_MODE_DP)
             self._attrs[MODE] = self._cleaning_mode
 
         self._fan_speed = ""
         if self.has_config(CONF_FAN_SPEEDS):
-            self._fan_speed = self.dps_conf(CONF_FAN_SPEED_DP)
+            self._fan_speed = self.dp_value(CONF_FAN_SPEED_DP)
 
         if self.has_config(CONF_CLEAN_TIME_DP):
-            self._attrs[CLEAN_TIME] = self.dps_conf(CONF_CLEAN_TIME_DP)
+            self._attrs[CLEAN_TIME] = self.dp_value(CONF_CLEAN_TIME_DP)
 
         if self.has_config(CONF_CLEAN_AREA_DP):
-            self._attrs[CLEAN_AREA] = self.dps_conf(CONF_CLEAN_AREA_DP)
+            self._attrs[CLEAN_AREA] = self.dp_value(CONF_CLEAN_AREA_DP)
 
         if self.has_config(CONF_CLEAN_RECORD_DP):
-            self._attrs[CLEAN_RECORD] = self.dps_conf(CONF_CLEAN_RECORD_DP)
+            self._attrs[CLEAN_RECORD] = self.dp_value(CONF_CLEAN_RECORD_DP)
 
         if self.has_config(CONF_FAULT_DP):
-            self._attrs[FAULT] = self.dps_conf(CONF_FAULT_DP)
+            self._attrs[FAULT] = self.dp_value(CONF_FAULT_DP)
             if self._attrs[FAULT] != 0:
                 self._state = STATE_ERROR
 

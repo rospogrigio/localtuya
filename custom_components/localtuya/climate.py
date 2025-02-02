@@ -128,6 +128,10 @@ HVAC_ACTION_SETS = {
         HVACAction.HEATING: "open",
         HVACAction.IDLE: "close",
     },
+    "opened/closed": {
+        HVACAction.HEATING: "opened",
+        HVACAction.IDLE: "closed",
+    },
     "heating/no_heating": {
         HVACAction.HEATING: "heating",
         HVACAction.IDLE: "no_heating",
@@ -279,7 +283,6 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
-        _LOGGER.debug("Initialized climate [%s]", self.name)
 
     @property
     def supported_features(self):
@@ -499,27 +502,27 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     def status_updated(self):
         """Device status was updated."""
-        self._state = self.dps(self._dp_id)
+        self._state = self.dp_value(self._dp_id)
 
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
             self._target_temperature = (
-                self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
+                self.dp_value(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
             )
 
         if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
             self._current_temperature = (
-                self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
+                self.dp_value(CONF_CURRENT_TEMPERATURE_DP) * self._precision
             )
 
         if self._has_presets:
             if (
                 self.has_config(CONF_ECO_DP)
-                and self.dps_conf(CONF_ECO_DP) == self._conf_eco_value
+                and self.dp_value(CONF_ECO_DP) == self._conf_eco_value
             ):
                 self._preset_mode = PRESET_ECO
             else:
                 for preset, value in self._conf_preset_set.items():  # todo remove
-                    if self.dps_conf(CONF_PRESET_DP) == value:
+                    if self.dp_value(CONF_PRESET_DP) == value:
                         self._preset_mode = preset
                         break
                 else:
@@ -531,7 +534,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 self._hvac_mode = HVACMode.OFF
             else:
                 for mode, value in self._conf_hvac_mode_set.items():
-                    if self.dps_conf(CONF_HVAC_MODE_DP) == value:
+                    if self.dp_value(CONF_HVAC_MODE_DP) == value:
                         self._hvac_mode = mode
                         break
                 else:
@@ -561,7 +564,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         # Update the current action
         for action, value in self._conf_hvac_action_set.items():
-            if self.dps_conf(CONF_HVAC_ACTION_DP) == value:
+            if self.dp_value(CONF_HVAC_ACTION_DP) == value:
                 self._hvac_action = action
 
 

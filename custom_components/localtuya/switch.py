@@ -57,7 +57,6 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         """Initialize the Tuya switch."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
-        _LOGGER.debug("Initialized switch [%s]", self.name)
 
     @property
     def is_on(self):
@@ -69,13 +68,13 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         """Return device state attributes."""
         attrs = {}
         if self.has_config(CONF_CURRENT):
-            attrs[ATTR_CURRENT] = self.dps(self._config[CONF_CURRENT])
+            attrs[ATTR_CURRENT] = self.dp_value(self._config[CONF_CURRENT])
         if self.has_config(CONF_CURRENT_CONSUMPTION):
             attrs[ATTR_CURRENT_CONSUMPTION] = (
-                self.dps(self._config[CONF_CURRENT_CONSUMPTION]) / 10
+                self.dp_value(self._config[CONF_CURRENT_CONSUMPTION]) / 10
             )
         if self.has_config(CONF_VOLTAGE):
-            attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE]) / 10
+            attrs[ATTR_VOLTAGE] = self.dp_value(self._config[CONF_VOLTAGE]) / 10
 
         # Store the state
         if self._state is not None:

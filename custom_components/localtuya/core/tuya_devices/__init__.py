@@ -23,9 +23,9 @@ import logging
 
 # Supported files
 from .alarm_control_panels import ALARMS  # not added yet
-from .binary_sensor import BINARY_SENSORS
+from .binary_sensors import BINARY_SENSORS
 from .buttons import BUTTONS
-from .climate import CLIMATES
+from .climates import CLIMATES
 from .covers import COVERS
 from .fans import FANS
 from .humidifiers import HUMIDIFIERS
@@ -46,7 +46,7 @@ DATA_PLATFORMS = {
     Platform.CLIMATE: CLIMATES,
     Platform.COVER: COVERS,
     Platform.FAN: FANS,
-    # Platform.HUMIDIFIER: HUMIDIFIERS,
+    Platform.HUMIDIFIER: HUMIDIFIERS,
     Platform.LIGHT: LIGHTS,
     Platform.NUMBER: NUMBERS,
     Platform.SELECT: SELECTS,
@@ -110,6 +110,11 @@ def generate_tuya_device(localtuya_data: dict, tuya_category: str) -> dict | lis
                     # Workaround to Prevent duplicated id.
                     if local_entity[CONF_ID] in entities:
                         continue
+
+                    # Prevent duplicated friendly_name e.g. [switch_switch]
+                    # if name := main_confs.get(CONF_FRIENDLY_NAME):
+                    #     if name.split()[0].lower() in device_name.split()[-1].lower():
+                    #         main_confs[CONF_FRIENDLY_NAME] = ""
 
                     local_entity.update(main_confs)
                     local_entity[CONF_PLATFORM] = platform

@@ -530,9 +530,7 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             icon="mdi:timer-cog-outline",
             name="Countdown",
-            custom_configs=localtuya_selector(
-                "cancel,1,2,3,4,5,6", "Cancel,1H,2H,3H,4H,5H,6H"
-            ),
+            custom_configs=localtuya_selector("cancel,2h,4h,8h", "Cancel,2H,4H,8H"),
         ),
         LocalTuyaEntity(
             id=DPCode.DEHUMIDITY_SET_ENUM,
@@ -540,6 +538,13 @@ SELECTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
             icon="mdi:water-percent",
             custom_configs=localtuya_selector("10,20,30,40,50", "10,20,30,40,50"),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SPRAY_VOLUME,
+            name="Intensity",
+            entity_category=EntityCategory.CONFIG,
+            icon="mdi:volume-source",
+            custom_configs=localtuya_selector("small,middle,large", "Low,Medium,High"),
         ),
     ),
     # sous vide cookers

@@ -284,6 +284,8 @@ class DPCode(StrEnum):
     PRESENCE_STATE = "presence_state"
     PRESSURE_STATE = "pressure_state"
     PRESSURE_VALUE = "pressure_value"
+    PRM_CONTENT = "prm_content"
+    PRM_TEMPERATURE = "prm_temperature"
     PTZ_CONTROL = "ptz_control"
     PUMP_RESET = "pump_reset"  # Water pump reset
     RECORD_MODE = "record_mode"
@@ -317,6 +319,7 @@ class DPCode(StrEnum):
     SOUND_MODE = "sound_mode"
     SPEED = "speed"  # Speed level
     SPRAY_MODE = "spray_mode"  # Spraying mode
+    SPRAY_VOLUME = "spray_volume"  # Dehumidifier
     START = "start"  # Start
     STATUS = "status"
     STERILIZATION = "sterilization"  # Sterilization

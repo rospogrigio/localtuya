@@ -33,7 +33,6 @@ class LocaltuyaButton(LocalTuyaEntity, ButtonEntity):
         """Initialize the Tuya button."""
         super().__init__(device, config_entry, buttonid, _LOGGER, **kwargs)
         self._state = None
-        _LOGGER.debug("Initialized button [%s]", self.name)
 
     async def async_press(self):
         """Press the button."""

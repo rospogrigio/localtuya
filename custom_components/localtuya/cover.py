@@ -97,7 +97,6 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._current_cover_position = 0
         self._current_state_action = STATE_STOPPED  # Default.
         self._set_new_position = int | None
-        _LOGGER.debug("Initialized cover [%s]", self.name)
 
     @property
     def supported_features(self):
@@ -242,14 +241,14 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     def status_updated(self):
         """Device status was updated."""
         self._previous_state = self._state
-        self._state = self.dps(self._dp_id)
+        self._state = self.dp_value(self._dp_id)
         if self._state.isupper():
             self._open_cmd = self._open_cmd.upper()
             self._close_cmd = self._close_cmd.upper()
             self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            curr_pos = self.dps_conf(CONF_CURRENT_POSITION_DP)
+            curr_pos = self.dp_value(CONF_CURRENT_POSITION_DP)
             if self._config.get(CONF_POSITION_INVERTED):
                 self._current_cover_position = 100 - curr_pos
             else:

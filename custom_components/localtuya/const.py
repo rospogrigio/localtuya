@@ -4,7 +4,6 @@ from homeassistant.const import EntityCategory, Platform
 DOMAIN = "localtuya"
 
 DATA_DISCOVERY = "discovery"
-DATA_CLOUD = "cloud_data"
 
 # Order on priority
 SUPPORTED_PROTOCOL_VERSIONS = ["3.3", "3.1", "3.2", "3.4", "3.5"]
@@ -17,6 +16,7 @@ PLATFORMS = {
     "Climate": Platform.CLIMATE,
     "Cover": Platform.COVER,
     "Fan": Platform.FAN,
+    "Humidifier": Platform.HUMIDIFIER,
     "Light": Platform.LIGHT,
     "Number": Platform.NUMBER,
     "Selector": Platform.SELECT,
@@ -25,7 +25,6 @@ PLATFORMS = {
     "Switch": Platform.SWITCH,
     "Vacuum": Platform.VACUUM,
 }
-TUYA_DEVICES = "tuya_devices"
 
 ATTR_CURRENT = "current"
 ATTR_CURRENT_CONSUMPTION = "current_consumption"
@@ -43,6 +42,7 @@ CONF_DEVICE_NODE_ID = "device_node_id"
 CONF_ENABLE_DEBUG = "enable_debug"
 CONF_PROTOCOL_VERSION = "protocol_version"
 CONF_NODE_ID = "node_id"
+CONF_GATEWAY_ID = "gateway_id"
 CONF_DPS_STRINGS = "dps_strings"
 CONF_MODEL = "model"
 CONF_PRODUCT_KEY = "product_key"
@@ -53,7 +53,7 @@ CONF_ENABLE_ADD_ENTITIES = "add_entities"
 
 CONF_ADD_DEVICE = "add_device"
 CONF_EDIT_DEVICE = "edit_device"
-CONF_CLOUD_SETUP = "cloud_setup"
+CONF_CONFIGURE_CLOUD = "configure_cloud"
 CONF_NO_CLOUD = "no_cloud"
 CONF_MANUAL_DPS = "manual_dps_strings"
 CONF_DEFAULT_VALUE = "dps_default_value"

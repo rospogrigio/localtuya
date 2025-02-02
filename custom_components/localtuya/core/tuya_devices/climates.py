@@ -136,8 +136,23 @@ CLIMATES: dict[LocalTuyaEntity] = {
             ),
         )
     ),
+    # Thermostatic Radiator Valve
+    # Not documented
+    "wkf": (
+        LocalTuyaEntity(
+            id=(DPCode.SWITCH, DPCode.MODE),
+            target_temperature_dp=(DPCode.TEMP_SET_F, DPCode.TEMP_SET),
+            current_temperature_dp=DPCode.TEMP_CURRENT,
+            hvac_mode_dp=DPCode.MODE,
+            hvac_action_dp=(DPCode.WORK_STATE, DPCode.WORK_MODE, DPCode.WORK_STATUS),
+            custom_configs=localtuya_climate(
+                hvac_mode_set="manual/auto",
+                temp_step=1,
+                actions_set="opened/closed",
+                unit=UNIT_C,
+                values_precsion=1,
+                target_precision=1,
+            ),
+        )
+    ),
 }
-
-# Thermostatic Radiator Valve
-# Not documented
-CLIMATES["wkf"] = CLIMATES["kt"]

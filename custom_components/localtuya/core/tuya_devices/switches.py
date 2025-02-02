@@ -558,7 +558,7 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
         LocalTuyaEntity(
-            id=DPCode.WINDOW_CHECK,
+            id=(DPCode.WINDOW_CHECK, DPCode.WINDOW_STATE),
             name="Open Window Detection",
             icon="mdi:window-open",
             entity_category=EntityCategory.CONFIG,
@@ -720,6 +720,12 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:minus-circle-outline",
             entity_category=EntityCategory.CONFIG,
         ),
+        LocalTuyaEntity(
+            id=DPCode.SWITCH_SPRAY,
+            name="Spray",
+            icon="mdi:spray",
+            entity_category=EntityCategory.CONFIG,
+        ),
     ),
 }
 
@@ -728,3 +734,7 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
 SWITCHES["cz"] = SWITCHES["pc"]
 
 SWITCHES["wk"] = CHILD_LOCK
+
+# Dehumidifier
+# https://developer.tuya.com/en/docs/iot/categorycs?id=Kaiuz1vcz4dha
+SWITCHES["cs"] = SWITCHES["jsq"]

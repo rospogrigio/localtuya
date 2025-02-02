@@ -376,3 +376,7 @@ LIGHTS["cz"] = LIGHTS["kg"]
 # Power Socket (duplicate of `kg`)
 # https://developer.tuya.com/en/docs/iot/s?id=K9gf7o5prgf7s
 LIGHTS["pc"] = LIGHTS["kg"]
+
+# Dehumidifier
+# https://developer.tuya.com/en/docs/iot/categorycs?id=Kaiuz1vcz4dha
+LIGHTS["cs"] = LIGHTS["jsq"]

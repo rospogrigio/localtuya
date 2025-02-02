@@ -215,9 +215,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
     def status_updated(self):
         """Get state of Tuya fan."""
-        self._is_on = self.dps(self._dp_id)
+        self._is_on = self.dp_value(self._dp_id)
 
-        current_speed = self.dps_conf(CONF_FAN_SPEED_CONTROL)
+        current_speed = self.dp_value(CONF_FAN_SPEED_CONTROL)
         if self._use_ordered_list:
             _LOGGER.debug(
                 "Fan current_speed ordered_list_item_to_percentage: %s from %s",
@@ -243,11 +243,11 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         _LOGGER.debug("Fan current_percentage: %s", self._percentage)
 
         if self.has_config(CONF_FAN_OSCILLATING_CONTROL):
-            self._oscillating = self.dps_conf(CONF_FAN_OSCILLATING_CONTROL)
+            self._oscillating = self.dp_value(CONF_FAN_OSCILLATING_CONTROL)
             _LOGGER.debug("Fan current_oscillating : %s", self._oscillating)
 
         if self.has_config(CONF_FAN_DIRECTION):
-            value = self.dps_conf(CONF_FAN_DIRECTION)
+            value = self.dp_value(CONF_FAN_DIRECTION)
             if value is not None:
                 if value == self._config.get(CONF_FAN_DIRECTION_FWD):
                     self._direction = DIRECTION_FORWARD

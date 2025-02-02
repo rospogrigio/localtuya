@@ -59,7 +59,7 @@ class LocaltuyaSiren(LocalTuyaEntity, SirenEntity):
         """Device status was updated."""
         super().status_updated()
 
-        state = str(self.dps(self._dp_id)).lower()
+        state = str(self.dp_value(self._dp_id)).lower()
         if state == self._config[CONF_STATE_ON].lower() or state == "true":
             self._is_on = True
         else:

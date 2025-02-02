@@ -111,7 +111,7 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         """Device status was updated."""
         super().status_updated()
 
-        state = self.dps(self._dp_id)
+        state = self.dp_value(self._dp_id)
 
         # Check that received status update for this entity.
         if state is not None:

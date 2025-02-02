@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 from hashlib import md5
+from socket import inet_aton
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -94,6 +95,12 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
         """Discover a new device."""
         if device.get("gwId") not in self.devices:
             self.devices[device.get("gwId")] = device
+            # Sort devices by ip.
+            sort_devices = sorted(
+                self.devices.items(), key=lambda i: inet_aton(i[1].get("ip", "0"))
+            )
+            self.devices = dict(sort_devices)
+
             _LOGGER.debug("Discovered device: %s", device)
         if self._callback:
             self._callback(device)

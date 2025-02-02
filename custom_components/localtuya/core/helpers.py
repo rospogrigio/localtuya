@@ -4,6 +4,7 @@ Helpers functions for HASS-LocalTuya.
 
 from enum import Enum
 from fnmatch import fnmatch
+from typing import NamedTuple
 import logging
 import os.path
 import yaml
@@ -30,8 +31,8 @@ class templates:
         for p, d, f in os.walk(dir):
             for file in sorted(f):
                 if fnmatch(file, "*yaml") or fnmatch(file, "*yml"):
-                    fn = str(file).replace(".yaml", "").replace("_", " ")
-                    files[fn.capitalize()] = file
+                    # fn = str(file).replace(".yaml", "").replace("_", " ")
+                    files[file] = file
         return files
 
     def import_config(filename):
@@ -39,7 +40,7 @@ class templates:
         template_dir = os.path.dirname(templates_dir.__file__)
         template_file = os.path.join(template_dir, filename)
         _config = load_yaml(template_file)
-        entity = []
+        entities = []
         for cfg in _config:
             ent = {}
             for plat, values in cfg.items():
@@ -50,8 +51,10 @@ class templates:
                         else value
                     )
                 ent[CONF_PLATFORM] = plat
-            entity.append(ent)
-        return entity
+            entities.append(ent)
+        if not entities:
+            raise ValueError("No entities found the can be used for localtuya")
+        return entities
 
     @classmethod
     def export_config(cls, config, config_name: str):
@@ -91,9 +94,12 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
     SelectOptionDict,
 )
+from ..const import CONF_LOCAL_KEY, CONF_NODE_ID
+
+GATEWAY = NamedTuple("Gateway", [("id", str), ("data", dict)])
 
 
-def _col_to_select(opt_list, multi_select=False, is_dps=False):
+def _col_to_select(opt_list, multi_select=False, is_dps=False, custom_value=False):
     """Convert collections to SelectSelectorConfig."""
     if type(opt_list) == dict:
         return SelectSelector(
@@ -102,6 +108,7 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False):
                     SelectOptionDict(value=str(v), label=k) for k, v in opt_list.items()
                 ],
                 mode=SelectSelectorMode.DROPDOWN,
+                custom_value=custom_value,
             )
         )
     elif type(opt_list) == list:
@@ -119,6 +126,20 @@ def _col_to_select(opt_list, multi_select=False, is_dps=False):
                 multiple=True if multi_select else False,
             )
         )
+
+
+def get_gateway_by_deviceid(device_id: str, cloud_data: dict) -> GATEWAY:
+    """Return the gateway (id, data) of the sub-deviceID if existed in cloud_data."""
+
+    if sub_device := cloud_data.get(device_id):
+        for dev_id, dev_data in cloud_data.items():
+            # Get gateway Assuming the LocalKey is the same gateway LocalKey!
+            if (
+                dev_id != device_id
+                and not dev_data.get(CONF_NODE_ID)
+                and dev_data.get(CONF_LOCAL_KEY) == sub_device.get(CONF_LOCAL_KEY)
+            ):
+                return GATEWAY(dev_id, dev_data)
 
 
 ###############################
