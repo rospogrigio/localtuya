@@ -19,7 +19,7 @@ The following Tuya device types are currently supported:
 
 Energy monitoring (voltage, current, watts, etc.) is supported for compatible devices.
 
-> **Currently, only Tuya protocols 3.1 and 3.3 are supported (3.4 is not).**
+> **Currently, Tuya protocols from 3.1 to 3.4 are supported.**
 
 This repository's development began as code from [@NameLessJedi](https://github.com/NameLessJedi), [@mileperhour](https://github.com/mileperhour) and [@TradeFace](https://github.com/TradeFace). Their code was then deeply refactored to provide proper integration with Home Assistant environment, adding config flow and other features. Refer to the "Thanks to" section below.
 
@@ -52,7 +52,7 @@ The Cloud API configuration page will appear, requesting to input your Tuya IoT 
 
 To setup a Tuya IoT Platform account and setup a project in it, refer to the instructions for the official Tuya integration:
 https://www.home-assistant.io/integrations/tuya/
-The place to find the Client ID and Secret is described in this link (in the ["Get Authorization Key"](https://www.home-assistant.io/integrations/tuya/#get-authorization-key) paragraph), while the User ID can be found in the "Link Tuya App Account" subtab within the Cloud project:
+The Client ID and Secret can be found at `Cloud > Development > Overview` and the User ID can be found in the "Link Tuya App Account" subtab within the Cloud project:
 
 ![user_id.png](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/8-user_id.png)
 
@@ -155,6 +155,32 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
                unit_of_measurement: 'W'
 ```
 
+# Climates
+
+There are a multitude of Tuya based climates out there, both heaters,
+thermostats and ACs. The all seems to be integrated in different ways and it's
+hard to find a common DP mapping. Below are a table of DP to product mapping
+which are currently seen working. Use it as a guide for your own mapping and
+please contribute to the list if you have the possibility.
+
+| DP  | Moes BHT 002                                            | Qlima WMS S + SC52 (AB;AF)                              | Avatto                                     |
+|-----|---------------------------------------------------------|---------------------------------------------------------|--------------------------------------------|
+| 1   | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                |
+| 2   | Target temperature<br>Integer, scaling: 0.5             | Target temperature<br>Integer, scaling 1                | Target temperature<br>Integer, scaling 1   |
+| 3   | Current temperature<br>Integer, scaling: 0.5            | Current temperature<br>Integer, scaling: 1              | Current temperature<br>Integer, scaling: 1 |
+| 4   | Mode<br>{0, 1}                                          | Mode<br>{"hot", "wind", "wet", "cold", "auto"}          | ?                                          |
+| 5   | Eco mode<br>?                                           | Fan mode<br>{"strong", "high", "middle", "low", "auto"} | ?                                          |
+| 15  | Not supported                                           | Supported, unknown<br>{true, false}                     | ?                                          |
+| 19  | Not supported                                           | Temperature unit<br>{"c", "f"}                          | ?                                          |
+| 23  | Not supported                                           | Supported, unknown<br>Integer, eg. 68                   | ?                                          |
+| 24  | Not supported                                           | Supported, unknown<br>Integer, eg. 64                   | ?                                          |
+| 101 | Not supported                                           | Outdoor temperature<br>Integer. Scaling: 1              | ?                                          |
+| 102 | Temperature of external sensor<br>Integer, scaling: 0.5 | Supported, unknown<br>Integer, eg. 34                   | ?                                          |
+| 104 | Supported, unknown<br>{true, false(?)}                  | Not supported                                           | ?                                          |
+
+[Moes BHT 002](https://community.home-assistant.io/t/moes-bht-002-thermostat-local-control-tuya-based/151953/47)
+[Avatto thermostat](https://pl.aliexpress.com/item/1005001605377377.html?gatewayAdapt=glo2pol)
+
 # Debugging
 
 Whenever you write a bug report, it helps tremendously if you include debug logs directly (otherwise we will just ask for them and it will take longer). So please enable debug logs like this and include them in your issue:
@@ -164,7 +190,10 @@ logger:
   default: warning
   logs:
     custom_components.localtuya: debug
+    custom_components.localtuya.pytuya: debug
 ```
+
+Then, edit the device that is showing problems and check the "Enable debugging for this device" button.
 
 # Notes:
 
@@ -177,8 +206,6 @@ logger:
 
 * Everything listed in https://github.com/rospogrigio/localtuya-homeassistant/issues/15
 
-* Support devices that use Tuya protocol v.3.4
-
 # Thanks to:
 
 NameLessJedi https://github.com/NameLessJedi/localtuya-homeassistant and mileperhour https://github.com/mileperhour/localtuya-homeassistant being the major sources of inspiration, and whose code for switches is substantially unchanged.
@@ -186,6 +213,8 @@ NameLessJedi https://github.com/NameLessJedi/localtuya-homeassistant and mileper
 TradeFace, for being the only one to provide the correct code for communication with the cover (in particular, the 0x0d command for the status instead of the 0x0a, and related needs such as double reply to be received): https://github.com/TradeFace/tuya/
 
 sean6541, for the working (standard) Python Handler for Tuya devices.
+
+jasonacox, for the TinyTuya project from where I could import the code to communicate with devices using protocol 3.4.
 
 postlund, for the ideas, for coding 95% of the refactoring and boosting the quality of this repo to levels hard to imagine (by me, at least) and teaching me A LOT of how things work in Home Assistant.
 
