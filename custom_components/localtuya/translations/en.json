@@ -199,6 +199,7 @@
                     "preset_set": "Presets Set (optional)",
                     "eco_dp": "Eco DP (optional)",
                     "eco_value": "Eco value (optional)",
+                    "eco_format": "Eco format (optional)",
                     "heuristic_action": "Enable heuristic action (optional)",
                     "dps_default_value": "Default value when un-initialised (optional)",
                     "restore_on_reconnect": "Restore the last set value in HomeAssistant after a lost connection",
