@@ -360,12 +360,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         if self._conf_eco_dp:
             presets.append(PRESET_ECO)
         if presets and PRESET_NONE not in presets:
-            # wrong to have presets but not the none preset -> insert it as first
-            presets.insert(0, PRESET_NONE)
-            if PRESET_NONE not in self._conf_preset_set:
-                self._conf_preset_set[PRESET_NONE] = self.format_eco_value(
-                    self._conf_eco_value, invert=True
-                )
+            # wrong to have presets but not the none preset -> insert it
+            presets.append(PRESET_NONE)
 
         return presets
 
@@ -468,10 +464,13 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 self.format_eco_value(self._conf_eco_value), self._conf_eco_dp
             )
             return
+        if preset_mode == PRESET_NONE and preset_mode not in self._conf_preset_set:
+            await self._device.set_dp(
+                self.format_eco_value(self._conf_eco_value, invert=True),
+                self._conf_eco_dp,
+            )
+            return
 
-        print(
-            f"----- SETTIBG PRESET {preset_mode} as {self._conf_preset_set[preset_mode]} and {type(self._conf_preset_set[preset_mode])} --------"
-        )
         await self._device.set_dp(
             self._conf_preset_set[preset_mode],
             self._conf_preset_dp,
