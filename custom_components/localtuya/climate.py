@@ -615,19 +615,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
                     self._hvac_mode = ha_hvac
                     break
 
-        # Update the fan status
-        if self.has_config(CONF_HVAC_FAN_MODE_DP):
-            for mode, value in self._conf_hvac_fan_mode_set.items():
-                if self.dps_conf(CONF_HVAC_FAN_MODE_DP) == value:
-                    self._fan_mode = mode
-                    break
-            else:
-                # in case fan mode and preset share the same dp
-                _LOGGER.debug(
-                    "Unknown fan mode %s" % self.dps_conf(CONF_HVAC_FAN_MODE_DP)
-                )
-                self._fan_mode = FAN_AUTO
-
         # Update the swing status
         if self.has_config(CONF_HVAC_SWING_MODE_DP):
             for mode, value in self._conf_hvac_swing_mode_set.items():
