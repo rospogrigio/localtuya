@@ -484,7 +484,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def fan_modes(self) -> list:
         """Return the list of available fan modes."""
-        return list(self._conf_hvac_fan_mode_set)
+        return self._fan_supported_speeds
 
     @property
     def swing_mode(self):
