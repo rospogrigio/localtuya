@@ -359,16 +359,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         supported_features = ClimateEntityFeature(0)
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-
-        if self.has_config(CONF_MAX_TEMP_DP):
-            supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-
-        if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
-            supported_features |= ClimateEntityFeature.PRESET_MODE
-        if self.has_config(CONF_HVAC_SWING_MODE_DP):
-            supported_features |= ClimateEntityFeature.SWING_MODE
-        if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
-            supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self._has_presets:
             supported_features |= ClimateEntityFeature.PRESET_MODE
         if self._has_fan_mode:
