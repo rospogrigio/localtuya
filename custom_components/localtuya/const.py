@@ -239,4 +239,4 @@ class DeviceConfig:
         self.dps_strings: list = self.device_config.get(CONF_DPS_STRINGS, [])
 
     def as_dict(self):
-        return self._device_config
+        return self.device_config
