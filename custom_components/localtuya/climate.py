@@ -379,7 +379,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             supported_features |= ClimateEntityFeature.FAN_MODE
 
         supported_features |= ClimateEntityFeature.TURN_OFF
-        supported_features |= ClimateEntityFeature.TURN_ONgit  
+        supported_features |= ClimateEntityFeature.TURN_ON  
 
         return supported_features
 
