@@ -356,25 +356,21 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = (
-            ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
-        )
+        supported_features = ClimateEntityFeature(0)
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            supported_features = (
-                supported_features | ClimateEntityFeature.TARGET_TEMPERATURE
-            )
+            supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
+
         if self.has_config(CONF_MAX_TEMP_DP):
-            supported_features = (
-                supported_features | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
-            )
+            supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
-            supported_features = supported_features | ClimateEntityFeature.PRESET_MODE
+            supported_features |= ClimateEntityFeature.PRESET_MODE
         if self.has_config(CONF_HVAC_FAN_MODE_DP) and self.has_config(
             CONF_HVAC_FAN_MODE_SET
         ):
-            supported_features = supported_features | ClimateEntityFeature.FAN_MODE
+            supported_features |= ClimateEntityFeature.FAN_MODE
         if self.has_config(CONF_HVAC_SWING_MODE_DP):
-            supported_features = supported_features | ClimateEntityFeature.SWING_MODE
+            supported_features |= ClimateEntityFeature.SWING_MODE
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self._has_presets:
@@ -383,7 +379,7 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
             supported_features |= ClimateEntityFeature.FAN_MODE
 
         supported_features |= ClimateEntityFeature.TURN_OFF
-        supported_features |= ClimateEntityFeature.TURN_ON
+        supported_features |= ClimateEntityFeature.TURN_ONgit  
 
         return supported_features
 
