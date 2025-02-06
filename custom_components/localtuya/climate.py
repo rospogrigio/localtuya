@@ -15,8 +15,8 @@ from homeassistant.components.climate import (
     ClimateEntity,
 )
 from homeassistant.components.climate.const import (
-    HVACAction,
     HVACMode,
+    HVACAction,
     PRESET_AWAY,
     PRESET_ECO,
     PRESET_HOME,
@@ -365,10 +365,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
 
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
             supported_features |= ClimateEntityFeature.PRESET_MODE
-        if self.has_config(CONF_HVAC_FAN_MODE_DP) and self.has_config(
-            CONF_HVAC_FAN_MODE_SET
-        ):
-            supported_features |= ClimateEntityFeature.FAN_MODE
         if self.has_config(CONF_HVAC_SWING_MODE_DP):
             supported_features |= ClimateEntityFeature.SWING_MODE
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
