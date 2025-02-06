@@ -143,15 +143,6 @@ HVAC_ACTION_SETS = {
         HVACAction.IDLE: "warming",
     },
 }
-HVAC_FAN_MODE_SETS = {
-    "Auto/Low/Middle/High/Strong": {
-        FAN_AUTO: "auto",
-        FAN_LOW: "low",
-        FAN_MEDIUM: "middle",
-        FAN_HIGH: "high",
-        FAN_TOP: "strong",
-    }
-}
 HVAC_SWING_MODE_SETS = {
     "True/False": {
         SWING_ON: True,
@@ -291,9 +282,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._hvac_action = None
         self._precision = float(self._config.get(CONF_PRECISION, DEFAULT_PRECISION))
         self._conf_hvac_fan_mode_dp = self._config.get(CONF_HVAC_FAN_MODE_DP)
-        self._conf_hvac_fan_mode_set = HVAC_FAN_MODE_SETS.get(
-            self._config.get(CONF_HVAC_FAN_MODE_SET), {}
-        )
         self._conf_hvac_swing_mode_dp = self._config.get(CONF_HVAC_SWING_MODE_DP)
         self._conf_hvac_swing_mode_set = HVAC_SWING_MODE_SETS.get(
             self._config.get(CONF_HVAC_SWING_MODE_SET), {}
