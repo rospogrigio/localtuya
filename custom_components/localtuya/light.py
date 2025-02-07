@@ -111,7 +111,9 @@ MAP_MODE_SET = {0: Mode(), 1: Mode(color=MODE_MANUAL)}
 
 def map_range(value, from_lower, from_upper, to_lower, to_upper):
     """Map a value in one range to another."""
-    mapped = (value - from_lower) * (to_upper - to_lower) / (
+    if value == None:
+        return 0
+    mapped = (int(value) - from_lower) * (to_upper - to_lower) / (
         from_upper - from_lower
     ) + to_lower
     return round(min(max(mapped, to_lower), to_upper))
@@ -205,6 +207,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def brightness(self):
         """Return the brightness of the light."""
+        if self._brightness == None:
+            return None
         if self.is_color_mode or self.is_white_mode:
             return map_range(
                 self._brightness, self._lower_brightness, self._upper_brightness, 0, 255
