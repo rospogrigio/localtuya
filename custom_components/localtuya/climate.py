@@ -319,6 +319,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 ) > self._target_temperature:
                     self._hvac_action = HVACAction.IDLE
             return self._hvac_action
+        if self._hvac_mode == HVACMode.OFF:
+            return HVACAction.IDLE
         return self._hvac_action
 
     @property
