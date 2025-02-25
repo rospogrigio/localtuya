@@ -138,12 +138,6 @@ HVAC_ACTION_SETS = {
         HVACAction.IDLE: "warming",
     },
 }
-HVAC_SWING_MODE_SETS = {
-    "True/False": {
-        SWING_ON: True,
-        SWING_OFF: False,
-    }
-}
 PRESET_SETS = {
     "Manual/Holiday/Program": {
         PRESET_AWAY: "Holiday",
