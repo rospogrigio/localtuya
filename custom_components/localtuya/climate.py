@@ -54,8 +54,6 @@ from .const import (
     CONF_TEMPERATURE_STEP,
     CONF_HVAC_FAN_MODE_DP,
     CONF_HVAC_FAN_MODE_SET,
-    CONF_HVAC_SWING_MODE_DP,
-    CONF_HVAC_SWING_MODE_SET,
     CONF_MIN_TEMP,
     CONF_MAX_TEMP,
     CONF_HVAC_ADD_OFF,
@@ -220,9 +218,6 @@ def flow_schema(dps):
         vol.Optional(CONF_SWING_HORIZONTAL_MODES, default={}): ObjectSelector(),
         vol.Optional(CONF_FAN_SPEED_DP): col_to_select(dps, is_dps=True),
         vol.Optional(CONF_FAN_SPEED_LIST, default=FAN_SPEEDS_DEFAULT): str,
-        vol.Optional(CONF_TARGET_PRECISION, default=PRECISION_WHOLE): col_to_select(
-            [PRECISION_WHOLE, PRECISION_HALVES, PRECISION_TENTHS]
-        ),
         vol.Optional(CONF_HVAC_ADD_OFF, default=True): bool,
         vol.Optional(CONF_TEMPERATURE_UNIT): col_to_select(SUPPORTED_TEMPERATURES),
         vol.Optional(CONF_HEURISTIC_ACTION): bool,
@@ -266,12 +261,9 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._current_temperature = None
         self._hvac_mode = None
         self._fan_mode = None
-        self._swing_mode = None
         self._preset_mode = None
         self._hvac_action = None
         self._precision = float(self._config.get(CONF_PRECISION, DEFAULT_PRECISION))
-        self._conf_hvac_fan_mode_dp = self._config.get(CONF_HVAC_FAN_MODE_DP)
-        self._conf_hvac_swing_mode_dp = self._config.get(CONF_HVAC_SWING_MODE_DP)
         self._precision_target = float(
             self._config.get(CONF_TARGET_PRECISION, DEFAULT_PRECISION)
         )
@@ -501,11 +493,6 @@ class LocalTuyaClimate(LocalTuyaEntity, ClimateEntity):
     def fan_modes(self) -> list:
         """Return the list of available fan modes."""
         return self._fan_supported_speeds
-
-    @property
-    def swing_mode(self):
-        """Return the swing setting."""
-        return self._swing_mode
 
     def swing_modes(self) -> list[str] | None:
         """Return the list of available swing modes."""
