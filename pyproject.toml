@@ -1,8 +1,23 @@
 [tool.black]
-target-version = ["py311"]
+target-version = ["py312"]
 include = 'custom_components/localtuya/.*\.py'
 
+[tool.codespell]
+skip = '*.pyc,*.pyi,*~,*.json'
+ignore-words-list = "hass,contiuation"
+count = true
+quiet-level = 3
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["tests"]
+
 # pylint config stolen from Home Assistant
+[tool.pylint.MAIN]
 # Use a conservative default here; 2 should speed up most setups and not hurt
 # any too bad. Override on command line as appropriate.
 # Disabled for now: https://github.com/PyCQA/pylint/issues/3584

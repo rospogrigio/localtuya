@@ -1,0 +1,265 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Bu hesap zaten yapılandırılmış.",
+      "device_updated": "Cihaz yapılandırması güncellendi."
+    },
+    "error": {
+      "authentication_failed": "Kimlik doğrulama başarısız oldu.\n{msg}",
+      "cannot_connect": "Cihaza bağlanılamıyor. IP adresinin doğru olduğundan emin olun ve tekrar deneyin.",
+      "device_list_failed": "Cihaz listesi alınamadı.\n{msg}",
+      "invalid_auth": "Cihazla kimlik doğrulama başarısız oldu. Cihaz Kimliği ve Yerel Anahtarın doğru olduğundan emin olun.",
+      "unknown": "Bilinmeyen bir hata oluştu.\n{ex}.",
+      "entity_already_configured": "Bu varlık zaten yapılandırılmış.",
+      "address_in_use": "Keşif için kullanılan TCP portu 6668 zaten kullanılıyor. Başka bir entegrasyonun bunu kullanmadığından emin olun.",
+      "discovery_failed": "Cihazlar keşfedilirken bir hata oluştu. Ayrıntılar için günlüğe bakın. Sorun devam ederse, bir hata bildirimi oluşturun (hata ayıklama günlüklerini dahil ederek).",
+      "empty_dps": "Cihaza bağlantı başarılı oldu ancak veri noktası bulunamadı. Lütfen kurulumu tekrar deneyin. Sorun devam ederse, bir hata bildirimi oluşturun (hata ayıklama günlüklerini dahil ederek)."
+    },
+    "step": {
+      "user": {
+        "title": "Bulut API hesabı yapılandırması",
+        "description": "Tuya Bulut API'sine bağlanmak için kullanılan kimlik bilgilerini yapılandırın.",
+        "data": {
+          "region": "Veri Merkezi Bölgesi",
+          "client_id": "Müşteri Kimliği",
+          "client_secret": "Müşteri Sırrı",
+          "user_id": "Kullanıcı Kimliği",
+          "username": "Kullanıcı Adı",
+          "no_cloud": "Bulut API'sini devre dışı bırak?"
+        }
+      }
+    }
+  },
+  "options": {
+    "abort": {
+      "already_configured": "Bu hesap zaten yapılandırılmış.",
+      "device_success": "{dev_name} cihazı başarıyla {action}.",
+      "no_entities": "Bir cihazdan tüm varlıklar kaldırılamaz.\nBir cihazı silmek istiyorsanız: `Cihazlar ve hizmetler` menüsüne gidin, `Cihazlar` sekmesinde cihazınızı arayın, `Cihaz bilgisi` çerçevesindeki 3 noktaya tıklayın ve `Sil` düğmesine basın."
+    },
+    "error": {
+      "authentication_failed": "Kimlik doğrulama başarısız oldu.\n{msg}",
+      "cannot_connect": "Cihaza bağlanılamıyor. IP adresinin doğru olduğundan emin olun ve tekrar deneyin.",
+      "device_list_failed": "Cihaz listesi alınamadı.\n{msg}",
+      "invalid_auth": "Cihazla kimlik doğrulama başarısız oldu. Cihaz Kimliği ve Yerel Anahtarın doğru olduğundan emin olun.",
+      "unknown": "Bilinmeyen bir hata oluştu. \n{ex}.",
+      "entity_already_configured": "Bu varlık zaten yapılandırılmış.",
+      "address_in_use": "Keşif için kullanılan TCP portu 6668 zaten kullanılıyor. Başka bir entegrasyonun bunu kullanmadığından emin olun.",
+      "discovery_failed": "Cihazlar keşfedilirken bir hata oluştu. Ayrıntılar için günlüğe bakın. Sorun devam ederse, bir hata bildirimi oluşturun (hata ayıklama günlüklerini dahil ederek).",
+      "empty_dps": "Cihaza bağlantı başarılı oldu ancak veri noktası bulunamadı. Lütfen kurulumu tekrar deneyin. Sorun devam ederse, bir hata bildirimi oluşturun (hata ayıklama günlüklerini dahil ederek)."
+    },
+    "step": {
+      "yaml_import": {
+        "title": "Desteklenmiyor",
+        "description": "`YAML` kullanılarak yapılandırılmış cihazlar, kullanıcı arayüzünde yapılandırılamaz. Cihazınızı `YAML`den silin ve kullanıcı arayüzünde yeniden oluşturun ya da `YAML` yapılandırmanızı değiştirin."
+      },
+      "init": {
+        "title": "Yapılandırma",
+        "description": "Devam etmek için bir seçenek seçin.",
+        "menu_options": {
+          "add_device": "Yeni cihaz ekle",
+          "edit_device": "Mevcut cihazı yeniden yapılandır",
+          "configure_cloud": "Bulut API hesabını yönet"
+        }
+      },
+      "add_device": {
+        "title": "Yapılandırılacak cihazı seçin",
+        "description": "Yerel ağınızdaki uyumlu Tuya cihazları, Tuya uygulamasında kurulumları yapıldıktan sonra otomatik olarak keşfedilir. Beklediğiniz cihazı göremiyorsanız, açılır menüden `Cihazı manuel ekle` seçeneğini belirleyin.",
+        "data": {
+          "selected_device": "Keşfedilen cihazlar",
+          "mass_configure": "Tüm tanınan cihazları otomatik olarak yapılandır"
+        }
+      },
+      "edit_device": {
+        "title": "Mevcut cihazı yeniden yapılandır",
+        "description": "Yeniden yapılandırmak istediğiniz cihazı seçin.",
+        "data": {
+          "selected_device": "Yapılandırılmış cihazlar"
+        }
+      },
+      "configure_cloud": {
+        "title": "Bulut API hesabını yönet",
+        "description": "Tuya Bulut API'sine bağlanmak için kullanılan kimlik bilgilerini yapılandırın.",
+        "data": {
+          "region": "Veri Merkezi Bölgesi",
+          "client_id": "Müşteri Kimliği",
+          "client_secret": "Müşteri Sırrı",
+          "user_id": "Kullanıcı Kimliği",
+          "username": "Kullanıcı Adı",
+          "no_cloud": "Bulut API'sini devre dışı bırak?"
+        }
+      },
+      "confirm": {
+        "title": "Onay",
+        "description": "{message}"
+      },
+      "configure_device": {
+        "title": "Cihaz bağlantısını yapılandır",
+        "description": "LocalTuya'nın cihaza bağlanabilmesi için cihazla ilgili tüm eksik bilgileri doldurun {for_device}.",
+        "data": {
+          "friendly_name": "Cihaz Adı",
+          "host": "IP Adresi",
+          "device_id": "Cihaz Kimliği",
+          "local_key": "Yerel Anahtar",
+          "node_id": "(Opsiyonel) Alt cihazların Düğüm Kimliği",
+          "protocol_version": "Protokol Sürümü",
+          "enable_debug": "Hata ayıklamayı etkinleştir (manuel olarak `configuration.yaml` içinde de etkinleştirilmelidir)",
+          "scan_interval": "(Opsiyonel) Otomatik tarama yapılmıyorsa, saniye cinsinden tarama aralığı",
+          "entities": "Yapılandırılmış varlıklar (kaldırmak için işareti kaldırın)",
+          "add_entities": "Yeni varlık ekle",
+          "manual_dps_strings": "(Opsiyonel) Otomatik algılanamıyorsa, manuel DPS'ler (virgülle ayrılmış)",
+          "reset_dpids": "(Opsiyonel) Cihaz açıldıktan sonra durum isteklerine yanıt vermezse RESET komutunda gönderilecek DPIDs (virgülle ayrılmış)",
+          "device_sleep_time": "(Opsiyonel) Cihazın durumunu rapor ettikten sonra uykuya geçme süresi (saniye cinsinden)",
+          "export_config": "Varlık yapılandırmasını şablon olarak kaydet"
+        }
+      },
+      "device_setup_method": {
+        "title": "Cihaz varlıklarını yapılandır",
+        "description": "LocalTuya, yapılandırmanın geri kalanını otomatik olarak keşfetmeye çalışacaktır. Ancak, bu cihazınız için işe yaramazsa veya ayarları ince ayar yapmak istiyorsanız, `manuel` seçeneğini belirleyin.",
+        "menu_options": {
+          "auto_configure_device": "Cihaz varlıklarını otomatik olarak keşfet",
+          "pick_entity_type": "Cihaz varlıklarını manuel yapılandır",
+          "choose_template": "Kaydedilmiş şablonu kullan"
+        }
+      },
+      "auto_configure_device": {
+        "title": "Otomatik yapılandır",
+        "description": "Bir hata oluştu: {err_msg}. Sebep görünmüyorsa, günlükleri kontrol edin.",
+        "menu_options": {
+          "device_setup_method": "Kurulum yöntemine geri dön"
+        }
+      },
+      "pick_entity_type": {
+        "title": "Varlık türü seçimi",
+        "description": "Eklemek istediğiniz varlık türünü seçin.",
+        "data": {
+          "platform_to_add": "Varlık türünü seçin",
+          "no_additional_entities": "Varlık yapılandırmasını tamamla",
+          "use_template": "Şablon dosyasını içe aktar"
+        }
+      },
+      "choose_template": {
+        "title": "Şablon dosyasını içe aktar",
+        "description": "Şablon dosyaları `templates` dizininde bulunur ([Daha Fazla Bilgi](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
+        "data": {
+          "templates": "Şablonu seçin"
+        }
+      },
+      "configure_entity": {
+        "title": "Varlığı yapılandır",
+        "description": "Lütfen {entity} için {platform} türüne sahip ayrıntıları doldurun. Tüm ayarlar (`Tür` ve `Kimlik` haricinde) daha sonra `Yapılandır` sayfasından değiştirilebilir.",
+        "data": {
+          "id": "DP Kimliği",
+          "friendly_name": "Varlık için Dostane Ad",
+          "current": "Akım",
+          "current_consumption": "Anlık Tüketim",
+          "voltage": "Voltaj",
+          "commands_set": "Aç_Kapat_Durdur Komut Seti",
+          "positioning_mode": "Konumlandırma modu",
+          "current_position_dp": "Mevcut Konum (yalnızca *konum* modu için)",
+          "set_position_dp": "Konumu Ayarla (yalnızca *konum* modu için)",
+          "stop_switch_dp": "(Opsiyonel) Durdurma anahtarı (kapak devam komutuna sahip mi?)",
+          "position_inverted": "0-100 konumunu ters çevir (yalnızca *konum* modu için)",
+          "span_time": "Tam açılma süresi, saniye cinsinden. (yalnızca *zamanlanmış* mod için)",
+          "unit_of_measurement": "(Opsiyonel) Ölçüm Birimi",
+          "device_class": "(Opsiyonel) Cihaz Sınıfı",
+          "state_class": "(Opsiyonel) Durum Sınıfı",
+          "scaling": "(Opsiyonel) Ölçeklendirme Faktörü",
+          "state_on": "Açık Değer",
+          "state_off": "Kapalı Değer",
+          "powergo_dp": "Güç DP'si (genellikle 25 veya 2)",
+          "idle_status_value": "Boşta Durum (virgülle ayrılmış)",
+          "returning_status_value": "Geri Dönüş Durumu (virgülle ayrılmış)",
+          "docked_status_value": "Bağlantı Durumu (virgülle ayrılmış)",
+          "fault_dp": "Hata DP'si (genellikle 11)",
+          "battery_dp": "Batarya durumu DP'si (genellikle 14)",
+          "mode_dp": "Mod DP",
+          "modes": "Modlar listesi",
+          "return_mode": "Eve dönüş modu",
+          "fan_speed_dp": "(Opsiyonel) Fan hızları DP",
+          "fan_speeds": "Fan hızları listesi (virgülle ayrılmış)",
+          "clean_time_dp": "Temizleme Süresi DP (genellikle 33)",
+          "clean_area_dp": "Temizleme Alanı DP (genellikle 32)",
+          "clean_record_dp": "Temizleme Kaydı DP (genellikle 34)",
+          "locate_dp": "Konumlandırma DP (genellikle 31)",
+          "pause_dp": "Duraklatma DP",
+          "paused_state": "Duraklatma durumu (pause, paused, vb.)",
+          "stop_status": "Durdurma durumu",
+          "brightness": "Parlaklık (sadece beyaz renk için)",
+          "brightness_lower": "Alt Parlaklık Değeri",
+          "brightness_upper": "Üst Parlaklık Değeri",
+          "color_temp": "Renk Sıcaklığı",
+          "color_temp_reverse": "Renk Sıcaklığı Ters Çevrilsin mi?",
+          "color": "Renk",
+          "color_mode": "Renk Modu ya da Çalışma Modu",
+          "color_temp_min_kelvin": "Minimum Renk Sıcaklığı (K)",
+          "color_temp_max_kelvin": "Maksimum Renk Sıcaklığı (K)",
+          "music_mode": "Müzik modu mevcut mu?",
+          "scene": "Sahne",
+          "scene_values": "(Opsiyonel) Sahne değerleri",
+          "select_options": "Seçenek değerlerini seçin",
+          "fan_speed_control": "Fan Hızı Kontrol DP",
+          "fan_oscillating_control": "Fan Salınım Kontrol DP",
+          "fan_speed_min": "Minimum fan hızı (tam sayı)",
+          "fan_speed_max": "Maksimum fan hızı (tam sayı)",
+          "fan_speed_ordered_list": "Fan hız listesi (min/maks hızı geçersiz kılar, her girdiyi virgülle ',' ayırın)",
+          "fan_direction": "Fan Yönü DP",
+          "fan_direction_forward": "İleri DP değeri",
+          "fan_direction_reverse": "Geri DP değeri",
+          "fan_dps_type": "DP değer türü",
+          "current_temperature_dp": "Mevcut Sıcaklık",
+          "target_temperature_dp": "Hedef Sıcaklık",
+          "temperature_step": "(Opsiyonel) Sıcaklık Adımı",
+          "min_temperature": "Minimum Sıcaklık",
+          "max_temperature": "Maksimum Sıcaklık",
+          "precision": "Hassasiyet (opsiyonel, DP değerleri için)",
+          "target_precision": "Hedef Hassasiyet (opsiyonel, DP değerleri için)",
+          "temperature_unit": "(Opsiyonel) Sıcaklık Birimi",
+          "hvac_mode_dp": "(Opsiyonel) HVAC Modu DP",
+          "hvac_mode_set": "(Opsiyonel) HVAC Modları",
+          "hvac_add_off": "(Opsiyonel) HVAC Modlarına `OFF` ekle",
+          "hvac_action_dp": "(Opsiyonel) HVAC Geçerli Eylem DP",
+          "hvac_action_set": "(Opsiyonel) HVAC Eylemleri",
+          "preset_dp": "(Opsiyonel) Önayarlar DP",
+          "preset_set": "(Opsiyonel) Önayarlar",
+          "fan_speed_list": "(Opsiyonel) Desteklenen fan hızları, her girdiyi virgülle ',' ayırın",
+          "eco_dp": "(Opsiyonel) Eko DP",
+          "eco_value": "(Opsiyonel) Eko değeri",
+          "heuristic_action": "(Opsiyonel) Heuristik eylemi etkinleştir",
+          "dps_default_value": "(Opsiyonel) Başlatılmamışken varsayılan değer",
+          "restore_on_reconnect": "Bağlantı kaybından sonra Home Assistant'da ayarlanan son değeri geri yükle?",
+          "min_value": "Minimum Değer",
+          "max_value": "Maksimum Değer",
+          "step_size": "Sayılar arasındaki minimum artış",
+          "is_passive_entity": "Pasif varlık mı? (başlangıç değerini göndermek için entegrasyon gerekir)",
+          "entity_category": "Varlığı bu kategoride göster",
+          "humidifier_available_modes": "(Opsiyonel) Cihazda mevcut modlar",
+          "humidifier_current_humidity_dp": "(Opsiyonel) Mevcut Nem DP",
+          "humidifier_mode_dp": "(Opsiyonel) Mod Ayarı DP",
+          "humidifier_set_humidity_dp": "(Opsiyonel) Nem Ayarı DP",
+          "min_humidity": "Desteklenen minimum nemi ayarla",
+          "max_humidity": "Desteklenen maksimum nemi ayarla",
+          "alarm_supported_states": "Cihaz tarafından desteklenen durumlar",
+          "receive_dp": "Sinyal alma DP'si (varsayılan 202)",
+          "key_study_dp": "(Opsiyonel) Anahtar Çalışması DP (genellikle 7)",
+          "lock_state_dp": "(Opsiyonel) Kilit durumu DP",
+          "jammed_dp": "(Opsiyonel) Sıkışma DP",
+          "target_temperature_high_dp": "(Opsiyonel) Hedef Yüksek Sıcaklık DP",
+          "target_temperature_low_dp": "(Opsiyonel) Hedef Düşük Sıcaklık DP",
+          "color_mode_set": "Desteklenen modlar seti (emin değilseniz varsayılanı bırakın)"
+        },
+        "data_description": {
+          "hvac_mode_set": "Her satır [ hvac_modu: cihaz_değeri ] temsil eder [Desteklenen HVAC Modları](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
+          "hvac_action_set": "Her satır [ hvac_eylemi: cihaz_değeri ] temsil eder [Desteklenen HVAC Eylemleri](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-action)",
+          "preset_set": "Her satır [ cihaz_değeri: dostane ad ] temsil eder",
+          "scene_values": "Her satır [ cihaz_değeri: dostane ad ] temsil eder",
+          "select_options": "Her satır [ cihaz_değeri: dostane ad ] temsil eder",
+          "alarm_supported_states": "Her satır [ desteklenen durum: cihaz değeri ] temsil eder [Desteklenen Durumlar](https://developers.home-assistant.io/docs/core/entity/alarm-control-panel/#states)",
+          "humidifier_available_modes": "Her satır [ cihaz_değeri: dostane ad ] temsil eder",
+          "device_class": "[Cihaz Sınıfları](https://www.home-assistant.io/integrations/homeassistant/#device-class) hakkında daha fazla bilgi edinin",
+          "state_class": "[Durum Sınıfları](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes) hakkında daha fazla bilgi edinin"
+        }
+      }
+    }
+  },
+  "title": "LocalTuya"
+}

@@ -1,0 +1,51 @@
+name: "MkDocs"
+
+on:
+  push:
+    branches: [master, dev]
+    paths:
+      - .github/workflows/mkdocs.yml
+      - documentation/**
+      - documentation/mkdocs.yml
+  workflow_dispatch:
+
+env:
+  docs_dir: ./documentation
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: "Deploy documentation"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: "Get cache ID"
+        run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV   
+
+      - name: "Cache"
+        uses: actions/cache@v3
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+
+      - name: "Install mkdocs"
+        run: pip install mkdocs-material 
+
+      # - name: "Install dependencies"
+      #   run: pip install $docs_dir/requirements.txt
+
+      - name: "Run mkdocs"
+        run: |
+          cd $docs_dir
+          mkdocs gh-deploy --force

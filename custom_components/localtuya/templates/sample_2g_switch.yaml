@@ -1,0 +1,43 @@
+# Simple 2 Switches config example
+- switch:
+    id: "1"
+    friendly_name: "2G Local Switch 1"
+    entity_category: None
+    restore_on_reconnect: false
+    is_passive_entity: false
+    platform: "switch"
+
+- switch:
+    id: "2"
+    friendly_name: "2G Local Switch 2"
+    entity_category: None
+    is_passive_entity: false
+    platform: "switch"
+####################################################
+#---#             Templates Guide              #---#
+####################################################
+# Templates:
+# The template is basically ready to go configs can be imported instead of choosing configs DPs names etc...
+
+# IMPORTANT:
+# there is now valid check atm config so make sure you're importing correct configs.
+
+# the configs depends on the platform and what input does platform support read bottom.
+
+# THERE Is 2 ways to make template:
+# - 1st is write the yaml ur self:
+# --[ Keep in mind there is no valid check atm ]
+
+# - 2nd is to export ur device file from config flow. [ Recommended ]:
+# -- in HA Dashboard go to [ Devices -> localtuya -> Configure -> Edit Device * choose the device u want to export
+# --- Export the device config then submit]
+
+# Templates DIR:
+#   the configs will be exported in [custom_components/localtuya/templates]
+
+# How to import:
+# -- When u add new device when the form [ Pick Entity type selection ]
+# --- Import template Form will show up showing available templates in templates folder.
+
+# -- templates in [custom_components/localtuya/templates]
+# -- Templates files will load up with HA so adding files will require restarting HA to show up.

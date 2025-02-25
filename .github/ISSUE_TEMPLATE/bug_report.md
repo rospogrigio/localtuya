@@ -25,6 +25,8 @@ assignees: ''
 -->
 - Localtuya version: <!-- plugin version from HACS, master, commit id --> 
 - Home Assistant Core version: <!-- Configuration => Info --> 
+- [] Are you using the Home Assistant Tuya Cloud component ? <!-- if yes, put a x between the two [] => [x] -->
+- [] Is the device disconnected/blocked from the internet ? <!-- if yes, put a x between the two [] => [x] -->
 - [] Does the device work using the Home Assistant Tuya Cloud component ? <!-- if yes, put a x between the two [] => [x] -->
 - [] Does the device work using the Tinytuya (https://github.com/jasonacox/tinytuya) command line tool ? <!-- if yes, put a x between the two [] => [x] -->
 - [] Was the device working with earlier versions of localtuya ? Which one? <!-- if yes, put a x between the two [] => [x] -->

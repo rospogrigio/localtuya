@@ -1,0 +1,6 @@
+.md-typeset .admonition ,
+.md-typeset details {
+  border-width: 0;
+  border-radius: 0;
+  border-left-width: 3.5px;
+}

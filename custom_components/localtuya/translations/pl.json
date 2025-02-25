@@ -1,0 +1,260 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "To konto zostało już skonfigurowane.",
+            "device_updated": "Konfiguracja urządzenia została zaktualizowana."
+        },
+        "error": {
+            "authentication_failed": "Nie udało się uwierzytelnić.\n{msg}",
+            "cannot_connect": "Nie można połączyć się z urządzeniem. Potwierdź, że adres IP jest poprawny, a następnie spróbuj ponownie.",
+            "device_list_failed": "Nie udało się pobrać listy urządzeń.\n{msg}",
+            "invalid_auth": "Nie udało się uwierzytelnić z urządzeniem. Upewnij się, że identyfikator urządzenia i klucz lokalny są prawidłowe.",
+            "unknown": "Wystąpił nieznany błąd.\n{ex}.",
+            "entity_already_configured": "Ta encja została już skonfigurowana.",
+            "address_in_use": "Port TCP 6668 (używany do wykrywania) jest już używany. Sprawdź, czy nie używa go żadna inna integracja.",
+            "discovery_failed": "Coś nie powiodło się podczas wykrywania urządzeń. Szczegóły znajdziesz w logu. Jeśli problem będzie się powtarzał, utwórz nowy problem (w tym dzienniki debugowania).",
+            "empty_dps": "Połączenie z urządzeniem powiodło się, ale nie znaleziono żadnych punktów danych. Spróbuj ponownie dokonać konfiguracji. Jeśli problem będzie się powtarzał, utwórz nowy problem (w tym dzienniki debugowania)."
+        },
+        "step": {
+            "user": {
+                "title": "Konfiguracja konta Cloud API",
+                "description": "Skonfiguruj dane uwierzytelniające używane do łączenia się z API Tuya Cloud.",
+                "data": {
+                    "region": "Region centrum danych",
+                    "client_id": "ID Klienta",
+                    "client_secret": "Hasło klienta",
+                    "user_id": "ID Użytkownika",
+                    "username": "Nazwa użytkownika",
+                    "no_cloud": "Wyłączyć interfejs Cloud API?"
+                }
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "To konto zostało już skonfigurowane.",
+            "device_success": "Urządzenie {dev_name} pomyślnie wykonało {action}.",
+            "no_entities": "Nie można usunąć wszystkich elementów z urządzenia.\nJeśli chcesz usunąć urządzenie: Przejdź do menu „Urządzenia oraz usługi”, wyszukaj swoje urządzenie w zakładce „Urządzenia”, kliknij trzy kropki w ramce „Informacje o urządzeniu” i naciśnij przycisk „Usuń”."
+        },
+        "error": {
+            "authentication_failed": "Nie udało się uwierzytelnić.\n{msg}",
+            "cannot_connect": "Nie można połączyć się z urządzeniem. Potwierdź, że adres IP jest poprawny, a następnie spróbuj ponownie.",
+            "device_list_failed": "Nie udało się pobrać listy urządzeń.\n{msg}",
+            "invalid_auth": "Nie udało się uwierzytelnić z urządzeniem. Upewnij się, że identyfikator urządzenia i klucz lokalny są prawidłowe.",
+            "unknown": "Wystąpił nieznany błąd. \n{ex}.",
+            "entity_already_configured": "Ta encja została już skonfigurowana.",
+            "address_in_use": "Port TCP 6668 (używany do wykrywania) jest już używany. Sprawdź, czy nie używa go żadna inna integracja.",
+            "discovery_failed": "Coś nie powiodło się podczas wykrywania urządzeń. Szczegóły znajdziesz w logu. Jeśli problem będzie się powtarzał, utwórz nowy problem (w tym dzienniki debugowania)..",
+            "empty_dps": "Połączenie z urządzeniem powiodło się, ale nie znaleziono żadnych punktów danych. Spróbuj ponownie dokonać konfiguracji. Jeśli problem będzie się powtarzał, utwórz nowy problem (w tym dzienniki debugowania)."
+        },
+        "step": {
+            "yaml_import": {
+                "title": "Nieobsługiwany",
+                "description": "Urządzenia skonfigurowane przy użyciu konfiguracji `YAML` nie mogą być konfigurowane w interfejsie użytkownika. Usuń swoje urządzenie z konfiguracji `YAML` i utwórz je ponownie w interfejsie użytkownika lub zmodyfikuj konfigurację `YAML`."
+            },
+            "init": {
+                "title": "Konfiguracja",
+                "description": "Wybierz opcję, aby kontynuować.",
+                "menu_options": {
+                    "add_device": "Dodaj nowe urządzenie",
+                    "edit_device": "Skonfiguruj ponownie istniejące urządzenie",
+                    "configure_cloud": "Zarządzaj kontem Cloud API"
+                }
+            },
+            "add_device": {
+                "title": "Wybierz urządzenie do skonfigurowania",
+                "description": "Kompatybilne urządzenia Tuya w Twojej sieci lokalnej są wykrywane automatycznie po skonfigurowaniu ich w aplikacji Tuya. Jeśli nie widzisz oczekiwanego urządzenia, wybierz z menu rozwijanego opcję „Dodaj urządzenie ręcznie”.",
+                "data": {
+                    "selected_device": "Znalezione urządzenia",
+                    "mass_configure": "Skonfiguruj automatycznie wszystkie rozpoznane urządzenia"
+                }
+            },
+            "edit_device": {
+                "title": "Skonfiguruj ponownie istniejące urządzenie",
+                "description": "Wybierz urządzenie, które chcesz ponownie skonfigurować.",
+                "data": {
+                    "selected_device": "Skonfigurowane urządzenia"
+                }
+            },
+            "configure_cloud": {
+                "title": "Zarządzaj kontem Cloud API",
+                "description": "Skonfiguruj dane uwierzytelniające używane do łączenia się z API Tuya Cloud.",
+                "data": {
+                    "region": "Region centrum danych",
+                    "client_id": "ID Klienta",
+                    "client_secret": "Hasło klienta",
+                    "user_id": "ID Użytkownika",
+                    "username": "Nazwa użytkownika",
+                    "no_cloud": "Wyłączyć interfejs Cloud API?"
+                }
+            },
+            "confirm": {
+                "title": "Confirmation",
+                "description": "{message}"
+            },
+            "configure_device": {
+                "title": "Skonfiguruj łączność urządzenia",
+                "description": "Skonfiguruj wszystkie szczegóły urządzenia{for_device}, które są puste (jeśli istnieją), aby umożliwić LocalTuya połączenie się z urządzeniem.",
+                "data": {
+                    "friendly_name": "Nazwa Urządzenia",
+                    "host": "Adres IP",
+                    "device_id": "ID Urządzenia",
+                    "local_key": "Klucz Lokalny",
+                    "node_id": "(Opcjonalnie) Id Node urządzenia podrzędnego",
+                    "protocol_version": "Wersja Protokołu",
+                    "enable_debug": "Włącz debugowanie (należy włączyć również ręcznie w pliku `configuration.yaml`)",
+                    "scan_interval": "(Opcjonalnie) Interwał skanowania w sekundach, jeśli nie skanuje się automatycznie",
+                    "entities": "Skonfigurowane encje (odznacz, aby usunąć)",
+                    "add_entities": "Dodaj nowe encje",
+                    "manual_dps_strings": "(Opcjonalnie) Ręczne DPS, jeśli nie zostaną wykryte automatycznie (oddzielone przecinkami)",
+                    "reset_dpids": "(Opcjonalnie) Identyfikatory DPID do wysłania polecenia RESET, jeśli urządzenie nie odpowiada na żądania statusu po włączeniu (oddzielone przecinkami)",
+                    "device_sleep_time": "(Optional) Device sleep time in seconds: If the device reports its state, then it goes into sleep",
+                    "export_config": "Zapisz konfigurację encji jako szablon"
+                }
+            },
+            "device_setup_method": {
+                "title": "Skonfiguruj encje urządzenia",
+                "description": "LocalTuya spróbuje automatycznie znaleść resztę konfiguracji. Jeśli jednak to nie zadziała na Twoim urządzeniu lub chcesz dostosować ustawienia, wybierz opcję „ręczną”.",
+                "menu_options": {
+                    "auto_configure_device":"Automatycznie wykrywaj encje urządzenia",
+                    "pick_entity_type": "Skonfiguruj ręcznie enje urządzenia",
+                    "choose_template":"Użyj zapisanego szablonu"
+                }
+            },
+            "auto_configure_device": {
+                "title": "Automatyczna konfiguracja",
+                "description": "Wystąpił błąd: {err_msg}. Jeśli przyczyna nie jest widoczna, sprawdź dzienniki.",
+                "menu_options": {
+                    "device_setup_method":"Wróć do metody konfiguracji"
+                }
+            },
+            "pick_entity_type": {
+                "title": "Wybór typu encji",
+                "description": "Wybierz typ encji, którą chcesz dodać.",
+                "data": {
+                    "platform_to_add": "Wybierz encję",
+                    "no_additional_entities": "Zakończ konfigurowanie encji",
+                    "use_template" : "Importuj plik szablonu"
+                }
+            },
+            "choose_template":{
+                "title": "Importuj plik szablonu",
+                "description": "Pliki szablonów znajdują się w katalogu `templates` ([Więcej informacji](https://github.com/xZetsubou/hass-localtuya/discussions/13)).",
+                "data": {
+                    "templates": "Wybierz szablon"
+                }
+            },
+            "configure_entity": {
+                "title": "Skonfiguruj encje",
+                "description": "Podaj szczegóły dotyczące elementu {entity}, wpisując typ {platform}. Wszystkie ustawienia (z wyjątkiem „Typu” i „ID”) można później zmienić na stronie „Konfiguruj”.",
+                "data": {
+                    "id": "DP ID",
+                    "friendly_name": "Przyjazna nazwa dla encji",
+                    "current": "Prąd",
+                    "current_consumption": "Obecne zużycie",
+                    "voltage": "Napięcie",
+                    "commands_set": "Zestaw poleceń Otwórz_Zamknij_zatrzymaj",
+                    "positioning_mode": "Tryb pozycjonowania",
+                    "current_position_dp": "Bieżąca pozycja (tylko dla trybu *pozycjonowania*)",
+                    "set_position_dp": "Ustaw pozycję (tylko dla trybu *pozycjonowania*)",
+                    "stop_switch_dp": "(Optional) Stop switch (if the cover has continue command?)",
+                    "position_inverted": "Odwróć pozycję 0-100 (tylko dla trybu *pozycjonowania*)",
+                    "span_time": "Pełny czas otwarcia, w sekundach. (tylko dla trybu *czasowego*)",
+                    "unit_of_measurement": "Jednostka miary (opcjonalnie)",
+                    "device_class": "(Opcjonalnie) Klasa urządzenia",
+                    "state_class": "(Opcjonalnie) Klasa stanu",
+                    "scaling": "Współczynnik skalowania",
+                    "state_on": "Wartość włączenia",
+                    "state_off": "Wartość wyłączenia",
+                    "powergo_dp": "DP mocy (zazwyczaj 25 or 2)",
+                    "idle_status_value": "Stan bezczynności (oddzielone przecinkami)",
+                    "returning_status_value": "Stan powrotu (oddzielone przecinkami)",
+                    "docked_status_value": "Stan zadokowania (oddzielone przecinkami)",
+                    "fault_dp": "DP błędu (zazwyczaj 11)",
+                    "battery_dp": "DP statusu baterii (zazwyczaj 14)",
+                    "mode_dp": "DP trybu",
+                    "modes": "Lista trybów",
+                    "return_mode": "Tryb powrotu do domu",
+                    "fan_speed_dp": "(Opcjonalnie) DP prędkości wentylatora",
+                    "fan_speeds": "Lista prędkości wentylatorów (oddzielone przecinkami)",
+                    "clean_time_dp": "DP czasu czyszczenia(zazwyczaj 33)",
+                    "clean_area_dp": "DP obszaru czyszczenia (zazwyczaj 32)",
+                    "clean_record_dp": "DP zapisu czyszczenia (zazwyczaj 34)",
+                    "locate_dp": "DP lokalizacji (zazwyczaj 31)",
+                    "pause_dp":"Pause DP",
+                    "paused_state": "Stan pauzy (pauza, itp)",
+                    "stop_status": "Status zatrzymania",
+                    "brightness": "Jasność (tylko dla koloru białego)",
+                    "brightness_lower": "Najniższa wartość jasności",
+                    "brightness_upper": "Najwyższa wartość jasności",
+                    "color_temp": "Temperatura barwy",
+                    "color_temp_reverse": "Odwrócona temperatura barwy",
+                    "color": "Kolor",
+                    "color_mode": "Tryb koloru, czyli tryb pracy",
+                    "color_temp_min_kelvin": "Minimalna temperatura barwowa w K",
+                    "color_temp_max_kelvin": "Maksymalna temperatura barwowa w K",
+                    "music_mode": "Dostępny tryb muzyczny",
+                    "scene": "Scena",
+                    "scene_values": "Wartości scen",
+                    "select_options": "Prawidłowe wpisy",
+                    "fan_speed_control": "DP Kontroli prędkości wentylatora",
+                    "fan_oscillating_control": "DP Sterowania oscylacyjnego wentylatora",
+                    "fan_speed_min": "minimalna prędkość wentylatora",
+                    "fan_speed_max": "maksymalna prędkośc wentylatora",
+                    "fan_speed_ordered_list": "Lista trybów prędkości wentylatora (zastępuje prędkość min./maks.), wpisy oddzielaj przecinkami ','",
+                    "fan_direction":"DP kierunku wentylatora",
+                    "fan_direction_forward": "DP do przodu",
+                    "fan_direction_reverse": "DP do tyłu",
+                    "fan_dps_type": "DP typu",
+                    "current_temperature_dp": "Obecna temperatura",
+                    "target_temperature_dp": "Docelowa temperatura",
+                    "temperature_step": "Krok temperatury (opcjonalnie)",
+                    "max_temp": "Maksymalna temperatura (liczba)",
+                    "min_temp": "Minimalna temperatura (liczba)",
+                    "precision": "Precyzja (opcjonalnie, dla wartości DPs)",
+                    "target_precision": "Dokładność docelowa (opcjonalnie, dla wartości DP)",
+                    "temperature_unit": "(opcjonalnie) Jednostka temperatury",
+                    "hvac_mode_dp": "(opcjonalnie) DP trybu HVAC",
+                    "hvac_mode_set": "(opcjonalnie) Ustawiony tryb HVAC",
+                    "hvac_add_off": "(Opcjonalnie) Dodaj `OFF` do trybów HVAC",
+                    "hvac_action_dp": "(opcjonalnie) Bieżące działanie HVAC DP",
+                    "hvac_action_set": "(opcjonalnie) Zestaw bieżących działań HVAC",
+                    "preset_dp": "(opcjonalnie) DP ustawień wstępnych",
+                    "preset_set": "(opcjonalnie) Zestaw ustawień wstępnych",
+                    "fan_speed_list": "(Optional) Fan supported speeds, separate entries by comma ','",
+                    "eco_dp": "(opcjonalnie) DP trybu eco",
+                    "eco_value": "(opcjonalnie) Tryb eco",
+                    "heuristic_action": "(opcjonalnie) Włącz działanie heurystyczne",
+                    "dps_default_value": "(opcjonalnie) Wartość domyślna w przypadku niezainicjowania",
+                    "restore_on_reconnect": "Przywróć ostatnią wartość ustawioną w Home Assistant po utracie połączenia",
+                    "min_value": "Minimalna wartość",
+                    "max_value": "Maksymalna wartość",
+                    "step_size": "Minimalny odstęp między liczbami",
+                    "is_passive_entity": "Jednostka pasywna? (wymaga integracji w celu przesłania wartości inicjalizacyjnej)",
+                    "entity_category": "Pokaż encje w tej kategorii",
+                    "humidifier_available_modes": "(opcjonalnie) Dostępne tryby w urządzeniu",
+                    "humidifier_current_humidity_dp": "(opcjonalnie) DP aktualnej wilgotności",
+                    "humidifier_mode_dp": "(opcjonalnie) DP ustawienia trybu",
+                    "humidifier_set_humidity_dp": "(opcjonalnie) DP ustawienia wilgotności",
+                    "min_humidity": "Ustaw minimalną obsługiwaną wilgotność",
+                    "max_humidity": "Ustaw maksymalną obsługiwaną wilgotność",
+                    "alarm_supported_states": "States supported by the device",
+                    "receive_dp":"Receiving signals DP. (default is 202)",
+                    "key_study_dp":"(Optional) Key Study DP (usually 7)"
+                },
+                "data_description": {
+                    "hvac_mode_set":"Każda linia reprezentuje [ hvac_mode: device_value ] [Obsługiwane tryby HVAC](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
+                    "hvac_action_set":"Każda linia reprezentuje [ hvac_action: device_value ] [Obsługiwane działania HVAC](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-action)",
+                    "preset_set":"Każda linia reprezentuje [ device_value: friendly name ]",
+                    "scene_values":"Każda linia reprezentuje [ device_value: friendly name ]",
+                    "select_options":"Każda linia reprezentuje [ device_value: friendly name ]",
+                    "alarm_supported_states":"Each line represents [ supported state: device value ] [Supported States](https://developers.home-assistant.io/docs/core/entity/alarm-control-panel/#states)",
+                    "humidifier_available_modes":"Każda linia reprezentuje [ device_value: friendly name ]",
+                    "device_class": "Dowiedz się więcej o [Klasach urządzeń](https://www.home-assistant.io/integrations/homeassistant/#device-class)",
+                    "state_class": "Dowiedz się więcej o [Klasach stanów](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
+                }
+            }
+        }
+    },
+    "title": "LocalTuya"
+}

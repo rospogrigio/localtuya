@@ -1,0 +1,68 @@
+name: Bug Report
+description: A bug in the integration.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: lt-version
+    attributes:
+      label: LocalTuya Version
+      description: The LocalTuya version that you're running. 
+      placeholder: ex. 3.2.5
+    validations:
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant Version
+      description: The HA version that you're running. 
+      placeholder: ex. 2024.3.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: user-info
+    attributes:
+      label: Environment
+      options:
+        - label: Does the device work using the Home Assistant Tuya Cloud component?
+        - label: Is this device connected to another local integration, including Home Assistant and any other tools?
+        - label: The devices are within the same HA subnet, and they get discovered automatically when I add them
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what actually happened?
+      placeholder: Tell us what you see!
+      value: A bug happened!
+  - type: textarea
+    id: steps-reproduce
+    attributes:
+      label: Steps to reproduce.
+      description: Step by step how did this happened.
+      placeholder: >
+        1. Used Add new device option.
+        
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: >
+          Please copy and paste any relevant log output. Home Assisstant -> Settings -> System -> Logs. * Search for tuya.
+
+          Check [report an issue](https://xzetsubou.github.io/hass-localtuya/report_issue/)
+      render: shell
+  - type: textarea
+    attributes:
+      label: Diagnostics information.
+      placeholder: "drag-and-drop the diagnostics data file here (do not copy-and-paste the content)"
+      description: >-
+        If the issue is related to a device or the entry. 
+        [entry diagnostics](https://github.com/xZetsubou/hass-localtuya/assets/46300268/be7a70f9-86ce-4a39-9360-761426f96b9c).
+        or
+        [device diagnostics](https://github.com/xZetsubou/hass-localtuya/assets/46300268/e37ddc4e-4d1c-4250-9a41-8217ecc3607d)

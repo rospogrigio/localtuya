@@ -1,15 +1,78 @@
 reload:
+  name: "Reload"
   description: Reload localtuya and reconnect to all devices.
 
 set_dp:
+  name: "Set DP Value"
   description: Change the value of a datapoint (DP)
   fields:
     device_id:
-      description: Device ID of device to change datapoint value for
+      name: "Device ID"
+      description: The device ID of the device where the datapoint value needs to be changed
+      required: true
       example: 11100118278aab4de001
+      selector:
+        text:
     dp:
-      description: Datapoint index
+      name: "DP"
+      description: Target DP, Datapoint index
+      required: false
       example: 1
+      selector:
+        number:
+          mode: box
     value:
-      description: New value to set
-      example: False
+      name: "Value"
+      description: "A new value to set or a list of DP-value pairs. If a list is provided, the target DP will be ignored"
+      required: true
+      example: '{ "1": True, "2": True }'
+      selector:
+        object:
+
+remote_add_code:
+  name: "Add Remote Code"
+  description: Add the remote code to the device's remote storage.
+  fields:
+    target:
+      name: "Choose remote device"
+      description: "Select the remote to store the code on it"
+      required: true
+      selector:
+        device:
+          multiple: false
+          entity:
+            domain: "remote"
+          filter:
+            integration: "localtuya"
+    device_name:
+      name: "Device Name"
+      description: The name of the device to store the code in
+      required: true
+      example: TV
+      selector:
+        text:
+    command_name:
+      name: "Command Name"
+      description: The command name to use when calling it
+      required: true
+      example: volume_up
+      selector:
+        text:
+    base64:
+      name: "Base64 Code"
+      description: The Base64 code (this will override the head/key values)
+      required: false
+      selector:
+        text:
+    head:
+      name: "Head"
+      description: "The header can be found in the Tuya IoT device debug logs, Key's required"
+      required: false
+      selector:
+        text:
+    key:
+      name: "Key"
+      description: "The key can be found in the Tuya IoT device debug logs, Head's required"
+      required: false
+      selector:
+        text:

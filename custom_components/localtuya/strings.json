@@ -1,7 +1,7 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Device has already been configured.",
+            "already_configured": "This Account ID has already been configured.",
             "unsupported_device_type": "Unsupported device type!"
         },
         "error": {
@@ -96,6 +96,8 @@
                     "color_temp_max_kelvin": "Maximum Color Temperature in K",
                     "music_mode": "Music mode available",
                     "scene": "Scene",
+                    "scene_values": "Scene values, separate entries by a ;",
+                    "scene_values_friendly": "User friendly scene values, separate entries by a ;",
                     "fan_speed_control": "Fan Speed Control dps",
                     "fan_oscillating_control": "Fan Oscillating Control dps",
                     "fan_speed_min": "minimum fan speed integer",

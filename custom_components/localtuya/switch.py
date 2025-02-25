@@ -1,11 +1,19 @@
 """Platform to locally control Tuya-based switch devices."""
+
 import logging
 from functools import partial
+from .config_flow import col_to_select
 
 import voluptuous as vol
-from homeassistant.components.switch import DOMAIN, SwitchEntity
+from homeassistant.components.switch import (
+    DOMAIN,
+    SwitchEntity,
+    DEVICE_CLASSES_SCHEMA,
+    SwitchDeviceClass,
+)
+from homeassistant.const import CONF_DEVICE_CLASS
 
-from .common import LocalTuyaEntity, async_setup_entry
+from .entity import LocalTuyaEntity, async_setup_entry
 from .const import (
     ATTR_CURRENT,
     ATTR_CURRENT_CONSUMPTION,
@@ -25,17 +33,22 @@ _LOGGER = logging.getLogger(__name__)
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
-        vol.Optional(CONF_CURRENT): vol.In(dps),
-        vol.Optional(CONF_CURRENT_CONSUMPTION): vol.In(dps),
-        vol.Optional(CONF_VOLTAGE): vol.In(dps),
+        vol.Optional(CONF_CURRENT): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_CURRENT_CONSUMPTION): col_to_select(dps, is_dps=True),
+        vol.Optional(CONF_VOLTAGE): col_to_select(dps, is_dps=True),
         vol.Required(CONF_RESTORE_ON_RECONNECT): bool,
         vol.Required(CONF_PASSIVE_ENTITY): bool,
         vol.Optional(CONF_DEFAULT_VALUE): str,
+        vol.Optional(CONF_DEVICE_CLASS): col_to_select(
+            [sc.value for sc in SwitchDeviceClass]
+        ),
     }
 
 
-class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
+class LocalTuyaSwitch(LocalTuyaEntity, SwitchEntity):
     """Representation of a Tuya switch."""
+
+    _attr_device_class = SwitchDeviceClass.SWITCH
 
     def __init__(
         self,
@@ -47,7 +60,6 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         """Initialize the Tuya switch."""
         super().__init__(device, config_entry, switchid, _LOGGER, **kwargs)
         self._state = None
-        _LOGGER.debug("Initialized switch [%s]", self.name)
 
     @property
     def is_on(self):
@@ -59,13 +71,13 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         """Return device state attributes."""
         attrs = {}
         if self.has_config(CONF_CURRENT):
-            attrs[ATTR_CURRENT] = self.dps(self._config[CONF_CURRENT])
+            attrs[ATTR_CURRENT] = self.dp_value(self._config[CONF_CURRENT])
         if self.has_config(CONF_CURRENT_CONSUMPTION):
-            attrs[ATTR_CURRENT_CONSUMPTION] = (
-                self.dps(self._config[CONF_CURRENT_CONSUMPTION]) / 10
-            )
+            val_cc = self.dp_value(self._config[CONF_CURRENT_CONSUMPTION])
+            attrs[ATTR_CURRENT_CONSUMPTION] = None if val_cc is None else val_cc / 10
         if self.has_config(CONF_VOLTAGE):
-            attrs[ATTR_VOLTAGE] = self.dps(self._config[CONF_VOLTAGE]) / 10
+            val_vol = self.dp_value(self._config[CONF_VOLTAGE])
+            attrs[ATTR_VOLTAGE] = None if val_vol is None else val_vol / 10
 
         # Store the state
         if self._state is not None:
@@ -88,4 +100,4 @@ class LocaltuyaSwitch(LocalTuyaEntity, SwitchEntity):
         return False
 
 
-async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaSwitch, flow_schema)
+async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSwitch, flow_schema)

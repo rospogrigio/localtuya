@@ -1,8 +1,10 @@
-black==22.3.0
-codespell==2.0.0
+black==24.8.0
+codespell==2.4.1
 flake8==3.9.2
+homeassistant==2025.1.0
 mypy==0.901
 pydocstyle==6.1.1
-pylint==2.8.2
 pylint-strict-informational==0.1
-homeassistant==2021.12.10
+pylint==2.8.2
+pytest-asyncio
+pytest-cov

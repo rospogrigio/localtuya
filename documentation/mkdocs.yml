@@ -1,0 +1,58 @@
+site_name: Localtuya
+repo_url: https://github.com/xZetsubou/hass-localtuya/
+edit_uri: blob/master/documentation/docs/
+copyright: Copyright © Bander xZetsubou 
+
+theme:
+  name: 'material'
+  features:
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+  palette:
+    scheme: slate
+    primary: teal
+    accent: teal
+
+nav:
+  - index.md
+  - ha_events.md
+  - ha_services.md
+  - Guides:
+    - Usage:
+      - usage/installation.md
+      - usage/configure_add_device.md
+      - usage/configure_edit_device.md
+      - usage/devices_delete.md
+    - cloud_api.md
+  - Development:
+    - auto_configure.md
+  - Others:
+      - faq/index.md
+      - report_issue.md
+
+
+extra_css:
+  - style/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - tables
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tabbed:
+      alternate_style: true
