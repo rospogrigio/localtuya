@@ -106,7 +106,7 @@ HVAC_MODE_SETS = {
     HVACMode.FAN_ONLY: "wind",
 }
 
-HVAC_ACTION_SETS = { 
+HVAC_ACTION_SETS = {
     "True/False": {
         HVACAction.HEATING: True,
         HVACAction.IDLE: False,
