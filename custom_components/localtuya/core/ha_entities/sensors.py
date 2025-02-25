@@ -43,8 +43,8 @@ def localtuya_sensor(unit_of_measurement=None, scale_factor: float = 1) -> dict:
     return data
 
 
-# Commonly used battery sensors, that are re-used in the sensors down below.
-BATTERY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = (
+# Commonly used battery sensors, that are reused in the sensors down below.
+BATTERY_SENSORS = (
     LocalTuyaEntity(
         id=DPCode.BATTERY_PERCENTAGE,
         name="Battery",
@@ -275,11 +275,21 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
     # https://developer.tuya.com/en/docs/iot/categorycwwsq?id=Kaiuz2b6vydld
     "cwwsq": (
         LocalTuyaEntity(
+            id=DPCode.FEED_STATE,
+            icon="mdi:list-status",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CHARGE_STATE,
+            name="Charge state",
+            icon="mdi:power-plug-battery-outline",
+        ),
+        LocalTuyaEntity(
             id=DPCode.FEED_REPORT,
             # name="last_amount",
             icon="mdi:counter",
             state_class=SensorStateClass.MEASUREMENT,
         ),
+        *BATTERY_SENSORS,
     ),
     # Air Quality Monitor
     # No specification on Tuya portal

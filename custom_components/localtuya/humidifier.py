@@ -145,12 +145,10 @@ class LocalTuyaHumidifier(LocalTuyaEntity, HumidifierEntity):
         """Device status was updated."""
         super().status_updated()
         current_mode = self.dp_value(self._dp_mode)
-        for mode, mode_name in self._config.get(self._available_modes, {}).items():
-            if mode == current_mode:
-                self._current_mode = mode_name
-                break
-            else:
-                self._current_mode = "unknown"
+
+        self._current_mode = self._config.get(self._available_modes, {}).get(
+            current_mode, "unknown"
+        )
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaHumidifier, flow_schema)

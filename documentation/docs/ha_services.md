@@ -3,8 +3,9 @@
 
 | Service     | Data                                                     | Description                         
 | ----------- | ---------------------------------------------------------|-------------------------------------
-| `localtuya.reload`   |                                                 | Reload All `localtuya` entries
-| `localtuya.set_dp`   | `#!json {"data": {"device_id", "dp", "value"}}` | Set new value for one `DP` or multi 
+| `localtuya.reload`          |                                                 | Reload All `localtuya` entries
+| `localtuya.set_dp`          | `#!json {"data": {"device_id", "dp", "value"}}` | Set new value for one `DP` or multi 
+| `localtuya.remote_add_code` | `#!json {"data": {"target", "device_name", "command_name", "base64", "head", "key" }}` | Manually add code into remote device. 
 
 
 === "Set DP Service"
@@ -36,4 +37,16 @@
     Reload all `LocalTuya` Entries
     ```yaml 
     service: localtuya.reload
+    ```
+
+=== "Add Remote Code"
+    Add a TV button using `head/key` or `base64`
+    ```yaml 
+    action: localtuya.remote_add_code
+    data:
+      target: c187a2102cb1e38161377eb4d4afb6f7
+      device_name: TV
+      command_name: volume_up
+      head: "11111111111" # Head: Can be obtain from Tuya IoT device debug logs.
+      key: "223123" # Key: Can be obtain from Tuya IoT device debug logs.
     ```

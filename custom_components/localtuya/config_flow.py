@@ -21,6 +21,8 @@ from homeassistant.helpers.selector import (
 )
 import voluptuous as vol
 from homeassistant import exceptions
+from homeassistant.core import callback, HomeAssistant
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 from homeassistant.const import (
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
@@ -39,11 +41,10 @@ from homeassistant.const import (
     CONF_USERNAME,
     EntityCategory,
 )
-from homeassistant.core import callback, HomeAssistant
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 
-from .coordinator import pytuya, TuyaCloudApi
-from .core.cloud_api import TUYA_ENDPOINTS
+from .coordinator import HassLocalTuyaData
+from .core import pytuya
+from .core.cloud_api import TUYA_ENDPOINTS, TuyaCloudApi
 from .core.helpers import templates, get_gateway_by_deviceid, gen_localtuya_entities
 from .const import (
     ATTR_UPDATED_AT,
@@ -254,7 +255,13 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
         self.use_template = False
         self.template_device = None
 
-        self.cloud_data: TuyaCloudApi
+    @property
+    def localtuya_data(self) -> HassLocalTuyaData:
+        return self.hass.data[DOMAIN][self._entry_id]
+
+    @property
+    def cloud_data(self) -> TuyaCloudApi:
+        return self.localtuya_data.cloud_data
 
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
@@ -263,9 +270,7 @@ class LocalTuyaOptionsFlowHandler(OptionsFlow):
         if not self.config_entry.data[CONF_DEVICES]:
             configure_menu.pop(configure_menu.index(CONF_EDIT_DEVICE))
 
-        self.cloud_data = self.hass.data[DOMAIN][self._entry_id].cloud_data
-        if not self.config_entry.data.get(CONF_NO_CLOUD):
-            # Refresh devices List data.
+        if not self.config_entry.data.get(CONF_NO_CLOUD, True):
             self.hass.async_create_task(self.cloud_data.async_get_devices_list())
 
         return self.async_show_menu(step_id="init", menu_options=configure_menu)
@@ -951,7 +956,7 @@ async def setup_localtuya_devices(
             update_fails(dev_id, f"no configured entities: {dev_entites} - {category}")
             continue
 
-        # Add configured entiteis
+        # Add configured entities
         devices[dev_id].update({CONF_ENTITIES: dev_entites})
 
     return devices, fails

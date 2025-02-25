@@ -38,6 +38,18 @@ CONFIG = {
                 "preset_set": {"holiday": "Holiday Friendly Name"},
                 "fan_speed_dp": "6",
                 "fan_speed_list": ",".join(FAN_SPEED_LIST),
+                "swing_mode_dp": "11",
+                "swing_modes": {
+                    "both": "up-and-down",
+                    "up": "up-only",
+                    "down": "down-only",
+                },
+                "swing_horizontal_dp": "12",
+                "swing_horizontal_modes": {
+                    "both": "left-and-right",
+                    "left": "left-only",
+                    "right": "right-only",
+                },
                 "temperature_unit": "fahrenheit/celsius",
                 "id": "1",
                 "eco_dp": "101",
@@ -55,6 +67,8 @@ DPS_STATUS = {
     "2": "COLD",
     "5": "holiday",
     "6": "middle",
+    "11": "both",
+    "12": "right",
     "16": 68,  # F
     "24": 24,  # c
     "100": False,
@@ -114,3 +128,10 @@ async def test_climate():
     device.status_updated(status)
     assert entity_1._is_on
     assert type(entity_1._state_on) is int
+
+    # Swing modes
+    assert entity_1.swing_mode == "up-and-down"
+    assert entity_1.swing_horizontal_mode == "right-only"
+    device.status_updated({**DPS_STATUS, **{"11": "up", "12": "both"}})
+    assert entity_1.swing_mode == "up-only"
+    assert entity_1.swing_horizontal_mode == "left-and-right"

@@ -181,6 +181,7 @@ class DPCode(StrEnum):
     CHARGE_PATTERN = "charge_pattern"
     CHARGE_POWER1 = "charge_power1"
     CHARGE_POWER2 = "charge_power2"
+    CHARGE_STATE = "charge_state"
     CHARGING_STATE = "charging_state"
     CHILDLOCK = "childlock"
     CHILD_LOCK = "child_lock"  # Child lock
@@ -304,6 +305,7 @@ class DPCode(StrEnum):
     ENERGY_REVERSE_C = "energy_reverse_c"
     EQUIPMENT_TIME = "equipment_time"
     ERRO = "erro"  # codespell:ignore
+    FACTORY_RESET = "factory_reset"
     FAN_BEEP = "fan_beep"  # Sound
     FAN_COOL = "fan_cool"  # Cool wind
     FAN_COUNTDOWN = "fan_countdown"
@@ -391,6 +393,7 @@ class DPCode(StrEnum):
     MAXTEMP_SET = "maxtemp_set"
     MAX_HUMI = "max_humi"
     MAX_SET = "max_set"
+    MEAL_PLAN = "meal_plan"
     MEASUREMENT_MODEL = "measurement_model"
     MIDDLE_CONFIRM = "middle_confirm"  # cover reset.
     MINIHUM_SET = "minihum_set"
@@ -495,6 +498,7 @@ class DPCode(StrEnum):
     PV_POWER = "pv_power"
     PV_VOLT = "pv_volt"
     QR_CODE_PREFIX = "qr_code_prefix"
+    QUICK_FEED = "quick_feed"
     RATED_CURRENT = "rated_current"
     RECORD_MODE = "record_mode"
     RECORD_SWITCH = "record_switch"  # Recording switch

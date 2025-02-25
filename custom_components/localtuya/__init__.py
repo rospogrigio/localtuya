@@ -329,7 +329,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     def _setup_devices(entry_devices: dict):
         """Setup Localtuya devices object."""
         devices = hass_localtuya.devices
-        connect_to_devices = []
+        connect_to_devices: list[TuyaDevice] = []
 
         # Sort parent devices first then sub-devices.
         sorted_devices = dict(
@@ -370,23 +370,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Note: entry.async_on_unload items are called in LIFO order!
 
     for dev in connect_to_devices:
-        asyncio.create_task(dev.async_connect())
+        entry.async_create_task(hass, dev.async_connect())
         entry.async_on_unload(dev.close)
 
     entry.async_on_unload(entry.add_update_listener(update_listener))
 
     async def _shutdown(event):
         """Clean up resources when shutting down."""
-        for dev in connect_to_devices:
-            await dev.close()
-        _LOGGER.info("Shutdown completed")
+        await asyncio.gather(*[dev.close() for dev in connect_to_devices])
+        _LOGGER.info(f"{entry.title}: Shutdown completed")
 
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _shutdown)
     )
 
     entry.async_on_unload(_run_async_listen(hass, entry))
-    _LOGGER.info("Setup completed")
+    _LOGGER.info(f"{entry.title}: Setup completed")
     return True
 
 

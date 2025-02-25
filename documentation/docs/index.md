@@ -15,7 +15,7 @@ LocalTuya is an [HomeAssistant](https://www.home-assistant.io/){target="_blank"}
 
     `LocalTuya` can be used independently of the cloud.
 
-[:material-file-document: Usage](installation.md){.md-button}
+[:material-file-document: Usage](usage/installation.md){.md-button}
 [:simple-homeassistantcommunitystore: Add repository to HACS](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=hass-localtuya&owner=xZetsubou){ target=_blank .md-button }
 
 

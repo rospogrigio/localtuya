@@ -47,6 +47,14 @@ LIGHTS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_light(29, 1000, 2700, 6500, False, False),
         ),
     ),
+    # Smart Pet Feeder
+    # https://developer.tuya.com/en/docs/iot/categorycwwsq?id=Kaiuz2b6vydld
+    "cwwsq": (
+        LocalTuyaEntity(
+            id=DPCode.LIGHT,
+            name="Light",
+        ),
+    ),
     # String Lights
     # https://developer.tuya.com/en/docs/iot/dc?id=Kaof7taxmvadu
     "dc": (

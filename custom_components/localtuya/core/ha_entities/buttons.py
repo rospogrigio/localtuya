@@ -128,6 +128,16 @@ BUTTONS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Smart Pet Feeder
+    # https://developer.tuya.com/en/docs/iot/categorycwwsq?id=Kaiuz2b6vydld
+    "cwwsq": (
+        LocalTuyaEntity(
+            id=DPCode.FACTORY_RESET,
+            name="Factory Reset",
+            icon="mdi:cog-counterclockwise",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
     # Robot Vacuum
     # https://developer.tuya.com/en/docs/iot/fsd?id=K9gf487ck1tlo
     "sd": (

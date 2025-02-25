@@ -5,7 +5,7 @@
     A device that has [Low Power Mode](https://developer.tuya.com/en/docs/iot-device-dev/Low_consumption_Wi_Fi?id=Kay3gha1um42e){target="_blank"}, applied on such as __`Wi-Fi door locks and sensors`__. <br>
     The device will report its status every x minutes. Most of the time, the device will go into sleep mode, and most likely it will disconnect from the network.
     Some Device has an option to control the reports period.
-    In order to add this device, you need to specify the device sleep time in the [device configartion](../usage/configure_add_device). <br>
+    In order to add this device, you need to specify the device sleep time in the [device configartion](../usage/configure_add_device.md). <br>
     !!! tip ""
         If you add the device while it's sleeping and it's `disconnected` from the network, it won't connect <br>
         If you changed any value on the device while it is asleep, the new states will be applied when it wakes up. <br>

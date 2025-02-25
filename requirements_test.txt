@@ -1,5 +1,5 @@
 black==24.8.0
-codespell==2.3.0
+codespell==2.4.1
 flake8==3.9.2
 homeassistant==2025.1.0
 mypy==0.901

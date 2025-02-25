@@ -219,6 +219,7 @@ BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:information",
             custom_configs=ON_FEEDING,
         ),
+        *FAULT_SENSOR,
     ),
     # Human Presence Sensor
     # https://developer.tuya.com/en/docs/iot/categoryhps?id=Kaiuz42yhn1hs

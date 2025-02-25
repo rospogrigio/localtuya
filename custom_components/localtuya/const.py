@@ -85,6 +85,7 @@ CONF_ALARM_SUPPORTED_STATES = "alarm_supported_states"
 
 # Binary_sensor, Siren
 CONF_STATE_ON = "state_on"
+CONF_RESET_TIMER = "reset_timer"
 
 # light
 CONF_BRIGHTNESS_LOWER = "brightness_lower"
@@ -155,6 +156,10 @@ CONF_HVAC_ADD_OFF = "hvac_add_off"
 CONF_ECO_DP = "eco_dp"
 CONF_ECO_VALUE = "eco_value"
 CONF_FAN_SPEED_LIST = "fan_speed_list"
+CONF_SWING_MODE_DP = "swing_mode_dp"
+CONF_SWING_MODES = "swing_modes"
+CONF_SWING_HORIZONTAL_DP = "swing_horizontal_dp"
+CONF_SWING_HORIZONTAL_MODES = "swing_horizontal_modes"
 
 # vacuum
 CONF_POWERGO_DP = "powergo_dp"

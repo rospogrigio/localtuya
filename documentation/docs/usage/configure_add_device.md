@@ -62,7 +62,7 @@ Go to hub `Configure` (1) a menu will show up (2) Choose `Add new device`
         Used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used. If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
 
     ??? info "(optional) Device Sleep Time"
-        Only needed if the device has low-power mode and is disconnected from the network. [FAQ](/faq/) <br>
+        Only needed if the device has low-power mode and is disconnected from the network. [FAQ](../faq/index.md) <br>
         If the device is disconnected and exceeds this time, it will be considered offline
 
 
@@ -140,7 +140,7 @@ Each platform has its unique configuration page with different sets of configura
 ##### Create templates
 There are two ways to create templates
 
-1. Export a configured device from the [Reconfigure existing device](../configure_edit_device) step
+1. Export a configured device from the [Reconfigure existing device](configure_edit_device.md) step
 2. Manually write the configuration __`YAML`__ file `Not Recommended`
 
 ??? example "`Cover` template example"
@@ -163,8 +163,9 @@ There are two ways to create templates
         is_passive_entity: false
         platform: select
         restore_on_reconnect: false
-        select_options: forward;back
-        select_options_friendly: Forward;Reverse
+        select_options:
+            back: Back
+            forward: Forward
     - select:
         entity_category: config
         friendly_name: Motor Mode
@@ -172,8 +173,9 @@ There are two ways to create templates
         is_passive_entity: false
         platform: select
         restore_on_reconnect: false
-        select_options: contiuation;point
-        select_options_friendly: Auto;Manual
+        select_options:
+            contiuation: Auto
+            point: Manual
     - binary_sensor:
         device_class: problem
         entity_category: diagnostic

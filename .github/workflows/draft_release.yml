@@ -16,7 +16,6 @@ permissions:
   contents: write
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release_commits: |
       {"section": "breaking_changes",    "prefix": "break",    "header": "💥 Breaking Changes"}
       {"section": "fixes",               "prefix": "fix",      "header": "🐛 Fixes"           }
@@ -85,11 +84,11 @@ jobs:
                     sed -i "s#$author_info#$username#g" "commits.md"
           done < commits.md
 
-          
       - name: Parse commit messages and categorize
         id: parse_commits
         run: |
           declare -A commits_map;
+
           while IFS= read -r line; do
             first_lower=$(echo "$line" | awk '{print $1}' | tr '[:upper:]' '[:lower:]')
             scope=$(echo "$line" | cut -d' ' -f1)
@@ -102,18 +101,19 @@ jobs:
               section=$(echo "$item"  | jq -r '.section')
               prefix=$(echo "$item"   | jq -r '.prefix')
 
-              if [[ "$first_lower" == $prefix*: ]]; then
+              if [[ "$first_lower" == $prefix* ]]; then
                 commits_map[$section]+=$parsed_commit && added=true && break
               fi
             done < <(echo '${{env.release_commits}}')
             [[ $added == false ]] && commits_map["more"]+=$parsed_commit
 
           done < commits.md
-
+          
+          jq -n '{}' commitsJson > tempJson && mv tempJson commitsJson
           for key in "${!commits_map[@]}"; do
-            echo "$key=${commits_map[$key]}" >> $GITHUB_OUTPUT
+            jq --arg key "$key" --arg value "${commits_map[$key]}" \
+              '. + {($key): $value}' commitsJson > tempJson && mv tempJson commitsJson
           done
-
 
       - name: Create Release Notes
         id: release-notes
@@ -126,18 +126,20 @@ jobs:
 
             [[ ! "$section" =~ [^[:space:]] ]] && continue
 
-            section_commits=$(echo '${{ toJson(steps.parse_commits.outputs) }}' | jq -r ".$section")
-
+            section_commits=$(jq -r --arg k "$section" '.[$k]' commitsJson)
             if [ -n "$section_commits" ] && [ "$section_commits" != null ]; then
               notes+="### $header \n $section_commits \n"
             fi
+
           done < <(echo '${{env.release_commits}}')
 
-          echo -e $notes > commits.md
+          set -f; echo -e $notes > commits.md; set +f
 
       - name: Remove old Draft
         id: remove_drafts
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run:
           gh release delete "Draft Latest version"
 

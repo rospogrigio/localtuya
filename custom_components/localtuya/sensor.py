@@ -110,7 +110,7 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
 
         if self.is_base64(state):
             if not self._has_sub_entities:
-                self._hass.add_job(self.__create_sub_sensors())
+                self.hass.add_job(self.__create_sub_sensors())
 
             if (sub_sensor := getattr(self, "_attr_sub_sensor", None)) and (
                 sub_state := self.decode_base64(state).get(sub_sensor)
@@ -166,10 +166,10 @@ class LocalTuyaSensor(LocalTuyaEntity, SensorEntity):
             sub_entities.append(sub_entity)
 
         # Sub entities shouldn't have add entities attr.
-        if sub_entities and self._componet_add_entities:
+        if sub_entities and self.componet_add_entities:
             self._has_sub_entities = True
-            self._componet_add_entities(sub_entities)
-            er.async_get(self._hass).async_update_entity(
+            self.componet_add_entities(sub_entities)
+            er.async_get(self.hass).async_update_entity(
                 self.entity_id, hidden_by=er.RegistryEntryHider.INTEGRATION
             )
 
