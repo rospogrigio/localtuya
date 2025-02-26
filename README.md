@@ -141,18 +141,21 @@ You can obtain Energy monitoring (voltage, current) in two different ways:
        sensor:
          - platform: template
            sensors:
-             tuya-sw01_voltage:
+             tuya_sw01_voltage:
                value_template: >-
                  {{ states.switch.sw01.attributes.voltage }}
                unit_of_measurement: 'V'
-             tuya-sw01_current:
+               device_class: power
+             tuya_sw01_current:
                value_template: >-
                  {{ states.switch.sw01.attributes.current }}
                unit_of_measurement: 'mA'
-             tuya-sw01_current_consumption:
+               device_class: power
+             tuya_sw01_current_consumption:
                value_template: >-
                  {{ states.switch.sw01.attributes.current_consumption }}
                unit_of_measurement: 'W'
+               device_class: power
 ```
 
 # Climates
