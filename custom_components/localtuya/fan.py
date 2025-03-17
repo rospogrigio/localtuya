@@ -9,7 +9,8 @@ from homeassistant.components.fan import (
     DIRECTION_FORWARD,
     DIRECTION_REVERSE,
     DOMAIN,
-    FanEntity, FanEntityFeature,
+    FanEntityFeature,
+    FanEntity,
 )
 from homeassistant.util.percentage import (
     int_states_in_range,
@@ -186,9 +187,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         self.schedule_update_ha_state()
 
     @property
-    def supported_features(self) -> int:
+    def supported_features(self) -> FanEntityFeature:
         """Flag supported features."""
-        features = 0
+        features = FanEntityFeature(0)
 
         if self.has_config(CONF_FAN_OSCILLATING_CONTROL):
             features |= FanEntityFeature.OSCILLATE
@@ -198,6 +199,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
         if self.has_config(CONF_FAN_DIRECTION):
             features |= FanEntityFeature.DIRECTION
+
+        features |= FanEntityFeature.TURN_OFF
+        features |= FanEntityFeature.TURN_ON
 
         return features
 
