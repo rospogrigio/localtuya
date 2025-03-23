@@ -71,7 +71,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             self._config.get(CONF_FAN_SPEED_MIN),
             self._config.get(CONF_FAN_SPEED_MAX),
         )
-        self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split(",")
+        self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split("[ ,]+")
         self._ordered_list_mode = None
         self._dps_type = int if self._config.get(CONF_FAN_DPS_TYPE) == "int" else str
 
