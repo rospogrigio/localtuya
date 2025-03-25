@@ -264,15 +264,43 @@ BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=STATE_TRUE,
         ),
     ),
-    # Door Window Sensor
-    # https://developer.tuya.com/en/docs/iot/s?id=K9gf48hm02l8m
-    "mcs": (
+    # Cat litter box
+    # https://developer.tuya.com/en/docs/iot/f?id=Kakg309qkmuit
+    "msp": (
         LocalTuyaEntity(
-            id=DPCode.DOORCONTACT_STATE,
-            device_class=BinarySensorDeviceClass.DOOR,
+            id=DPCode.CLEANING_NUM,
+            name="Cleaning",
+            custom_configs=STATE_TRUE,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.NOTIFICATION_STATUS,
+            name="Notification",
+            custom_configs=STATE_TRUE,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.TRASH_STATUS,
+            name="Trash",
+            custom_configs=STATE_TRUE,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.POWER,
+            name="Power",
+            device_class=BinarySensorDeviceClass.POWER,
             custom_configs=STATE_TRUE,
         ),
-        TAMPER_BINARY_SENSOR,
+        *FAULT_SENSOR,
+    ),
+    # Access Control
+    # https://developer.tuya.com/en/docs/iot/s?id=Kb0o2xhlkxbet
+    "mk": (
+        LocalTuyaEntity(
+            id=DPCode.CLOSED_OPENED_KIT,
+            device_class=BinarySensorDeviceClass.LOCK,
+            custom_configs=ON_AQAB,
+        ),
     ),
     # Access Control
     # https://developer.tuya.com/en/docs/iot/s?id=Kb0o2xhlkxbet

@@ -35,6 +35,7 @@ from .const import (
     CONF_COLOR_TEMP_REVERSE,
     CONF_MUSIC_MODE,
     CONF_SCENE_VALUES,
+    DictSelector,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -239,7 +240,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         self._hs = None
         self._effect = None
         self._effect_list = []
-        self._scenes = {}
+        self._scenes = DictSelector({})
         self._cached_status = {}
 
         if self._config.get(CONF_MUSIC_MODE):
@@ -261,21 +262,22 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         is_write_only = self._write_only
 
         if self.has_config(CONF_SCENE):
-            if (scenes := self._config.get(CONF_SCENE_VALUES, {})) and len(scenes):
-                self._scenes = {v: k for k, v in scenes.items()}
+            if (cf_scenes := self._config.get(CONF_SCENE_VALUES)) and len(cf_scenes):
+                scenes = {v: k for k, v in cf_scenes.items()}
             else:
                 scene_value = self.dp_value(CONF_SCENE)
                 if is_write_only and not scene_value:
-                    self._scenes = SCENE_LIST_RGBW_BLE
+                    scenes = SCENE_LIST_RGBW_BLE
                 elif scene_value and len(scene_value) <= 20:
-                    self._scenes = SCENE_LIST_RGBW_255
+                    scenes = SCENE_LIST_RGBW_255
                 elif self._config.get(CONF_BRIGHTNESS) is None:
-                    self._scenes = SCENE_LIST_RGB_1000
+                    scenes = SCENE_LIST_RGB_1000
                 else:
-                    self._scenes = SCENE_LIST_RGBW_1000
-                self._scenes = {**self._modes.as_dict(), **self._scenes}
+                    scenes = SCENE_LIST_RGBW_1000
+                scenes = {**self._modes.as_dict(), **scenes}
+            self._scenes = DictSelector(scenes, reverse=True)
 
-            self._effect_list = list(self._scenes.keys()) + self._effect_list
+            self._effect_list = list(scenes.keys()) + self._effect_list
 
         if self.has_config(CONF_COLOR):
             color_data = self.dp_value(CONF_COLOR)
@@ -350,7 +352,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         """Return the current effect for this light."""
         if self.is_scene_mode or self.is_music_mode:
             return self._effect
-        elif (color_mode := self.__get_color_mode()) in self._scenes.values():
+        elif (color_mode := self.__get_color_mode()) in self._scenes.values:
             return self.__find_scene_by_scene_data(color_mode)
         return None
 
@@ -442,7 +444,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
     def __find_scene_by_scene_data(self, data):
         return (
             next(
-                (item for item in self._effect_list if self._scenes.get(item) == data),
+                (i for i in self._effect_list if self._scenes.to_tuya(i) == data),
                 None,
             )
             if data is not None
@@ -544,7 +546,7 @@ class LocalTuyaLight(LocalTuyaEntity, LightEntity):
         color_mode = None
         if ATTR_EFFECT in kwargs and (features & LightEntityFeature.EFFECT):
             effect = kwargs[ATTR_EFFECT]
-            scene = self._scenes.get(effect)
+            scene = self._scenes.to_tuya(effect)
             if scene is not None:
                 if scene.startswith(self._modes.scene) or scene in (
                     self._modes.white,

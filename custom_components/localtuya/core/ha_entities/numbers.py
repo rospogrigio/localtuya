@@ -409,6 +409,31 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_numbers(0, 999, 1, 1, UnitOfTime.SECONDS),
         ),
     ),
+    # Cat litter box
+    # https://developer.tuya.com/en/docs/iot/f?id=Kakg309qkmuit
+    "msp": (
+        LocalTuyaEntity(
+            id=DPCode.DELAY_CLEAN_TIME,
+            name="Delay Clean Time",
+            icon="mdi:timer",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(1, 60, 1, 1, UnitOfTime.MINUTES),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.QUIET_TIME_START,
+            name="Quiet Time Start",
+            icon="mdi:timer-play-outline",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(1, 1439, 1, 1, UnitOfTime.MINUTES),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.QUIET_TIME_END,
+            name="Quiet Time End",
+            icon="mdi:timer-pause-outline",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(1, 1439, 1, 1, UnitOfTime.MINUTES),
+        ),
+    ),
     # Sous Vide Cooker
     # https://developer.tuya.com/en/docs/iot/categorymzj?id=Kaiuz2vy130ux
     "mzj": (

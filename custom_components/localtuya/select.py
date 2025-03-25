@@ -14,6 +14,7 @@ from .const import (
     CONF_OPTIONS,
     CONF_PASSIVE_ENTITY,
     CONF_RESTORE_ON_RECONNECT,
+    DictSelector,
 )
 
 
@@ -46,28 +47,19 @@ class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
         self._state_friendly = ""
 
         # Set Display options
-        options_values, options_display_name = [], []
-        config_options: dict = self._config.get(CONF_OPTIONS)
+        options = {}
+        config_options: dict = self._config.get(CONF_OPTIONS, {})
         if not isinstance(config_options, dict):
-            # Warn the user in-case he used the wrong format.
-            self.error(
-                f"{self.name} DPiD: {self._dp_id}: Options configured incorrectly! It must be in the format of key-value pairs, where each line follows the structure [device_value: friendly name]"
+            self.warning(
+                f"{self.name} DPiD: {self._dp_id}: Options configured incorrectly!"
+                + "It must be in the format of key-value pairs,"
+                + "where each line follows the structure [device_value: friendly name]"
             )
             config_options = {}
         for k, v in config_options.items():
-            options_values.append(k)
-            options_display_name.append(v if v else k.replace("_", "").capitalize())
+            options[k] = v if v else k.replace("_", "").capitalize()
 
-        self._valid_options = options_values
-        self._display_options = options_display_name
-
-        _LOGGER.debug("Display Options Configured: %s", options_display_name)
-
-        _LOGGER.debug(
-            "Total Raw Options: %s - Total Display Options: %s",
-            str(len(self._valid_options)),
-            str(len(self._display_options)),
-        )
+        self._options = DictSelector(options)
 
     @property
     def current_option(self) -> str:
@@ -77,7 +69,7 @@ class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
     @property
     def options(self) -> list:
         """Return the list of values."""
-        return self._display_options
+        return self._options.names
 
     @property
     def device_class(self):
@@ -86,30 +78,21 @@ class LocalTuyaSelect(LocalTuyaEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Update the current value."""
-        option_value = self._valid_options[self._display_options.index(option)]
-        _LOGGER.debug("Sending Option: " + option + " -> " + option_value)
+        option_value = self._options.to_tuya(option)
+        self.debug("Sending Option: " + option + " -> " + option_value)
         await self._device.set_dp(option_value, self._dp_id)
 
     def status_updated(self):
         """Device status was updated."""
         super().status_updated()
 
-        state = self.dp_value(self._dp_id)
-
-        # Check that received status update for this entity.
-        if state is not None:
-            try:
-                self._state_friendly = self._display_options[
-                    self._valid_options.index(state)
-                ]
-            except Exception:  # pylint: disable=broad-except
-                # Friendly value couldn't be mapped
-                self._state_friendly = state
+        if (state := self.dp_value(self._dp_id)) is not None:
+            self._state_friendly = self._options.to_ha(state, state)
 
     # Default value is the first option
     def entity_default_value(self):
         """Return the first option as the default value for this entity type."""
-        return self._valid_options[0]
+        return self._options.names[0]
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocalTuyaSelect, flow_schema)

@@ -143,7 +143,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         """Return whether the device is sleep or not."""
         if (device_sleep := self._device_config.sleep_time) > 0:
             setattr(self, "low_power", True)
-            last_update = int(time.monotonic()) - self._last_update_time
+            last_update = time.monotonic() - self._last_update_time
             return last_update < device_sleep
 
         return False
@@ -180,8 +180,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         for subdevice in self.sub_devices.values():
             if not self.connected or self.is_closing:
                 break
-            if subdevice.subdevice_state != SubdeviceState.ABSENT:
-                await subdevice.async_connect()
+            await subdevice.async_connect()
 
     async def _make_connection(self):
         """Subscribe localtuya entity events."""
@@ -331,11 +330,11 @@ class TuyaDevice(TuyaListener, ContextualLogger):
 
         # If not connected try to handle the errors.
         if not self.connected and not self.is_closing:
+            if update_localkey:
+                # Check if the cloud device info has changed!
+                await self._update_local_key()
             if self._task_reconnect is None:
                 self._task_reconnect = asyncio.create_task(self._async_reconnect())
-            if update_localkey:
-                # Check if the cloud device info has changed!.
-                await self._update_local_key()
 
         self._task_connect = None
 
@@ -503,7 +502,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         if self.is_subdevice:
             self.info(f"Sub-device disconnected due to: {exc}")
         elif hasattr(self, "low_power"):
-            m, s = divmod((int(time.monotonic()) - self._last_update_time), 60)
+            m, s = divmod((int(time.monotonic() - self._last_update_time)), 60)
             h, m = divmod(m, 60)
             self.info(f"The device is still out of reach since: {h}h:{m}m:{s}s")
         else:
@@ -516,6 +515,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         if self._entry.data.get(CONF_NO_CLOUD, True):
             return self.info("Ensure that localkey hasn't changed and it's correct")
 
+        self.info(f"Trying to update local-key...")
         dev_id = self._device_config.id
         cloud_api = self._hass_entry.cloud_data
         await cloud_api.async_get_devices_list(force_update=True)
@@ -607,7 +607,7 @@ class TuyaDevice(TuyaListener, ContextualLogger):
             # Fake gateways are only used to pass commands no need to update status.
             return
 
-        self._last_update_time = int(time.monotonic())
+        self._last_update_time = time.monotonic()
         self._handle_event(self._status, status)
         self._status.update(status)
         self._dispatch_status()
@@ -651,17 +651,24 @@ class TuyaDevice(TuyaListener, ContextualLogger):
         self.subdevice_state = state
 
         # This will trigger if state is absent twice.
-        if old_state == state and state == SubdeviceState.ABSENT:
-            self._subdevice_off_count = 0
-            return self.disconnected("Device is absent")
-        elif state == SubdeviceState.ABSENT:
-            return self.info(f"Sub-device is absent {node_id}")
-        elif old_state == SubdeviceState.ABSENT:
+        if state == SubdeviceState.ABSENT:
+            if old_state == state:
+                delay = time.monotonic() - self._last_update_time
+                if delay >= (HEARTBEAT_INTERVAL * 2):
+                    self._subdevice_off_count = 0
+                    self.disconnected("Device is absent")
+                # Can be >2 subsequent payloads per one request
+                elif delay > HEARTBEAT_INTERVAL:
+                    self.debug(f"Sub-device is absent for {delay:.03f}s")
+            return
+        elif old_state == SubdeviceState.ABSENT and not self.connected:
             self.info(f"Sub-device is back {node_id}")
 
         is_online = state == SubdeviceState.ONLINE
         off_count = self._subdevice_off_count
         self._subdevice_off_count = 0 if is_online else off_count + 1
+        # For sub-devices, the last time it is known as not absent
+        self._last_update_time = time.monotonic()
 
         if is_online:
             return self.info(f"Sub-device is online {node_id}") if off_count else None

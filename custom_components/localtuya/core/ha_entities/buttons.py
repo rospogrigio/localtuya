@@ -138,36 +138,28 @@ BUTTONS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
-    # Robot Vacuum
-    # https://developer.tuya.com/en/docs/iot/fsd?id=K9gf487ck1tlo
-    "sd": (
+    # Smart Pet Feeder
+    # https://developer.tuya.com/en/docs/iot/categorycwwsq?id=Kaiuz2b6vydld
+    "cwwsq": (
         LocalTuyaEntity(
-            id=DPCode.RESET_DUSTER_CLOTH,
-            name="Reset Duster Cloth",
-            icon="mdi:restart",
+            id=DPCode.FACTORY_RESET,
+            name="Factory Reset",
+            icon="mdi:cog-counterclockwise",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
+    # Cat litter box
+    # https://developer.tuya.com/en/docs/iot/f?id=Kakg309qkmuit
+    "msp": (
+        LocalTuyaEntity(
+            id=DPCode.FACTORY_RESET,
+            name="Factory Reset",
+            icon="mdi:restore",
             entity_category=EntityCategory.CONFIG,
         ),
         LocalTuyaEntity(
-            id=DPCode.RESET_EDGE_BRUSH,
-            name="Reset Edge Brush",
-            icon="mdi:restart",
-            entity_category=EntityCategory.CONFIG,
-        ),
-        LocalTuyaEntity(
-            id=DPCode.RESET_FILTER,
-            name="Reset Filter",
-            icon="mdi:air-filter",
-            entity_category=EntityCategory.CONFIG,
-        ),
-        LocalTuyaEntity(
-            id=DPCode.RESET_MAP,
-            name="Reset Map",
-            icon="mdi:map-marker-remove",
-            entity_category=EntityCategory.CONFIG,
-        ),
-        LocalTuyaEntity(
-            id=DPCode.RESET_ROLL_BRUSH,
-            name="Reset Roll Brush",
+            id=DPCode.REBOOT,
+            name="Reboot",
             icon="mdi:restart",
             entity_category=EntityCategory.CONFIG,
         ),

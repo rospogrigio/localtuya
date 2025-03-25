@@ -805,7 +805,6 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.heartbeater: asyncio.Task | None = None
         self._sub_devs_query_task: asyncio.Task | None = None
         self.dps_cache = {}
-        self.sub_devices_states = {"online": [], "offline": []}
         self.local_nonce = b"0123456789abcdef"  # not-so-random random key
         self.remote_nonce = b""
         self.dps_whitelist = UPDATE_DPS_WHITELIST
@@ -846,15 +845,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         Message: {"online": [cids, ...], "offline": [cids, ...], "nearby": [cids, ...]}
         """
 
-        async def _action():
+        async def _action(on_devs, off_devs):
             try:
-                await asyncio.sleep(2)
-
-                self.debug(f"Sub-Devices States Update: {self.sub_devices_states}")
-                on_devs = self.sub_devices_states.get("online")
-                off_devs = self.sub_devices_states.get("offline")
+                self.debug(f"Sub-Devices States Update: {on_devs=} {off_devs=}")
                 listener = self.listener and self.listener()
-                if listener is None or (on_devs is None and off_devs is None):
+                if listener is None:
                     return
                 for cid, device in listener.sub_devices.items():
                     if cid in on_devs:
@@ -862,6 +857,9 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                     elif cid in off_devs:
                         device.subdevice_state_updated(SubdeviceState.OFFLINE)
                     else:
+                        # ABSENT detection is weak, because, with many sub-devices,
+                        # the gateway provides them all in more than 1 reply. This
+                        # should be taken into account in device.subdevice_state_updated()
                         device.subdevice_state_updated(SubdeviceState.ABSENT)
             except asyncio.CancelledError:
                 pass
@@ -869,22 +867,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 self._sub_devs_query_task = None
 
         if (data := decoded_message.get("data")) and isinstance(data, dict):
-            devs_states = self.sub_devices_states
-            updated_states = {}
-
-            cached_on_devs = devs_states.get("online", [])
-            cached_off_devs = devs_states.get("offline", [])
-
             on_devs, off_devs = data.get("online", []), data.get("offline", [])
-
-            updated_states["online"] = list(set(cached_on_devs + on_devs))
-            updated_states["offline"] = list(set(cached_off_devs + off_devs))
-
-            if self._sub_devs_query_task is not None:
-                self._sub_devs_query_task.cancel()
-
-            self.sub_devices_states = updated_states
-            self._sub_devs_query_task = self.loop.create_task(_action())
+            self._sub_devs_query_task = self.loop.create_task(
+                _action(on_devs, off_devs)
+            )
 
     def _setup_dispatcher(self) -> MessageDispatcher:
         def _status_update(msg, ack=False):
@@ -1205,13 +1191,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
     async def subdevices_query(self):
         """Request a list of sub-devices and their status."""
-        # Avoid empty state parsing!
-        if self._sub_devs_query_task is not None:
-            self._sub_devs_query_task.cancel()
-            self._sub_devs_query_task = None
         # Return payload: {"online": [cid1, ...], "offline": [cid2, ...]}
         # "nearby": [cids, ...] can come in payload.
-        self.sub_devices_states = {"online": [], "offline": []}
         payload = self._generate_payload(
             LAN_EXT_STREAM, rawData={"cids": []}, reqType="subdev_online_stat_query"
         )

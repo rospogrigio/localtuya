@@ -1558,6 +1558,24 @@ SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
     ),
+    # Cat litter box
+    # https://developer.tuya.com/en/docs/iot/f?id=Kakg309qkmuit
+    "msp": (
+        LocalTuyaEntity(
+            id=DPCode.TEMPERATURE,
+            name="Temperature",
+            device_class=SensorDeviceClass.TEMPERATURE,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(UnitOfTemperature.CELSIUS, 0.1),
+        ),
+        LocalTuyaEntity(
+            id=(DPCode.HUMIDITY, DPCode.HUMIDITY_CURRENT),
+            name="Humidity",
+            device_class=SensorDeviceClass.HUMIDITY,
+            state_class=SensorStateClass.MEASUREMENT,
+            custom_configs=localtuya_sensor(PERCENTAGE, 0.1),
+        ),
+    ),
     # Smart Water Meter
     # https://developer.tuya.com/en/docs/iot/f?id=Ka8n052xu7w4c
     "znsb": (

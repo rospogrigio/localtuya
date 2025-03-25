@@ -109,7 +109,7 @@ async def test_climate():
     assert entity_1.preset_mode == "eco"
 
     # heuristic_action
-    entity_1._conf_hvac_action_dp = None
+    entity_1._hvac_action_dp = None
     status = {**DPS_STATUS, **{"2": "manual", "24": 18.9}}
     device.status_updated(status)
     assert entity_1.hvac_action == HVACAction.HEATING

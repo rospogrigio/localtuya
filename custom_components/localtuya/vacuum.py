@@ -45,7 +45,7 @@ FAULT = "fault"
 
 DEFAULT_IDLE_STATUS = "standby,sleep"
 DEFAULT_RETURNING_STATUS = "docking,to_charge,goto_charge"
-DEFAULT_DOCKED_STATUS = "charging,chargecompleted,charge_done"
+DEFAULT_DOCKED_STATUS = "charging,chargecompleted,charge_done,charging_dock"
 DEFAULT_MODES = "smart,wall_follow,spiral,single"
 DEFAULT_FAN_SPEEDS = "low,normal,high"
 DEFAULT_PAUSED_STATE = "paused"

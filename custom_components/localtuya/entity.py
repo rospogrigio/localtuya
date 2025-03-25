@@ -269,7 +269,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     @property
     def device_class(self):
         """Return the class of this device."""
-        return getattr(self, "_attr_device_class", self._config.get(CONF_DEVICE_CLASS))
+        attr_device_class = getattr(self, "_attr_device_class")
+        return attr_device_class or self._config.get(CONF_DEVICE_CLASS)
 
     def has_config(self, attr) -> bool:
         """Return if a config parameter has a valid value."""

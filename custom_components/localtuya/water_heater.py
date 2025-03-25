@@ -3,7 +3,7 @@
 import logging
 from functools import partial
 from .config_flow import col_to_select
-from homeassistant.helpers import selector
+from homeassistant.helpers.selector import ObjectSelector
 
 import voluptuous as vol
 from homeassistant.components.water_heater import (
@@ -41,6 +41,7 @@ from .const import (
     CONF_MODES,
     CONF_TARGET_TEMPERATURE_LOW_DP,
     CONF_TARGET_TEMPERATURE_HIGH_DP,
+    DictSelector,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,7 +74,7 @@ def flow_schema(dps):
             CONF_TARGET_PRECISION, default=str(DEFAULT_PRECISION)
         ): col_to_select(PERCISION_SET),
         vol.Optional(CONF_MODE_DP): col_to_select(dps, is_dps=True),
-        vol.Optional(CONF_MODES, default={}): selector.ObjectSelector(),
+        vol.Optional(CONF_MODES, default={}): ObjectSelector(),
         vol.Optional(CONF_TEMPERATURE_UNIT): col_to_select(
             [TEMPERATURE_CELSIUS, TEMPERATURE_FAHRENHEIT]
         ),
@@ -91,6 +92,7 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
     """Tuya WaterHeater device."""
 
     _enable_turn_on_off_backwards_compatibility = False
+    _attr_current_operation = False
 
     def __init__(
         self,
@@ -106,8 +108,7 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         self._current_temperature = None
         self._dp_mode = self._config.get(CONF_MODE_DP, None)
 
-        self._available_modes = self._config.get(CONF_MODES, {})
-        self._modes_name_to_value = {v: k for k, v in self._available_modes.items()}
+        self._available_modes = DictSelector(self._config.get(CONF_MODES, {}))
 
         self._precision = float(self._config.get(CONF_PRECISION, DEFAULT_PRECISION))
         self._precision_target = float(
@@ -150,7 +151,7 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
     @property
     def operation_list(self) -> list[str] | None:
         """Return the list of available operation modes."""
-        return list(self._modes_name_to_value) + [OFF_MODE]
+        return self._available_modes.names + [OFF_MODE]
 
     @property
     def current_temperature(self):
@@ -190,9 +191,7 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         elif not self._state:
             status[self._dp_id] = True
 
-        mode = self._modes_name_to_value.get(operation_mode)
-        status[self._dp_mode] = mode
-
+        status[self._dp_mode] = self._available_modes.to_tuya(operation_mode)
         await self._device.set_dps(status)
 
     async def async_turn_on(self) -> None:
@@ -222,10 +221,8 @@ class LocalTuyaWaterHeater(LocalTuyaEntity, WaterHeaterEntity):
         # Update modes states
         if not self._state:
             self._attr_current_operation = OFF_MODE
-        elif self._dp_mode is not None:
-            for mode_value, mode_name in self._available_modes.items():
-                if str(self.dp_value(CONF_MODE_DP)) == str(mode_value):
-                    self._attr_current_operation = mode_name
+        elif self._dp_mode is not None and (mode := self.dp_value(CONF_MODE_DP)):
+            self._attr_current_operation = self._available_modes.to_ha(mode)
 
         if (
             target_high := self.dp_value(CONF_TARGET_TEMPERATURE_HIGH_DP)

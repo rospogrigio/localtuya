@@ -307,6 +307,40 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             entity_category=EntityCategory.CONFIG,
         ),
     ),
+    # Cat litter box
+    # https://developer.tuya.com/en/docs/iot/f?id=Kakg309qkmuit
+    "msp": (
+        LocalTuyaEntity(
+            id=DPCode.SWITCH,
+        ),
+        LocalTuyaEntity(
+            id=DPCode.CLEANING,
+            name="Cleaning",
+            icon="mdi:power",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.SLEEPING,
+            name="Sleep",
+            icon="mdi:sleep",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.BEEP,
+            name="Beep",
+            icon="mdi:volume-high",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.INDICATOR_LIGHT,
+            name="Light Indicator",
+            icon="mdi:wall-sconce-flat-variant",
+        ),
+        LocalTuyaEntity(
+            id=DPCode.QUIET_TIMING_ON,
+            name="Enable Quiet Timing",
+            icon="mdi:timer-settings-outline",
+            entity_category=EntityCategory.CONFIG,
+        ),
+    ),
+    # Po
     # Sous Vide Cooker
     # https://developer.tuya.com/en/docs/iot/categorymzj?id=Kaiuz2vy130ux
     "mzj": (
