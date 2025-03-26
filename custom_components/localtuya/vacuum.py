@@ -33,6 +33,9 @@ from .const import (
     CONF_RETURN_MODE,
     CONF_RETURNING_STATUS_VALUE,
     CONF_STOP_STATUS,
+    CONF_PAUSE_DP,
+    CONF_PREFER_POWERGO,
+    CONF_CLEANING_STATUS_VALUE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,31 +54,39 @@ DEFAULT_MODES = "smart,wall_follow,spiral,single"
 DEFAULT_FAN_SPEEDS = "low,normal,high"
 DEFAULT_PAUSED_STATE = "paused"
 DEFAULT_RETURN_MODE = "chargego"
-DEFAULT_STOP_STATUS = "standby"
-
+DEFAULT_CLEANING_STATUS = "smart,random,wall_follow,spiral,left_spiral,right_spiral,right_bow,left_bow,partial_bow,mop"
 
 def flow_schema(dps):
-    """Return schema used in config flow."""
     return {
+        
         vol.Required(CONF_IDLE_STATUS_VALUE, default=DEFAULT_IDLE_STATUS): str,
-        vol.Required(CONF_POWERGO_DP): vol.In(dps),
         vol.Required(CONF_DOCKED_STATUS_VALUE, default=DEFAULT_DOCKED_STATUS): str,
+        vol.Required(CONF_CLEANING_STATUS_VALUE, default=DEFAULT_CLEANING_STATUS): str,
         vol.Optional(
             CONF_RETURNING_STATUS_VALUE, default=DEFAULT_RETURNING_STATUS
         ): str,
-        vol.Optional(CONF_BATTERY_DP): vol.In(dps),
+        vol.Optional(CONF_PAUSED_STATE, default=DEFAULT_PAUSED_STATE): str,
+
+        vol.Required(CONF_POWERGO_DP): vol.In(dps),
+        vol.Optional(CONF_PAUSE_DP): vol.In(dps),
+        vol.Optional(CONF_PREFER_POWERGO, default=False): bool,
+
         vol.Optional(CONF_MODE_DP): vol.In(dps),
         vol.Optional(CONF_MODES, default=DEFAULT_MODES): str,
         vol.Optional(CONF_RETURN_MODE, default=DEFAULT_RETURN_MODE): str,
+        vol.Optional(CONF_STOP_STATUS): str,  
+
         vol.Optional(CONF_FAN_SPEED_DP): vol.In(dps),
         vol.Optional(CONF_FAN_SPEEDS, default=DEFAULT_FAN_SPEEDS): str,
+        
+        vol.Optional(CONF_BATTERY_DP): vol.In(dps),
+        
         vol.Optional(CONF_CLEAN_TIME_DP): vol.In(dps),
         vol.Optional(CONF_CLEAN_AREA_DP): vol.In(dps),
         vol.Optional(CONF_CLEAN_RECORD_DP): vol.In(dps),
+        
         vol.Optional(CONF_LOCATE_DP): vol.In(dps),
         vol.Optional(CONF_FAULT_DP): vol.In(dps),
-        vol.Optional(CONF_PAUSED_STATE, default=DEFAULT_PAUSED_STATE): str,
-        vol.Optional(CONF_STOP_STATUS, default=DEFAULT_STOP_STATUS): str,
     }
 
 
@@ -101,6 +112,10 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         self._docked_status_list = []
         if self.has_config(CONF_DOCKED_STATUS_VALUE):
             self._docked_status_list = self._config[CONF_DOCKED_STATUS_VALUE].split(",")
+
+        self._cleaning_status_list = []
+        if self.has_config(CONF_CLEANING_STATUS_VALUE):
+            self._cleaning_status_list = self._config[CONF_CLEANING_STATUS_VALUE].split(",")
 
         self._fan_speed_list = []
         if self.has_config(CONF_FAN_SPEEDS):
@@ -159,11 +174,22 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
 
     async def async_start(self, **kwargs):
         """Turn the vacuum on and start cleaning."""
-        await self._device.set_dp(True, self._config[CONF_POWERGO_DP])
+        if self._state in STATE_CLEANING:
+            return
+        if hasattr(self, "_modes_list") and self._state != STATE_PAUSED:
+            await self._device.set_dp(self._modes_list[0], self._config[CONF_MODE_DP])
+        elif self._state != STATE_PAUSED and self._config[CONF_PREFER_POWERGO]:
+            await self._device.set_dp(True, self._config[CONF_POWERGO_DP])   
+        else:
+            await self.async_pause()
 
     async def async_pause(self, **kwargs):
         """Stop the vacuum cleaner, do not return to base."""
-        await self._device.set_dp(False, self._config[CONF_POWERGO_DP])
+        if self.has_config(CONF_PAUSE_DP):
+            # toggling this because CONF_PAUSE_DP may be inverted
+            await self._device.set_dp(not self.dps_conf(CONF_PAUSE_DP) ,self._config[CONF_PAUSE_DP])
+        else:
+            await self._device.set_dp( True if self._state == STATE_PAUSED else False , self._config[CONF_POWERGO_DP])
 
     async def async_return_to_base(self, **kwargs):
         """Set the vacuum cleaner to return to the dock."""
@@ -181,7 +207,7 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
                 self._config[CONF_STOP_STATUS], self._config[CONF_MODE_DP]
             )
         else:
-            _LOGGER.error("Missing command for stop in commands set.")
+            await self._device.set_dp(False, self._config[CONF_POWERGO_DP])
 
     async def async_clean_spot(self, **kwargs):
         """Perform a spot clean-up."""
@@ -210,12 +236,14 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
             self._state = STATE_IDLE
         elif state_value in self._docked_status_list:
             self._state = STATE_DOCKED
+        elif state_value in self._cleaning_status_list:
+            self._state = STATE_CLEANING
         elif state_value == self._config[CONF_RETURNING_STATUS_VALUE]:
             self._state = STATE_RETURNING
         elif state_value == self._config[CONF_PAUSED_STATE]:
             self._state = STATE_PAUSED
         else:
-            self._state = STATE_CLEANING
+            self._state = state_value
 
         if self.has_config(CONF_BATTERY_DP):
             self._battery_level = self.dps_conf(CONF_BATTERY_DP)

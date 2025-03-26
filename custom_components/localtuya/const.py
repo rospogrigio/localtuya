@@ -128,6 +128,9 @@ CONF_FAULT_DP = "fault_dp"
 CONF_PAUSED_STATE = "paused_state"
 CONF_RETURN_MODE = "return_mode"
 CONF_STOP_STATUS = "stop_status"
+CONF_PAUSE_DP = "pause_dp"
+CONF_PREFER_POWERGO = "use_powergo_to_start"
+CONF_CLEANING_STATUS_VALUE = "cleaning_status_value"
 
 # number
 CONF_MIN_VALUE = "min_value"
