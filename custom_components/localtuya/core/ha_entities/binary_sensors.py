@@ -293,6 +293,16 @@ BINARY_SENSORS: dict[str, tuple[LocalTuyaEntity, ...]] = {
         ),
         *FAULT_SENSOR,
     ),
+    # Door Window Sensor
+    # https://developer.tuya.com/en/docs/iot/s?id=K9gf48hm02l8m
+    "mcs": (
+        LocalTuyaEntity(
+            id=DPCode.DOORCONTACT_STATE,
+            device_class=BinarySensorDeviceClass.DOOR,
+            custom_configs=STATE_TRUE,
+        ),
+        TAMPER_BINARY_SENSOR,
+    ),
     # Access Control
     # https://developer.tuya.com/en/docs/iot/s?id=Kb0o2xhlkxbet
     "mk": (

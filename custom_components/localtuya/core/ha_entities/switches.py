@@ -314,6 +314,11 @@ SWITCHES: dict[str, tuple[LocalTuyaEntity, ...]] = {
             id=DPCode.SWITCH,
         ),
         LocalTuyaEntity(
+            id=DPCode.MANUAL_CLEAN,
+            name="Manual Cleaning",
+            entity_category=EntityCategory.CONFIG,
+        ),
+        LocalTuyaEntity(
             id=DPCode.CLEANING,
             name="Cleaning",
             icon="mdi:power",

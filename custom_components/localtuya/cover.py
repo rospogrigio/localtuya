@@ -155,7 +155,7 @@ class LocalTuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_closed(self):
         """Return if the cover is closed or not."""
-        if isinstance(self._open_cmd, (bool, str)):
+        if isinstance(self._open_cmd, bool):
             return self._current_cover_position == 0
         if self._config[CONF_POSITIONING_MODE] == MODE_NONE:
             return None

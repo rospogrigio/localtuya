@@ -138,6 +138,15 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             custom_configs=localtuya_numbers(0, 10),
         ),
     ),
+    # Pet Water Feeder
+    # https://developer.tuya.com/en/docs/iot/f?id=K9gf46aewxem5
+    "cwysj": (
+        LocalTuyaEntity(
+            id=DPCode.PUMP_TIME,
+            name="Cleaning Time",
+            custom_configs=localtuya_numbers(0, 31, unit="d"),
+        ),
+    ),
     # Light
     # https://developer.tuya.com/en/docs/iot/categorydj?id=Kaiuyzy3eheyy
     "dj": (
@@ -432,6 +441,18 @@ NUMBERS: dict[str, tuple[LocalTuyaEntity, ...]] = {
             icon="mdi:timer-pause-outline",
             entity_category=EntityCategory.CONFIG,
             custom_configs=localtuya_numbers(1, 1439, 1, 1, UnitOfTime.MINUTES),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.DIS_CURRENT,
+            name="DIS CURRENT",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 50, 1, 1),
+        ),
+        LocalTuyaEntity(
+            id=DPCode.FLOW_SET,
+            name="Flow",
+            entity_category=EntityCategory.CONFIG,
+            custom_configs=localtuya_numbers(0, 255, 1, 1),
         ),
     ),
     # Sous Vide Cooker

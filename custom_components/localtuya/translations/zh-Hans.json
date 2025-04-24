@@ -1,0 +1,272 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "该账户已被配置。",
+            "device_updated": "设备配置信息已更新。"
+        },
+        "error": {
+            "authentication_failed": "认证失败：\n{msg}",
+            "cannot_connect": "无法连接到设备，请确认IP地址是否正确后重试",
+            "device_list_failed": "无法获取设备列表：\n{msg}",
+            "invalid_auth": "与设备认证失败。请确认 设备ID(did) 和 Local Key 是否正确。",
+            "unknown": "发生了未知错误：\n{ex}.",
+            "entity_already_configured": "该实体已被配置。",
+            "address_in_use": "TCP端口6668(用于发现设备)已被占用. 请检查并确保没有其他集成正在使用该端口。",
+            "discovery_failed": "发现设备时发生错误。请查看日志获取详细信息。如问题持续存在，欢迎在GitHub创建新issue一起讨论（请记得调试日志）。",
+            "empty_dps": "成功连接到设备，但未找到数据点。请重新设置。如果问题持续存在，欢迎在GitHub创建新issue一起讨论（请记得调试日志）。"
+        },
+        "step": {
+            "user": {
+                "title": "云服务API账户配置",
+                "description": "配置用于连接Tuya云服务API的账户信息。",
+                "data": {
+                    "region": "数据中心所属区域",
+                    "client_id": "Client ID（可在Tuya云服务平台项目概况页面的授权密钥中查看）",
+                    "client_secret": "Client Secret（可在Tuya云服务平台项目概况页面的授权密钥中查看）",
+                    "user_id": "用户ID（在Tuya云服务平台项目设备页面的关联APP账号中的UID）",
+                    "username": "中枢名",
+                    "no_cloud": "是否禁用云服务API？"
+                }
+            }
+        }
+    },
+    "options": {
+        "abort": {
+            "already_configured": "该账号已配置。",
+            "device_success": "设备 {dev_name} 已成功 {action}。",
+            "no_entities": "无法从设备中删除所有实体。\n如需删除设备，请前往`设置`->`设备与服务`页面，在`设备`标签页中找到该设备，点击 `设备信息` 卡片右下角三点按钮，选择 `删除设备`。"
+        },
+        "error": {
+            "authentication_failed": "认证失败：\n{msg}",
+            "cannot_connect": "无法连接到设备。请确认设备IP地址是否正确后重试。",
+            "device_list_failed": "获取设备列表失败：\n{msg}",
+            "invalid_auth": "与设备认证失败。请确认设备ID(did)和Local Key是否正确。",
+            "unknown": "发生了未知错误：\n{ex}.",
+            "entity_already_configured": "该实体已配置。",
+            "address_in_use": "TCP端口6668(用于发现设备)已被占用. 请检查并确保没有其他集成正在使用该端口。",
+            "discovery_failed": "发现设备时发生错误。请查看日志获取详细信息。如问题持续存在，欢迎在GitHub创建新issue一起讨论（请记得调试日志）。",
+            "empty_dps": "成功连接到设备，但未找到数据点位。请重新设置。如果问题持续存在，欢迎在GitHub创建新issue一起讨论（请记得调试日志）。"
+        },
+        "step": {
+            "yaml_import": {
+                "title": "不支持",
+                "description": "通过`YAML`配置的设备无法在可视化界面中配置。请从`YAML`中删除设备并在可视化界面中重新创建该设备，或修改你的`YAML`配置。"
+            },
+            "init": {
+                "title": "配置",
+                "description": "请选择操作方式继续下一步。",
+                "menu_options": {
+                    "add_device": "添加新设备",
+                    "edit_device": "重新配置已添加设备",
+                    "configure_cloud": "管理云服务API账户"
+                }
+            },
+            "add_device": {
+                "title": "选择要配置的设备",
+                "description": "在Tuya手机应用中配置兼容Tuya的设备后，该设备将自动在本地网络中被发现。如未看到你想要添加的设备，请从下拉菜单中选择`手动添加设备`。",
+                "data": {
+                    "selected_device": "已发现的设备",
+                    "mass_configure": "自动配置所有已识别设备"
+                }
+            },
+            "edit_device": {
+                "title": "重新配置已添加的设备",
+                "description": "请选择你想要重新配置的设备。",
+                "data": {
+                    "selected_device": "已添加的设备"
+                }
+            },
+            "configure_cloud": {
+                "title": "管理云服务API账户",
+                "description": "配置用于连接Tuya云服务API的账户信息。",
+                "data": {
+                    "region": "数据中心所属区域",
+                    "client_id": "Client ID（可在Tuya云服务平台项目概况页面的授权密钥中查看）",
+                    "client_secret": "Client Secret（可在Tuya云服务平台项目概况页面的授权密钥中查看）",
+                    "user_id": "用户ID（在Tuya云服务平台项目设备页面的关联APP账号中的UID）",
+                    "username": "中枢名",
+                    "no_cloud": "是否禁用云服务API？"
+                }
+            },
+            "confirm": {
+                "title": "信息确认",
+                "description": "{message}"
+            },
+            "configure_device": {
+                "title": "配置设备连接信息",
+                "description": "请填写缺失的设备信息{for_device}以便LocalTuya连接到设备。",
+                "data": {
+                    "friendly_name": "设备名称",
+                    "host": "设备IP地址",
+                    "device_id": "设备ID(Device ID)",
+                    "local_key": "Local Key",
+                    "node_id": "（非必填）子设备Node ID",
+                    "protocol_version": "协议版本",
+                    "enable_debug": "启用调试模式（还需在`configuration.yaml`中手动启用）",
+                    "scan_interval": "（非必填）如未自动扫描，扫描间隔时间（秒）",
+                    "entities": "已配置实体（取消勾选可删除实体）",
+                    "add_entities": "添加新实体",
+                    "manual_dps_strings": "（非必填）手动指定未自动检测的数据点位（用英文逗号分隔）",
+                    "reset_dpids": "（非必填）发送 RESET 命令时使用的数据点位ID（用英文逗号分隔）",
+                    "device_sleep_time": "（非必填） 设备休眠时间（秒）：设备报告状态后将休眠",
+                    "export_config": "将实体配置保存为模板"
+                }
+            },
+            "device_setup_method": {
+                "title": "配置设备实体",
+                "description": "LocalTuya将尝试自动发现其余配置内容。如果此方法无法适用于你的设备，或你希望自行调整设置，请选择`手动配置设备实体`选项。",
+                "menu_options": {
+                    "auto_configure_device":"自动发现设备实体",
+                    "pick_entity_type": "手动配置设备实体",
+                    "choose_template":"使用已保存的模板"
+                }
+            },
+            "auto_configure_device": {
+                "title": "自动配置",
+                "description": "发生错误：{err_msg}。如果未显示具体原因，请检查系统日志。",
+                "menu_options": {
+                    "device_setup_method":"回到配置设备实体界面"
+                }
+            },
+            "pick_entity_type": {
+                "title": "选择实体类型",
+                "description": "请选择你想要添加的实体类型。",
+                "data": {
+                    "platform_to_add": "选择实体",
+                    "no_additional_entities": "完成实体配置",
+                    "use_template" : "导入模板文件"
+                }
+            },
+            "choose_template":{
+                "title": "导入模板文件",
+                "description": "模板文件位于`templates`目录下（[更多信息](https://github.com/xZetsubou/hass-localtuya/discussions/13)）。",
+                "data": {
+                    "templates": "选择模板"
+                }
+            },
+            "configure_entity": {
+                "title": "配置实体",
+                "description": "请填写 {entity}（类型为 {platform}）的相关信息。所有设置（除了`类型`和`数据点位ID`）均可在之后的`配置`页面中修改。",
+                "data": {
+                    "id": "数据点位ID(DPID)",
+                    "friendly_name": "实体显示名称",
+                    "current": "电流",
+                    "current_consumption": "当前功耗",
+                    "voltage": "电压",
+                    "commands_set": "开_关_停 命令集（用英文逗号分隔）",
+                    "positioning_mode": "定位模式",
+                    "current_position_dp": "当前位置（仅适用于*position*模式）",
+                    "set_position_dp": "设定位置（仅适用于*position*模式）",
+                    "stop_switch_dp": "（可选项）停止开关（如设备有持续指令）",
+                    "position_inverted": "反转0-100位置（仅适用于*position*模式）",
+                    "span_time": "完全打开所需时间（秒，仅用于*timed*模式）",
+                    "unit_of_measurement": "（非必填）计量单位",
+                    "device_class": "（非必填）设备类型",
+                    "state_class": "（非必填）状态分类",
+                    "scaling": "（非必填）缩放系数",
+                    "state_on": "打开时的状态值",
+                    "state_off": "关闭时的状态值",
+                    "powergo_dp": "电源数据点位（通常为25或2）",
+                    "idle_status_value": "空闲状态值（用英文逗号分隔）",
+                    "returning_status_value":  "返回状态值（用英文逗号分隔）",
+                    "docked_status_value": "基站对接状态值（用英文逗号分隔）",
+                    "fault_dp": "故障状态数据点位（通常为11）",
+                    "battery_dp": "电池状态数据点位（通常为14）",
+                    "mode_dp": "模式数据点位",
+                    "modes": "模式列表（用英文逗号分隔）",
+                    "return_mode": "返回基座模式",
+                    "fan_speed_dp": "（非必填）风速数据点位",
+                    "fan_speeds": "风速列表（用英文逗号分隔）",
+                    "clean_time_dp": "清洁时间数据点位（通常为33）",
+                    "clean_area_dp": "清洁面积数据点位（通常为32）",
+                    "clean_record_dp": "清洁记录数据点位（通常为34）",
+                    "locate_dp": "定位数据点位（通常为31）",
+                    "pause_dp":"暂停数据点位",
+                    "paused_state": "暂停状态（如pause、paused等）",
+                    "stop_status": "停止状态",
+                    "brightness": "亮度（仅适用于白光）",
+                    "brightness_lower": "亮度下限值",
+                    "brightness_upper": "亮度上限值",
+                    "color_temp": "色温",
+                    "color_temp_reverse": "是否反转色温？",
+                    "color": "颜色",
+                    "color_mode": "色彩模式（或工作模式）",
+                    "color_temp_min_kelvin": "最小色温（开尔文）",
+                    "color_temp_max_kelvin": "最大色温（开尔文）",
+                    "music_mode": "是否支持音乐模式？",
+                    "scene": "场景",
+                    "scene_values": "（非必填）场景值（用英文逗号分隔）",
+                    "select_options": "选项值列表（用英文逗号分隔）",
+                    "fan_speed_control": "风速控制数据点位",
+                    "fan_oscillating_control": "风扇摇头控制数据点位",
+                    "fan_speed_min": "最小风速（整数）",
+                    "fan_speed_max": "最大风速（整数）",
+                    "fan_speed_ordered_list": "风速列表（包含最小和最大值，使用英文逗号分隔）",
+                    "fan_direction":"风向数据点位",
+                    "fan_direction_forward": "正向出风时风向值",
+                    "fan_direction_reverse": "反向出风时风向值",
+                    "fan_dps_type": "该数据点位的数据类型",
+                    "current_temperature_dp": "当前温度",
+                    "target_temperature_dp": "目标温度",
+                    "temperature_step": "（非必填）温度调控间隔",
+                    "min_temperature": "最小温度",
+                    "max_temperature": "最大温度",
+                    "precision": "精度（非必填，应用于数据点位的值）",
+                    "target_precision": "目标精度（非必填，应用于数据点位的值）",
+                    "temperature_unit": "（非必填）温度单位",
+                    "hvac_mode_dp": "（非必填）HVAC 模式数据点位",
+                    "hvac_mode_set": "（非必填）HVAC 模式列表（用英文逗号分隔）",
+                    "hvac_add_off": "（非必填）是否包含 `关闭` 模式",
+                    "hvac_action_dp": "（非必填）当前HVAC动作数据点位",
+                    "hvac_action_set": "（非必填）HVAC动作列表（用英文逗号分隔）",
+                    "preset_dp": "（非必填）预设数据点位",
+                    "preset_set": "（非必填）预设值列表（用英文逗号分隔）",
+                    "fan_speed_list": "（非必填）支持的风速值（用英文逗号分隔）",
+                    "eco_dp": "（非必填）节能数据点位",
+                    "eco_value": "（非必填）节能值",
+                    "heuristic_action": "（非必填）启用启发式动作",
+                    "dps_default_value": "（非必填）未初始化时的默认值",
+                    "restore_on_reconnect": "是否在重连后恢复Home Assistant中的上次设置值？",
+                    "min_value": "最小值",
+                    "max_value": "最大值",
+                    "step_size": "最小间隔值",
+                    "is_passive_entity": "是否属于被动实体？（需集成发送初始化值）",
+                    "entity_category": "将实体显示在此类别下",
+                    "humidifier_available_modes": "（非必填）设备支持的模式",
+                    "humidifier_current_humidity_dp": "（非必填）当前湿度数据点位",
+                    "humidifier_mode_dp": "（非必填）模式设置数据点位",
+                    "humidifier_set_humidity_dp": "（非必填）湿度设置数据点位",
+                    "min_humidity": "可支持的最低湿度",
+                    "max_humidity": "可支持的最高湿度",
+                    "alarm_supported_states": "设备支持的警报状态（用英文逗号分隔）",
+                    "receive_dp":"接收信号数据点位（默认为202）",
+                    "key_study_dp":"(Optional) Key Study DP (usually 7)",
+                    "lock_state_dp":"（非必填）锁定状态数据点位",
+                    "jammed_dp":"（非必填）卡顿数据点位",
+                    "target_temperature_high_dp":"（非必填）目标高温数据点位",
+                    "target_temperature_low_dp":"（非必填）目标低温数据点位",
+                    "color_mode_set":"支持的模式集合（用英文逗号分隔，如不确定请保留默认）",
+                    "reset_timer": "（非必填）自动重置为关闭状态的定时器",
+                    "swing_mode_dp": "（非必填）垂直摆风数据点位",
+                    "swing_modes": "（非必填）垂直摆风选项（用英文逗号分隔）",
+                    "swing_horizontal_dp": "（非必填）水平摆风数据点位",
+                    "swing_horizontal_modes": "（非必填）水平摆风选项（用英文逗号分隔）"
+                },
+                "data_description": {
+                    "hvac_mode_set": "每一行格式为 [ HVAC模式: 设备值 ] [HVAC模式参考](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-modes)",
+                    "hvac_action_set": "每一行格式为 [ HVAC动作: 设备值 ] [HVAC动作参考](https://developers.home-assistant.io/docs/core/entity/climate/#hvac-action)",
+                    "preset_set": "每一行格式为 [ 设备值: 显示名称 ]",
+                    "scene_values": "每一行格式为 [ 设备值: 显示名称 ]",
+                    "select_options": "每一行格式为 [ 设备值: 显示名称 ]",
+                    "swing_modes": "每一行格式为 [ 设备值: 显示名称 ]",
+                    "swing_horizontal_modes": "每一行格式为 [ 设备值: 显示名称 ]",
+                    "alarm_supported_states": "每一行格式为 [ 支持的状态: 设备值 ] [参考状态](https://developers.home-assistant.io/docs/core/entity/alarm-control-panel/#states)",
+                    "humidifier_available_modes": "每一行格式为 [ 设备值: 显示名称 ]",
+                    "device_class": "查看更多 [设备类型](https://www.home-assistant.io/integrations/homeassistant/#device-class)",
+                    "state_class": "查看更多 [状态分类](https://developers.home-assistant.io/docs/core/entity/sensor/#available-state-classes)"
+                }
+            }
+        }
+    },
+    "title": "LocalTuya"
+}

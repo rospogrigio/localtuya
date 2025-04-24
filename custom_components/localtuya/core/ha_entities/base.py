@@ -154,6 +154,7 @@ class DPCode(StrEnum):
     BATTERY_STATE = "battery_state"  # Battery state
     BATTERY_VALUE = "battery_value"  # Battery value
     BEEP = "beep"
+    BKLIGHT_SETTING = "bklight_setting"
     BREAK_CLEAN = "break_clean"
     BRIGHTNESS_MAX_1 = "brightness_max_1"
     BRIGHTNESS_MAX_2 = "brightness_max_2"
@@ -171,6 +172,7 @@ class DPCode(StrEnum):
     BRIGHT_VALUE_V2 = "bright_value_v2"
     CALLPHONE = "callphone"
     CARD_BALANCE = "card_balance"
+    CAT_WEIGHT = "cat_weight"
     CH2O_STATE = "ch2o_state"
     CH2O_VALUE = "ch2o_value"
     CH4_SENSOR_STATE = "ch4_sensor_state"
@@ -195,6 +197,7 @@ class DPCode(StrEnum):
     CLEAN_TIME = "clean_time"
     CLEAR_ENERGY = "clear_energy"
     CLICK_SUSTAIN_TIME = "click_sustain_time"
+    CLOCK_SET = "clock_set"
     CLOSED_OPENED = "closed_opened"
     CLOSED_OPENED_KIT = "closed_opened_kit"
     CLOUD_RECIPE_NUMBER = "cloud_recipe_number"
@@ -202,6 +205,7 @@ class DPCode(StrEnum):
     CO2_VALUE = "co2_value"  # CO2 concentration
     COEF_B_RESET = "coef_b_reset"
     COIL_OUT = "coil_out"
+    COLD_TEMP_CURRENT = "cold_temp_current"
     COLLECTION_MODE = "collection_mode"
     COLOR_DATA_V2 = "color_data_v2"
     COLOUR_DATA = "colour_data"  # Colored light mode
@@ -257,6 +261,9 @@ class DPCode(StrEnum):
     CUR_VOLTAGE1 = "cur_voltage1"
     CUR_VOLTAGE2 = "cur_voltage2"
     C_F = "c_f"  # Temperature unit switching
+    DATA = "data"
+    DATA_IDENTIFICATION = "data_identification"
+    DATA_OVERFLOW = "data_overflow"
     DAY_ENERGY = "day_energy"
     DECIBEL_SENSITIVITY = "decibel_sensitivity"
     DECIBEL_SWITCH = "decibel_switch"
@@ -274,7 +281,10 @@ class DPCode(StrEnum):
     DIRECTION_C = "direction_c"
     DIRECTION_CONTROL = "direction_control"
     DISINFECTION = "disinfection"
+    DIS_CURRENT = "dis_current"
+    DM = "DM"
     DOORBELL = "doorbell"
+    DOORBELL_SONG = "doorbell_song"
     DOORCONTACT_STATE = "doorcontact_state"  # Status of door window sensor
     DOORCONTACT_STATE_2 = "doorcontact_state_2"
     DOORCONTACT_STATE_3 = "doorcontact_state_3"
@@ -312,6 +322,8 @@ class DPCode(StrEnum):
     ENERGY_REVERSE_C = "energy_reverse_c"
     EQUIPMENT_TIME = "equipment_time"
     ERRO = "erro"  # codespell:ignore
+    EXCRETION_TIMES_DAY = "excretion_times_day"
+    EXCRETION_TIME_DAY = "excretion_time_day"
     FACTORY_RESET = "factory_reset"
     FAN_BEEP = "fan_beep"  # Sound
     FAN_COOL = "fan_cool"  # Cool wind
@@ -337,6 +349,7 @@ class DPCode(StrEnum):
     FLIGHT_BRIGHT_MODE = "flight_bright_mode"
     FLOODLIGHT_LIGHTNESS = "floodlight_lightness"
     FLOODLIGHT_SWITCH = "floodlight_switch"
+    FLOW_SET = "flow_set"
     FORWARD_ENERGY_TOTAL = "forward_energy_total"
     FOUT_WAY_VALVE = "fout_way_valve"
     FREQ_CALIBRATION = "freq_calibration"
@@ -351,6 +364,9 @@ class DPCode(StrEnum):
     HUMIDITY = "humidity"  # Humidity
     HUMIDITY_CURRENT = "humidity_current"  # Current humidity
     HUMIDITY_INDOOR = "humidity_indoor"  # Indoor humidity
+    HUMIDITY_OUTDOOR_1 = "humidity_outdoor_1"
+    HUMIDITY_OUTDOOR_2 = "humidity_outdoor_2"
+    HUMIDITY_OUTDOOR_3 = "humidity_outdoor_3"
     HUMIDITY_SET = "humidity_set"  # Humidity setting
     HUMIDITY_VALUE = "humidity_value"  # Humidity
     HUMI_STATUS = "humi_status"
@@ -394,6 +410,7 @@ class DPCode(StrEnum):
     LUX = "lux"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     MACH_OPERATE = "mach_operate"
     MAGNETNUM = "magnetNum"
+    MANUAL_CLEAN = "manual_clean"
     MANUAL_FEED = "manual_feed"
     MASTER_MODE = "master_mode"  # alarm mode
     MASTER_STATE = "master_state"  # alarm mode
@@ -501,12 +518,14 @@ class DPCode(StrEnum):
     POWER_TYPE2 = "power_type2"
     PRESENCE_STATE = "presence_state"
     PRESSURE_STATE = "pressure_state"
+    PRESSURE_UNIT_CONVERT = "pressure_unit_convert"
     PRESSURE_VALUE = "pressure_value"
     PRM_CONTENT = "prm_content"
     PRM_TEMPERATURE = "prm_temperature"
     PTZ_CONTROL = "ptz_control"
     PTZ_STOP = "ptz_stop"
     PUMP_RESET = "pump_reset"  # Water pump reset
+    PUMP_TIME = "pump_time"
     PVRPM = "pvrpm"
     PV_CURRENT = "pv_current"
     PV_POWER = "pv_power"
@@ -572,7 +591,9 @@ class DPCode(StrEnum):
     SENSITIVITY = "sensitivity"  # Sensitivity
     SENSORTYPE = "sensortype"
     SENSOR_HUMIDITY = "sensor_humidity"
+    SENSOR_LINE = "sensor_line"
     SENSOR_TEMPERATURE = "sensor_temperature"
+    SETTING = "setting"
     SHAKE = "shake"  # Oscillating
     SHOCK_STATE = "shock_state"  # Vibration status
     SIREN_SWITCH = "siren_switch"
@@ -685,6 +706,9 @@ class DPCode(StrEnum):
     TEMP_BOILING_F = "temp_boiling_f"
     TEMP_CONTROLLER = "temp_controller"
     TEMP_CURRENT = "temp_current"  # Current temperature in °C
+    TEMP_CURRENT_EXTERNAL_1 = "temp_current_external_1"
+    TEMP_CURRENT_EXTERNAL_2 = "temp_current_external_2"
+    TEMP_CURRENT_EXTERNAL_3 = "temp_current_external_3"
     TEMP_CURRENT_F = "temp_current_f"  # Current temperature in °F
     TEMP_INDOOR = "temp_indoor"  # Indoor temperature in °C
     TEMP_LOW = "temp_low"
@@ -700,6 +724,7 @@ class DPCode(StrEnum):
     TEST = "test"
     TIM = "tim"  # Ikuu SXSEN003PIR IP65 Motion Detector (Wi-Fi)
     TIMER = "timer"
+    TIME_FORMAT = "Time_Format"
     TIME_TOTAL = "time_total"
     TIME_USE = "time_use"
     TODAY_ACC_ENERGY = "today_acc_energy"
@@ -796,6 +821,7 @@ class DPCode(StrEnum):
     WINDOW_CHECK = "window_check"
     WINDOW_STATE = "window_state"
     WINDSPEED = "windspeed"
+    WINDSPEED_UNIT_CONVERT = "windspeed_unit_convert"
     WIRELESS_BATTERYLOCK = "wireless_batterylock"
     WIRELESS_ELECTRICITY = "wireless_electricity"
     WORK_MODE = "work_mode"  # Working mode
