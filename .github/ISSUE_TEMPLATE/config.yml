@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+#  - name: Feature Request
+#    url: https://github.com/xZetsubou/hass-localtuya/discussions
+#    about: If this isn't a bug instead open a discussions!.
+
+  - name: I have a question or need support
+    url: https://community.home-assistant.io/t/local-tuya-control-tuya-devices-locally-fork-from-localtuya/634334?u=umu_ugg
+    about: If you have any questions, feel free to ask in Home Assistant fourm or open a discussion
+
+  - name: Frequently Asked Questions
+    url: https://xzetsubou.github.io/hass-localtuya/faq/
+    about: Your answer may already be there

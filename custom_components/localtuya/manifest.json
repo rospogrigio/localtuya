@@ -1,14 +1,9 @@
 {
   "domain": "localtuya",
   "name": "LocalTuya integration",
-  "codeowners": [
-    "@rospogrigio", "@postlund"
-  ],
-  "config_flow": true,
+  "documentation": "https://github.com/xZetsubou/hass-localtuya/",
   "dependencies": [],
-  "documentation": "https://github.com/rospogrigio/localtuya/",
-  "iot_class": "local_push",
-  "issue_tracker": "https://github.com/rospogrigio/localtuya/issues",
+  "issue_tracker": "https://github.com/xZetsubou/hass-localtuya/issues",
   "requirements": [],
-  "version": "5.2.3"
+  "version": "2025.5.1"
 }
