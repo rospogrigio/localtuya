@@ -150,6 +150,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._entities = []
         self._local_key = self._dev_config_entry[CONF_LOCAL_KEY]
         self._default_reset_dpids = None
+        self._disconnect_warning_logged = False
         if CONF_RESET_DPIDS in self._dev_config_entry:
             reset_ids_str = self._dev_config_entry[CONF_RESET_DPIDS].split(",")
 
@@ -197,10 +198,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self,
             )
             self._interface.add_dps_to_request(self.dps_to_request)
+            self._disconnect_warning_logged = False
         except Exception as ex:  # pylint: disable=broad-except
-            self.warning(
-                f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s", ex
-            )
+            message = f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s" % ex
+            self.warning(message) if not self._disconnect_warning_logged else self.info(message)
+            self._disconnect_warning_logged = True
             if self._interface is not None:
                 await self._interface.close()
                 self._interface = None
