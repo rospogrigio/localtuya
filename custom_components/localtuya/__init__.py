@@ -26,6 +26,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.service import async_register_admin_service
 
 from .cloud_api import TuyaCloudApi
 from .common import TuyaDevice, async_config_entry_by_device_id
@@ -162,7 +163,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
     async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
 
-    hass.helpers.service.async_register_admin_service(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_RELOAD,
         _handle_reload,
@@ -261,19 +263,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
+    platforms = set()
+    for dev_id in entry.data[CONF_DEVICES].keys():
+        entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
+        platforms = platforms.union(
+            set(entity[CONF_PLATFORM] for entity in entities)
+        )
+        hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
+
+    # Setup all platforms at once, letting HA handling each platform and avoiding
+    # potential integration restarts while elements are still initialising.
+    await hass.config_entries.async_forward_entry_setups(entry, platforms)
+
     async def setup_entities(device_ids):
-        platforms = set()
-        for dev_id in device_ids:
-            entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
-            platforms = platforms.union(
-                set(entity[CONF_PLATFORM] for entity in entities)
-            )
-            hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
-
-        # Setup all platforms at once, letting HA handling each platform and avoiding
-        # potential integration restarts while elements are still initialising.
-        await hass.config_entries.async_forward_entry_setups(entry, platforms)
-
         for dev_id in device_ids:
             hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
 
