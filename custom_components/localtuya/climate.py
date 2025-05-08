@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based climate devices."""
+
 import asyncio
 import logging
 from functools import partial
@@ -42,6 +43,7 @@ from .const import (
     CONF_TEMP_MIN,
     CONF_ECO_DP,
     CONF_ECO_VALUE,
+    CONF_ECO_FORMAT,
     CONF_HEURISTIC_ACTION,
     CONF_HVAC_ACTION_DP,
     CONF_HVAC_ACTION_SET,
@@ -186,6 +188,7 @@ def flow_schema(dps):
         vol.Optional(CONF_HVAC_ACTION_SET): vol.In(list(HVAC_ACTION_SETS.keys())),
         vol.Optional(CONF_ECO_DP): vol.In(dps),
         vol.Optional(CONF_ECO_VALUE): str,
+        vol.Optional(CONF_ECO_FORMAT): vol.In(["bool", "str", "int"]),
         vol.Optional(CONF_PRESET_DP): vol.In(dps),
         vol.Optional(CONF_PRESET_SET): vol.In(list(PRESET_SETS.keys())),
         vol.Optional(CONF_TEMPERATURE_UNIT): vol.In(
@@ -242,6 +245,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         )
         self._conf_eco_dp = self._config.get(CONF_ECO_DP)
         self._conf_eco_value = self._config.get(CONF_ECO_VALUE, "ECO")
+        self._conf_eco_format = self._config.get(CONF_ECO_FORMAT, "bool")
         self._has_presets = self.has_config(CONF_ECO_DP) or self.has_config(
             CONF_PRESET_DP
         )
@@ -250,14 +254,22 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     @property
     def supported_features(self):
         """Flag supported features."""
-        supported_features = ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
+        supported_features = (
+            ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
+        )
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            supported_features = supported_features | ClimateEntityFeature.TARGET_TEMPERATURE
+            supported_features = (
+                supported_features | ClimateEntityFeature.TARGET_TEMPERATURE
+            )
         if self.has_config(CONF_MAX_TEMP_DP):
-            supported_features = supported_features | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+            supported_features = (
+                supported_features | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+            )
         if self.has_config(CONF_PRESET_DP) or self.has_config(CONF_ECO_DP):
             supported_features = supported_features | ClimateEntityFeature.PRESET_MODE
-        if self.has_config(CONF_HVAC_FAN_MODE_DP) and self.has_config(CONF_HVAC_FAN_MODE_SET):
+        if self.has_config(CONF_HVAC_FAN_MODE_DP) and self.has_config(
+            CONF_HVAC_FAN_MODE_SET
+        ):
             supported_features = supported_features | ClimateEntityFeature.FAN_MODE
         if self.has_config(CONF_HVAC_SWING_MODE_DP):
             supported_features = supported_features | ClimateEntityFeature.SWING_MODE
@@ -321,6 +333,19 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
             return self._hvac_action
         return self._hvac_action
 
+    def format_eco_value(self, value, invert=False):
+        """Format eco value."""
+        try:
+            if self._conf_eco_format == "int":
+                return int(value) if not invert else 1 - int(value)
+            if self._conf_eco_format == "bool":
+                return (
+                    value.lower() == "true" if not invert else value.lower() == "false"
+                )
+            return str(value)
+        except (ValueError, AttributeError):
+            return value
+
     @property
     def preset_mode(self):
         """Return current preset."""
@@ -334,6 +359,10 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         presets = list(self._conf_preset_set)
         if self._conf_eco_dp:
             presets.append(PRESET_ECO)
+        if presets and PRESET_NONE not in presets:
+            # wrong to have presets but not the none preset -> insert it
+            presets.append(PRESET_NONE)
+
         return presets
 
     @property
@@ -431,10 +460,20 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
         if preset_mode == PRESET_ECO:
-            await self._device.set_dp(self._conf_eco_value, self._conf_eco_dp)
+            await self._device.set_dp(
+                self.format_eco_value(self._conf_eco_value), self._conf_eco_dp
+            )
             return
+        if preset_mode == PRESET_NONE and preset_mode not in self._conf_preset_set:
+            await self._device.set_dp(
+                self.format_eco_value(self._conf_eco_value, invert=True),
+                self._conf_eco_dp,
+            )
+            return
+
         await self._device.set_dp(
-            self._conf_preset_set[preset_mode], self._conf_preset_dp
+            self._conf_preset_set[preset_mode],
+            self._conf_preset_dp,
         )
 
     @property
@@ -466,14 +505,13 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
             )
 
         if self._has_presets:
-            if (
-                self.has_config(CONF_ECO_DP)
-                and self.dps_conf(CONF_ECO_DP) == self._conf_eco_value
-            ):
+            if self.has_config(CONF_ECO_DP) and self.dps_conf(
+                CONF_ECO_DP
+            ) == self.format_eco_value(self._conf_eco_value):
                 self._preset_mode = PRESET_ECO
             else:
                 for preset, value in self._conf_preset_set.items():  # todo remove
-                    if self.dps_conf(CONF_PRESET_DP) == value:
+                    if self.dps_conf(CONF_PRESET_DP) == self.format_eco_value(value):
                         self._preset_mode = preset
                         break
                 else:
@@ -500,7 +538,9 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                     break
             else:
                 # in case fan mode and preset share the same dp
-                _LOGGER.debug("Unknown fan mode %s" % self.dps_conf(CONF_HVAC_FAN_MODE_DP))
+                _LOGGER.debug(
+                    "Unknown fan mode %s" % self.dps_conf(CONF_HVAC_FAN_MODE_DP)
+                )
                 self._fan_mode = FAN_AUTO
 
         # Update the swing status
@@ -510,7 +550,9 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                     self._swing_mode = mode
                     break
             else:
-                _LOGGER.debug("Unknown swing mode %s" % self.dps_conf(CONF_HVAC_SWING_MODE_DP))
+                _LOGGER.debug(
+                    "Unknown swing mode %s" % self.dps_conf(CONF_HVAC_SWING_MODE_DP)
+                )
                 self._swing_mode = SWING_OFF
 
         # Update the current action
