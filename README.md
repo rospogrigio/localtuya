@@ -163,23 +163,25 @@ hard to find a common DP mapping. Below are a table of DP to product mapping
 which are currently seen working. Use it as a guide for your own mapping and
 please contribute to the list if you have the possibility.
 
-| DP  | Moes BHT 002                                            | Qlima WMS S + SC52 (AB;AF)                              | Avatto                                     |
-|-----|---------------------------------------------------------|---------------------------------------------------------|--------------------------------------------|
-| 1   | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                |
-| 2   | Target temperature<br>Integer, scaling: 0.5             | Target temperature<br>Integer, scaling 1                | Target temperature<br>Integer, scaling 1   |
-| 3   | Current temperature<br>Integer, scaling: 0.5            | Current temperature<br>Integer, scaling: 1              | Current temperature<br>Integer, scaling: 1 |
-| 4   | Mode<br>{0, 1}                                          | Mode<br>{"hot", "wind", "wet", "cold", "auto"}          | ?                                          |
-| 5   | Eco mode<br>?                                           | Fan mode<br>{"strong", "high", "middle", "low", "auto"} | ?                                          |
-| 15  | Not supported                                           | Supported, unknown<br>{true, false}                     | ?                                          |
-| 19  | Not supported                                           | Temperature unit<br>{"c", "f"}                          | ?                                          |
-| 23  | Not supported                                           | Supported, unknown<br>Integer, eg. 68                   | ?                                          |
-| 24  | Not supported                                           | Supported, unknown<br>Integer, eg. 64                   | ?                                          |
-| 101 | Not supported                                           | Outdoor temperature<br>Integer. Scaling: 1              | ?                                          |
-| 102 | Temperature of external sensor<br>Integer, scaling: 0.5 | Supported, unknown<br>Integer, eg. 34                   | ?                                          |
-| 104 | Supported, unknown<br>{true, false(?)}                  | Not supported                                           | ?                                          |
+| DP  | Moes BHT 002                                            | Qlima WMS S + SC52 (AB;AF)                              | Avatto                                     | KETOTEK 16A (KTF0155A)
+|-----|---------------------------------------------------------|---------------------------------------------------------|--------------------------------------------|-------------------------------
+| 1   | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                | ID: ON/Off<br>{true, false}
+| 2   | Target temperature<br>Integer, scaling: 0.5             | Target temperature<br>Integer, scaling 1                | Target temperature<br>Integer, scaling 1   | Target temperature<br>Integer,<br>Precision: 0.1,<br>Temperature Step: 0.5
+| 3   | Current temperature<br>Integer, scaling: 0.5            | Current temperature<br>Integer, scaling: 1              | Current temperature<br>Integer, scaling: 1 | Current temperature<br>Integer,<br>Target Precision: 0.1
+| 4   | Mode<br>{0, 1}                                          | Mode<br>{"hot", "wind", "wet", "cold", "auto"}          | ?                                          | Presets<br>Presets Set: Manual/Holiday/Program
+| 5   | Eco mode<br>?                                           | Fan mode<br>{"strong", "high", "middle", "low", "auto"} | ?                                          | n/a
+| 6   | ?                                                       | ?                                                       | ?                                          | Child lock<br>{true, false}
+| 15  | Not supported                                           | Supported, unknown<br>{true, false}                     | ?                                          | n/a
+| 19  | Not supported                                           | Temperature unit<br>{"c", "f"}                          | ?                                          | n/a
+| 23  | Not supported                                           | Supported, unknown<br>Integer, eg. 68                   | ?                                          | n/a
+| 24  | Not supported                                           | Supported, unknown<br>Integer, eg. 64                   | ?                                          | n/a
+| 101 | Not supported                                           | Outdoor temperature<br>Integer. Scaling: 1              | ?                                          | n/a
+| 102 | Temperature of external sensor<br>Integer, scaling: 0.5 | Supported, unknown<br>Integer, eg. 34                   | ?                                          | HVAC Mode<br>{true, false}
+| 104 | Supported, unknown<br>{true, false(?)}                  | Not supported                                           | ?                                          | n/a
 
 [Moes BHT 002](https://community.home-assistant.io/t/moes-bht-002-thermostat-local-control-tuya-based/151953/47)
 [Avatto thermostat](https://pl.aliexpress.com/item/1005001605377377.html?gatewayAdapt=glo2pol)
+[KETOTEK 16A (KTF0155A)](https://amzn.eu/d/aYwSPb5)
 
 # Debugging
 
