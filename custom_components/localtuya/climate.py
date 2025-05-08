@@ -152,6 +152,19 @@ PRESET_SETS = {
         PRESET_HOME: "smart",
         PRESET_NONE: "hold",
     },
+    "Comfort/ECO/Antifrost": {
+        PRESET_HOME: "Comfort",     # Default comfort mode
+        PRESET_ECO: "ECO",          # Energy-saving mode
+        PRESET_AWAY: "Antifrost",   # Frost protection mode
+    },
+    # GH-20E-APP (Tuya electric heater) – modes: Cool / Low / High
+    # Sends enum values via "level" (DPS 5):
+    # "level_1" = High (Comfort), "level_2" = Low (Eco), "level_3" = Cool (Antifrost)
+    "Cool (level_3) / Low (level_2) / High (level_1)": {
+        PRESET_AWAY: "level_3",   # Cool (Antifrost) – lowest heating level
+        PRESET_ECO:  "level_2",   # Low (Eco) – energy-saving mode
+        PRESET_HOME: "level_1",   # High (Comfort) – maximum heating
+    },
 }
 
 TEMPERATURE_CELSIUS = "celsius"
