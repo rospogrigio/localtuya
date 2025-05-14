@@ -137,3 +137,18 @@ class TuyaCloudApi:
         # _LOGGER.debug("DEV_LIST: %s", self.device_list)
 
         return "ok"
+
+    async def async_get_device_specifications(self, device_id):
+        """Obtain the DP ID mappings for a device."""
+        resp = await self.async_make_request(
+            "GET", url=f"/v1.1/devices/{device_id}/specifications"
+        )
+
+        if not resp.ok:
+            return {}, "Request failed, status " + str(resp.status)
+
+        r_json = resp.json()
+        if not r_json["success"]:
+            return {}, f"Error {r_json['code']}: {r_json['msg']}"
+
+        return r_json["result"], "ok"
