@@ -5,22 +5,7 @@ from functools import partial
 import voluptuous as vol
 from homeassistant.components.vacuum import (
     DOMAIN,
-    STATE_CLEANING,
-    STATE_DOCKED,
-    STATE_ERROR,
-    STATE_IDLE,
-    STATE_PAUSED,
-    STATE_RETURNING,
-    SUPPORT_BATTERY,
-    SUPPORT_FAN_SPEED,
-    SUPPORT_LOCATE,
-    SUPPORT_PAUSE,
-    SUPPORT_RETURN_HOME,
-    SUPPORT_START,
-    SUPPORT_STATE,
-    SUPPORT_STATUS,
-    SUPPORT_STOP,
-    StateVacuumEntity,
+    StateVacuumEntity, VacuumActivity, VacuumEntityFeature,
 )
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -123,21 +108,21 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
     def supported_features(self):
         """Flag supported features."""
         supported_features = (
-            SUPPORT_START
-            | SUPPORT_PAUSE
-            | SUPPORT_STOP
-            | SUPPORT_STATUS
-            | SUPPORT_STATE
+            VacuumEntityFeature.START
+            | VacuumEntityFeature.PAUSE
+            | VacuumEntityFeature.STOP
+            | VacuumEntityFeature.STATUS
+            | VacuumEntityFeature.STATE
         )
 
         if self.has_config(CONF_RETURN_MODE):
-            supported_features = supported_features | SUPPORT_RETURN_HOME
+            supported_features = supported_features | VacuumEntityFeature.RETURN_HOME
         if self.has_config(CONF_FAN_SPEED_DP):
-            supported_features = supported_features | SUPPORT_FAN_SPEED
+            supported_features = supported_features | VacuumEntityFeature.FAN_SPEED
         if self.has_config(CONF_BATTERY_DP):
-            supported_features = supported_features | SUPPORT_BATTERY
+            supported_features = supported_features | VacuumEntityFeature.BATTERY
         if self.has_config(CONF_LOCATE_DP):
-            supported_features = supported_features | SUPPORT_LOCATE
+            supported_features = supported_features | VacuumEntityFeature.LOCATE
 
         return supported_features
 
@@ -216,15 +201,15 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         state_value = str(self.dps(self._dp_id))
 
         if state_value in self._idle_status_list:
-            self._state = STATE_IDLE
+            self._state = VacuumActivity.IDLE
         elif state_value in self._docked_status_list:
-            self._state = STATE_DOCKED
+            self._state = VacuumActivity.DOCKED
         elif state_value == self._config[CONF_RETURNING_STATUS_VALUE]:
-            self._state = STATE_RETURNING
+            self._state = VacuumActivity.RETURNING
         elif state_value == self._config[CONF_PAUSED_STATE]:
-            self._state = STATE_PAUSED
+            self._state = VacuumActivity.PAUSED
         else:
-            self._state = STATE_CLEANING
+            self._state = VacuumActivity.CLEANING
 
         if self.has_config(CONF_BATTERY_DP):
             self._battery_level = self.dps_conf(CONF_BATTERY_DP)
@@ -250,7 +235,7 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
         if self.has_config(CONF_FAULT_DP):
             self._attrs[FAULT] = self.dps_conf(CONF_FAULT_DP)
             if self._attrs[FAULT] != 0:
-                self._state = STATE_ERROR
+                self._state = VacuumActivity.ERROR
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaVacuum, flow_schema)

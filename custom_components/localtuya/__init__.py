@@ -26,6 +26,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.service import async_register_admin_service
 
 from .cloud_api import TuyaCloudApi
 from .common import TuyaDevice, async_config_entry_by_device_id
@@ -139,15 +140,16 @@ async def async_setup(hass: HomeAssistant, config: dict):
             )
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                device.async_connect()
-        elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
-            # _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
 
-            device = hass.data[DOMAIN][TUYA_DEVICES][device_id]
-            if not device.connected:
-                device.async_connect()
+        elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
+            _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
+
+        device = hass.data[DOMAIN][TUYA_DEVICES].get(device_id)
+        if not device:
+            _LOGGER.warning(f"Could not find device for device_id {device_id}")
+        elif not device.connected:
+            device.async_connect()
+
 
     def _shutdown(event):
         """Clean up resources when shutting down."""
@@ -161,13 +163,14 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
     async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
 
-    hass.helpers.service.async_register_admin_service(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         SERVICE_RELOAD,
         _handle_reload,
     )
 
-    hass.helpers.service.async_register_admin_service(
+    hass.services.async_register(
         DOMAIN, SERVICE_SET_DP, _handle_set_dp, schema=SERVICE_SET_DP_SCHEMA
     )
 
@@ -255,26 +258,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         res = await tuya_api.async_get_access_token()
         if res != "ok":
             _LOGGER.error("Cloud API connection failed: %s", res)
-        _LOGGER.info("Cloud API connection succeeded.")
-        res = await tuya_api.async_get_devices_list()
+        else:
+            _LOGGER.info("Cloud API connection succeeded.")
+            res = await tuya_api.async_get_devices_list()
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
-    async def setup_entities(device_ids):
-        platforms = set()
-        for dev_id in device_ids:
-            entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
-            platforms = platforms.union(
-                set(entity[CONF_PLATFORM] for entity in entities)
-            )
-            hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
-
-        await asyncio.gather(
-            *[
-                hass.config_entries.async_forward_entry_setup(entry, platform)
-                for platform in platforms
-            ]
+    platforms = set()
+    for dev_id in entry.data[CONF_DEVICES].keys():
+        entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
+        platforms = platforms.union(
+            set(entity[CONF_PLATFORM] for entity in entities)
         )
+        hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
+    # Setup all platforms at once, letting HA handling each platform and avoiding
+    # potential integration restarts while elements are still initialising.
+    await hass.config_entries.async_forward_entry_setups(entry, platforms)
+
+    async def setup_entities(device_ids):
         for dev_id in device_ids:
             hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
 
