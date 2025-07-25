@@ -17,6 +17,7 @@ from homeassistant.components.climate.const import (
     PRESET_ECO,
     PRESET_HOME,
     PRESET_NONE,
+    PRESET_SLEEP,
     ClimateEntityFeature,
     FAN_AUTO,
     FAN_LOW,
@@ -94,6 +95,12 @@ HVAC_MODE_SETS = {
         HVACMode.COOL: "cold",
         HVACMode.AUTO: "auto",
     },
+    "Auto/Cool/Fan/Dry": {
+        HVACMode.FAN_ONLY: "fan",
+        HVACMode.DRY: "dry",
+        HVACMode.COOL: "cool",
+        HVACMode.AUTO: "auto",
+    },
     "Cold/Dehumidify/Hot": {
         HVACMode.HEAT: "hot",
         HVACMode.DRY: "dehumidify",
@@ -121,9 +128,9 @@ HVAC_ACTION_SETS = {
         HVACAction.HEATING: "Heat",
         HVACAction.IDLE: "Warming",
     },
-    "heating/warming": {
-        HVACAction.HEATING: "heating",
-        HVACAction.IDLE: "warming",
+    "cooling/fan": {
+        HVACAction.COOLING: True,
+        HVACAction.FAN: False,
     },
 }
 HVAC_FAN_MODE_SETS = {
@@ -133,7 +140,12 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
-    }
+    },
+    "Low/Medium/High": {
+        FAN_LOW: "low",
+        FAN_MEDIUM: "mid",
+        FAN_HIGH: "high",
+    },
 }
 HVAC_SWING_MODE_SETS = {
     "True/False": {
@@ -151,6 +163,10 @@ PRESET_SETS = {
         PRESET_AWAY: "holiday",
         PRESET_HOME: "smart",
         PRESET_NONE: "hold",
+    },
+    "sleep/none": {
+        PRESET_SLEEP: True,
+        PRESET_NONE: False,
     },
 }
 
