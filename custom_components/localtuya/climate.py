@@ -442,14 +442,14 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         """Return the minimum temperature."""
         if self.has_config(CONF_MIN_TEMP_DP):
             return self.dps_conf(CONF_MIN_TEMP_DP)
-        return self._config[CONF_TEMP_MIN]
+        return self._config.get(CONF_TEMP_MIN, DEFAULT_MIN_TEMP)
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
         if self.has_config(CONF_MAX_TEMP_DP):
             return self.dps_conf(CONF_MAX_TEMP_DP)
-        return self._config[CONF_TEMP_MAX]
+        return self._config.get(CONF_TEMP_MAX, DEFAULT_MAX_TEMP)
 
     def status_updated(self):
         """Device status was updated."""
