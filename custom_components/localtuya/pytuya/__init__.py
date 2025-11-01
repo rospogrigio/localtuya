@@ -454,6 +454,13 @@ class MessageDispatcher(ContextualLogger):
             )
             del self.listeners[seqno]
             raise
+        except asyncio.CancelledError:
+            self.debug(
+                "Command %d cancelled waiting for sequence number %d", cmd, seqno
+            )
+            if seqno in self.listeners:
+                del self.listeners[seqno]
+            raise
 
         return self.listeners.pop(seqno)
 
