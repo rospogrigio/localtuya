@@ -7,6 +7,8 @@ from importlib import import_module
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
+from awesomeversion import AwesomeVersion
+from homeassistant.const import __version__ as HAVERSION
 from homeassistant import config_entries, core, exceptions
 from homeassistant.const import (
     CONF_CLIENT_ID,
@@ -393,9 +395,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry):
         """Initialize localtuya options flow."""
-        self.config_entry = config_entry
-        # self.dps_strings = config_entry.data.get(CONF_DPS_STRINGS, gen_dps_strings())
-        # self.entities = config_entry.data[CONF_ENTITIES]
+        if AwesomeVersion(HAVERSION) < "2024.11.99":
+            self.config_entry = config_entry
+        # self.dps_strings = self.config_entry.data.get(CONF_DPS_STRINGS, gen_dps_strings())
+        # self.entities = self.config_entry.data[CONF_ENTITIES]
         self.selected_device = None
         self.editing_device = False
         self.device_data = None
