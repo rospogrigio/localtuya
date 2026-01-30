@@ -43,6 +43,16 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+_INVALID_STATUS_STRINGS = {"", "unknown", "unavailable"}
+
+
+def _is_invalid_status_value(value):
+    if value is None:
+        return True
+    if isinstance(value, str) and value.strip().lower() in _INVALID_STATUS_STRINGS:
+        return True
+    return False
+
 
 def prepare_setup_entities(hass, config_entry, platform):
     """Prepare ro setup entities for a platform."""
@@ -298,8 +308,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.info("local_key updated for device %s.", dev_id)
 
     async def _async_refresh(self, _now):
-        if self._interface is not None:
-            await self._interface.update_dps()
+        if self._interface is None:
+            return
+        if getattr(self._interface, "has_internal_polling", False):
+            return
+        await self._interface.update_dps()
 
     async def close(self):
         """Close connection and stop re-connect loop."""
@@ -343,8 +356,18 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     @callback
     def status_updated(self, status):
         """Device updated status."""
-        self._status.update(status)
-        self._dispatch_status()
+        if not isinstance(status, dict):
+            return
+        updated = False
+        for key, value in status.items():
+            key = str(key)
+            if _is_invalid_status_value(value):
+                continue
+            if self._status.get(key) != value:
+                self._status[key] = value
+                updated = True
+        if updated:
+            self._dispatch_status()
 
     def _dispatch_status(self):
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
@@ -402,18 +425,32 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         state = await self.async_get_last_state()
         if state:
             self.status_restored(state)
-
         def _update_handler(status):
             """Update entity state when status was updated."""
+            # Disconnect jelz  s eset  n ne t  r  lj  k a st  tuszt
             if status is None:
-                status = {}
-            if self._status != status:
-                self._status = status.copy()
-                if status:
+                self.schedule_update_ha_state()
+                return
+
+            merged = (self._status or {}).copy()
+            if isinstance(status, dict):
+                # Kulcs-normaliz  l  s
+                incoming = {str(k): v for k, v in status.items()}
+
+                # Saj  t DP (pl. Phase C = 8) ne   r  djon fel  l None/  res/unknown   rt  kkel
+                mydp = str(self._dp_id)
+                if mydp in incoming and (incoming[mydp] is None or incoming[mydp] == '' or str(incoming[mydp]).lower() == 'unknown'):
+                    incoming.pop(mydp)
+
+                merged.update(incoming)
+
+            if self._status != merged:
+                self._status = merged
+                mydp = str(self._dp_id)
+                if mydp in self._status and self._status.get(mydp) is not None:
                     self.status_updated()
 
-                # Update HA
-                self.schedule_update_ha_state()
+            self.schedule_update_ha_state()
 
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
 

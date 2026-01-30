@@ -1,6 +1,10 @@
 """Platform to present any Tuya DP as a sensor."""
+import base64
+import binascii
 import logging
 from functools import partial
+
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 
 import voluptuous as vol
 from homeassistant.components.sensor import DEVICE_CLASSES, DOMAIN
@@ -28,6 +32,7 @@ def flow_schema(dps):
         ),
     }
 
+from homeassistant.components.sensor import SensorStateClass
 
 class LocaltuyaSensor(LocalTuyaEntity):
     """Representation of a Tuya sensor."""
@@ -49,6 +54,20 @@ class LocaltuyaSensor(LocalTuyaEntity):
         return self._state
 
     @property
+    def state_class(self):
+        dc = self.device_class
+        if dc == SensorDeviceClass.ENERGY:
+            # kWh összesített értékek (DP 1/23/�� Energy dashboard kompatibilis
+            return SensorStateClass.TOTAL_INCREASING
+        if dc in (
+            SensorDeviceClass.POWER,            # pl. Active power
+            SensorDeviceClass.REACTIVE_POWER,   # Reactive power
+            SensorDeviceClass.POWER_FACTOR,     # Power factor
+        ):
+            return SensorStateClass.MEASUREMENT
+        return None
+
+    @property
     def device_class(self):
         """Return the class of this device."""
         return self._config.get(CONF_DEVICE_CLASS)
@@ -57,6 +76,22 @@ class LocaltuyaSensor(LocalTuyaEntity):
     def unit_of_measurement(self):
         """Return the unit of measurement of this entity, if any."""
         return self._config.get(CONF_UNIT_OF_MEASUREMENT)
+
+    @property
+    def extra_state_attributes(self):
+        attrs = dict(super().extra_state_attributes)
+        state = self._state
+        if isinstance(state, str):
+            raw = state.strip()
+            if raw:
+                padding = "=" * ((4 - len(raw) % 4) % 4)
+                try:
+                    decoded = base64.b64decode(raw + padding)
+                except (binascii.Error, ValueError):
+                    decoded = None
+                if decoded:
+                    attrs.setdefault("raw_bytes", list(decoded))
+        return attrs
 
     def status_updated(self):
         """Device status was updated."""
