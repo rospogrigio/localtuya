@@ -60,13 +60,35 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         """Handle received broadcast message."""
-        data = data[20:-8]
-        try:
-            data = decrypt_udp(data)
-        except Exception:  # pylint: disable=broad-except
-            data = data.decode()
+        raw_data = data[20:-8]
 
-        decoded = json.loads(data)
+        # Attempt to decrypt the incoming UDP packet using Tuya's AES encryption.
+        # If it fails (e.g., due to incorrect length), fallback to decoding as plain UTF-8.
+        try:
+            decrypted = decrypt_udp(raw_data)
+        except Exception as e:
+            _LOGGER.debug(f"decrypt_udp() failed: {e}")
+            try:
+                decrypted = raw_data.decode()
+            except Exception as decode_error:
+                _LOGGER.debug(f"Failed to decode raw UDP data: {decode_error}")
+                return
+
+        # Ensure that the decrypted payload looks like a proper JSON object.
+        # Valid Tuya JSON messages should start with '{' and end with '}'.
+        if not (decrypted.strip().startswith("{") and decrypted.strip().endswith("}")):
+            _LOGGER.warning("Discarded malformed UDP packet (not valid JSON): %r", decrypted)
+            return
+
+        # Attempt to parse the decrypted string into a JSON object.
+        # If parsing fails, log the malformed content for debugging.
+        try:
+            decoded = json.loads(decrypted)
+        except Exception as json_error:
+            _LOGGER.warning("Failed to parse JSON from UDP packet: %r", decrypted)
+            _LOGGER.debug("JSON parsing error: %s", json_error)
+            return
+
         self.device_found(decoded)
 
     def device_found(self, device):
