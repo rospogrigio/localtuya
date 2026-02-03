@@ -378,7 +378,10 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         if ATTR_TEMPERATURE in kwargs and self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            temperature = round(kwargs[ATTR_TEMPERATURE] / self._target_precision)
+            # Convert Celsius to Fahrenheit and multiply by 10 for device
+            temp_c = kwargs[ATTR_TEMPERATURE]
+            temp_f = (temp_c * 9 / 5) + 32
+            temperature = round(temp_f * 10)
             await self._device.set_dp(
                 temperature, self._config[CONF_TARGET_TEMPERATURE_DP]
             )
@@ -456,9 +459,9 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._state = self.dps(self._dp_id)
 
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            self._target_temperature = (
-                self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
-            )
+            # Device reports target temp in Fahrenheit * 10, convert to Celsius
+            temp_f = self.dps_conf(CONF_TARGET_TEMPERATURE_DP) / 10
+            self._target_temperature = (temp_f - 32) * 5 / 9
 
         if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
             self._current_temperature = (
