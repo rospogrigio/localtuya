@@ -254,6 +254,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             for entity in self._entities:
                 await entity.restore_state_when_connected()
 
+            @callback
             def _new_entity_handler(entity_id):
                 self.debug(
                     "New entity %s was added to %s",
@@ -346,6 +347,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._status.update(status)
         self._dispatch_status()
 
+    @callback
     def _dispatch_status(self):
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
         async_dispatcher_send(self._hass, signal, self._status)
