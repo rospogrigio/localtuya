@@ -195,6 +195,10 @@ logger:
 
 Then, edit the device that is showing problems and check the "Enable debugging for this device" button.
 
+# Known fixes:
+
+* Climate entities now handle partial status updates gracefully: if the device sends an update that does not include the current or target temperature DPs, the entity retains its previous value instead of crashing.
+
 # Notes:
 
 * Do not declare anything as "tuya", such as by initiating a "switch.tuya". Using "tuya" launches Home Assistant's built-in, cloud-based Tuya integration in lieu of localtuya.

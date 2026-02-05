@@ -456,14 +456,14 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
         self._state = self.dps(self._dp_id)
 
         if self.has_config(CONF_TARGET_TEMPERATURE_DP):
-            self._target_temperature = (
-                self.dps_conf(CONF_TARGET_TEMPERATURE_DP) * self._target_precision
-            )
+            target = self.dps_conf(CONF_TARGET_TEMPERATURE_DP)
+            if target is not None:
+                self._target_temperature = target * self._target_precision
 
         if self.has_config(CONF_CURRENT_TEMPERATURE_DP):
-            self._current_temperature = (
-                self.dps_conf(CONF_CURRENT_TEMPERATURE_DP) * self._precision
-            )
+            current = self.dps_conf(CONF_CURRENT_TEMPERATURE_DP)
+            if current is not None:
+                self._current_temperature = current * self._precision
 
         if self._has_presets:
             if (
