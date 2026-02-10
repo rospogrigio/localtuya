@@ -103,6 +103,10 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
+    "manual (m) / automatic (p)": {
+        HVACMode.HEAT: "manual",
+        HVACMode.AUTO: "auto",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -151,6 +155,12 @@ PRESET_SETS = {
         PRESET_AWAY: "holiday",
         PRESET_HOME: "smart",
         PRESET_NONE: "hold",
+    },
+    "low/mid/high/off": {
+        "off": "off",
+        "low": "low",
+        "mid": "mid",
+        "high": "high",
     },
 }
 
