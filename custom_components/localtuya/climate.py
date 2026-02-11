@@ -133,6 +133,10 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
+    },
+    "Low/High": {
+        FAN_LOW: "1",
+        FAN_HIGH: "2"
     }
 }
 HVAC_SWING_MODE_SETS = {
