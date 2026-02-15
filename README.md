@@ -50,16 +50,6 @@ The Cloud API configuration page will appear, requesting to input your Tuya IoT 
 
 ![cloud_setup](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/9-cloud_setup.png)
 
-To setup a Tuya IoT Platform account and setup a project in it, refer to the instructions for the official Tuya integration:
-https://www.home-assistant.io/integrations/tuya/
-The Client ID and Secret can be found at `Cloud > Development > Overview` and the User ID can be found in the "Link Tuya App Account" subtab within the Cloud project:
-
-![user_id.png](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/8-user_id.png)
-
-> **Note: as stated in the above link, if you already have an account and an IoT project, make sure that it was created after May 25, 2021 (due to changes introduced in the cloud for Tuya 2.0). Otherwise, you need to create a new project. See the following screenshot for where to check your project creation date:**
-
-![project_date](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/6-project_date.png)
-
 After pressing the Submit button, the first setup is complete and the Integration will be added. 
 
 > **Note: it is not mandatory to input the Cloud API credentials: you can choose to tick the "Do not configure a Cloud API account" button, and the Integration will be added anyway.**
@@ -67,6 +57,51 @@ After pressing the Submit button, the first setup is complete and the Integratio
 After the Integration has been set up, devices can be added and configured pressing the Configure button in the Integrations page:
 
 ![integration_configure](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/10-integration_configure.png)
+
+
+
+# Set up Tuya Development Platform:
+
+To setup a Tuya IoT Development Platform account and setup a project in it: 
+
+1) Go to https://auth.tuya.com/ and Sign Up for a new account.
+
+2) Log in to new account and select Cloud, then "Cloud Project", then "Project Management", then click on the button "Create Cloud Project".
+
+<img width="1407" height="373" alt="CreateProject" src="https://github.com/user-attachments/assets/4d5a5399-3046-4b65-9f06-ee1ca8cbcac5" />
+
+
+3) In the "Create Cloud Project" window, enter details. NOTE: Industry should be "Smart Home" and "Developement method" should also be "Smart Home". This will allow integration with the Tuya App.
+   
+<img width="745" height="516" alt="CreateCloudProject" src="https://github.com/user-attachments/assets/d85295c7-8fce-4f49-92a6-0d6ecf653ed6" />
+
+After clicking "Create" the "Configuration Wizard -> Authorise API services" window opens, with 5 pre-selected API services selected. Click on "Authorise"
+<img width="1023" height="720" alt="ConfigWizardAuthAPI" src="https://github.com/user-attachments/assets/8c78b8ec-1ba0-4b80-846c-92a9edaf43d4" />
+
+On the Project page that follows, select "Devices", then "Link App Account", then press the "Add App Account" button.
+
+<img width="1062" height="364" alt="AddAppAccount" src="https://github.com/user-attachments/assets/472055ab-4ffa-4f56-84b0-e624324915c6" />
+
+After pressing the button, a pop-up window with a QR code will appear. Scan this with the scan button in the Tuya App. This will then link your project with all the devices associated with your App.
+
+<img width="1400" height="699" alt="AllDevices" src="https://github.com/user-attachments/assets/b80fb6e5-a6d0-4f00-a61e-a035e66ae056" />
+
+
+Under the "Devices" tab, select "All Devices", and you should now see all the devices associated with your App.
+
+
+The Client ID and Client Secret can be found at `Cloud > Project Management > Open the project you created, and the Client ID and Secret can be found on the Overview tab.
+
+The User ID can be found in the project, Devices tab, Link App Account:
+
+<img width="1411" height="573" alt="UID" src="https://github.com/user-attachments/assets/0544c437-50e1-4ee4-a17d-67ad511ef0cc" />
+
+
+> **Note: as stated in the above link, if you already have an account and an IoT project, make sure that it was created after May 25, 2021 (due to changes introduced in the cloud for Tuya 2.0). Otherwise, you need to create a new project. See the following screenshot for where to check your project creation date:**
+
+<img width="1409" height="437" alt="Creation date" src="https://github.com/user-attachments/assets/6773731a-ccd4-4c23-a7f3-af2c50d66dc2" />
+
+
 
 
 # Integration Configuration menu
