@@ -19,6 +19,7 @@ from .const import (
     CONF_POSITIONING_MODE,
     CONF_SET_POSITION_DP,
     CONF_SPAN_TIME,
+    CONF_POSITION_SCALE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ COVER_TIMEOUT_TOLERANCE = 3.0
 
 DEFAULT_COMMANDS_SET = COVER_ONOFF_CMDS
 DEFAULT_POSITIONING_MODE = COVER_MODE_NONE
+DEFAULT_POSITION_SCALE = 1.0
 DEFAULT_SPAN_TIME = 25.0
 
 
@@ -48,6 +50,9 @@ def flow_schema(dps):
         ),
         vol.Optional(CONF_CURRENT_POSITION_DP): vol.In(dps),
         vol.Optional(CONF_SET_POSITION_DP): vol.In(dps),
+        vol.Optional(CONF_POSITION_SCALE, default=DEFAULT_POSITION_SCALE): vol.All(
+            vol.Coerce(float), vol.Range(min=0.001, max=1000.0)
+        ),
         vol.Optional(CONF_POSITION_INVERTED, default=False): bool,
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
@@ -131,7 +136,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self.debug("Done")
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
-            converted_position = int(kwargs[ATTR_POSITION])
+            converted_position = int(kwargs[ATTR_POSITION] / self._config[CONF_POSITION_SCALE])
             if self._config[CONF_POSITION_INVERTED]:
                 converted_position = 100 - converted_position
 
@@ -194,7 +199,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
             self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
-            curr_pos = self.dps_conf(CONF_CURRENT_POSITION_DP)
+            curr_pos = int(self.dps_conf(CONF_CURRENT_POSITION_DP) * self._config[CONF_POSITION_SCALE])
             if self._config[CONF_POSITION_INVERTED]:
                 self._current_cover_position = 100 - curr_pos
             else:

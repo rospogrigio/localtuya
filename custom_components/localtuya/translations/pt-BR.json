@@ -122,6 +122,7 @@
                     "positioning_mode": "Modo de posicionamento",
                     "current_position_dp": "Posição atual (somente para o modo *posição*)",
                     "set_position_dp": "Definir posição (somente para o modo *posição*)",
+                    "position_scale": "Fator de escala (somente para o modo *posição*)",
                     "position_inverted": "Inverter 0-100 posição (somente para o modo *posição*)",
                     "span_time": "Tempo de abertura completo, em segundos. (somente para o modo *temporizado*)",
                     "unit_of_measurement": "Unidade de medida",
