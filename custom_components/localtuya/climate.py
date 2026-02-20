@@ -87,6 +87,11 @@ HVAC_MODE_SETS = {
     "True/False": {
         HVACMode.HEAT: True,
     },
+    "auto/heating/cold": {
+        HVACMode.AUTO: "auto",
+        HVACMode.HEAT: "heating",
+        HVACMode.COOL: "cold",
+    }
     "Auto/Cold/Dry/Wind/Hot": {
         HVACMode.HEAT: "hot",
         HVACMode.FAN_ONLY: "wind",
@@ -133,6 +138,10 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
+    },
+    "boost/silence": {
+        FAN_HIGH: "boost",
+        FAN_LOW: "silence",
     }
 }
 HVAC_SWING_MODE_SETS = {
