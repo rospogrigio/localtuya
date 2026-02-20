@@ -496,8 +496,14 @@ class MessageDispatcher(ContextualLogger):
             self.debug("Got normal updatedps response")
             if self.RESET_SEQNO in self.listeners:
                 sem = self.listeners[self.RESET_SEQNO]
-                self.listeners[self.RESET_SEQNO] = msg
-                sem.release()
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.RESET_SEQNO] = msg
+                    sem.release()
+                else:
+                    self.debug(
+                        "Got additional updatedps message without request - skipping: %s",
+                        sem,
+                    )
         elif msg.cmd == SESS_KEY_NEG_RESP:
             self.debug("Got key negotiation response")
             if self.SESS_KEY_SEQNO in self.listeners:
@@ -508,8 +514,14 @@ class MessageDispatcher(ContextualLogger):
             if self.RESET_SEQNO in self.listeners:
                 self.debug("Got reset status update")
                 sem = self.listeners[self.RESET_SEQNO]
-                self.listeners[self.RESET_SEQNO] = msg
-                sem.release()
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.RESET_SEQNO] = msg
+                    sem.release()
+                else:
+                    self.debug(
+                        "Got additional reset message without request - skipping: %s",
+                        sem,
+                    )
             else:
                 self.debug("Got status update")
                 self.listener(msg)
@@ -590,6 +602,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         self.dps_cache = {}
         self.local_nonce = b"0123456789abcdef"  # not-so-random random key
         self.remote_nonce = b""
+        self.dps_whitelist = UPDATE_DPS_WHITELIST
 
     def set_version(self, protocol_version):
         """Set the device version and eventually start available DPs detection."""
@@ -810,6 +823,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
 
         return True
 
+    def set_updatedps_list(self, update_list):
+        """Set the DPS to be requested with the update command."""
+        self.dps_whitelist = update_list
+
     async def update_dps(self, dps=None):
         """
         Request device to update index.
@@ -824,7 +841,7 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
                 if self.dps_cache:
                     dps = [int(dp) for dp in self.dps_cache]
                     # filter non whitelisted dps
-                    dps = list(set(dps).intersection(set(UPDATE_DPS_WHITELIST)))
+                    dps = list(set(dps).intersection(set(self.dps_whitelist)))
             self.debug("updatedps() entry (dps %s, dps_cache %s)", dps, self.dps_cache)
             payload = self._generate_payload(UPDATEDPS, dps)
             enc_payload = self._encode_message(payload)
