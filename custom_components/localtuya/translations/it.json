@@ -119,6 +119,7 @@
                     "current_consumption": "Potenza",
                     "voltage": "Tensione",
                     "commands_set": "Set di comandi Aperto_Chiuso_Stop",
+                    "stop_dp": "Interruttore di stop (solo per modalità *open_close_continue*)",
                     "positioning_mode": "Modalità di posizionamento",
                     "current_position_dp": "Posizione attuale (solo per la modalità *posizione*)",
                     "set_position_dp": "Imposta posizione (solo per modalità *posizione*)",
