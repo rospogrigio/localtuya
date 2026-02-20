@@ -1,3 +1,7 @@
+[![](https://img.shields.io/github/release/rospogrigio/localtuya-homeassistant/all.svg?style=for-the-badge)](https://github.com/rospogrigio/localtuya-homeassistant/releases)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+[![](https://img.shields.io/badge/MAINTAINER-%40rospogrigio-green?style=for-the-badge)](https://github.com/rospogrigio)
+
 ![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
 
 A Home Assistant custom Integration for local handling of Tuya-based devices.
@@ -33,7 +37,7 @@ For manual installation, copy the localtuya folder and all of its contents into 
 
 # Usage:
 
-**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md  or https://pypi.org/project/tinytuya/.**
+**NOTE: You must have your Tuya device's Key and ID in order to use LocalTuya. The easiest way is to configure the Cloud API account in the integration. If you choose not to do it, there are several ways to obtain the local_keys depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md or https://pypi.org/project/tinytuya/.**
 
 
 **NOTE 2: If you plan to integrate these devices on a network that has internet and blocking their internet access, you must also block DNS requests (to the local DNS server, e.g. 192.168.1.1). If you only block outbound internet, then the device will sit in a zombie state; it will refuse / not respond to any connections with the localkey. Therefore, you must first connect the devices with an active internet connection, grab each device localkey, and implement the block.**
@@ -94,12 +98,11 @@ Setting the scan interval is optional, it is only needed if energy/power values 
 
 Setting the 'Manual DPS To Add' is optional, it is only needed if the device doesn't advertise the DPS correctly until the entity has been properly initiailised. This setting can often be avoided by first connecting/initialising the device with the Tuya App, then closing the app and then adding the device in the integration. **Note: Any DPS added using this option will have a -1 value during setup.** 
 
-Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used. If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
+Setting the 'DPIDs to send in RESET command' is optional. It is used when a device doesn't respond to any Tuya commands after a power cycle, but can be connected to (zombie state). This scenario mostly occurs when the device is blocked from accessing the internet. The DPids will vary between devices, but typically "18,19,20" is used (and will be the default if none specified). If the wrong entries are added here, then the device may not come out of the zombie state. Typically only sensor DPIDs entered here.
 
 Once you press "Submit", the connection is tested to check that everything works.
 
 ![image](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/2-device.png)
-
 
 Then, it's time to add the entities: this step will take place several times. First, select the entity type from the drop-down menu to set it up.
 After you have defined all the needed entities, leave the "Do not add more entities" checkbox checked: this will complete the procedure.
