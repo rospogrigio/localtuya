@@ -80,6 +80,10 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "Manual",
         HVACMode.AUTO: "Program",
     },
+    "manual/program": {
+        HVACMode.HEAT: "manual",
+        HVACMode.AUTO: "program",
+    },
     "m/p": {
         HVACMode.HEAT: "m",
         HVACMode.AUTO: "p",
