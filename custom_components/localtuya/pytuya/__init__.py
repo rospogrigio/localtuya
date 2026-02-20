@@ -197,7 +197,7 @@ payload_dict = {
         },
         CONTROL_NEW: {"command": {"devId": "", "uid": "", "t": ""}},
         DP_QUERY_NEW: {"command": {"devId": "", "uid": "", "t": ""}},
-        UPDATEDPS: {"command": {"dpId": [18, 19, 20]}},
+        UPDATEDPS: {"command": {"dpId": [18, 19, 20, 51]}},
     },
     # Special Case Device "0d" - Some of these devices
     # Require the 0d command as the DP_QUERY status request and the list of
@@ -444,7 +444,7 @@ class MessageDispatcher(ContextualLogger):
         if seqno in self.listeners:
             raise Exception(f"listener exists for {seqno}")
 
-        self.debug("Command %d waiting for seq. number %d", cmd, seqno)
+        self.debug("Command %d waiting for seq. fnumber %d", cmd, seqno)
         self.listeners[seqno] = asyncio.Semaphore(0)
         try:
             await asyncio.wait_for(self.listeners[seqno].acquire(), timeout=timeout)
@@ -795,6 +795,10 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         status = await self.exchange(DP_QUERY)
         if status and "dps" in status:
             self.dps_cache.update(status["dps"])
+        if self.dev_type == "type_0a":
+            data = await self.exchange(UPDATEDPS)
+            if "dps" in data:
+                self.dps_cache.update(data["dps"])
         return self.dps_cache
 
     async def heartbeat(self):
@@ -839,6 +843,8 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
             dp_index(int):   dps index to set
             value: new value for the dps index
         """
+        if not isinstance(value, str):
+            value = json.dumps(value)
         return await self.exchange(CONTROL, {str(dp_index): value})
 
     async def set_dps(self, dps):
@@ -852,6 +858,11 @@ class TuyaProtocol(asyncio.Protocol, ContextualLogger):
         # in the ranges [1-25] and [100-110] need to split the bruteforcing in
         # different steps due to request payload limitation (max. length = 255)
         self.dps_cache = {}
+
+        data = await self.exchange(UPDATEDPS, [51])  # 51 is a known dps for type_0d
+        if 'dps' in data and '51' in data['dps']:  #support mix light
+            self.dps_cache.update(data['dps'])
+
         ranges = [(2, 11), (11, 21), (21, 31), (100, 111)]
 
         for dps_range in ranges:
