@@ -680,7 +680,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         schema = PICK_ENTITY_SCHEMA
         if self.selected_platform is not None:
             schema = schema.extend(
-                {vol.Required(NO_ADDITIONAL_ENTITIES, default=True): bool}
+                {vol.Required(NO_ADDITIONAL_ENTITIES, default=False): bool}
             )
 
         return self.async_show_form(step_id="pick_entity_type", data_schema=schema)
