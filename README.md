@@ -163,20 +163,30 @@ hard to find a common DP mapping. Below are a table of DP to product mapping
 which are currently seen working. Use it as a guide for your own mapping and
 please contribute to the list if you have the possibility.
 
-| DP  | Moes BHT 002                                            | Qlima WMS S + SC52 (AB;AF)                              | Avatto                                     |
-|-----|---------------------------------------------------------|---------------------------------------------------------|--------------------------------------------|
-| 1   | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                |
-| 2   | Target temperature<br>Integer, scaling: 0.5             | Target temperature<br>Integer, scaling 1                | Target temperature<br>Integer, scaling 1   |
-| 3   | Current temperature<br>Integer, scaling: 0.5            | Current temperature<br>Integer, scaling: 1              | Current temperature<br>Integer, scaling: 1 |
-| 4   | Mode<br>{0, 1}                                          | Mode<br>{"hot", "wind", "wet", "cold", "auto"}          | ?                                          |
-| 5   | Eco mode<br>?                                           | Fan mode<br>{"strong", "high", "middle", "low", "auto"} | ?                                          |
-| 15  | Not supported                                           | Supported, unknown<br>{true, false}                     | ?                                          |
-| 19  | Not supported                                           | Temperature unit<br>{"c", "f"}                          | ?                                          |
-| 23  | Not supported                                           | Supported, unknown<br>Integer, eg. 68                   | ?                                          |
-| 24  | Not supported                                           | Supported, unknown<br>Integer, eg. 64                   | ?                                          |
-| 101 | Not supported                                           | Outdoor temperature<br>Integer. Scaling: 1              | ?                                          |
-| 102 | Temperature of external sensor<br>Integer, scaling: 0.5 | Supported, unknown<br>Integer, eg. 34                   | ?                                          |
-| 104 | Supported, unknown<br>{true, false(?)}                  | Not supported                                           | ?                                          |
+| DP  | Moes BHT 002                                            | Qlima WMS S + SC52 (AB;AF)                              | Avatto                                     | Tuya TH213
+|-----|---------------------------------------------------------|---------------------------------------------------------|--------------------------------------------|-------------
+| 1   | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                             | ID: On/Off<br>{true, false}                | Panel on/off
+| 2   | Target temperature<br>Integer, scaling: 0.5             | Target temperature<br>Integer, scaling 1                | Target temperature<br>Integer, scaling 1   | Target temperature
+| 3   | Current temperature<br>Integer, scaling: 0.5            | Current temperature<br>Integer, scaling: 1              | Current temperature<br>Integer, scaling: 1 | Current temperature
+| 4   | Mode<br>{0, 1}                                          | Mode<br>{"hot", "wind", "wet", "cold", "auto"}          | ?                                          | Mode cold=manuel; hot=program mode
+| 5   | Eco mode<br>?                                           | Fan mode<br>{"strong", "high", "middle", "low", "auto"} | ?                                          | heating relay on/off 0/1
+| 8   | ?                                                       | ?                                                       | ?                                          | child protection true/false
+| 13  | ?                                                       | ?                                                       | ?                                          | Sound true/false
+| 15  | Not supported                                           | Supported, unknown<br>{true, false}                     | ?                                          | ?
+| 19  | Not supported                                           | Temperature unit<br>{"c", "f"}                          | ?                                          | ?
+| 20  | ?                                                       | ?                                                       | ?                                          | Temperature calibration 
+| 21  | ?                                                       | ?                                                       | ?                                          | Max setting temperature
+| 23  | Not supported                                           | Supported, unknown<br>Integer, eg. 68                   | ?                                          | ?
+| 24  | Not supported                                           | Supported, unknown<br>Integer, eg. 64                   | ?                                          | ?
+| 25  | ?                                                       | ?                                                       | ?                                          | Sensor selection 1 internal / 2 external / 3 both 
+| 26  | ?                                                       | ?                                                       | ?                                          | Frost protection true/false
+| 41  | ?                                                       | ?                                                       | ?                                          | Backlight brightness 0 to 3
+| 42  | ?                                                       | ?                                                       | ?                                          | Working day setting 1=5+2 / 2=6+1 / 3=7
+| 101 | Not supported                                           | Outdoor temperature<br>Integer. Scaling: 1              | ?                                          | output main reverse true/false
+| 102 | Temperature of external sensor<br>Integer, scaling: 0.5 | Supported, unknown<br>Integer, eg. 34                   | ?                                          | ?
+| 104 | Supported, unknown<br>{true, false(?)}                  | Not supported                                           | ?                                          | ?
+| 105 | ?                                                       | ?                                                       | ?                                          | Temperature control switch difference 5=0.5°C 10=1.0°C
+| 107 | ?                                                       |                                                         | ?                                          | External Sensor temperature limit
 
 [Moes BHT 002](https://community.home-assistant.io/t/moes-bht-002-thermostat-local-control-tuya-based/151953/47)
 [Avatto thermostat](https://pl.aliexpress.com/item/1005001605377377.html?gatewayAdapt=glo2pol)
