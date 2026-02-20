@@ -26,6 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 COVER_ONOFF_CMDS = "on_off_stop"
 COVER_OPENCLOSE_CMDS = "open_close_stop"
 COVER_FZZZ_CMDS = "fz_zz_stop"
+COVER_ZZFZ_CMDS = "zz_fz_stop"
 COVER_12_CMDS = "1_2_3"
 COVER_MODE_NONE = "none"
 COVER_MODE_POSITION = "position"
@@ -41,7 +42,7 @@ def flow_schema(dps):
     """Return schema used in config flow."""
     return {
         vol.Optional(CONF_COMMANDS_SET): vol.In(
-            [COVER_ONOFF_CMDS, COVER_OPENCLOSE_CMDS, COVER_FZZZ_CMDS, COVER_12_CMDS]
+            [COVER_ONOFF_CMDS, COVER_OPENCLOSE_CMDS, COVER_FZZZ_CMDS, COVER_ZZFZ_CMDS, COVER_12_CMDS]
         ),
         vol.Optional(CONF_POSITIONING_MODE, default=DEFAULT_POSITIONING_MODE): vol.In(
             [COVER_MODE_NONE, COVER_MODE_POSITION, COVER_MODE_TIMED]
