@@ -170,7 +170,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         """Set oscillation."""
         _LOGGER.debug("Fan async_oscillate: %s", oscillating)
         await self._device.set_dp(
-            oscillating, self._config.get(CONF_FAN_OSCILLATING_CONTROL)
+            "on" if oscillating else "off", self._config.get(CONF_FAN_OSCILLATING_CONTROL)
         )
         self.schedule_update_ha_state()
 
@@ -242,7 +242,7 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         _LOGGER.debug("Fan current_percentage: %s", self._percentage)
 
         if self.has_config(CONF_FAN_OSCILLATING_CONTROL):
-            self._oscillating = self.dps_conf(CONF_FAN_OSCILLATING_CONTROL)
+            self._oscillating = self.dps_conf(CONF_FAN_OSCILLATING_CONTROL) == "on"
             _LOGGER.debug("Fan current_oscillating : %s", self._oscillating)
 
         if self.has_config(CONF_FAN_DIRECTION):
