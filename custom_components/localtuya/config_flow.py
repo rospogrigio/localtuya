@@ -352,6 +352,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return await self._create_entry(user_input)
 
             cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
+            await cloud_api.async_close()
 
             if not res:
                 return await self._create_entry(user_input)
@@ -439,11 +440,12 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 )
 
             cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
+            cloud_devs = cloud_api.device_list
+            await cloud_api.async_close()
 
             if not res:
                 new_data = self.config_entry.data.copy()
                 new_data.update(user_input)
-                cloud_devs = cloud_api.device_list
                 for dev_id, dev in new_data[CONF_DEVICES].items():
                     if CONF_MODEL not in dev and dev_id in cloud_devs:
                         model = cloud_devs[dev_id].get(CONF_PRODUCT_NAME)

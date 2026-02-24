@@ -311,6 +311,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         if device.connected:
             await device.close()
 
+    await hass.data[DOMAIN][DATA_CLOUD].async_close()
+
     if unload_ok:
         hass.data[DOMAIN][TUYA_DEVICES] = {}
 

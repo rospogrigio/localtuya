@@ -4,11 +4,40 @@ import hashlib
 import hmac
 import json
 import logging
+import socket
+import threading
 import time
 
 import requests
+import urllib3.util.connection
+from requests.adapters import HTTPAdapter
 
 _LOGGER = logging.getLogger(__name__)
+
+# Thread-local flag so each executor thread can independently request IPv4-only
+# DNS resolution without mutating a process-global function per request.
+_thread_local = threading.local()
+_orig_allowed_gai_family = urllib3.util.connection.allowed_gai_family
+
+
+def _thread_local_allowed_gai_family():
+    """Return AF_INET for this thread when IPv4-only mode is active."""
+    if getattr(_thread_local, "force_ipv4", False):
+        return socket.AF_INET
+    return _orig_allowed_gai_family()
+
+
+# Single, one-time replacement — no per-request global mutation.
+urllib3.util.connection.allowed_gai_family = _thread_local_allowed_gai_family
+
+
+class IPv4Adapter(HTTPAdapter):
+    def send(self, *args, **kwargs):
+        _thread_local.force_ipv4 = True
+        try:
+            return super().send(*args, **kwargs)
+        finally:
+            _thread_local.force_ipv4 = False
 
 
 # Signature algorithm.
@@ -38,6 +67,18 @@ class TuyaCloudApi:
         self._user_id = user_id
         self._access_token = ""
         self.device_list = {}
+
+        self._session = requests.Session()
+        self._session.mount("https://", IPv4Adapter())
+
+    def close(self):
+        """Close underlying HTTP session."""
+        if self._session is not None:
+            self._session.close()
+
+    async def async_close(self):
+        """Asynchronously close underlying HTTP session."""
+        await self._hass.async_add_executor_job(self.close)
 
     def generate_payload(self, method, timestamp, url, headers, body=None):
         """Generate signed payload for requests."""
@@ -77,11 +118,11 @@ class TuyaCloudApi:
 
         if method == "GET":
             func = functools.partial(
-                requests.get, full_url, headers=dict(default_par, **headers)
+                self._session.get, full_url, headers=dict(default_par, **headers)
             )
         elif method == "POST":
             func = functools.partial(
-                requests.post,
+                self._session.post,
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
@@ -89,7 +130,7 @@ class TuyaCloudApi:
             # _LOGGER.debug("BODY: [%s]", body)
         elif method == "PUT":
             func = functools.partial(
-                requests.put,
+                self._session.put,
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
