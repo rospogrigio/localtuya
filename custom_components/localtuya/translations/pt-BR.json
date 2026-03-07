@@ -17,15 +17,34 @@
         },
         "step": {
             "user": {
-                "title": "Configuração da conta da API do Cloud",
-                "description": "Insira as credenciais para a API Tuya Cloud.",
+                "title": "Selecione o tipo da API da Cloud",
+                "description": "A cloud será usada apenas para buscar chaves locais Tuya e nomes de dispositivos.",
+                "menu_options": {
+                    "iot": "Tuya IoT Platform",
+                    "oem_ledvance": "Tuya OEM Ledvance",
+                    "oem_generic": "Tuya OEM genérico",
+                    "no_cloud": "Não configure uma conta de API da Cloud"
+                }
+            },
+            "iot": {
+                "title": "Configuração da Tuya IoT Platform",
+                "description": "Insira as credenciais para a conta da Tuya IoT Platform.",
                 "data": {
                     "region": "Região do servidor de API",
                     "client_id": "ID do cliente",
                     "client_secret": "Secret",
-                    "user_id": "ID de usuário",
-                    "user_name": "Nome de usuário",
-                    "no_cloud": "Não configure uma conta de API da Cloud"
+                    "user_id": "ID de usuário"
+                }
+            },
+            "oem": {
+                "title": "Configuração da Tuya OEM",
+                "description": "Insira as credenciais para a conta da app OEM {vendor}.",
+                "data": {
+                    "region": "Região do servidor de API",
+                    "oem_email": "E-mail",
+                    "oem_password": "Senha",
+                    "client_id": "ID do cliente",
+                    "client_secret": "Secret"
                 }
             }
         }
@@ -75,16 +94,35 @@
                     "selected_device": "Dispositivos configurados"
                 }
             },
-            "cloud_setup": {
-                "title": "Configuração da conta da API da Cloud",
-                "description": "Insira as credenciais para a API Tuya Cloud.",
+            "setup_cloud": {
+                "title": "Selecione o tipo da API da Cloud",
+                "description": "A cloud será usada apenas para buscar chaves locais Tuya e nomes de dispositivos.",
+                "menu_options": {
+                    "iot": "Tuya IoT Platform",
+                    "oem_ledvance": "Tuya OEM Ledvance",
+                    "oem_generic": "Tuya OEM genérico",
+                    "no_cloud": "Não configure a conta da API da Cloud"
+                }
+            },
+            "iot": {
+                "title": "Configuração da Tuya IoT Platform",
+                "description": "Insira as credenciais para a conta da Tuya IoT Platform.",
                 "data": {
                     "region": "Região do servidor de API",
-                    "client_id": "ID do Cliente",
+                    "client_id": "ID do cliente",
                     "client_secret": "Secret",
-                    "user_id": "ID do usuário",
-                    "user_name": "Nome de usuário",
-                    "no_cloud": "Não configure a conta da API da Cloud"
+                    "user_id": "ID de usuário"
+                }
+            },
+            "oem": {
+                "title": "Configuração da Tuya OEM",
+                "description": "Insira as credenciais para a conta da app OEM {vendor}.",
+                "data": {
+                    "region": "Região do servidor de API",
+                    "oem_email": "E-mail",
+                    "oem_password": "Senha",
+                    "client_id": "ID do cliente",
+                    "client_secret": "Secret"
                 }
             },
             "configure_device": {

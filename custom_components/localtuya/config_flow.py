@@ -21,23 +21,27 @@ from homeassistant.const import (
     CONF_PLATFORM,
     CONF_REGION,
     CONF_SCAN_INTERVAL,
-    CONF_USERNAME,
 )
 from homeassistant.core import callback
 
-from .cloud_api import TuyaCloudApi
+from .cloud_api import CloudApi
 from .common import pytuya
 from .const import (
     ATTR_UPDATED_AT,
-    CONF_ACTION,
+    CLOUD_TYPE_IOT,
+    CLOUD_TYPE_OEM_LEDVANCE,
+    CLOUD_TYPE_OEM_GENERIC,
+    CLOUD_TYPE_NONE,
     CONF_ADD_DEVICE,
+    CONF_CLOUD_TYPE,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
     CONF_ENABLE_DEBUG,
     CONF_LOCAL_KEY,
     CONF_MANUAL_DPS,
     CONF_MODEL,
-    CONF_NO_CLOUD,
+    CONF_OEM_EMAIL,
+    CONF_OEM_PASSWORD,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
@@ -53,7 +57,7 @@ from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
-ENTRIES_VERSION = 2
+ENTRIES_VERSION = 3
 
 PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"
@@ -61,26 +65,46 @@ SELECTED_DEVICE = "selected_device"
 
 CUSTOM_DEVICE = "..."
 
-CONF_ACTIONS = {
-    CONF_ADD_DEVICE: "Add a new device",
-    CONF_EDIT_DEVICE: "Edit a device",
-    CONF_SETUP_CLOUD: "Reconfigure Cloud API account",
+CLOUD_TYPES = [
+    CLOUD_TYPE_IOT,
+    CLOUD_TYPE_OEM_LEDVANCE,
+    CLOUD_TYPE_OEM_GENERIC,
+    CLOUD_TYPE_NONE,
+]
+
+CLOUD_OEM_VENDORS = {
+    CLOUD_TYPE_OEM_LEDVANCE: "Ledvance",
 }
 
-CONFIGURE_SCHEMA = vol.Schema(
+CONF_ACTIONS = [CONF_ADD_DEVICE, CONF_EDIT_DEVICE, CONF_SETUP_CLOUD]
+
+REGIONS = ["eu", "us", "cn", "in"]
+DEFAULT_REGION = "eu"
+
+CLOUD_SETUP_SCHEMA_IOT = vol.Schema(
     {
-        vol.Required(CONF_ACTION, default=CONF_ADD_DEVICE): vol.In(CONF_ACTIONS),
+        vol.Required(CONF_REGION, default=DEFAULT_REGION): vol.In(REGIONS),
+        vol.Required(CONF_CLIENT_ID): cv.string,
+        vol.Required(CONF_CLIENT_SECRET): cv.string,
+        vol.Required(CONF_USER_ID): cv.string,
     }
 )
 
-CLOUD_SETUP_SCHEMA = vol.Schema(
+CLOUD_SETUP_SCHEMA_OEM_KNOWN = vol.Schema(
     {
-        vol.Required(CONF_REGION, default="eu"): vol.In(["eu", "us", "cn", "in"]),
-        vol.Optional(CONF_CLIENT_ID): cv.string,
-        vol.Optional(CONF_CLIENT_SECRET): cv.string,
-        vol.Optional(CONF_USER_ID): cv.string,
-        vol.Optional(CONF_USERNAME, default=DOMAIN): cv.string,
-        vol.Required(CONF_NO_CLOUD, default=False): bool,
+        vol.Required(CONF_REGION, default=DEFAULT_REGION): vol.In(REGIONS),
+        vol.Required(CONF_OEM_EMAIL): cv.string,
+        vol.Required(CONF_OEM_PASSWORD): cv.string,
+    }
+)
+
+CLOUD_SETUP_SCHEMA_OEM_GENERIC = vol.Schema(
+    {
+        vol.Required(CONF_REGION, default=DEFAULT_REGION): vol.In(REGIONS),
+        vol.Required(CONF_OEM_EMAIL): cv.string,
+        vol.Required(CONF_OEM_PASSWORD): cv.string,
+        vol.Required(CONF_CLIENT_ID): cv.string,
+        vol.Required(CONF_CLIENT_SECRET): cv.string,
     }
 )
 
@@ -304,26 +328,75 @@ async def validate_input(hass: core.HomeAssistant, data):
 
 async def attempt_cloud_connection(hass, user_input):
     """Create device."""
-    cloud_api = TuyaCloudApi(
-        hass,
-        user_input.get(CONF_REGION),
-        user_input.get(CONF_CLIENT_ID),
-        user_input.get(CONF_CLIENT_SECRET),
-        user_input.get(CONF_USER_ID),
-    )
+    cloud_api = CloudApi.create_api(hass, user_input)
 
-    res = await cloud_api.async_get_access_token()
+    res = await cloud_api.async_authenticate()
     if res != "ok":
-        _LOGGER.error("Cloud API connection failed: %s", res)
         return cloud_api, {"reason": "authentication_failed", "msg": res}
 
-    res = await cloud_api.async_get_devices_list()
+    res = await cloud_api.async_fetch_device_list()
     if res != "ok":
-        _LOGGER.error("Cloud API get_devices_list failed: %s", res)
         return cloud_api, {"reason": "device_list_failed", "msg": res}
-    _LOGGER.info("Cloud API connection succeeded.")
 
     return cloud_api, {}
+
+
+async def _do_cloud_setup_step(step, defaults_from, user_input, success_callback):
+    """Handle common cloud setup steps."""
+    errors = {}
+    placeholders = {}
+
+    cloud_type = step.hidden_user_input.get(CONF_CLOUD_TYPE)
+
+    if user_input is not None:
+        user_input.update(step.hidden_user_input)
+
+        cloud_api, res = await attempt_cloud_connection(step.hass, user_input)
+
+        if not res:
+            for i in [
+                CONF_REGION,
+                CONF_CLIENT_ID,
+                CONF_CLIENT_SECRET,
+                CONF_USER_ID,
+                CONF_OEM_EMAIL,
+                CONF_OEM_PASSWORD,
+            ]:
+                # Reset values for options irrelevant for the chosen cloud type
+                if i not in user_input:
+                    if i == CONF_REGION:
+                        user_input[i] = DEFAULT_REGION
+                    else:
+                        user_input[i] = ""
+
+            return await success_callback(
+                user_input=user_input, cloud_devs=cloud_api.device_list
+            )
+
+        errors["base"] = res["reason"]
+        placeholders = {"msg": res["msg"]}
+
+    defaults = defaults_from.copy()
+    defaults.update(user_input or {})
+
+    step_id = cloud_type
+    if cloud_type == CLOUD_TYPE_IOT:
+        data_schema = CLOUD_SETUP_SCHEMA_IOT
+    elif cloud_type == CLOUD_TYPE_OEM_GENERIC:
+        data_schema = CLOUD_SETUP_SCHEMA_OEM_GENERIC
+        step_id = "oem"
+    else:
+        data_schema = CLOUD_SETUP_SCHEMA_OEM_KNOWN
+        step_id = "oem"
+
+    placeholders["vendor"] = CLOUD_OEM_VENDORS.get(cloud_type, "")
+
+    return step.async_show_form(
+        step_id=step_id,
+        data_schema=schema_defaults(data_schema, **defaults),
+        errors=errors,
+        description_placeholders=placeholders,
+    )
 
 
 class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -340,44 +413,50 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self):
         """Initialize a new LocaltuyaConfigFlow."""
+        self.hidden_user_input = {}
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
-        errors = {}
-        placeholders = {}
-        if user_input is not None:
-            if user_input.get(CONF_NO_CLOUD):
-                for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
-                    user_input[i] = ""
-                return await self._create_entry(user_input)
+        return self.async_show_menu(step_id="user", menu_options=CLOUD_TYPES)
 
-            cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
+    async def async_step_no_cloud(self, user_input=None):
+        """Handle the no cloud step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_NONE
+        return await self._cloud_setup({})
 
-            if not res:
-                return await self._create_entry(user_input)
-            errors["base"] = res["reason"]
-            placeholders = {"msg": res["msg"]}
+    async def async_step_iot(self, user_input=None):
+        """Handle the IoT Platform step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_IOT
+        return await self._cloud_setup(user_input)
 
-        defaults = {}
-        defaults.update(user_input or {})
+    async def async_step_oem(self, user_input=None):
+        """
+        Handle the "oem" step.
 
-        return self.async_show_form(
-            step_id="user",
-            data_schema=schema_defaults(CLOUD_SETUP_SCHEMA, **defaults),
-            errors=errors,
-            description_placeholders=placeholders,
-        )
+        This is a virtual step so that a lot of the translation strings can be reused.
+        """
+        return await self._cloud_setup(user_input)
 
-    async def _create_entry(self, user_input):
+    async def async_step_oem_ledvance(self, user_input=None):
+        """Handle the Tuya OEM Ledvance step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_OEM_LEDVANCE
+        return await self._cloud_setup(user_input)
+
+    async def async_step_oem_generic(self, user_input=None):
+        """Handle the Tuya OEM generic step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_OEM_GENERIC
+        return await self._cloud_setup(user_input)
+
+    async def _cloud_setup(self, user_input=None):
+        return await _do_cloud_setup_step(self, {}, user_input, self._create_entry)
+
+    async def _create_entry(self, user_input, cloud_devs):
         """Register new entry."""
-        # if self._async_current_entries():
-        #     return self.async_abort(reason="already_configured")
-
         await self.async_set_unique_id(user_input.get(CONF_USER_ID))
         user_input[CONF_DEVICES] = {}
 
         return self.async_create_entry(
-            title=user_input.get(CONF_USERNAME),
+            title="Local Tuya",
             data=user_input,
         )
 
@@ -403,73 +482,69 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         self.selected_platform = None
         self.discovered_devices = {}
         self.entities = []
+        self.hidden_user_input = {}
 
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
-        # device_id = self.config_entry.data[CONF_DEVICE_ID]
-        if user_input is not None:
-            if user_input.get(CONF_ACTION) == CONF_SETUP_CLOUD:
-                return await self.async_step_cloud_setup()
-            if user_input.get(CONF_ACTION) == CONF_ADD_DEVICE:
-                return await self.async_step_add_device()
-            if user_input.get(CONF_ACTION) == CONF_EDIT_DEVICE:
-                return await self.async_step_edit_device()
-
-        return self.async_show_form(
+        return self.async_show_menu(
             step_id="init",
-            data_schema=CONFIGURE_SCHEMA,
+            menu_options=CONF_ACTIONS,
         )
 
-    async def async_step_cloud_setup(self, user_input=None):
+    async def async_step_setup_cloud(self, user_input=None):
         """Handle the initial step."""
-        errors = {}
-        placeholders = {}
-        if user_input is not None:
-            if user_input.get(CONF_NO_CLOUD):
-                new_data = self.config_entry.data.copy()
-                new_data.update(user_input)
-                for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
-                    new_data[i] = ""
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=new_data,
-                )
-                return self.async_create_entry(
-                    title=new_data.get(CONF_USERNAME), data={}
-                )
+        return self.async_show_menu(step_id="setup_cloud", menu_options=CLOUD_TYPES)
 
-            cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
+    async def async_step_no_cloud(self, user_input=None):
+        """Handle the no cloud step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_NONE
+        return await self._cloud_setup({})
 
-            if not res:
-                new_data = self.config_entry.data.copy()
-                new_data.update(user_input)
-                cloud_devs = cloud_api.device_list
-                for dev_id, dev in new_data[CONF_DEVICES].items():
-                    if CONF_MODEL not in dev and dev_id in cloud_devs:
-                        model = cloud_devs[dev_id].get(CONF_PRODUCT_NAME)
-                        new_data[CONF_DEVICES][dev_id][CONF_MODEL] = model
-                new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+    async def async_step_iot(self, user_input=None):
+        """Handle the IoT Platform step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_IOT
+        return await self._cloud_setup(user_input)
 
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data=new_data,
-                )
-                return self.async_create_entry(
-                    title=new_data.get(CONF_USERNAME), data={}
-                )
-            errors["base"] = res["reason"]
-            placeholders = {"msg": res["msg"]}
+    async def async_step_oem(self, user_input=None):
+        """
+        Handle the "oem" step.
 
-        defaults = self.config_entry.data.copy()
-        defaults.update(user_input or {})
-        defaults[CONF_NO_CLOUD] = False
+        This is a virtual step so that a lot of the translation strings can be reused.
+        """
+        return await self._cloud_setup(user_input)
 
-        return self.async_show_form(
-            step_id="cloud_setup",
-            data_schema=schema_defaults(CLOUD_SETUP_SCHEMA, **defaults),
-            errors=errors,
-            description_placeholders=placeholders,
+    async def async_step_oem_ledvance(self, user_input=None):
+        """Handle the Tuya OEM Ledvance step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_OEM_LEDVANCE
+        return await self._cloud_setup(user_input)
+
+    async def async_step_oem_generic(self, user_input=None):
+        """Handle the Tuya OEM generic step."""
+        self.hidden_user_input[CONF_CLOUD_TYPE] = CLOUD_TYPE_OEM_GENERIC
+        return await self._cloud_setup(user_input)
+
+    async def _cloud_setup(self, user_input=None):
+        return await _do_cloud_setup_step(
+            self, self.config_entry.data, user_input, self._cloud_success_callback
         )
+
+    async def _cloud_success_callback(self, user_input, cloud_devs):
+        new_data = self.config_entry.data.copy()
+        new_data.update(user_input)
+        for dev_id, dev in new_data[CONF_DEVICES].items():
+            if CONF_MODEL not in dev and dev_id in cloud_devs:
+                model = cloud_devs[dev_id].get(CONF_PRODUCT_NAME)
+                new_data[CONF_DEVICES][dev_id][CONF_MODEL] = model
+        new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+
+        return await self._cloud_update_entry(new_data)
+
+    async def _cloud_update_entry(self, new_data):
+        self.hass.config_entries.async_update_entry(
+            self.config_entry,
+            data=new_data,
+        )
+        return self.async_create_entry(title="", data={})
 
     async def async_step_add_device(self, user_input=None):
         """Handle adding a new device."""
@@ -508,9 +583,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="add_device",
-            data_schema=devices_schema(
-                devices, self.hass.data[DOMAIN][DATA_CLOUD].device_list
-            ),
+            data_schema=devices_schema(devices, self._cloud_api.device_list),
             errors=errors,
         )
 
@@ -533,9 +606,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="edit_device",
-            data_schema=devices_schema(
-                devices, self.hass.data[DOMAIN][DATA_CLOUD].device_list, False
-            ),
+            data_schema=devices_schema(devices, self._cloud_api.device_list, False),
             errors=errors,
         )
 
@@ -546,15 +617,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 self.device_data = user_input.copy()
-                if dev_id is not None:
-                    # self.device_data[CONF_PRODUCT_KEY] = self.devices[
-                    #     self.selected_device
-                    # ]["productKey"]
-                    cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
-                    if dev_id in cloud_devs:
-                        self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
-                            CONF_PRODUCT_NAME
-                        )
+                product_name = self._cloud_api.device_property(
+                    dev_id, CONF_PRODUCT_NAME
+                )
+                if product_name is not None:
+                    self.device_data[CONF_MODEL] = product_name
                 if self.editing_device:
                     if user_input[CONF_ENABLE_ADD_ENTITIES]:
                         self.editing_device = False
@@ -637,8 +704,12 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 defaults[CONF_PROTOCOL_VERSION] = device.get("version")
                 cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
                 if dev_id in cloud_devs:
-                    defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
-                    defaults[CONF_FRIENDLY_NAME] = cloud_devs[dev_id].get(CONF_NAME)
+                    defaults[CONF_LOCAL_KEY] = self._cloud_api.device_property(
+                        dev_id, CONF_LOCAL_KEY, default=""
+                    )
+                    defaults[CONF_FRIENDLY_NAME] = self._cloud_api.device_property(
+                        dev_id, CONF_NAME, default=""
+                    )
             schema = schema_defaults(DEVICE_SCHEMA, **defaults)
 
             placeholders = {"for_device": ""}
@@ -675,9 +746,15 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             self.selected_platform = user_input[PLATFORM_TO_ADD]
             return await self.async_step_configure_entity()
 
+        defaults = {
+            PLATFORM_TO_ADD: self._cloud_api.device_platform(
+                self.device_data.get(CONF_DEVICE_ID)
+            )
+        }
+
         # Add a checkbox that allows bailing out from config flow if at least one
         # entity has been added
-        schema = PICK_ENTITY_SCHEMA
+        schema = schema_defaults(PICK_ENTITY_SCHEMA, **defaults)
         if self.selected_platform is not None:
             schema = schema.extend(
                 {vol.Required(NO_ADDITIONAL_ENTITIES, default=True): bool}
@@ -780,6 +857,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         else:
             available_dps = self.available_dps_strings()
             schema = platform_schema(self.selected_platform, available_dps)
+            # Copy default friendly name from device
+            defaults = {CONF_FRIENDLY_NAME: self.device_data[CONF_FRIENDLY_NAME]}
+            schema = schema_defaults(schema, **defaults)
             placeholders = {
                 "entity": "an entity",
                 "platform": self.selected_platform,
@@ -800,6 +880,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         # if user_input is not None:
         #     return self.async_create_entry(title="", data={})
         # return self.async_show_form(step_id="yaml_import")
+
+    @property
+    def _cloud_api(self) -> CloudApi:
+        """Return the current Cloud API for the integration."""
+        return self.hass.data[DOMAIN][DATA_CLOUD]
 
     @property
     def current_entity(self):
