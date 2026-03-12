@@ -44,7 +44,14 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         super().__init__(device, config_entry, sensorid, _LOGGER, **kwargs)
         self._state = STATE_UNKNOWN
         self._state_friendly = ""
-        self._valid_options = self._config.get(CONF_OPTIONS).split(";")
+        # Handle both string and dict formats for CONF_OPTIONS
+        options_config = self._config.get(CONF_OPTIONS)
+        if isinstance(options_config, str):
+            self._valid_options = options_config.split(";")
+        elif isinstance(options_config, dict):
+            self._valid_options = list(options_config.values()) if options_config else []
+        else:
+            self._valid_options = []
 
         # Set Display options
         self._display_options = []
