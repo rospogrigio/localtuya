@@ -804,7 +804,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     @property
     def current_entity(self):
         """Existing configuration for entity currently being edited."""
-        return self.entities[len(self.device_data[CONF_ENTITIES])]
+        index = len(self.device_data[CONF_ENTITIES])
+        if index >= len(self.entities):
+            index = len(self.entities) - 1 if self.entities else 0
+        return self.entities[index]
 
 
 class CannotConnect(exceptions.HomeAssistantError):
