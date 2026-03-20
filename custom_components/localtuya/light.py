@@ -170,12 +170,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS
         )
         self._upper_color_temp = self._upper_brightness
-        self._max_mired = color_util.color_temperature_kelvin_to_mired(
-            self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
-        )
-        self._min_mired = color_util.color_temperature_kelvin_to_mired(
-            self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
-        )
+        self._min_kelvin = self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
+        self._max_kelvin = self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
         self._color_temp_reverse = self._config.get(
             CONF_COLOR_TEMP_REVERSE, DEFAULT_COLOR_TEMP_REVERSE
         )
@@ -224,8 +220,8 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         return None
 
     @property
-    def color_temp(self):
-        """Return the color_temp of the light."""
+    def color_temp_kelvin(self):
+        """Return the color_temp_kelvin of the light."""
         if self.has_config(CONF_COLOR_TEMP) and self.is_white_mode:
             color_temp_value = (
                 self._upper_color_temp - self._color_temp
@@ -233,23 +229,23 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 else self._color_temp
             )
             return int(
-                self._max_mired
-                - (
-                    ((self._max_mired - self._min_mired) / self._upper_color_temp)
+                self._min_kelvin
+                + (
+                    ((self._max_kelvin - self._min_kelvin) / self._upper_color_temp)
                     * color_temp_value
                 )
             )
         return None
 
     @property
-    def min_mireds(self):
-        """Return color temperature min mireds."""
-        return self._min_mired
+    def min_color_temp_kelvin(self):
+        """Return color temperature min kelvin."""
+        return self._min_kelvin
 
     @property
-    def max_mireds(self):
-        """Return color temperature max mireds."""
-        return self._max_mired
+    def max_color_temp_kelvin(self):
+        """Return color temperature max kelvin."""
+        return self._max_kelvin
 
     @property
     def effect(self):
