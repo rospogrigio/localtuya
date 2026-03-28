@@ -5,6 +5,7 @@ import time
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
@@ -22,7 +23,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     SERVICE_RELOAD,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
@@ -46,6 +47,7 @@ from .discovery import TuyaDiscovery
 _LOGGER = logging.getLogger(__name__)
 
 UNSUB_LISTENER = "unsub_listener"
+UNSUB_DEVICE_REGISTRY_LISTENER = "unsub_device_registry_listener"
 
 RECONNECT_INTERVAL = timedelta(seconds=60)
 
@@ -62,6 +64,19 @@ SERVICE_SET_DP_SCHEMA = vol.Schema(
         vol.Required(CONF_VALUE): object,
     }
 )
+
+
+def _device_identifiers(dev_id):
+    """Return device registry identifiers for a LocalTuya device."""
+    return {(DOMAIN, f"local_{dev_id}")}
+
+
+def _device_is_enabled(hass: HomeAssistant, dev_id: str) -> bool:
+    """Return whether a configured device should actively connect."""
+    device_entry = dr.async_get(hass).async_get_device(
+        identifiers=_device_identifiers(dev_id)
+    )
+    return device_entry is None or device_entry.disabled_by is None
 
 
 async def async_setup(hass: HomeAssistant, config: dict):
@@ -147,7 +162,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         device = hass.data[DOMAIN][TUYA_DEVICES].get(device_id)
         if not device:
             _LOGGER.warning(f"Could not find device for device_id {device_id}")
-        elif not device.connected:
+        elif _device_is_enabled(hass, device_id) and not device.connected:
             device.async_connect()
 
 
@@ -158,7 +173,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     async def _async_reconnect(now):
         """Try connecting to devices not already connected to."""
         for device_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
-            if not device.connected:
+            if _device_is_enabled(hass, device_id) and not device.connected:
                 device.async_connect()
 
     async_track_time_interval(hass, _async_reconnect, RECONNECT_INTERVAL)
@@ -275,16 +290,45 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # potential integration restarts while elements are still initialising.
     await hass.config_entries.async_forward_entry_setups(entry, platforms)
 
+    @callback
+    def _handle_device_registry_updated(event):
+        """Reload the entry when a LocalTuya device is enabled or disabled."""
+        if event.data.get("action") != "update":
+            return
+
+        if "disabled_by" not in event.data.get("changes", {}):
+            return
+
+        device_id = event.data.get("device_id")
+        if device_id is None:
+            return
+
+        device_entry = dr.async_get(hass).async_get(device_id)
+        if device_entry is None or entry.entry_id not in device_entry.config_entries:
+            return
+
+        if not any(identifier[0] == DOMAIN for identifier in device_entry.identifiers):
+            return
+
+        hass.async_create_task(hass.config_entries.async_reload(entry.entry_id))
+
     async def setup_entities(device_ids):
         for dev_id in device_ids:
-            hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
+            if _device_is_enabled(hass, dev_id):
+                hass.data[DOMAIN][TUYA_DEVICES][dev_id].async_connect()
 
         await async_remove_orphan_entities(hass, entry)
 
     hass.async_create_task(setup_entities(entry.data[CONF_DEVICES].keys()))
 
     unsub_listener = entry.add_update_listener(update_listener)
-    hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
+    unsub_device_registry_listener = hass.bus.async_listen(
+        dr.EVENT_DEVICE_REGISTRY_UPDATED, _handle_device_registry_updated
+    )
+    hass.data[DOMAIN][entry.entry_id] = {
+        UNSUB_LISTENER: unsub_listener,
+        UNSUB_DEVICE_REGISTRY_LISTENER: unsub_device_registry_listener,
+    }
 
     return True
 
@@ -307,6 +351,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+    hass.data[DOMAIN][entry.entry_id][UNSUB_DEVICE_REGISTRY_LISTENER]()
     for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
         if device.connected:
             await device.close()
