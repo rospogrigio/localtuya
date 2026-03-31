@@ -336,7 +336,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Get options flow for this handler."""
-        return LocalTuyaOptionsFlowHandler(config_entry)
+        return LocalTuyaOptionsFlowHandler()
 
     def __init__(self):
         """Initialize a new LocaltuyaConfigFlow."""
@@ -386,14 +386,14 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.error(
             "Configuration via YAML file is no longer supported by this integration."
         )
+        return self.async_abort(reason="yaml_not_supported")
 
 
 class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for LocalTuya integration."""
 
-    def __init__(self, config_entry):
+    def __init__(self):
         """Initialize localtuya options flow."""
-        self.config_entry = config_entry
         # self.dps_strings = config_entry.data.get(CONF_DPS_STRINGS, gen_dps_strings())
         # self.entities = config_entry.data[CONF_ENTITIES]
         self.selected_device = None
@@ -797,9 +797,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         _LOGGER.error(
             "Configuration via YAML file is no longer supported by this integration."
         )
-        # if user_input is not None:
-        #     return self.async_create_entry(title="", data={})
-        # return self.async_show_form(step_id="yaml_import")
+        return self.async_abort(reason="yaml_not_supported")
 
     @property
     def current_entity(self):

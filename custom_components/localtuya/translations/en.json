@@ -2,7 +2,8 @@
     "config": {
         "abort": {
             "already_configured": "Device has already been configured.",
-            "device_updated": "Device configuration has been updated!"
+            "device_updated": "Device configuration has been updated!",
+            "yaml_not_supported": "YAML configuration is no longer supported by this integration."
         },
         "error": {
             "authentication_failed": "Failed to authenticate.\n{msg}",
@@ -34,7 +35,8 @@
         "abort": {
             "already_configured": "Device has already been configured.",
             "device_success": "Device {dev_name} successfully {action}.",
-            "no_entities": "Cannot remove all entities from a device.\nIf you want to delete a device, enter it in the Devices menu, click the 3 dots in the 'Device info' frame, and press the Delete button."
+            "no_entities": "Cannot remove all entities from a device.\nIf you want to delete a device, enter it in the Devices menu, click the 3 dots in the 'Device info' frame, and press the Delete button.",
+            "yaml_not_supported": "YAML configuration is no longer supported by this integration."
         },
         "error": {
             "authentication_failed": "Failed to authenticate.\n{msg}",
