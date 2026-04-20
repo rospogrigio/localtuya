@@ -99,6 +99,12 @@ HVAC_MODE_SETS = {
         HVACMode.DRY: "dehumidify",
         HVACMode.COOL: "cold",
     },
+    "Cold/Dyr/Heat/Fan": {
+        HVACMode.COOL: "Cold",
+        HVACMode.DRY: "Dyr",
+        HVACMode.HEAT: "Heat",
+        HVACMode.FAN_ONLY: "Fan",
+    },
     "1/0": {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
