@@ -1,4 +1,5 @@
-![logo](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/logo-small.png)
+# ****This project was mainly done for myself, so I could use my tuya protocol 5 devices. Since then, someone created a much easier and way more stable integration, I urge you to check their work out: https://github.com/make-all/tuya-local****
+
 
 A Home Assistant custom Integration for local handling of Tuya-based devices.
 
