@@ -363,7 +363,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         if self._connect_task is not None:
             self._connect_task.cancel()
             self._connect_task = None
-        self.warning("Disconnected - waiting for discovery broadcast")
+        self.warning("Disconnected - will retry connection in 30 seconds")
+        self._hass.loop.call_later(30, self.async_connect)
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
