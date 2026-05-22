@@ -125,6 +125,11 @@ HVAC_ACTION_SETS = {
         HVACAction.HEATING: "heating",
         HVACAction.IDLE: "warming",
     },
+    "Auto/Heating/Cooling": {
+        HVACMode.HEAT: "Heating",
+        HVACMode.COOL: "Cooling",
+        HVACMode.AUTO: "Auto",
+    },
 }
 HVAC_FAN_MODE_SETS = {
     "Auto/Low/Middle/High/Strong": {
