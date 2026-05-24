@@ -28,6 +28,9 @@ from .const import (
     CONF_FAN_DPS_TYPE,
     CONF_FAN_ORDERED_LIST,
     CONF_FAN_OSCILLATING_CONTROL,
+    CONF_FAN_PRESET_MODE,
+    CONF_FAN_PRESET_MODES,
+    CONF_FAN_PRESET_MODES_FRIENDLY,
     CONF_FAN_SPEED_CONTROL,
     CONF_FAN_SPEED_MAX,
     CONF_FAN_SPEED_MIN,
@@ -48,6 +51,9 @@ def flow_schema(dps):
         vol.Optional(CONF_FAN_SPEED_MAX, default=9): cv.positive_int,
         vol.Optional(CONF_FAN_ORDERED_LIST, default="disabled"): cv.string,
         vol.Optional(CONF_FAN_DPS_TYPE, default="str"): vol.In(["str", "int"]),
+        vol.Optional(CONF_FAN_PRESET_MODE): vol.In(dps),
+        vol.Optional(CONF_FAN_PRESET_MODES): cv.string,
+        vol.Optional(CONF_FAN_PRESET_MODES_FRIENDLY): cv.string,
     }
 
 
@@ -74,6 +80,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         self._ordered_list = self._config.get(CONF_FAN_ORDERED_LIST).split(",")
         self._ordered_list_mode = None
         self._dps_type = int if self._config.get(CONF_FAN_DPS_TYPE) == "int" else str
+        self._preset_mode = None
+        self._preset_modes = []
+        self._preset_modes_friendly = []
 
         if isinstance(self._ordered_list, list) and len(self._ordered_list) > 1:
             self._use_ordered_list = True
@@ -85,6 +94,25 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         else:
             self._use_ordered_list = False
             _LOGGER.debug("Fan _use_ordered_list: %s", self._use_ordered_list)
+
+        if self.has_config(CONF_FAN_PRESET_MODES):
+            self._preset_modes = [
+                mode.strip()
+                for mode in self._config.get(CONF_FAN_PRESET_MODES, "").split(";")
+                if mode.strip()
+            ]
+
+            display_modes = self._config.get(CONF_FAN_PRESET_MODES_FRIENDLY, "").strip()
+            if display_modes:
+                self._preset_modes_friendly = [
+                    mode.strip() for mode in display_modes.split(";")
+                ]
+            else:
+                self._preset_modes_friendly = list(self._preset_modes)
+
+            if len(self._preset_modes) > len(self._preset_modes_friendly):
+                for i in range(len(self._preset_modes_friendly), len(self._preset_modes)):
+                    self._preset_modes_friendly.append(self._preset_modes[i])
 
     @property
     def oscillating(self):
@@ -106,6 +134,18 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         """Return the current percentage."""
         return self._percentage
 
+    @property
+    def preset_mode(self):
+        """Return the current preset mode."""
+        return self._preset_mode
+
+    @property
+    def preset_modes(self):
+        """Return the list of available preset modes."""
+        if not self.has_config(CONF_FAN_PRESET_MODE) or not self._preset_modes_friendly:
+            return None
+        return self._preset_modes_friendly
+
     async def async_turn_on(
         self,
         speed: str = None,
@@ -115,11 +155,13 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     ) -> None:
         """Turn on the entity."""
         _LOGGER.debug("Fan async_turn_on")
+        if preset_mode is not None:
+            await self.async_set_preset_mode(preset_mode)
+            return
         await self._device.set_dp(True, self._dp_id)
         if percentage is not None:
             await self.async_set_percentage(percentage)
-        else:
-            self.schedule_update_ha_state()
+        self.schedule_update_ha_state()
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn off the entity."""
@@ -166,6 +208,23 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
                 )
             self.schedule_update_ha_state()
 
+    async def async_set_preset_mode(self, preset_mode):
+        """Set the fan preset mode."""
+        _LOGGER.debug("Fan async_set_preset_mode: %s", preset_mode)
+        if not self.has_config(CONF_FAN_PRESET_MODE):
+            _LOGGER.error("Preset mode unsupported (no DP)")
+            return
+        if preset_mode not in self._preset_modes_friendly:
+            _LOGGER.error("Unsupported preset_mode: %s", preset_mode)
+            return
+        preset_value = self._preset_modes[
+            self._preset_modes_friendly.index(preset_mode)
+        ]
+        if not self.is_on:
+            await self._device.set_dp(True, self._dp_id)
+        await self._device.set_dp(preset_value, self._config.get(CONF_FAN_PRESET_MODE))
+        self.schedule_update_ha_state()
+
     async def async_oscillate(self, oscillating: bool) -> None:
         """Set oscillation."""
         _LOGGER.debug("Fan async_oscillate: %s", oscillating)
@@ -199,6 +258,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
 
         if self.has_config(CONF_FAN_DIRECTION):
             features |= FanEntityFeature.DIRECTION
+
+        if self.has_config(CONF_FAN_PRESET_MODE) and self._preset_modes_friendly:
+            features |= FanEntityFeature.PRESET_MODE
 
         features |= FanEntityFeature.TURN_OFF
         features |= FanEntityFeature.TURN_ON
@@ -240,6 +302,17 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
                 )
 
         _LOGGER.debug("Fan current_percentage: %s", self._percentage)
+
+        if self.has_config(CONF_FAN_PRESET_MODE):
+            preset_value = self.dps_conf(CONF_FAN_PRESET_MODE)
+            self._preset_mode = None
+            if preset_value is not None:
+                for idx, raw_mode in enumerate(self._preset_modes):
+                    if str(raw_mode) == str(preset_value):
+                        self._preset_mode = self._preset_modes_friendly[idx]
+                        break
+                else:
+                    self._preset_mode = str(preset_value)
 
         if self.has_config(CONF_FAN_OSCILLATING_CONTROL):
             self._oscillating = self.dps_conf(CONF_FAN_OSCILLATING_CONTROL)

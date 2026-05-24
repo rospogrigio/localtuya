@@ -82,6 +82,9 @@ CONF_FAN_DIRECTION = "fan_direction"
 CONF_FAN_DIRECTION_FWD = "fan_direction_forward"
 CONF_FAN_DIRECTION_REV = "fan_direction_reverse"
 CONF_FAN_DPS_TYPE = "fan_dps_type"
+CONF_FAN_PRESET_MODE = "fan_preset_mode"
+CONF_FAN_PRESET_MODES = "fan_preset_modes"
+CONF_FAN_PRESET_MODES_FRIENDLY = "fan_preset_modes_friendly"
 
 # sensor
 CONF_SCALING = "scaling"
