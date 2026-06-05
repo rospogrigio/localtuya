@@ -25,12 +25,18 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 
+from .auto_sync import (
+    auto_import_summary,
+    async_auto_import_devices,
+    dps_string_list,
+)
 from .cloud_api import TuyaCloudApi
 from .common import pytuya
 from .const import (
     ATTR_UPDATED_AT,
     CONF_ACTION,
     CONF_ADD_DEVICE,
+    CONF_AUTO_IMPORT_DEVICES,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
     CONF_ENABLE_DEBUG,
@@ -38,6 +44,7 @@ from .const import (
     CONF_MANUAL_DPS,
     CONF_MODEL,
     CONF_NO_CLOUD,
+    CONF_PRODUCT_KEY,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
@@ -45,7 +52,6 @@ from .const import (
     CONF_USER_ID,
     CONF_ENABLE_ADD_ENTITIES,
     DATA_CLOUD,
-    DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
 )
@@ -60,9 +66,9 @@ NO_ADDITIONAL_ENTITIES = "no_additional_entities"
 SELECTED_DEVICE = "selected_device"
 
 CUSTOM_DEVICE = "..."
-
 CONF_ACTIONS = {
     CONF_ADD_DEVICE: "Add a new device",
+    CONF_AUTO_IMPORT_DEVICES: "Auto-discover and import devices",
     CONF_EDIT_DEVICE: "Edit a device",
     CONF_SETUP_CLOUD: "Reconfigure Cloud API account",
 }
@@ -172,11 +178,6 @@ def schema_defaults(schema, dps_list=None, **defaults):
     return copy
 
 
-def dps_string_list(dps_data):
-    """Return list of friendly DPS values."""
-    return [f"{id} (value: {value})" for id, value in dps_data.items()]
-
-
 def gen_dps_strings():
     """Generate list of DPS values."""
     return [f"{dp} (value: ?)" for dp in range(1, 256)]
@@ -231,8 +232,8 @@ def config_schema():
     )
 
 
-async def validate_input(hass: core.HomeAssistant, data):
-    """Validate the user input allows us to connect."""
+async def detect_available_dps(hass: core.HomeAssistant, data):
+    """Connect to a local Tuya device and return detected DPS values."""
     detected_dps = {}
 
     interface = None
@@ -299,6 +300,12 @@ async def validate_input(hass: core.HomeAssistant, data):
 
     _LOGGER.debug("Total DPS: %s", detected_dps)
 
+    return detected_dps
+
+
+async def validate_input(hass: core.HomeAssistant, data):
+    """Validate the user input allows us to connect."""
+    detected_dps = await detect_available_dps(hass, data)
     return dps_string_list(detected_dps)
 
 
@@ -410,6 +417,8 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             if user_input.get(CONF_ACTION) == CONF_SETUP_CLOUD:
                 return await self.async_step_cloud_setup()
+            if user_input.get(CONF_ACTION) == CONF_AUTO_IMPORT_DEVICES:
+                return await self.async_step_auto_import_devices()
             if user_input.get(CONF_ACTION) == CONF_ADD_DEVICE:
                 return await self.async_step_add_device()
             if user_input.get(CONF_ACTION) == CONF_EDIT_DEVICE:
@@ -513,6 +522,54 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             ),
             errors=errors,
         )
+
+    async def async_step_auto_import_devices(self, user_input=None):
+        """Automatically import supported devices from Tuya Cloud metadata."""
+        if self.config_entry.data.get(CONF_NO_CLOUD):
+            return self.async_abort(
+                reason="auto_import_result",
+                description_placeholders={
+                    "summary": "Cloud API is not configured; no devices were imported."
+                },
+            )
+
+        cloud_api, error = await self._async_get_cloud_api()
+        if error:
+            return self.async_abort(
+                reason="auto_import_result",
+                description_placeholders={
+                    "summary": f"Cloud API connection failed; no devices were imported. {error}"
+                },
+            )
+
+        result = await async_auto_import_devices(
+            self.hass,
+            self.config_entry,
+            cloud_api,
+            remove_missing=True,
+            detect_available_dps=detect_available_dps,
+            cannot_connect=CannotConnect,
+            invalid_auth=InvalidAuth,
+            empty_dps=EmptyDpsList,
+        )
+        summary = auto_import_summary(result)
+        return self.async_abort(
+            reason="auto_import_result",
+            description_placeholders={"summary": summary},
+        )
+
+    async def _async_get_cloud_api(self):
+        """Return a cloud API client with a populated device list."""
+        cloud_api = self.hass.data.get(DOMAIN, {}).get(DATA_CLOUD)
+        if cloud_api and cloud_api.device_list:
+            return cloud_api, None
+
+        cloud_api, res = await attempt_cloud_connection(self.hass, self.config_entry.data)
+        if res:
+            return None, res["msg"]
+
+        self.hass.data.setdefault(DOMAIN, {})[DATA_CLOUD] = cloud_api
+        return cloud_api, None
 
     async def async_step_edit_device(self, user_input=None):
         """Handle editing a device."""

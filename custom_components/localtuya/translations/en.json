@@ -34,6 +34,7 @@
         "abort": {
             "already_configured": "Device has already been configured.",
             "device_success": "Device {dev_name} successfully {action}.",
+            "auto_import_result": "{summary}",
             "no_entities": "Cannot remove all entities from a device.\nIf you want to delete a device, enter it in the Devices menu, click the 3 dots in the 'Device info' frame, and press the Delete button."
         },
         "error": {
@@ -57,6 +58,7 @@
                 "description": "Please select the desired action.",
                 "data": {
                     "add_device": "Add a new device",
+                    "auto_import_devices": "Auto-discover and import devices",
                     "edit_device": "Edit a device",
                     "setup_cloud": "Reconfigure Cloud API account"
                 }
@@ -132,6 +134,7 @@
                     "current_position_dp": "Current Position (for *position* mode only)",
                     "set_position_dp": "Set Position (for *position* mode only)",
                     "position_inverted": "Invert 0-100 position (for *position* mode only)",
+                    "direction_inverted": "Invert open and close commands",
                     "span_time": "Full opening time, in secs. (for *timed* mode only)",
                     "unit_of_measurement": "Unit of Measurement",
                     "device_class": "Device Class",

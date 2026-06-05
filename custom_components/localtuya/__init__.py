@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import time
+from collections.abc import Mapping
 from datetime import timedelta
 
 import homeassistant.helpers.config_validation as cv
@@ -30,11 +31,20 @@ from homeassistant.helpers.service import async_register_admin_service
 
 from .cloud_api import TuyaCloudApi
 from .common import TuyaDevice, async_config_entry_by_device_id
-from .config_flow import ENTRIES_VERSION, config_schema
+from .config_flow import (
+    ENTRIES_VERSION,
+    config_schema,
+    CannotConnect,
+    EmptyDpsList,
+    InvalidAuth,
+)
+from .auto_sync import async_auto_import_devices
 from .const import (
     ATTR_UPDATED_AT,
+    CONF_LOCAL_KEY,
     CONF_NO_CLOUD,
     CONF_PRODUCT_KEY,
+    CONF_PRODUCT_NAME,
     CONF_USER_ID,
     DATA_CLOUD,
     DATA_DISCOVERY,
@@ -46,8 +56,10 @@ from .discovery import TuyaDiscovery
 _LOGGER = logging.getLogger(__name__)
 
 UNSUB_LISTENER = "unsub_listener"
+ENTRY_DATA_SNAPSHOT = "entry_data_snapshot"
 
 RECONNECT_INTERVAL = timedelta(seconds=60)
+AUTO_SYNC_INTERVAL = timedelta(hours=1)
 
 CONFIG_SCHEMA = config_schema()
 
@@ -82,7 +94,21 @@ async def async_setup(hass: HomeAssistant, config: dict):
             for entry in current_entries
         ]
 
-        await asyncio.gather(*reload_tasks)
+        results = await asyncio.gather(*reload_tasks, return_exceptions=True)
+        if any(isinstance(result, Exception) for result in results):
+            _LOGGER.warning(
+                "Config entry reload failed; forcing LocalTuya runtime reconnect"
+            )
+            await _async_force_reconnect_devices()
+
+    async def _async_force_reconnect_devices():
+        """Force all runtime devices to reconnect without unloading entities."""
+        reconnect_tasks = [
+            device.async_reconnect()
+            for device in list(hass.data[DOMAIN][TUYA_DEVICES].values())
+        ]
+        if reconnect_tasks:
+            await asyncio.gather(*reconnect_tasks)
 
     async def _handle_set_dp(event):
         """Handle set_dp service call."""
@@ -100,7 +126,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
         """Update address of device if it has changed."""
         device_ip = device["ip"]
         device_id = device["gwId"]
-        product_key = device["productKey"]
+        product_key = device.get("productKey")
 
         # If device is not in cache, check if a config entry exists
         entry = async_config_entry_by_device_id(hass, device_id)
@@ -119,7 +145,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
         dev_entry = entry.data[CONF_DEVICES][device_id]
 
-        new_data = entry.data.copy()
+        new_data = _copy_config_data(entry.data)
         updated = False
 
         if device_cache[device_id] != device_ip:
@@ -127,28 +153,35 @@ async def async_setup(hass: HomeAssistant, config: dict):
             new_data[CONF_DEVICES][device_id][CONF_HOST] = device_ip
             device_cache[device_id] = device_ip
 
-        if dev_entry.get(CONF_PRODUCT_KEY) != product_key:
+        if product_key and dev_entry.get(CONF_PRODUCT_KEY) != product_key:
             updated = True
             new_data[CONF_DEVICES][device_id][CONF_PRODUCT_KEY] = product_key
 
+        runtime_device = hass.data[DOMAIN][TUYA_DEVICES].get(device_id)
+
         # Update settings if something changed, otherwise try to connect. Updating
-        # settings triggers a reload of the config entry, which tears down the device
-        # so no need to connect in that case.
+        # settings now applies runtime-safe fields in-place so IP churn does not
+        # require a full config reload before the live object can recover.
         if updated:
             _LOGGER.debug(
                 "Updating keys for device %s: %s %s", device_id, device_ip, product_key
             )
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(entry, data=new_data)
+            if runtime_device:
+                runtime_device.update_config(new_data[CONF_DEVICES][device_id])
+                if not runtime_device.connected:
+                    runtime_device.async_connect(force=True)
 
         elif device_id in hass.data[DOMAIN][TUYA_DEVICES]:
             _LOGGER.debug("Device %s found with IP %s", device_id, device_ip)
 
-        device = hass.data[DOMAIN][TUYA_DEVICES].get(device_id)
-        if not device:
-            _LOGGER.warning(f"Could not find device for device_id {device_id}")
-        elif not device.connected:
-            device.async_connect()
+        if not runtime_device:
+            _LOGGER.debug(
+                "Discovered device %s before runtime device was ready", device_id
+            )
+        elif not runtime_device.connected:
+            runtime_device.async_connect(force=True)
 
 
     def _shutdown(event):
@@ -271,6 +304,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
         hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
+    await async_remove_orphan_entities(hass, entry)
+
     # Setup all platforms at once, letting HA handling each platform and avoiding
     # potential integration restarts while elements are still initialising.
     await hass.config_entries.async_forward_entry_setups(entry, platforms)
@@ -283,8 +318,60 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.async_create_task(setup_entities(entry.data[CONF_DEVICES].keys()))
 
+    async def _async_cloud_auto_sync(now):
+        if entry.data.get(CONF_NO_CLOUD):
+            return
+        res = await tuya_api.async_get_devices_list()
+        if res != "ok" and ("1010" in res or "token invalid" in res.lower()):
+            token_res = await tuya_api.async_get_access_token()
+            if token_res == "ok":
+                res = await tuya_api.async_get_devices_list()
+        if res != "ok":
+            _LOGGER.warning("Cloud auto-sync skipped: %s", res)
+            return
+        try:
+            sync_result = await async_auto_import_devices(
+                hass,
+                entry,
+                tuya_api,
+                remove_missing=False,
+                detect_available_dps=None,
+                cannot_connect=CannotConnect,
+                invalid_auth=InvalidAuth,
+                empty_dps=EmptyDpsList,
+            )
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("Cloud auto-sync failed")
+            return
+        if sync_result["imported"] or sync_result["updated"]:
+            _LOGGER.info(
+                "Cloud auto-sync imported %d device(s), updated %d device(s), skipped %d.",
+                len(sync_result["imported"]),
+                len(sync_result["updated"]),
+                len(sync_result["skipped"]),
+            )
+            await hass.config_entries.async_reload(entry.entry_id)
+
+    async def _async_initial_cloud_auto_sync():
+        """Let HA finish setup before running cloud import/update work."""
+        await asyncio.sleep(30)
+        await _async_cloud_auto_sync(None)
+
+    unsub_auto_sync = async_track_time_interval(
+        hass, _async_cloud_auto_sync, AUTO_SYNC_INTERVAL
+    )
+
+    initial_auto_sync_task = None
+    if not no_cloud:
+        initial_auto_sync_task = hass.async_create_task(_async_initial_cloud_auto_sync())
+
     unsub_listener = entry.add_update_listener(update_listener)
-    hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
+    hass.data[DOMAIN][entry.entry_id] = {
+        UNSUB_LISTENER: unsub_listener,
+        "unsub_auto_sync": unsub_auto_sync,
+        "initial_auto_sync_task": initial_auto_sync_task,
+        ENTRY_DATA_SNAPSHOT: _copy_config_data(entry.data),
+    }
 
     return True
 
@@ -306,10 +393,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
     )
 
-    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
-    for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
-        if device.connected:
-            await device.close()
+    entry_data = hass.data[DOMAIN][entry.entry_id]
+    entry_data[UNSUB_LISTENER]()
+    if entry_data.get("unsub_auto_sync"):
+        entry_data["unsub_auto_sync"]()
+    if entry_data.get("initial_auto_sync_task"):
+        entry_data["initial_auto_sync_task"].cancel()
+    for dev_id, device in list(hass.data[DOMAIN][TUYA_DEVICES].items()):
+        await device.close()
 
     if unload_ok:
         hass.data[DOMAIN][TUYA_DEVICES] = {}
@@ -319,7 +410,77 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def update_listener(hass, config_entry):
     """Update listener."""
+    entry_data = hass.data.get(DOMAIN, {}).get(config_entry.entry_id, {})
+    previous_data = entry_data.get(ENTRY_DATA_SNAPSHOT)
+    if previous_data is not None and not _entry_update_requires_reload(
+        previous_data, config_entry.data
+    ):
+        _LOGGER.debug(
+            "Applying runtime-safe LocalTuya config update without config reload"
+        )
+        _apply_runtime_device_config(hass, config_entry)
+        entry_data[ENTRY_DATA_SNAPSHOT] = _copy_config_data(config_entry.data)
+        return
+    entry_data[ENTRY_DATA_SNAPSHOT] = _copy_config_data(config_entry.data)
     await hass.config_entries.async_reload(config_entry.entry_id)
+
+
+def _entry_update_requires_reload(previous_data, current_data):
+    """Return whether a config update changes entity/platform setup."""
+    previous_devices = previous_data.get(CONF_DEVICES, {})
+    current_devices = current_data.get(CONF_DEVICES, {})
+    if set(previous_devices) != set(current_devices):
+        return True
+
+    for device_id, previous_device in previous_devices.items():
+        current_device = current_devices.get(device_id, {})
+        if _strip_runtime_device_fields(previous_device) != _strip_runtime_device_fields(
+            current_device
+        ):
+            return True
+
+    return False
+
+
+def _strip_runtime_device_fields(device):
+    """Remove fields that can be applied to a live TuyaDevice."""
+    stripped = _plain_copy(device)
+    for key in (
+        CONF_HOST,
+        CONF_LOCAL_KEY,
+        CONF_PRODUCT_KEY,
+        CONF_PRODUCT_NAME,
+    ):
+        stripped.pop(key, None)
+    return stripped
+
+
+def _apply_runtime_device_config(hass, config_entry):
+    """Apply live-device config changes that do not require entity reload."""
+    runtime_devices = hass.data.get(DOMAIN, {}).get(TUYA_DEVICES, {})
+    for device_id, dev_config in config_entry.data.get(CONF_DEVICES, {}).items():
+        runtime_device = runtime_devices.get(device_id)
+        if not runtime_device:
+            continue
+        changed = runtime_device.update_config(dev_config)
+        if changed and not runtime_device.connected:
+            runtime_device.async_connect(force=True)
+
+
+def _copy_config_data(data):
+    """Copy config-entry data into mutable plain containers."""
+    return _plain_copy(data)
+
+
+def _plain_copy(value):
+    """Copy Home Assistant config data without relying on deepcopy internals."""
+    if isinstance(value, Mapping):
+        return {key: _plain_copy(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_plain_copy(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_plain_copy(item) for item in value)
+    return value
 
 
 async def async_remove_config_entry_device(
@@ -361,18 +522,16 @@ async def async_remove_config_entry_device(
 
 async def async_remove_orphan_entities(hass, entry):
     """Remove entities associated with config entry that has been removed."""
-    return
     ent_reg = er.async_get(hass)
-    entities = {
-        ent.unique_id: ent.entity_id
-        for ent in er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+    configured_unique_ids = {
+        f"local_{dev_id}_{entity[CONF_ID]}"
+        for dev_id, device in entry.data[CONF_DEVICES].items()
+        for entity in device[CONF_ENTITIES]
     }
-    _LOGGER.info("ENTITIES ORPHAN %s", entities)
-    return
+    registered_entities = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
 
-    for entity in entry.data[CONF_ENTITIES]:
-        if entity[CONF_ID] in entities:
-            del entities[entity[CONF_ID]]
-
-    for entity_id in entities.values():
-        ent_reg.async_remove(entity_id)
+    for entity in registered_entities:
+        if entity.unique_id in configured_unique_ids:
+            continue
+        _LOGGER.info("Removing orphaned LocalTuya entity %s", entity.entity_id)
+        ent_reg.async_remove(entity.entity_id)
