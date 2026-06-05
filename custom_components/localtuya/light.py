@@ -15,6 +15,10 @@ from homeassistant.components.light import (
     LightEntityFeature,
     ColorMode,
 )
+try:
+    from homeassistant.components.light import ATTR_COLOR_TEMP_KELVIN
+except ImportError:
+    ATTR_COLOR_TEMP_KELVIN = "color_temp_kelvin"
 from homeassistant.const import CONF_BRIGHTNESS, CONF_COLOR_TEMP, CONF_SCENE
 
 from .common import LocalTuyaEntity, async_setup_entry
@@ -169,13 +173,17 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
         self._upper_brightness = self._config.get(
             CONF_BRIGHTNESS_UPPER, DEFAULT_UPPER_BRIGHTNESS
         )
+        self._min_kelvin = self._config.get(
+            CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN
+        )
+        self._max_kelvin = self._config.get(
+            CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN
+        )
+        if self._min_kelvin > self._max_kelvin:
+            self._min_kelvin, self._max_kelvin = self._max_kelvin, self._min_kelvin
         self._upper_color_temp = self._upper_brightness
-        self._max_mired = color_util.color_temperature_kelvin_to_mired(
-            self._config.get(CONF_COLOR_TEMP_MIN_KELVIN, DEFAULT_MIN_KELVIN)
-        )
-        self._min_mired = color_util.color_temperature_kelvin_to_mired(
-            self._config.get(CONF_COLOR_TEMP_MAX_KELVIN, DEFAULT_MAX_KELVIN)
-        )
+        self._max_mired = color_util.color_temperature_kelvin_to_mired(self._min_kelvin)
+        self._min_mired = color_util.color_temperature_kelvin_to_mired(self._max_kelvin)
         self._color_temp_reverse = self._config.get(
             CONF_COLOR_TEMP_REVERSE, DEFAULT_COLOR_TEMP_REVERSE
         )
@@ -226,20 +234,15 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def color_temp(self):
         """Return the color_temp of the light."""
-        if self.has_config(CONF_COLOR_TEMP) and self.is_white_mode:
-            color_temp_value = (
-                self._upper_color_temp - self._color_temp
-                if self._color_temp_reverse
-                else self._color_temp
-            )
-            return int(
-                self._max_mired
-                - (
-                    ((self._max_mired - self._min_mired) / self._upper_color_temp)
-                    * color_temp_value
-                )
-            )
-        return None
+        return self._tuya_color_temp_to_mired(self._color_temp)
+
+    @property
+    def color_temp_kelvin(self):
+        """Return the color temperature of the light in Kelvin."""
+        mired = self.color_temp
+        if mired is None:
+            return None
+        return color_util.color_temperature_mired_to_kelvin(mired)
 
     @property
     def min_mireds(self):
@@ -250,6 +253,16 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     def max_mireds(self):
         """Return color temperature max mireds."""
         return self._max_mired
+
+    @property
+    def min_color_temp_kelvin(self):
+        """Return minimum color temperature in Kelvin."""
+        return self._min_kelvin
+
+    @property
+    def max_color_temp_kelvin(self):
+        """Return maximum color temperature in Kelvin."""
+        return self._max_kelvin
 
     @property
     def effect(self):
@@ -348,6 +361,46 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             else self._modes.white
         )
 
+    def _tuya_color_temp_to_mired(self, color_temp):
+        """Convert a Tuya color-temperature DP value to HA mireds."""
+        if not self.has_config(CONF_COLOR_TEMP) or not self.is_white_mode:
+            return None
+        if color_temp is None or self._upper_color_temp <= 0:
+            return None
+
+        color_temp_value = int(color_temp)
+        color_temp_value = min(max(color_temp_value, 0), self._upper_color_temp)
+        if self._color_temp_reverse:
+            color_temp_value = self._upper_color_temp - color_temp_value
+
+        return int(
+            self._max_mired
+            - (
+                ((self._max_mired - self._min_mired) / self._upper_color_temp)
+                * color_temp_value
+            )
+        )
+
+    def _mired_to_tuya_color_temp(self, mired):
+        """Convert HA mireds to a Tuya color-temperature DP value."""
+        if self._upper_color_temp <= 0:
+            return None
+
+        mired = int(mired)
+        if mired < self._min_mired:
+            mired = self._min_mired
+        elif mired > self._max_mired:
+            mired = self._max_mired
+
+        color_temp = int(
+            self._upper_color_temp
+            - (self._upper_color_temp / (self._max_mired - self._min_mired))
+            * (mired - self._min_mired)
+        )
+        if self._color_temp_reverse:
+            color_temp = self._upper_color_temp - color_temp
+        return min(max(color_temp, 0), self._upper_color_temp)
+
     async def async_turn_on(self, **kwargs):
         """Turn on or control the light."""
         states = {}
@@ -378,9 +431,11 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 self._lower_brightness,
                 self._upper_brightness,
             )
-            if self.is_white_mode:
+            if self.is_white_mode and self.has_config(CONF_BRIGHTNESS):
                 states[self._config.get(CONF_BRIGHTNESS)] = brightness
-            else:
+            elif self.has_config(CONF_COLOR):
+                if self._hs is None:
+                    self._hs = [0, 0]
                 if self.__is_color_rgb_encoded():
                     rgb = color_util.color_hsv_to_RGB(
                         self._hs[0],
@@ -400,7 +455,10 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                         round(self._hs[0]), round(self._hs[1] * 10.0), brightness
                     )
                 states[self._config.get(CONF_COLOR)] = color
-                states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
+                if self.has_config(CONF_COLOR_MODE):
+                    states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
+            elif self.has_config(CONF_BRIGHTNESS):
+                states[self._config.get(CONF_BRIGHTNESS)] = brightness
 
         if ATTR_HS_COLOR in kwargs and ColorMode.HS in self.supported_color_modes:
             if brightness is None:
@@ -429,24 +487,25 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
 
+        if (
+            ATTR_COLOR_TEMP_KELVIN in kwargs
+            and ColorMode.COLOR_TEMP in self.supported_color_modes
+        ):
+            kwargs[ColorMode.COLOR_TEMP] = color_util.color_temperature_kelvin_to_mired(
+                int(kwargs[ATTR_COLOR_TEMP_KELVIN])
+            )
+
         if ColorMode.COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in self.supported_color_modes:
             if brightness is None:
                 brightness = self._brightness
             mired = int(kwargs[ColorMode.COLOR_TEMP])
-            if self._color_temp_reverse:
-                mired = self._max_mired - (mired - self._min_mired)
-            if mired < self._min_mired:
-                mired = self._min_mired
-            elif mired > self._max_mired:
-                mired = self._max_mired
-            color_temp = int(
-                self._upper_color_temp
-                - (self._upper_color_temp / (self._max_mired - self._min_mired))
-                * (mired - self._min_mired)
-            )
-            states[self._config.get(CONF_COLOR_MODE)] = MODE_WHITE
-            states[self._config.get(CONF_BRIGHTNESS)] = brightness
-            states[self._config.get(CONF_COLOR_TEMP)] = color_temp
+            color_temp = self._mired_to_tuya_color_temp(mired)
+            if self.has_config(CONF_COLOR_MODE):
+                states[self._config.get(CONF_COLOR_MODE)] = MODE_WHITE
+            if brightness is not None and self.has_config(CONF_BRIGHTNESS):
+                states[self._config.get(CONF_BRIGHTNESS)] = brightness
+            if color_temp is not None:
+                states[self._config.get(CONF_COLOR_TEMP)] = color_temp
         await self._device.set_dps(states)
 
     async def async_turn_off(self, **kwargs):
@@ -463,7 +522,10 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
             or self.has_config(CONF_BRIGHTNESS)
             or self.has_config(CONF_COLOR)
         ):
-            self._brightness = self.dps_conf(CONF_BRIGHTNESS)
+            if self.has_config(CONF_BRIGHTNESS):
+                self._brightness = self.dps_conf(CONF_BRIGHTNESS)
+            elif self._brightness is None:
+                self._brightness = self._upper_brightness
 
         if ColorMode.HS in self.supported_color_modes:
             color = self.dps_conf(CONF_COLOR)

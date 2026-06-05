@@ -15,6 +15,7 @@ from .common import LocalTuyaEntity, async_setup_entry
 from .const import (
     CONF_COMMANDS_SET,
     CONF_CURRENT_POSITION_DP,
+    CONF_DIRECTION_INVERTED,
     CONF_POSITION_INVERTED,
     CONF_POSITIONING_MODE,
     CONF_SET_POSITION_DP,
@@ -49,6 +50,7 @@ def flow_schema(dps):
         vol.Optional(CONF_CURRENT_POSITION_DP): vol.In(dps),
         vol.Optional(CONF_SET_POSITION_DP): vol.In(dps),
         vol.Optional(CONF_POSITION_INVERTED, default=False): bool,
+        vol.Optional(CONF_DIRECTION_INVERTED, default=False): bool,
         vol.Optional(CONF_SPAN_TIME, default=DEFAULT_SPAN_TIME): vol.All(
             vol.Coerce(float), vol.Range(min=1.0, max=300.0)
         ),
@@ -67,6 +69,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         self._open_cmd = commands_set.split("_")[0]
         self._close_cmd = commands_set.split("_")[1]
         self._stop_cmd = commands_set.split("_")[2]
+        self._direction_inverted = self._config.get(CONF_DIRECTION_INVERTED, False)
         self._timer_start = time.time()
         self._state = self._stop_cmd
         self._previous_state = self._state
@@ -91,14 +94,12 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
     @property
     def is_opening(self):
         """Return if cover is opening."""
-        state = self._state
-        return state == self._open_cmd
+        return self._state_is_opening(self._state)
 
     @property
     def is_closing(self):
         """Return if cover is closing."""
-        state = self._state
-        return state == self._close_cmd
+        return self._state_is_closing(self._state)
 
     @property
     def is_closed(self):
@@ -132,7 +133,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
         elif self._config[CONF_POSITIONING_MODE] == COVER_MODE_POSITION:
             converted_position = int(kwargs[ATTR_POSITION])
-            if self._config[CONF_POSITION_INVERTED]:
+            if self._config.get(CONF_POSITION_INVERTED, False):
                 converted_position = 100 - converted_position
 
             if 0 <= converted_position <= 100 and self.has_config(CONF_SET_POSITION_DP):
@@ -147,8 +148,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     async def async_open_cover(self, **kwargs):
         """Open the cover."""
-        self.debug("Launching command %s to cover ", self._open_cmd)
-        await self._device.set_dp(self._open_cmd, self._dp_id)
+        open_cmd = self._user_open_command()
+        self.debug("Launching command %s to cover ", open_cmd)
+        await self._device.set_dp(open_cmd, self._dp_id)
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_TIMED:
             # for timed positioning, stop the cover after a full opening timespan
             # instead of waiting the internal timeout
@@ -160,8 +162,9 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
 
     async def async_close_cover(self, **kwargs):
         """Close cover."""
-        self.debug("Launching command %s to cover ", self._close_cmd)
-        await self._device.set_dp(self._close_cmd, self._dp_id)
+        close_cmd = self._user_close_command()
+        self.debug("Launching command %s to cover ", close_cmd)
+        await self._device.set_dp(close_cmd, self._dp_id)
         if self._config[CONF_POSITIONING_MODE] == COVER_MODE_TIMED:
             # for timed positioning, stop the cover after a full opening timespan
             # instead of waiting the internal timeout
@@ -188,14 +191,16 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         """Device status was updated."""
         self._previous_state = self._state
         self._state = self.dps(self._dp_id)
-        if self._state.isupper():
+        if isinstance(self._state, str) and self._state.isupper():
             self._open_cmd = self._open_cmd.upper()
             self._close_cmd = self._close_cmd.upper()
             self._stop_cmd = self._stop_cmd.upper()
 
         if self.has_config(CONF_CURRENT_POSITION_DP):
             curr_pos = self.dps_conf(CONF_CURRENT_POSITION_DP)
-            if self._config[CONF_POSITION_INVERTED]:
+            if curr_pos is None:
+                return
+            if self._config.get(CONF_POSITION_INVERTED, False):
                 self._current_cover_position = 100 - curr_pos
             else:
                 self._current_cover_position = curr_pos
@@ -207,7 +212,7 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
                 # the state has changed, and the cover was moving
                 time_diff = time.time() - self._timer_start
                 pos_diff = round(time_diff / self._config[CONF_SPAN_TIME] * 100.0)
-                if self._previous_state == self._close_cmd:
+                if self._state_is_closing(self._previous_state):
                     pos_diff = -pos_diff
                 self._current_cover_position = min(
                     100, max(0, self._current_cover_position + pos_diff)
@@ -228,6 +233,22 @@ class LocaltuyaCover(LocalTuyaEntity, CoverEntity):
         # as last state will be used to restore the previous state
         if (self._state is not None) and (not self._device.is_connecting):
             self._last_state = self._state
+
+    def _user_open_command(self):
+        """Return the raw Tuya command that opens from HA's perspective."""
+        return self._close_cmd if self._direction_inverted else self._open_cmd
+
+    def _user_close_command(self):
+        """Return the raw Tuya command that closes from HA's perspective."""
+        return self._open_cmd if self._direction_inverted else self._close_cmd
+
+    def _state_is_opening(self, state):
+        """Return whether a raw Tuya state means user-facing opening."""
+        return state == self._user_open_command()
+
+    def _state_is_closing(self, state):
+        """Return whether a raw Tuya state means user-facing closing."""
+        return state == self._user_close_command()
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaCover, flow_schema)

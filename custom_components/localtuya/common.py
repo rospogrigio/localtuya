@@ -1,5 +1,6 @@
 """Code shared between all platforms."""
 import asyncio
+import contextlib
 import json.decoder
 import logging
 import time
@@ -40,8 +41,23 @@ from .const import (
     DOMAIN,
     TUYA_DEVICES,
 )
+from .host_resolver import (
+    HostResolution,
+    find_host_for_device_id,
+    mac_from_device_id,
+    scan_subnet_for_tuya_hosts,
+)
 
 _LOGGER = logging.getLogger(__name__)
+
+_STATUS_UNCHANGED = object()
+_RECONNECT_INITIAL_DELAY = 5
+_RECONNECT_MAX_DELAY = 300
+_HOST_RECOVERY_SCAN_FAILURES = 4
+_HOST_RECOVERY_SCAN_INTERVAL = 900
+_HOST_RECOVERY_PROBE_CONCURRENCY = 6
+_HOST_RECOVERY_PROBE_TIMEOUT = 3
+_CONNECT_FAILURE_WARNING_INTERVAL = 6 * 60 * 60
 
 
 def prepare_setup_entities(hass, config_entry, platform):
@@ -146,6 +162,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._is_closing = False
         self._connect_task = None
         self._disconnect_task = None
+        self._reconnect_handle = None
+        self._reconnect_delay = _RECONNECT_INITIAL_DELAY
+        self._connect_failures = 0
+        self._last_host_scan = 0
+        self._connect_failure_reason = None
+        self._connect_failure_warning_at = 0
+        self._connect_failure_suppressed = 0
         self._unsub_interval = None
         self._entities = []
         self._local_key = self._dev_config_entry[CONF_LOCAL_KEY]
@@ -177,9 +200,17 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return if connected to device."""
         return self._interface is not None
 
-    def async_connect(self):
+    def async_connect(self, force=False):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
+        if self._dev_config_entry.get(CONF_HOST) == "0.0.0.0":
+            self.debug("Skipping connection until a local host is discovered")
+            return
+        if force:
+            self._cancel_reconnect_timer()
+        elif self._reconnect_handle is not None:
+            self.debug("Skipping connection; reconnect already scheduled")
+            return
         if not self._is_closing and self._connect_task is None and not self._interface:
             self._connect_task = asyncio.create_task(self._make_connection())
 
@@ -198,14 +229,13 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             )
             self._interface.add_dps_to_request(self.dps_to_request)
         except Exception as ex:  # pylint: disable=broad-except
-            self.warning(
-                f"Failed to connect to {self._dev_config_entry[CONF_HOST]}: %s", ex
-            )
+            self._log_connect_failure(ex)
             if self._interface is not None:
                 await self._interface.close()
                 self._interface = None
 
         if self._interface is not None:
+            self._reset_connect_failure_log_state()
             try:
                 try:
                     self.debug("Retrieving initial state")
@@ -249,6 +279,9 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                     self._interface = None
 
         if self._interface is not None:
+            self._cancel_reconnect_timer()
+            self._reconnect_delay = _RECONNECT_INITIAL_DELAY
+            self._connect_failures = 0
             # Attempt to restore status for all entities that need to first set
             # the DPS value before the device will respond with status.
             for entity in self._entities:
@@ -279,7 +312,253 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
 
             self.info(f"Successfully connected to {self._dev_config_entry[CONF_HOST]}")
 
+        recovered_host = False
+        if self._interface is None:
+            self._connect_failures += 1
+            recovered_host = await self._async_recover_host_after_failure()
+
         self._connect_task = None
+        if self._interface is None:
+            if recovered_host:
+                self.async_connect(force=True)
+            else:
+                self._schedule_reconnect("connection failed")
+
+    def _log_connect_failure(self, ex):
+        """Log connection failures without flooding Home Assistant warnings."""
+        now = time.monotonic()
+        reason = str(ex)
+        should_warn = (
+            reason != self._connect_failure_reason
+            or now - self._connect_failure_warning_at
+            >= _CONNECT_FAILURE_WARNING_INTERVAL
+        )
+        host = self._dev_config_entry[CONF_HOST]
+
+        if should_warn:
+            suppressed = self._connect_failure_suppressed
+            self._connect_failure_reason = reason
+            self._connect_failure_warning_at = now
+            self._connect_failure_suppressed = 0
+
+            if suppressed:
+                self.warning(
+                    "Failed to connect to %s: %s; %d similar failures suppressed",
+                    host,
+                    ex,
+                    suppressed,
+                )
+            else:
+                self.warning("Failed to connect to %s: %s", host, ex)
+            return
+
+        self._connect_failure_suppressed += 1
+        self.debug("Failed to connect to %s: %s", host, ex)
+
+    def _reset_connect_failure_log_state(self):
+        """Reset repeated-failure log throttling after a successful connection."""
+        if self._connect_failure_suppressed:
+            self.info(
+                "Connection to %s recovered; %d similar failures were suppressed",
+                self._dev_config_entry[CONF_HOST],
+                self._connect_failure_suppressed,
+            )
+        self._connect_failure_reason = None
+        self._connect_failure_warning_at = 0
+        self._connect_failure_suppressed = 0
+
+    def update_config(self, dev_config_entry):
+        """Apply runtime-safe config updates without requiring a config reload."""
+        old_host = self._dev_config_entry.get(CONF_HOST)
+        old_local_key = self._local_key
+        self._dev_config_entry = dev_config_entry.copy()
+        self._local_key = self._dev_config_entry[CONF_LOCAL_KEY]
+
+        host_changed = old_host != self._dev_config_entry.get(CONF_HOST)
+        key_changed = old_local_key != self._local_key
+
+        if host_changed:
+            self.info(
+                "Updated runtime host from %s to %s",
+                old_host,
+                self._dev_config_entry.get(CONF_HOST),
+            )
+        if key_changed:
+            self.info("Updated runtime local key")
+
+        if host_changed or key_changed:
+            self._cancel_reconnect_timer()
+        if host_changed:
+            self._connect_failures = 0
+
+        return host_changed or key_changed
+
+    async def _async_recover_host_after_failure(self):
+        """Try to recover a stale host using device-id MAC evidence."""
+        now = time.monotonic()
+        include_scan = (
+            self._connect_failures >= _HOST_RECOVERY_SCAN_FAILURES
+            and now - self._last_host_scan >= _HOST_RECOVERY_SCAN_INTERVAL
+        )
+        if include_scan:
+            self._last_host_scan = now
+
+        dev_id = self._dev_config_entry[CONF_DEVICE_ID]
+        current_host = self._dev_config_entry.get(CONF_HOST)
+        resolution = await self._hass.async_add_executor_job(
+            find_host_for_device_id,
+            dev_id,
+            current_host,
+            include_scan,
+        )
+        if resolution is None and include_scan:
+            resolution = await self._async_probe_lan_for_device_host(current_host)
+
+        if resolution is None or resolution.host == current_host:
+            return False
+
+        self.info(
+            "Recovered host %s for %s from %s via %s",
+            resolution.host,
+            resolution.mac,
+            current_host,
+            resolution.source,
+        )
+        self._update_host_config(resolution.host)
+        return True
+
+    async def _async_probe_lan_for_device_host(self, current_host):
+        """Find this device by probing Tuya LAN listeners with its credentials."""
+        candidate_hosts = await self._hass.async_add_executor_job(
+            scan_subnet_for_tuya_hosts,
+            current_host,
+        )
+        if not candidate_hosts:
+            return None
+
+        self.debug(
+            "Probing %d Tuya LAN hosts for stale host recovery",
+            len(candidate_hosts),
+        )
+
+        semaphore = asyncio.Semaphore(_HOST_RECOVERY_PROBE_CONCURRENCY)
+
+        async def _probe(host):
+            async with semaphore:
+                if await self._async_probe_host_for_device(host):
+                    return host
+            return None
+
+        tasks = [asyncio.create_task(_probe(host)) for host in candidate_hosts]
+        try:
+            for task in asyncio.as_completed(tasks):
+                host = await task
+                if host:
+                    for pending in tasks:
+                        if pending is not task:
+                            pending.cancel()
+                    return HostResolution(
+                        host,
+                        mac_from_device_id(self._dev_config_entry[CONF_DEVICE_ID])
+                        or "",
+                        "local-key probe",
+                    )
+        finally:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        return None
+
+    async def _async_probe_host_for_device(self, host):
+        """Return whether a Tuya LAN host matches this device's credentials."""
+        interface = None
+        try:
+            interface = await pytuya.connect(
+                host,
+                self._dev_config_entry[CONF_DEVICE_ID],
+                self._local_key,
+                float(self._dev_config_entry[CONF_PROTOCOL_VERSION]),
+                self._dev_config_entry.get(CONF_ENABLE_DEBUG, False),
+                timeout=_HOST_RECOVERY_PROBE_TIMEOUT,
+            )
+            interface.add_dps_to_request(self.dps_to_request)
+            status = await asyncio.wait_for(
+                interface.status(),
+                timeout=_HOST_RECOVERY_PROBE_TIMEOUT,
+            )
+            return bool(status)
+        except Exception as ex:  # pylint: disable=broad-except
+            self.debug("Host probe at %s did not match this device: %s", host, ex)
+            return False
+        finally:
+            if interface is not None:
+                with contextlib.suppress(Exception):
+                    await interface.close()
+
+    def _update_host_config(self, host):
+        """Update the stored and runtime host for this device."""
+        dev_id = self._dev_config_entry[CONF_DEVICE_ID]
+        new_data = dict(self._config_entry.data)
+        devices = dict(new_data[CONF_DEVICES])
+        dev_config = dict(devices[dev_id])
+        dev_config[CONF_HOST] = host
+        devices[dev_id] = dev_config
+        new_data[CONF_DEVICES] = devices
+        new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+
+        self.update_config(dev_config)
+        self._hass.config_entries.async_update_entry(
+            self._config_entry,
+            data=new_data,
+        )
+
+    async def async_reconnect(self):
+        """Force a reconnect without unloading the Home Assistant entities."""
+        self._cancel_reconnect_timer()
+        if self._interface is not None:
+            interface = self._interface
+            with contextlib.suppress(Exception):
+                await interface.close()
+        self.async_connect(force=True)
+
+    def _cancel_reconnect_timer(self):
+        """Cancel any scheduled reconnect attempt."""
+        if self._reconnect_handle is not None:
+            self._reconnect_handle.cancel()
+            self._reconnect_handle = None
+
+    def _reconnect_timer_fired(self):
+        """Handle a scheduled reconnect attempt."""
+        self._reconnect_handle = None
+        self.async_connect(force=True)
+
+    def _schedule_reconnect(self, reason):
+        """Schedule a reconnect using exponential backoff."""
+        if (
+            self._is_closing
+            or self._interface is not None
+            or self._connect_task is not None
+            or self._reconnect_handle is not None
+        ):
+            return
+
+        host = self._dev_config_entry.get(CONF_HOST)
+        if host == "0.0.0.0":
+            self.debug("Skipping reconnect until a local host is discovered")
+            return
+
+        delay = self._reconnect_delay
+        self.info(
+            "Scheduling reconnect to %s in %s seconds after %s",
+            host,
+            delay,
+            reason,
+        )
+        self._reconnect_handle = self._hass.loop.call_later(
+            delay, self._reconnect_timer_fired
+        )
+        self._reconnect_delay = min(delay * 2, _RECONNECT_MAX_DELAY)
 
     async def update_local_key(self):
         """Retrieve updated local_key from Cloud API and update the config_entry."""
@@ -304,13 +583,22 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     async def close(self):
         """Close connection and stop re-connect loop."""
         self._is_closing = True
+        self._cancel_reconnect_timer()
         if self._connect_task is not None:
-            self._connect_task.cancel()
-            await self._connect_task
+            task = self._connect_task
+            self._connect_task = None
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
         if self._interface is not None:
             await self._interface.close()
+            self._interface = None
+        if self._unsub_interval is not None:
+            self._unsub_interval()
+            self._unsub_interval = None
         if self._disconnect_task is not None:
             self._disconnect_task()
+            self._disconnect_task = None
         self.info(
             "Closed connection with device %s.",
             self._dev_config_entry[CONF_FRIENDLY_NAME],
@@ -346,24 +634,36 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._status.update(status)
         self._dispatch_status()
 
-    def _dispatch_status(self):
+    def _dispatch_status(self, status=_STATUS_UNCHANGED):
         signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
-        async_dispatcher_send(self._hass, signal, self._status)
+        payload = self._status.copy() if status is _STATUS_UNCHANGED else status
+        self._hass.loop.call_soon_threadsafe(
+            async_dispatcher_send, self._hass, signal, payload
+        )
 
     @callback
     def disconnected(self):
         """Device disconnected."""
-        signal = f"localtuya_{self._dev_config_entry[CONF_DEVICE_ID]}"
-        async_dispatcher_send(self._hass, signal, None)
+        self._dispatch_status(None)
         if self._unsub_interval is not None:
             self._unsub_interval()
             self._unsub_interval = None
+        if self._disconnect_task is not None:
+            self._disconnect_task()
+            self._disconnect_task = None
         self._interface = None
 
-        if self._connect_task is not None:
+        try:
+            current_task = asyncio.current_task()
+        except RuntimeError:
+            current_task = None
+        if self._connect_task is not None and self._connect_task is not current_task:
             self._connect_task.cancel()
             self._connect_task = None
-        self.warning("Disconnected - waiting for discovery broadcast")
+        if self._is_closing:
+            return
+        self.warning("Disconnected - scheduling reconnect")
+        self._schedule_reconnect("disconnect")
 
 
 class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
@@ -379,6 +679,8 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         self._status = {}
         self._state = None
         self._last_state = None
+        self._logged_unknown_dps = set()
+        self._logged_unset_config = set()
 
         # Default value is available to be provided by Platform entities if required
         self._default_value = self._config.get(CONF_DEFAULT_VALUE)
@@ -483,7 +785,14 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
     def dps(self, dp_index):
         """Return cached value for DPS index."""
         value = self._status.get(str(dp_index))
-        if value is None:
+        if value is None and not self._status:
+            self.debug(
+                "Entity %s is waiting for DPS index %s",
+                self.entity_id,
+                dp_index,
+            )
+        elif value is None and dp_index not in self._logged_unknown_dps:
+            self._logged_unknown_dps.add(dp_index)
             self.warning(
                 "Entity %s is requesting unknown DPS index %s",
                 self.entity_id,
@@ -500,11 +809,14 @@ class LocalTuyaEntity(RestoreEntity, pytuya.ContextualLogger):
         """
         dp_index = self._config.get(conf_item)
         if dp_index is None:
-            self.warning(
-                "Entity %s is requesting unset index for option %s",
-                self.entity_id,
-                conf_item,
-            )
+            if conf_item not in self._logged_unset_config:
+                self._logged_unset_config.add(conf_item)
+                self.warning(
+                    "Entity %s is requesting unset index for option %s",
+                    self.entity_id,
+                    conf_item,
+                )
+            return None
         return self.dps(dp_index)
 
     def status_updated(self):

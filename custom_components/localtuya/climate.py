@@ -133,6 +133,10 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
+    },
+    "Low/High": {
+        FAN_LOW: "low",
+        FAN_HIGH: "high",
     }
 }
 HVAC_SWING_MODE_SETS = {
@@ -227,8 +231,8 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
             self._config.get(CONF_HVAC_MODE_SET), {}
         )
         self._conf_hvac_fan_mode_dp = self._config.get(CONF_HVAC_FAN_MODE_DP)
-        self._conf_hvac_fan_mode_set = HVAC_FAN_MODE_SETS.get(
-            self._config.get(CONF_HVAC_FAN_MODE_SET), {}
+        self._conf_hvac_fan_mode_set = _resolve_mode_set(
+            self._config.get(CONF_HVAC_FAN_MODE_SET), HVAC_FAN_MODE_SETS
         )
         self._conf_hvac_swing_mode_dp = self._config.get(CONF_HVAC_SWING_MODE_DP)
         self._conf_hvac_swing_mode_set = HVAC_SWING_MODE_SETS.get(
@@ -520,3 +524,10 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaClimate, flow_schema)
+
+
+def _resolve_mode_set(configured_value, presets):
+    """Return a preset or auto-generated mode mapping."""
+    if isinstance(configured_value, dict):
+        return configured_value
+    return presets.get(configured_value, {})
