@@ -96,6 +96,13 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         """Update the current value."""
         option_value = self._valid_options[self._display_options.index(option)]
         _LOGGER.debug("Sending Option: " + option + " -> " + option_value)
+        # Cast to int if possible so devices expecting integer DPs work correctly.
+        # Tuya devices often require integer values but valid_options are always
+        # stored as strings after splitting the semicolon-separated config value.
+        try:
+            option_value = int(option_value)
+        except ValueError:
+            pass
         await self._device.set_dp(option_value, self._dp_id)
 
     def status_updated(self):
@@ -107,8 +114,11 @@ class LocaltuyaSelect(LocalTuyaEntity, SelectEntity):
         # Check that received status update for this entity.
         if state is not None:
             try:
+                # Convert state to str before lookup so that integer values
+                # received from the device (e.g. 6) match string entries in
+                # _valid_options (e.g. "6") that result from the config split.
                 self._state_friendly = self._display_options[
-                    self._valid_options.index(state)
+                    self._valid_options.index(str(state))
                 ]
             except Exception:  # pylint: disable=broad-except
                 # Friendly value couldn't be mapped
