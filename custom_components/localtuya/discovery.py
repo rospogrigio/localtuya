@@ -60,13 +60,22 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         """Handle received broadcast message."""
-        data = data[20:-8]
+        payload = data[20:-8]
         try:
-            data = decrypt_udp(data)
+            decrypted = decrypt_udp(payload)
         except Exception:  # pylint: disable=broad-except
-            data = data.decode()
+            try:
+                decrypted = payload.decode()
+            except UnicodeDecodeError:
+                _LOGGER.debug("Ignoring undecodable broadcast from %s", addr)
+                return
 
-        decoded = json.loads(data)
+        try:
+            decoded = json.loads(decrypted)
+        except json.JSONDecodeError:
+            _LOGGER.debug("Ignoring non-JSON broadcast from %s", addr)
+            return
+
         self.device_found(decoded)
 
     def device_found(self, device):
