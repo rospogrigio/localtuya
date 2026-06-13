@@ -103,6 +103,13 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
+	
+    "auto/cold/dry/fan": {
+        HVACMode.AUTO: "auto",
+        HVACMode.COOL: "cool",
+        HVACMode.DRY: "dry",
+        HVACMode.FAN_ONLY: "fan",
+    }, 	
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -133,7 +140,14 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
-    }
+    },
+
+    "Low/Middle/High": {
+        FAN_LOW: "low",
+        FAN_MEDIUM: "mid",
+        FAN_HIGH: "high",
+    }	
+	
 }
 HVAC_SWING_MODE_SETS = {
     "True/False": {
@@ -142,16 +156,23 @@ HVAC_SWING_MODE_SETS = {
     }
 }
 PRESET_SETS = {
-    "Manual/Holiday/Program": {
+    "Manual/Holiday/Program/Sleep": {
         PRESET_AWAY: "Holiday",
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
+        "Sleep": "Sleep"  # Sleep mode as a preset option
     },
     "smart/holiday/hold": {
         PRESET_AWAY: "holiday",
         PRESET_HOME: "smart",
         PRESET_NONE: "hold",
     },
+	
+    "None/Sleep": {
+        "Aus": "Aus",  # Sleep mode as a preset option
+        "Sleep": "Sleep"  # Sleep mode as a preset option
+    },
+	
 }
 
 TEMPERATURE_CELSIUS = "celsius"
@@ -430,6 +451,12 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     async def async_set_preset_mode(self, preset_mode):
         """Set new target preset mode."""
+        if preset_mode == "Aus":  # Check for the Sleep mode
+            await self._device.set_dp(False, self._conf_preset_dp)  # Turn Sleep mode ON
+            return
+        if preset_mode == "Sleep":  # Check for the Sleep mode
+            await self._device.set_dp(True, self._conf_preset_dp)  # Turn Sleep mode ON
+            return
         if preset_mode == PRESET_ECO:
             await self._device.set_dp(self._conf_eco_value, self._conf_eco_dp)
             return
@@ -471,6 +498,10 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 and self.dps_conf(CONF_ECO_DP) == self._conf_eco_value
             ):
                 self._preset_mode = PRESET_ECO
+            elif self.dps_conf(CONF_PRESET_DP) == False:  # Check if Off mode is active
+                self._preset_mode = "Aus"  # Set preset mode to Off
+            elif self.dps_conf(CONF_PRESET_DP) == True:  # Check if Sleep mode is active
+                self._preset_mode = "Sleep"  # Set preset mode to Sleep
             else:
                 for preset, value in self._conf_preset_set.items():  # todo remove
                     if self.dps_conf(CONF_PRESET_DP) == value:
