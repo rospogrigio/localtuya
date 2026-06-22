@@ -109,6 +109,13 @@
                     "no_additional_entities": "Non aggiungere altre entity"
                 }
             },
+            "pick_device_preset": {
+                "title": "Configurazione rapida del dispositivo",
+                "description": "Scegli un preset dispositivo per creare automaticamente le entity note oppure continua con la configurazione manuale.",
+                "data": {
+                    "device_preset": "Preset dispositivo"
+                }
+            },
             "configure_entity": {
                 "title": "Configurare entity",
                 "description": "Compila i dettagli per {entity} con tipo `{platform}`.Tutte le impostazioni ad eccezione di `id` possono essere modificate dalla pagina delle opzioni in seguito.",

@@ -109,6 +109,13 @@
                     "no_additional_entities": "Não adicione mais entidades"
                 }
             },
+            "pick_device_preset": {
+                "title": "Configuração rápida do dispositivo",
+                "description": "Escolha um preset de dispositivo para criar automaticamente as entidades conhecidas ou continue com a configuração manual.",
+                "data": {
+                    "device_preset": "Preset do dispositivo"
+                }
+            },
             "configure_entity": {
                 "title": "Configurar entidade",
                 "description": "Por favor, preencha os detalhes de {entity} com o tipo `{platform}`. Todas as configurações, exceto `ID`, podem ser alteradas na página Opções posteriormente.",

@@ -132,6 +132,13 @@
                     "step_size": "Minimum increment between numbers"
                 }
             },
+            "pick_device_preset": {
+                "title": "Quick device setup",
+                "description": "Pick a device preset to create the known entities automatically, or continue with manual setup.",
+                "data": {
+                    "device_preset": "Device preset"
+                }
+            },
             "yaml_import": {
                 "title": "Not Supported",
                 "description": "Options cannot be edited when configured via YAML."

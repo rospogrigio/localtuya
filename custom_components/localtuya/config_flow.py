@@ -11,6 +11,7 @@ from homeassistant import config_entries, core, exceptions
 from homeassistant.const import (
     CONF_CLIENT_ID,
     CONF_CLIENT_SECRET,
+    CONF_DEVICE_CLASS,
     CONF_DEVICE_ID,
     CONF_DEVICES,
     CONF_ENTITIES,
@@ -21,7 +22,9 @@ from homeassistant.const import (
     CONF_PLATFORM,
     CONF_REGION,
     CONF_SCAN_INTERVAL,
+    CONF_UNIT_OF_MEASUREMENT,
     CONF_USERNAME,
+    UnitOfTemperature,
 )
 from homeassistant.core import callback
 
@@ -37,11 +40,23 @@ from .const import (
     CONF_LOCAL_KEY,
     CONF_MANUAL_DPS,
     CONF_MODEL,
+    CONF_FAN_DPS_TYPE,
+    CONF_FAN_PRESET_MODE,
+    CONF_FAN_PRESET_MODES,
+    CONF_FAN_PRESET_MODES_FRIENDLY,
+    CONF_FAN_SPEED_CONTROL,
+    CONF_FAN_SPEED_MAX,
+    CONF_FAN_SPEED_MIN,
+    CONF_MAX_VALUE,
+    CONF_MIN_VALUE,
     CONF_NO_CLOUD,
+    CONF_PASSIVE_ENTITY,
     CONF_PRODUCT_NAME,
     CONF_PROTOCOL_VERSION,
+    CONF_RESTORE_ON_RECONNECT,
     CONF_RESET_DPIDS,
     CONF_SETUP_CLOUD,
+    CONF_STEPSIZE_VALUE,
     CONF_USER_ID,
     CONF_ENABLE_ADD_ENTITIES,
     DATA_CLOUD,
@@ -60,6 +75,9 @@ NO_ADDITIONAL_ENTITIES = "no_additional_entities"
 SELECTED_DEVICE = "selected_device"
 
 CUSTOM_DEVICE = "..."
+DEVICE_PRESET = "device_preset"
+DEVICE_PRESET_MANUAL = "manual"
+DEVICE_PRESET_FUJI_FUNAI_ERW_150 = "fuji_funai_erw_150"
 
 CONF_ACTIONS = {
     CONF_ADD_DEVICE: "Add a new device",
@@ -104,6 +122,79 @@ DEVICE_SCHEMA = vol.Schema(
 PICK_ENTITY_SCHEMA = vol.Schema(
     {vol.Required(PLATFORM_TO_ADD, default="switch"): vol.In(PLATFORMS)}
 )
+
+DEVICE_PRESET_NAMES = {
+    DEVICE_PRESET_MANUAL: "Manual setup",
+    DEVICE_PRESET_FUJI_FUNAI_ERW_150: "Fuji Funai ERW-150",
+}
+
+DEVICE_PRESETS = {
+    DEVICE_PRESET_FUJI_FUNAI_ERW_150: {
+        "required_dps": {1, 2, 4, 5, 7, 9, 13, 23, 101, 104},
+        CONF_ENTITIES: [
+            {
+                CONF_ID: 1,
+                CONF_PLATFORM: "fan",
+                CONF_FRIENDLY_NAME: "Ventilation",
+                CONF_FAN_SPEED_CONTROL: 101,
+                CONF_FAN_SPEED_MIN: 1,
+                CONF_FAN_SPEED_MAX: 9,
+                CONF_FAN_DPS_TYPE: "int",
+                CONF_FAN_PRESET_MODE: 2,
+                CONF_FAN_PRESET_MODES: "auto;sleep;manual",
+                CONF_FAN_PRESET_MODES_FRIENDLY: "Auto;Sleep;Manual",
+            },
+            {
+                CONF_ID: 4,
+                CONF_PLATFORM: "switch",
+                CONF_FRIENDLY_NAME: "UV light",
+                CONF_RESTORE_ON_RECONNECT: False,
+                CONF_PASSIVE_ENTITY: False,
+            },
+            {
+                CONF_ID: 5,
+                CONF_PLATFORM: "switch",
+                CONF_FRIENDLY_NAME: "Anion",
+                CONF_RESTORE_ON_RECONNECT: False,
+                CONF_PASSIVE_ENTITY: False,
+            },
+            {
+                CONF_ID: 7,
+                CONF_PLATFORM: "sensor",
+                CONF_FRIENDLY_NAME: "TVOC",
+            },
+            {
+                CONF_ID: 9,
+                CONF_PLATFORM: "sensor",
+                CONF_FRIENDLY_NAME: "Indoor temperature",
+                CONF_UNIT_OF_MEASUREMENT: UnitOfTemperature.CELSIUS,
+                CONF_DEVICE_CLASS: "temperature",
+            },
+            {
+                CONF_ID: 13,
+                CONF_PLATFORM: "switch",
+                CONF_FRIENDLY_NAME: "Filter reset",
+                CONF_RESTORE_ON_RECONNECT: False,
+                CONF_PASSIVE_ENTITY: False,
+            },
+            {
+                CONF_ID: 23,
+                CONF_PLATFORM: "sensor",
+                CONF_FRIENDLY_NAME: "Air quality",
+            },
+            {
+                CONF_ID: 104,
+                CONF_PLATFORM: "number",
+                CONF_FRIENDLY_NAME: "Damper position",
+                CONF_MIN_VALUE: 1,
+                CONF_MAX_VALUE: 5,
+                CONF_STEPSIZE_VALUE: 1,
+                CONF_RESTORE_ON_RECONNECT: False,
+                CONF_PASSIVE_ENTITY: False,
+            },
+        ],
+    },
+}
 
 
 def devices_schema(discovered_devices, cloud_devices_list, add_custom_device=True):
@@ -175,6 +266,34 @@ def schema_defaults(schema, dps_list=None, **defaults):
 def dps_string_list(dps_data):
     """Return list of friendly DPS values."""
     return [f"{id} (value: {value})" for id, value in dps_data.items()]
+
+
+def dps_ids(dps_strings):
+    """Return detected DPS ids from friendly DPS strings."""
+    return {int(dps.split(" ")[0]) for dps in dps_strings}
+
+
+def available_device_presets(dps_strings):
+    """Return device presets compatible with the detected DPS list."""
+    available_dps = dps_ids(dps_strings)
+    presets = {DEVICE_PRESET_MANUAL: DEVICE_PRESET_NAMES[DEVICE_PRESET_MANUAL]}
+
+    for preset, config in DEVICE_PRESETS.items():
+        if config["required_dps"].issubset(available_dps):
+            presets[preset] = DEVICE_PRESET_NAMES[preset]
+
+    return presets
+
+
+def device_preset_schema(dps_strings):
+    """Create schema for quick device preset selection."""
+    return vol.Schema(
+        {
+            vol.Required(DEVICE_PRESET, default=DEVICE_PRESET_MANUAL): vol.In(
+                available_device_presets(dps_strings)
+            )
+        }
+    )
 
 
 def gen_dps_strings():
@@ -593,7 +712,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                         return await self.async_step_configure_entity()
 
                 self.dps_strings = await validate_input(self.hass, user_input)
-                return await self.async_step_pick_entity_type()
+                return await self.async_step_pick_device_preset()
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
@@ -648,6 +767,25 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=schema,
             errors=errors,
             description_placeholders=placeholders,
+        )
+
+    async def async_step_pick_device_preset(self, user_input=None):
+        """Handle selecting a quick device preset."""
+        if user_input is not None:
+            preset = user_input[DEVICE_PRESET]
+            if preset == DEVICE_PRESET_MANUAL:
+                return await self.async_step_pick_entity_type()
+
+            self.entities = [
+                entity.copy() for entity in DEVICE_PRESETS[preset][CONF_ENTITIES]
+            ]
+            return await self.async_step_pick_entity_type(
+                {NO_ADDITIONAL_ENTITIES: True}
+            )
+
+        return self.async_show_form(
+            step_id="pick_device_preset",
+            data_schema=device_preset_schema(self.dps_strings),
         )
 
     async def async_step_pick_entity_type(self, user_input=None):

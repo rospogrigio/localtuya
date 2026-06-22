@@ -118,6 +118,13 @@
                     "no_additional_entities": "Do not add any more entities"
                 }
             },
+            "pick_device_preset": {
+                "title": "Quick device setup",
+                "description": "Pick a device preset to create the known entities automatically, or continue with manual setup.",
+                "data": {
+                    "device_preset": "Device preset"
+                }
+            },
             "configure_entity": {
                 "title": "Configure entity",
                 "description": "Please fill out the details for {entity} with type `{platform}`. All settings except for `ID` can be changed from the Options page later.",
