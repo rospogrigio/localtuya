@@ -119,6 +119,24 @@ Once you configure the entities, the procedure is complete. You can now associat
 
 ![success](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/5-success.png)
 
+## Fan preset modes
+
+Fan entities can optionally use a dedicated preset DP in addition to percentage-based speeds. This is useful for devices that expose named modes such as `auto`, `sleep`, or `manual` instead of mapping everything to numeric speeds.
+
+When configuring a fan entity, set:
+
+* `Fan preset DP (optional)` to the datapoint that stores the preset value
+* `Fan preset raw values` to the device values separated by `;` (example: `auto;sleep;manual`)
+* `Fan preset display names` to the labels exposed in Home Assistant, also separated by `;` (example: `Auto;Sleep;Manual`)
+
+If preset display names are not provided, the raw preset values are used as-is.
+
+Example mapping for the Fuji Funai ERW-150 from issue #2080:
+
+* power DP: `1`
+* preset DP: `2` with raw values `auto;sleep;manual`
+* speed DP: `101` with range `1..9`
+
 
 # Migration from LocalTuya v.3.x.x
 
