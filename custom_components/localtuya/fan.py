@@ -39,6 +39,13 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+def _parse_semicolon_list(value):
+    """Parse a semicolon-delimited config value into a clean list."""
+    if value is None:
+        return []
+    return [item.strip() for item in str(value).split(";") if item.strip()]
+
+
 def flow_schema(dps):
     """Return schema used in config flow."""
     return {
@@ -96,23 +103,27 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
             _LOGGER.debug("Fan _use_ordered_list: %s", self._use_ordered_list)
 
         if self.has_config(CONF_FAN_PRESET_MODES):
-            self._preset_modes = [
-                mode.strip()
-                for mode in self._config.get(CONF_FAN_PRESET_MODES, "").split(";")
-                if mode.strip()
-            ]
+            self._preset_modes = _parse_semicolon_list(
+                self._config.get(CONF_FAN_PRESET_MODES)
+            )
+            self._preset_modes_friendly = _parse_semicolon_list(
+                self._config.get(CONF_FAN_PRESET_MODES_FRIENDLY)
+            )
 
-            display_modes = self._config.get(CONF_FAN_PRESET_MODES_FRIENDLY, "").strip()
-            if display_modes:
-                self._preset_modes_friendly = [
-                    mode.strip() for mode in display_modes.split(";")
-                ]
-            else:
+            if not self._preset_modes_friendly:
                 self._preset_modes_friendly = list(self._preset_modes)
-
-            if len(self._preset_modes) > len(self._preset_modes_friendly):
-                for i in range(len(self._preset_modes_friendly), len(self._preset_modes)):
-                    self._preset_modes_friendly.append(self._preset_modes[i])
+            elif len(self._preset_modes_friendly) < len(self._preset_modes):
+                self._preset_modes_friendly.extend(
+                    self._preset_modes[len(self._preset_modes_friendly) :]
+                )
+            elif len(self._preset_modes_friendly) > len(self._preset_modes):
+                _LOGGER.warning(
+                    "Fan preset labels exceed raw values for %s; truncating extras",
+                    self.name,
+                )
+                self._preset_modes_friendly = self._preset_modes_friendly[
+                    : len(self._preset_modes)
+                ]
 
     @property
     def oscillating(self):
@@ -213,6 +224,9 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
         _LOGGER.debug("Fan async_set_preset_mode: %s", preset_mode)
         if not self.has_config(CONF_FAN_PRESET_MODE):
             _LOGGER.error("Preset mode unsupported (no DP)")
+            return
+        if not self._preset_modes:
+            _LOGGER.error("Preset mode unsupported (no preset values configured)")
             return
         if preset_mode not in self._preset_modes_friendly:
             _LOGGER.error("Unsupported preset_mode: %s", preset_mode)

@@ -131,6 +131,12 @@ When configuring a fan entity, set:
 
 If preset display names are not provided, the raw preset values are used as-is.
 
+Example mapping for the Fuji Funai ERW-150 from issue #2080:
+
+* power DP: `1`
+* preset DP: `2` with raw values `auto;sleep;manual`
+* speed DP: `101` with range `1..9`
+
 
 # Migration from LocalTuya v.3.x.x
 
