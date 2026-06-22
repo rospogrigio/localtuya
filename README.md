@@ -131,7 +131,7 @@ When configuring a fan entity, set:
 
 If preset display names are not provided, the raw preset values are used as-is.
 
-When adding a Fuji Funai ERW-150, select the `Fuji Funai ERW-150` quick device preset to create the known entities automatically. The preset uses this mapping from issue #2080:
+Example mapping for the Fuji Funai ERW-150 from issue #2080:
 
 * power DP: `1`
 * preset DP: `2` with raw values `auto;sleep;manual`
