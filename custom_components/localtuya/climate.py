@@ -103,6 +103,12 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
+    "auto/cold/dry/fan": {
+        HVACMode.AUTO: "auto",
+        HVACMode.COOL: "cool",
+        HVACMode.DRY: "dry",
+        HVACMode.FAN_ONLY: "fan",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -133,7 +139,12 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
-    }
+    },
+    "Low/Middle/High": {
+        FAN_LOW: "low",
+        FAN_MEDIUM: "mid",
+        FAN_HIGH: "high",
+    },
 }
 HVAC_SWING_MODE_SETS = {
     "True/False": {
@@ -142,15 +153,20 @@ HVAC_SWING_MODE_SETS = {
     }
 }
 PRESET_SETS = {
-    "Manual/Holiday/Program": {
+    "Manual/Holiday/Program/Sleep": {
         PRESET_AWAY: "Holiday",
         PRESET_HOME: "Program",
         PRESET_NONE: "Manual",
+        "Sleep": "Sleep"  # Sleep mode as a preset option
     },
     "smart/holiday/hold": {
         PRESET_AWAY: "holiday",
         PRESET_HOME: "smart",
         PRESET_NONE: "hold",
+    },
+    "None/Sleep": {
+        PRESET_NONE: False,
+        "Sleep": True,
     },
 }
 
@@ -472,7 +488,7 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
             ):
                 self._preset_mode = PRESET_ECO
             else:
-                for preset, value in self._conf_preset_set.items():  # todo remove
+                for preset, value in self._conf_preset_set.items():
                     if self.dps_conf(CONF_PRESET_DP) == value:
                         self._preset_mode = preset
                         break
