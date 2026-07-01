@@ -454,6 +454,13 @@ class MessageDispatcher(ContextualLogger):
             )
             del self.listeners[seqno]
             raise
+        except asyncio.CancelledError:
+            self.debug(
+                "Command %d cancelled waiting for sequence number %d", cmd, seqno
+            )
+            if seqno in self.listeners:
+                del self.listeners[seqno]
+            raise
 
         return self.listeners.pop(seqno)
 
@@ -490,26 +497,30 @@ class MessageDispatcher(ContextualLogger):
             self.debug("Got heartbeat response")
             if self.HEARTBEAT_SEQNO in self.listeners:
                 sem = self.listeners[self.HEARTBEAT_SEQNO]
-                self.listeners[self.HEARTBEAT_SEQNO] = msg
-                sem.release()
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.HEARTBEAT_SEQNO] = msg
+                    sem.release()
         elif msg.cmd == UPDATEDPS:
             self.debug("Got normal updatedps response")
             if self.RESET_SEQNO in self.listeners:
                 sem = self.listeners[self.RESET_SEQNO]
-                self.listeners[self.RESET_SEQNO] = msg
-                sem.release()
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.RESET_SEQNO] = msg
+                    sem.release()
         elif msg.cmd == SESS_KEY_NEG_RESP:
             self.debug("Got key negotiation response")
             if self.SESS_KEY_SEQNO in self.listeners:
                 sem = self.listeners[self.SESS_KEY_SEQNO]
-                self.listeners[self.SESS_KEY_SEQNO] = msg
-                sem.release()
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.SESS_KEY_SEQNO] = msg
+                    sem.release()
         elif msg.cmd == STATUS:
             if self.RESET_SEQNO in self.listeners:
                 self.debug("Got reset status update")
                 sem = self.listeners[self.RESET_SEQNO]
-                self.listeners[self.RESET_SEQNO] = msg
-                sem.release()
+                if isinstance(sem, asyncio.Semaphore):
+                    self.listeners[self.RESET_SEQNO] = msg
+                    sem.release()
             else:
                 self.debug("Got status update")
                 self.listener(msg)
