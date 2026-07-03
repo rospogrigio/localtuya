@@ -207,9 +207,8 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
                 config_entry.data[CONF_DEVICE_ID]: config_entry.data.copy()
             }
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
-            config_entry.version = new_version
             hass.config_entries.async_update_entry(
-                config_entry, title=DOMAIN, data=new_data
+                config_entry, title=DOMAIN, data=new_data, version=new_version
             )
         else:
             _LOGGER.debug(
@@ -222,6 +221,14 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
             new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
             hass.config_entries.async_update_entry(stored_entries[0], data=new_data)
             await hass.config_entries.async_remove(config_entry.entry_id)
+    elif config_entry.version < new_version:
+        _LOGGER.debug(
+            "Updating config entry %s from version %s to %s",
+            config_entry.entry_id,
+            config_entry.version,
+            new_version,
+        )
+        hass.config_entries.async_update_entry(config_entry, version=new_version)
 
     _LOGGER.info(
         "Entry %s successfully migrated to version %s.",
