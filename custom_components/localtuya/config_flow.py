@@ -53,7 +53,7 @@ from .discovery import discover
 
 _LOGGER = logging.getLogger(__name__)
 
-ENTRIES_VERSION = 2
+ENTRIES_VERSION = 4
 
 PLATFORM_TO_ADD = "platform_to_add"
 NO_ADDITIONAL_ENTITIES = "no_additional_entities"
