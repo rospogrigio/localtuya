@@ -29,10 +29,21 @@ def calc_sign(msg, key):
 class TuyaCloudApi:
     """Class to send API calls."""
 
+    REGION_ENDPOINTS = {
+        "eu": "https://openapi.tuyaeu.com",
+        "us": "https://openapi.tuyaus.com",
+        "cn": "https://openapi.tuyacn.com",
+        "in": "https://openapi.tuyain.com",
+        "sg": "https://openapi-sg.iotbing.com",
+    }
+
     def __init__(self, hass, region_code, client_id, secret, user_id):
         """Initialize the class."""
         self._hass = hass
-        self._base_url = f"https://openapi.tuya{region_code}.com"
+        self._base_url = self.REGION_ENDPOINTS.get(
+            region_code,
+            f"https://openapi.tuya{region_code}.com",
+        )
         self._client_id = client_id
         self._secret = secret
         self._user_id = user_id
