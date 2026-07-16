@@ -103,6 +103,11 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
+    "BAC-002ALW 0/1/2": {
+        HVACMode.COOL: "0",
+        HVACMode.HEAT: "1",
+        HVACMode.FAN_ONLY: "2",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -133,7 +138,13 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
-    }
+    },
+    "BAC-002ALW 0/1/2/3": {
+        FAN_AUTO: "0",
+        FAN_HIGH: "1",
+        FAN_MEDIUM: "2",
+        FAN_LOW: "3",
+    },
 }
 HVAC_SWING_MODE_SETS = {
     "True/False": {
@@ -297,29 +308,32 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
 
     @property
     def hvac_action(self):
-        """Return the current running hvac operation if supported.
-
-        Need to be one of CURRENT_HVAC_*.
-        """
-        if self._config.get(CONF_HEURISTIC_ACTION, False):
-            if self._hvac_mode == HVACMode.HEAT:
-                if self._current_temperature < (
-                    self._target_temperature - self._precision
-                ):
-                    self._hvac_action = HVACAction.HEATING
-                if self._current_temperature == (
-                    self._target_temperature - self._precision
-                ):
-                    if self._hvac_action == HVACAction.HEATING:
-                        self._hvac_action = HVACAction.HEATING
-                    if self._hvac_action == HVACAction.IDLE:
-                        self._hvac_action = HVACAction.IDLE
-                if (
-                    self._current_temperature + self._precision
-                ) > self._target_temperature:
-                    self._hvac_action = HVACAction.IDLE
+        """Return the current HVAC action, inferred when configured."""
+        if not self._config.get(CONF_HEURISTIC_ACTION, False):
             return self._hvac_action
-        return self._hvac_action
+
+        if not self._state:
+            return HVACAction.OFF
+
+        if self._current_temperature is None or self._target_temperature is None:
+            return None
+
+        deadband = self._precision
+
+        if self._hvac_mode == HVACMode.HEAT:
+            if self._current_temperature < self._target_temperature - deadband:
+                return HVACAction.HEATING
+            return HVACAction.IDLE
+
+        if self._hvac_mode == HVACMode.COOL:
+            if self._current_temperature > self._target_temperature + deadband:
+                return HVACAction.COOLING
+            return HVACAction.IDLE
+
+        if self._hvac_mode == HVACMode.FAN_ONLY:
+            return HVACAction.FAN
+
+        return HVACAction.IDLE
 
     @property
     def preset_mode(self):
@@ -513,10 +527,12 @@ class LocaltuyaClimate(LocalTuyaEntity, ClimateEntity):
                 _LOGGER.debug("Unknown swing mode %s" % self.dps_conf(CONF_HVAC_SWING_MODE_DP))
                 self._swing_mode = SWING_OFF
 
-        # Update the current action
-        for action, value in self._conf_hvac_action_set.items():
-            if self.dps_conf(CONF_HVAC_ACTION_DP) == value:
-                self._hvac_action = action
+        # Update the current action only when an action DP is configured.
+        if self.has_config(CONF_HVAC_ACTION_DP):
+            for action, value in self._conf_hvac_action_set.items():
+                if self.dps_conf(CONF_HVAC_ACTION_DP) == value:
+                    self._hvac_action = action
+                    break
 
 
 async_setup_entry = partial(async_setup_entry, DOMAIN, LocaltuyaClimate, flow_schema)
