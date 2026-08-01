@@ -1,4 +1,5 @@
 """Platform to locally control Tuya-based climate devices."""
+
 import asyncio
 import logging
 from functools import partial
@@ -94,6 +95,12 @@ HVAC_MODE_SETS = {
         HVACMode.COOL: "cold",
         HVACMode.AUTO: "auto",
     },
+    "Cold/Dry/Wind/Hot": {
+        HVACMode.HEAT: "hot",
+        HVACMode.FAN_ONLY: "wind",
+        HVACMode.DRY: "wet",
+        HVACMode.COOL: "cold",
+    },
     "Cold/Dehumidify/Hot": {
         HVACMode.HEAT: "hot",
         HVACMode.DRY: "dehumidify",
@@ -133,7 +140,12 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
-    }
+    },
+    "Low/Med/High": {
+        FAN_LOW: "low",
+        FAN_MEDIUM: "med",
+        FAN_HIGH: "high",
+    },
 }
 HVAC_SWING_MODE_SETS = {
     "True/False": {
@@ -184,6 +196,8 @@ def flow_schema(dps):
         vol.Optional(CONF_HVAC_FAN_MODE_SET): vol.In(list(HVAC_FAN_MODE_SETS.keys())),
         vol.Optional(CONF_HVAC_ACTION_DP): vol.In(dps),
         vol.Optional(CONF_HVAC_ACTION_SET): vol.In(list(HVAC_ACTION_SETS.keys())),
+        vol.Optional(CONF_HVAC_SWING_MODE_DP): vol.In(dps),
+        vol.Optional(CONF_HVAC_SWING_MODE_SET): vol.In(list(HVAC_SWING_MODE_SETS.keys())),
         vol.Optional(CONF_ECO_DP): vol.In(dps),
         vol.Optional(CONF_ECO_VALUE): str,
         vol.Optional(CONF_PRESET_DP): vol.In(dps),
