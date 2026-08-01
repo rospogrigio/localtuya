@@ -103,6 +103,12 @@ HVAC_MODE_SETS = {
         HVACMode.HEAT: "1",
         HVACMode.AUTO: "0",
     },
+    "Cool/Heat/Dry/Fan (JWBR2S)": {
+        HVACMode.COOL: "1",
+        HVACMode.HEAT: "2",
+        HVACMode.DRY: "3",
+        HVACMode.FAN_ONLY: "5",
+    },
 }
 HVAC_ACTION_SETS = {
     "True/False": {
@@ -133,7 +139,11 @@ HVAC_FAN_MODE_SETS = {
         FAN_MEDIUM: "middle",
         FAN_HIGH: "high",
         FAN_TOP: "strong",
-    }
+    },
+    "Low/High (JWBR2S)": {
+        FAN_LOW: "3",
+        FAN_HIGH: "1",
+    },
 }
 HVAC_SWING_MODE_SETS = {
     "True/False": {
