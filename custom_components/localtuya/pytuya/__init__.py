@@ -479,6 +479,10 @@ class MessageDispatcher(ContextualLogger):
         """Dispatch a message to someone that is listening."""
         self.debug("Dispatching message CMD %r %s", msg.cmd, msg)
         if msg.seqno in self.listeners:
+            # A status report can also satisfy an outstanding command. Publish
+            # its datapoints before releasing the waiter so entities stay in sync.
+            if msg.cmd == STATUS:
+                self.listener(msg)
             # self.debug("Dispatching sequence number %d", msg.seqno)
             sem = self.listeners[msg.seqno]
             if isinstance(sem, asyncio.Semaphore):
