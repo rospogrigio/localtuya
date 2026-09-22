@@ -208,7 +208,10 @@ class LocaltuyaFan(LocalTuyaEntity, FanEntity):
     @property
     def speed_count(self) -> int:
         """Speed count for the fan."""
-        speed_count = int_states_in_range(self._speed_range)
+        if self._use_ordered_list:
+            speed_count = len(self._ordered_list)
+        else:
+            speed_count = int_states_in_range(self._speed_range)
         _LOGGER.debug("Fan speed_count: %s", speed_count)
         return speed_count
 
