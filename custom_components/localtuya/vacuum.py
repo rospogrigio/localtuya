@@ -119,8 +119,10 @@ class LocaltuyaVacuum(LocalTuyaEntity, StateVacuumEntity):
             supported_features = supported_features | VacuumEntityFeature.RETURN_HOME
         if self.has_config(CONF_FAN_SPEED_DP):
             supported_features = supported_features | VacuumEntityFeature.FAN_SPEED
-        if self.has_config(CONF_BATTERY_DP):
-            supported_features = supported_features | VacuumEntityFeature.BATTERY
+        # VacuumEntityFeature.BATTERY was removed from current Home Assistant
+        # Core - battery_level is reported through its own property below
+        # regardless of this flag, so there's nothing to OR in here for a
+        # configured CONF_BATTERY_DP.
         if self.has_config(CONF_LOCATE_DP):
             supported_features = supported_features | VacuumEntityFeature.LOCATE
 
