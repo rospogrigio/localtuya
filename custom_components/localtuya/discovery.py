@@ -62,11 +62,17 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
         """Handle received broadcast message."""
         data = data[20:-8]
         try:
-            data = decrypt_udp(data)
-        except Exception:  # pylint: disable=broad-except
-            data = data.decode()
+            try:
+                data = decrypt_udp(data)
+            except ValueError:
+                data = data.decode()
+            decoded = json.loads(data)
+            if not isinstance(decoded, dict):
+                raise ValueError("Tuya discovery payload is not an object")
+        except (ValueError, IndexError):
+            _LOGGER.debug("Ignoring invalid Tuya discovery datagram from %s", addr)
+            return
 
-        decoded = json.loads(data)
         self.device_found(decoded)
 
     def device_found(self, device):
