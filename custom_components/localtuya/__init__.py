@@ -309,7 +309,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
     for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
         if device.connected:
-            await device.close()
+            try:
+                await asyncio.wait_for(device.close(), timeout=5)
+            except asyncio.TimeoutError:
+                _LOGGER.warning(
+                    "Timed out closing device %s during unload after 5s, "
+                    "forcing unload to proceed anyway",
+                    dev_id,
+                )
 
     if unload_ok:
         hass.data[DOMAIN][TUYA_DEVICES] = {}
