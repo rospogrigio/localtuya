@@ -2,6 +2,7 @@
 import asyncio
 import json.decoder
 import logging
+import random
 import time
 from datetime import timedelta
 
@@ -134,6 +135,10 @@ def async_config_entry_by_device_id(hass, device_id):
 class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     """Cache wrapper for pytuya.TuyaInterface."""
 
+    _RECONNECT_BASE_SECONDS = 30
+    _RECONNECT_MAX_SECONDS = 30 * 60
+    _RECONNECT_JITTER_FACTOR = 0.2
+
     def __init__(self, hass, config_entry, dev_id):
         """Initialize the cache."""
         super().__init__()
@@ -149,6 +154,8 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         self._unsub_interval = None
         self._entities = []
         self._local_key = self._dev_config_entry[CONF_LOCAL_KEY]
+        self._connect_failures = 0
+        self._next_connect_time = 0.0
         self._default_reset_dpids = None
         if CONF_RESET_DPIDS in self._dev_config_entry:
             reset_ids_str = self._dev_config_entry[CONF_RESET_DPIDS].split(",")
@@ -177,9 +184,48 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
         """Return if connected to device."""
         return self._interface is not None
 
-    def async_connect(self):
+    def _record_connect_success(self):
+        """Reset reconnect backoff state after successful connect."""
+        if self._connect_failures > 0:
+            self.debug(
+                "Connected after %s failed attempt(s), clearing reconnect backoff",
+                self._connect_failures,
+            )
+        self._connect_failures = 0
+        self._next_connect_time = 0.0
+
+    def _record_connect_failure(self):
+        """Update reconnect backoff after a failed connect attempt."""
+        self._connect_failures += 1
+        base_delay = min(
+            self._RECONNECT_BASE_SECONDS * (2 ** (self._connect_failures - 1)),
+            self._RECONNECT_MAX_SECONDS,
+        )
+        jitter = base_delay * self._RECONNECT_JITTER_FACTOR
+        delay = max(1.0, base_delay + random.uniform(-jitter, jitter))
+        self._next_connect_time = time.monotonic() + delay
+        self.debug(
+            "Reconnect backoff scheduled in %.1fs after failed attempt #%s",
+            delay,
+            self._connect_failures,
+        )
+
+    def _can_attempt_connect(self):
+        """Return whether the current backoff window allows a connect attempt."""
+        return time.monotonic() >= self._next_connect_time
+
+    def async_connect(self, force=False):
         """Connect to device if not already connected."""
         # self.info("async_connect: %d %r %r", self._is_closing, self._connect_task, self._interface)
+        if (
+            not force
+            and not self._is_closing
+            and self._connect_task is None
+            and not self._interface
+            and not self._can_attempt_connect()
+        ):
+            return
+
         if not self._is_closing and self._connect_task is None and not self._interface:
             self._connect_task = asyncio.create_task(self._make_connection())
 
@@ -278,6 +324,11 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 )
 
             self.info(f"Successfully connected to {self._dev_config_entry[CONF_HOST]}")
+
+        if self._interface is not None:
+            self._record_connect_success()
+        elif not self._is_closing:
+            self._record_connect_failure()
 
         self._connect_task = None
 
