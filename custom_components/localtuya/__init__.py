@@ -47,7 +47,7 @@ _LOGGER = logging.getLogger(__name__)
 
 UNSUB_LISTENER = "unsub_listener"
 
-RECONNECT_INTERVAL = timedelta(seconds=60)
+RECONNECT_INTERVAL = timedelta(seconds=10)
 
 CONFIG_SCHEMA = config_schema()
 
@@ -148,7 +148,8 @@ async def async_setup(hass: HomeAssistant, config: dict):
         if not device:
             _LOGGER.warning(f"Could not find device for device_id {device_id}")
         elif not device.connected:
-            device.async_connect()
+            # Discovery means the device is likely online, so bypass backoff.
+            device.async_connect(force=True)
 
 
     def _shutdown(event):
