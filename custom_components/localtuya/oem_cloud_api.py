@@ -17,16 +17,18 @@ import uuid
 
 import requests
 
+from .const import CLOUD_PROVIDER_LEDVANCE, CLOUD_PROVIDER_SYLVANIA
+
 _LOGGER = logging.getLogger(__name__)
 
 # App credentials extracted from the respective Android apps.
 OEM_APPS = {
-    "ledvance": {
+    CLOUD_PROVIDER_LEDVANCE: {
         "name": "Ledvance",
         "client_id": "fx3fvkvusmw45d7jn8xh",
         "secret": "A_armptsqyfpxa4ftvtc739ardncett3uy_cgqx3ku34mh5qdesd7fcaru3gx7tyurr",
     },
-    "sylvania": {
+    CLOUD_PROVIDER_SYLVANIA: {
         "name": "Sylvania",
         "client_id": "creq75hn4vdg5qvrgryp",
         "secret": "A_ag4xcmp9rjttkj9yf9e8c3wfxry7yr44_wparh3scdv8dc7rrnuegaf9mqmn4snpk",

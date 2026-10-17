@@ -41,10 +41,12 @@ CONF_COUNTRY_CODE = "country_code"
 
 # cloud providers
 CLOUD_PROVIDER_TUYA = "tuya"
+CLOUD_PROVIDER_LEDVANCE = "ledvance"
+CLOUD_PROVIDER_SYLVANIA = "sylvania"
 CLOUD_PROVIDERS = {
     CLOUD_PROVIDER_TUYA: "Tuya IoT Platform",
-    "ledvance": "Ledvance app",
-    "sylvania": "Sylvania app",
+    CLOUD_PROVIDER_LEDVANCE: "Ledvance app",
+    CLOUD_PROVIDER_SYLVANIA: "Sylvania app",
 }
 
 
