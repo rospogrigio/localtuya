@@ -6,11 +6,18 @@ import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_DEVICES
+from homeassistant.const import (
+    CONF_CLIENT_ID,
+    CONF_CLIENT_SECRET,
+    CONF_DEVICES,
+    CONF_EMAIL,
+    CONF_PASSWORD,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
-from .const import CONF_LOCAL_KEY, CONF_USER_ID, DATA_CLOUD, DOMAIN
+from .common import get_cloud_api
+from .const import CONF_LOCAL_KEY, CONF_USER_ID
 
 CLOUD_DEVICES = "cloud_devices"
 DEVICE_CONFIG = "device_config"
@@ -25,16 +32,19 @@ async def async_get_config_entry_diagnostics(
     """Return diagnostics for a config entry."""
     data = {}
     data = dict(entry.data)
-    tuya_api = hass.data[DOMAIN][DATA_CLOUD]
+    tuya_api = get_cloud_api(hass, entry)
     # censoring private information on integration diagnostic data
-    for field in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
-        data[field] = f"{data[field][0:3]}...{data[field][-3:]}"
+    for field in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID, CONF_EMAIL]:
+        if data.get(field):
+            data[field] = f"{data[field][0:3]}...{data[field][-3:]}"
+    if data.get(CONF_PASSWORD):
+        data[CONF_PASSWORD] = "**REDACTED**"
     data[CONF_DEVICES] = copy.deepcopy(entry.data[CONF_DEVICES])
     for dev_id, dev in data[CONF_DEVICES].items():
         local_key = dev[CONF_LOCAL_KEY]
         local_key_obfuscated = f"{local_key[0:3]}...{local_key[-3:]}"
         dev[CONF_LOCAL_KEY] = local_key_obfuscated
-    data[CLOUD_DEVICES] = tuya_api.device_list
+    data[CLOUD_DEVICES] = copy.deepcopy(tuya_api.device_list if tuya_api else {})
     for dev_id, dev in data[CLOUD_DEVICES].items():
         local_key = data[CLOUD_DEVICES][dev_id][CONF_LOCAL_KEY]
         local_key_obfuscated = f"{local_key[0:3]}...{local_key[-3:]}"
@@ -53,8 +63,8 @@ async def async_get_device_diagnostics(
     # local_key = data[DEVICE_CONFIG][CONF_LOCAL_KEY]
     # data[DEVICE_CONFIG][CONF_LOCAL_KEY] = f"{local_key[0:3]}...{local_key[-3:]}"
 
-    tuya_api = hass.data[DOMAIN][DATA_CLOUD]
-    if dev_id in tuya_api.device_list:
+    tuya_api = get_cloud_api(hass, entry)
+    if tuya_api and dev_id in tuya_api.device_list:
         data[DEVICE_CLOUD_INFO] = tuya_api.device_list[dev_id]
         # NOT censoring private information on device diagnostic data
         # local_key = data[DEVICE_CLOUD_INFO][CONF_LOCAL_KEY]

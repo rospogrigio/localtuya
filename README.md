@@ -6,7 +6,7 @@ This custom integration updates device status via pushing updates instead of pol
 The integration also supports the Tuya IoT Cloud APIs, for the retrieval of info and of the local_keys of the devices. 
 
 
-**NOTE: The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, and when a local_key update is needed.**
+**NOTE: The Cloud API account configuration is not mandatory (LocalTuya can work also without it) but is strongly suggested for easy retrieval (and auto-update after re-pairing a device) of local_keys. Cloud API calls are performed only at startup, when adding or editing a device, and when a local_key update is needed. Besides the Tuya IoT Platform, Ledvance and Sylvania app accounts are supported. Local keys can also be resynced manually with the `localtuya.sync_local_keys` service.**
 
 
 The following Tuya device types are currently supported:
@@ -59,6 +59,10 @@ The Client ID and Secret can be found at `Cloud > Development > Overview` and th
 > **Note: as stated in the above link, if you already have an account and an IoT project, make sure that it was created after May 25, 2021 (due to changes introduced in the cloud for Tuya 2.0). Otherwise, you need to create a new project. See the following screenshot for where to check your project creation date:**
 
 ![project_date](https://github.com/rospogrigio/localtuya-homeassistant/blob/master/img/6-project_date.png)
+
+### Ledvance and Sylvania devices
+
+Devices paired with the Ledvance or Sylvania app cannot be linked to a Tuya IoT Platform project. For these, select "Ledvance app" or "Sylvania app" as Cloud API provider and fill in the email and password of your app account, together with the country calling code it was registered with (e.g. `49` for Germany, `1` for the USA). The Client ID, Secret and User ID fields are not needed in this case.
 
 After pressing the Submit button, the first setup is complete and the Integration will be added. 
 

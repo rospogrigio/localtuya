@@ -1,6 +1,5 @@
 """Code shared between all platforms."""
 import asyncio
-import json.decoder
 import logging
 import time
 from datetime import timedelta
@@ -32,6 +31,7 @@ from .const import (
     CONF_ENABLE_DEBUG,
     CONF_LOCAL_KEY,
     CONF_MODEL,
+    CONF_NO_CLOUD,
     CONF_PASSIVE_ENTITY,
     CONF_PROTOCOL_VERSION,
     CONF_RESET_DPIDS,
@@ -42,6 +42,11 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Minimum time between two automatic refreshes of the cloud device list
+CLOUD_REFRESH_INTERVAL = timedelta(minutes=5)
+DATA_CLOUD_LOCK = "cloud_lock"
+DATA_CLOUD_REFRESHED = "cloud_refreshed"
 
 
 def prepare_setup_entities(hass, config_entry, platform):
@@ -131,6 +136,87 @@ def async_config_entry_by_device_id(hass, device_id):
     return None
 
 
+def get_cloud_api(hass, entry):
+    """Return the cloud API client of a set up config entry, if any."""
+    return hass.data[DOMAIN].get(entry.entry_id, {}).get(DATA_CLOUD)
+
+
+async def async_refresh_cloud_devices(hass, entry, force=False):
+    """Refresh the list of devices retrieved from the cloud.
+
+    Unless forced, the list is refreshed at most once per CLOUD_REFRESH_INTERVAL
+    for each config entry, so that several devices failing to connect result in
+    a single request.
+    """
+    domain_data = hass.data[DOMAIN]
+    cloud_api = get_cloud_api(hass, entry)
+    if cloud_api is None or entry.data.get(CONF_NO_CLOUD, True):
+        return
+
+    # Kept outside of the entry data, so that they survive reloads
+    locks = domain_data.setdefault(DATA_CLOUD_LOCK, {})
+    refreshed = domain_data.setdefault(DATA_CLOUD_REFRESHED, {})
+    async with locks.setdefault(entry.entry_id, asyncio.Lock()):
+        last_refresh = refreshed.get(entry.entry_id)
+        if (
+            not force
+            and last_refresh is not None
+            and time.monotonic() - last_refresh < CLOUD_REFRESH_INTERVAL.total_seconds()
+        ):
+            return
+        refreshed[entry.entry_id] = time.monotonic()
+
+        try:
+            res = await cloud_api.async_get_devices_list()
+            if res != "ok":
+                # The access token may have expired: log in again and retry
+                _LOGGER.debug("Cloud API get_devices_list failed (%s), retrying", res)
+                res = await cloud_api.async_get_access_token()
+                if res == "ok":
+                    res = await cloud_api.async_get_devices_list()
+        except Exception as ex:  # pylint: disable=broad-except
+            res = repr(ex)
+        if res != "ok":
+            _LOGGER.warning("Failed to refresh cloud device list: %s", res)
+
+
+async def async_get_new_local_keys(hass, entry, force=False):
+    """Return the local_keys retrieved from the cloud that differ from the config.
+
+    Re-pairing a device generates a new local_key. The cloud device list is
+    refreshed if forced or if the cached one has no new keys.
+    """
+
+    def changed_keys():
+        cloud_api = get_cloud_api(hass, entry)
+        cloud_devs = cloud_api.device_list if cloud_api else {}
+        return {
+            dev_id: cloud_devs[dev_id][CONF_LOCAL_KEY]
+            for dev_id, dev in entry.data[CONF_DEVICES].items()
+            if cloud_devs.get(dev_id, {}).get(CONF_LOCAL_KEY)
+            not in (None, "", dev[CONF_LOCAL_KEY])
+        }
+
+    new_keys = {} if force else changed_keys()
+    if not new_keys:
+        await async_refresh_cloud_devices(hass, entry, force)
+        new_keys = changed_keys()
+    return new_keys
+
+
+@callback
+def async_save_local_keys(hass, entry, new_keys):
+    """Store new local_keys in the config entry, which reloads it."""
+    devices = dict(entry.data[CONF_DEVICES])
+    for dev_id, local_key in new_keys.items():
+        _LOGGER.info("Updating local_key for device %s from cloud", dev_id)
+        devices[dev_id] = {**devices[dev_id], CONF_LOCAL_KEY: local_key}
+
+    new_data = {**entry.data, CONF_DEVICES: devices}
+    new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
+    hass.config_entries.async_update_entry(entry, data=new_data)
+
+
 class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
     """Cache wrapper for pytuya.TuyaInterface."""
 
@@ -206,6 +292,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                 self._interface = None
 
         if self._interface is not None:
+            status = None
             try:
                 try:
                     self.debug("Retrieving initial state")
@@ -240,13 +327,24 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
                             await self._interface.close()
                             self._interface = None
 
-            except (UnicodeDecodeError, json.decoder.JSONDecodeError) as ex:
-                self.warning("Initial state update failed (%s), trying key update", ex)
-                await self.update_local_key()
-
+            except Exception as ex:  # pylint: disable=broad-except
+                self.error("Initial state update failed, giving up: %r", ex)
                 if self._interface is not None:
                     await self._interface.close()
                     self._interface = None
+
+            if not status:
+                # A re-paired device gets a new local_key: it still accepts
+                # connections, but no (decryptable) status is received.
+                new_keys = await async_get_new_local_keys(
+                    self._hass, self._config_entry
+                )
+                if new_keys:
+                    # Saving reloads the config entry: close the connection first
+                    if self._interface is not None:
+                        await self._interface.close()
+                        self._interface = None
+                    async_save_local_keys(self._hass, self._config_entry, new_keys)
 
         if self._interface is not None:
             # Attempt to restore status for all entities that need to first set
@@ -280,22 +378,6 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             self.info(f"Successfully connected to {self._dev_config_entry[CONF_HOST]}")
 
         self._connect_task = None
-
-    async def update_local_key(self):
-        """Retrieve updated local_key from Cloud API and update the config_entry."""
-        dev_id = self._dev_config_entry[CONF_DEVICE_ID]
-        await self._hass.data[DOMAIN][DATA_CLOUD].async_get_devices_list()
-        cloud_devs = self._hass.data[DOMAIN][DATA_CLOUD].device_list
-        if dev_id in cloud_devs:
-            self._local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
-            new_data = self._config_entry.data.copy()
-            new_data[CONF_DEVICES][dev_id][CONF_LOCAL_KEY] = self._local_key
-            new_data[ATTR_UPDATED_AT] = str(int(time.time() * 1000))
-            self._hass.config_entries.async_update_entry(
-                self._config_entry,
-                data=new_data,
-            )
-            self.info("local_key updated for device %s.", dev_id)
 
     async def _async_refresh(self, _now):
         if self._interface is not None:

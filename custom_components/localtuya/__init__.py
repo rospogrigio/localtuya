@@ -28,8 +28,13 @@ from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.service import async_register_admin_service
 
-from .cloud_api import TuyaCloudApi
-from .common import TuyaDevice, async_config_entry_by_device_id
+from .cloud_api import create_cloud_api
+from .common import (
+    TuyaDevice,
+    async_config_entry_by_device_id,
+    async_get_new_local_keys,
+    async_save_local_keys,
+)
 from .config_flow import ENTRIES_VERSION, config_schema
 from .const import (
     ATTR_UPDATED_AT,
@@ -63,6 +68,8 @@ SERVICE_SET_DP_SCHEMA = vol.Schema(
     }
 )
 
+SERVICE_SYNC_LOCAL_KEYS = "sync_local_keys"
+
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the LocalTuya integration component."""
@@ -95,6 +102,17 @@ async def async_setup(hass: HomeAssistant, config: dict):
             raise HomeAssistantError("not connected to device")
 
         await device.set_dp(event.data[CONF_VALUE], event.data[CONF_DP])
+
+    async def _handle_sync_local_keys(service):
+        """Handle sync_local_keys service call."""
+        for entry in hass.config_entries.async_entries(DOMAIN):
+            if entry.entry_id not in hass.data[DOMAIN]:
+                continue
+            new_keys = await async_get_new_local_keys(hass, entry, force=True)
+            if new_keys:
+                async_save_local_keys(hass, entry, new_keys)
+            else:
+                _LOGGER.info("All local_keys of %s are up to date", entry.title)
 
     def _device_discovered(device):
         """Update address of device if it has changed."""
@@ -174,6 +192,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
         DOMAIN, SERVICE_SET_DP, _handle_set_dp, schema=SERVICE_SET_DP_SCHEMA
     )
 
+    hass.services.async_register(
+        DOMAIN, SERVICE_SYNC_LOCAL_KEYS, _handle_sync_local_keys
+    )
+
     discovery = TuyaDiscovery(_device_discovered)
     try:
         await discovery.start()
@@ -242,11 +264,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
         return
 
-    region = entry.data[CONF_REGION]
-    client_id = entry.data[CONF_CLIENT_ID]
-    secret = entry.data[CONF_CLIENT_SECRET]
-    user_id = entry.data[CONF_USER_ID]
-    tuya_api = TuyaCloudApi(hass, region, client_id, secret, user_id)
+    tuya_api = create_cloud_api(hass, entry.data)
     no_cloud = True
     if CONF_NO_CLOUD in entry.data:
         no_cloud = entry.data.get(CONF_NO_CLOUD)
@@ -261,7 +279,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         else:
             _LOGGER.info("Cloud API connection succeeded.")
             res = await tuya_api.async_get_devices_list()
-    hass.data[DOMAIN][DATA_CLOUD] = tuya_api
+    hass.data[DOMAIN][entry.entry_id] = {DATA_CLOUD: tuya_api}
 
     platforms = set()
     for dev_id in entry.data[CONF_DEVICES].keys():
@@ -284,7 +302,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.async_create_task(setup_entities(entry.data[CONF_DEVICES].keys()))
 
     unsub_listener = entry.add_update_listener(update_listener)
-    hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
+    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER] = unsub_listener
 
     return True
 
@@ -306,7 +324,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
     )
 
-    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+    hass.data[DOMAIN].pop(entry.entry_id)[UNSUB_LISTENER]()
     for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
         if device.connected:
             await device.close()

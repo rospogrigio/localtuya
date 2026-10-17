@@ -1,6 +1,9 @@
 reload:
   description: Reload localtuya and reconnect to all devices.
 
+sync_local_keys:
+  description: Retrieve the local keys of all devices from the Cloud API account and update the ones that changed (e.g. after re-pairing a device).
+
 set_dp:
   description: Change the value of a datapoint (DP)
   fields:
