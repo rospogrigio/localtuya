@@ -279,7 +279,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         else:
             _LOGGER.info("Cloud API connection succeeded.")
             res = await tuya_api.async_get_devices_list()
-    hass.data[DOMAIN][DATA_CLOUD] = tuya_api
+    hass.data[DOMAIN][entry.entry_id] = {DATA_CLOUD: tuya_api}
 
     platforms = set()
     for dev_id in entry.data[CONF_DEVICES].keys():
@@ -302,7 +302,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.async_create_task(setup_entities(entry.data[CONF_DEVICES].keys()))
 
     unsub_listener = entry.add_update_listener(update_listener)
-    hass.data[DOMAIN][entry.entry_id] = {UNSUB_LISTENER: unsub_listener}
+    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER] = unsub_listener
 
     return True
 
@@ -324,7 +324,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
     )
 
-    hass.data[DOMAIN][entry.entry_id][UNSUB_LISTENER]()
+    hass.data[DOMAIN].pop(entry.entry_id)[UNSUB_LISTENER]()
     for dev_id, device in hass.data[DOMAIN][TUYA_DEVICES].items():
         if device.connected:
             await device.close()

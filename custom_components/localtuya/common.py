@@ -136,26 +136,35 @@ def async_config_entry_by_device_id(hass, device_id):
     return None
 
 
+def get_cloud_api(hass, entry):
+    """Return the cloud API client of a set up config entry, if any."""
+    return hass.data[DOMAIN].get(entry.entry_id, {}).get(DATA_CLOUD)
+
+
 async def async_refresh_cloud_devices(hass, entry, force=False):
     """Refresh the list of devices retrieved from the cloud.
 
-    Unless forced, the list is refreshed at most once per CLOUD_REFRESH_INTERVAL,
-    so that several devices failing to connect result in a single request.
+    Unless forced, the list is refreshed at most once per CLOUD_REFRESH_INTERVAL
+    for each config entry, so that several devices failing to connect result in
+    a single request.
     """
     domain_data = hass.data[DOMAIN]
-    cloud_api = domain_data.get(DATA_CLOUD)
+    cloud_api = get_cloud_api(hass, entry)
     if cloud_api is None or entry.data.get(CONF_NO_CLOUD, True):
         return
 
-    async with domain_data.setdefault(DATA_CLOUD_LOCK, asyncio.Lock()):
-        last_refresh = domain_data.get(DATA_CLOUD_REFRESHED)
+    # Kept outside of the entry data, so that they survive reloads
+    locks = domain_data.setdefault(DATA_CLOUD_LOCK, {})
+    refreshed = domain_data.setdefault(DATA_CLOUD_REFRESHED, {})
+    async with locks.setdefault(entry.entry_id, asyncio.Lock()):
+        last_refresh = refreshed.get(entry.entry_id)
         if (
             not force
             and last_refresh is not None
             and time.monotonic() - last_refresh < CLOUD_REFRESH_INTERVAL.total_seconds()
         ):
             return
-        domain_data[DATA_CLOUD_REFRESHED] = time.monotonic()
+        refreshed[entry.entry_id] = time.monotonic()
 
         try:
             res = await cloud_api.async_get_devices_list()
@@ -179,7 +188,7 @@ async def async_get_new_local_keys(hass, entry, force=False):
     """
 
     def changed_keys():
-        cloud_api = hass.data[DOMAIN].get(DATA_CLOUD)
+        cloud_api = get_cloud_api(hass, entry)
         cloud_devs = cloud_api.device_list if cloud_api else {}
         return {
             dev_id: cloud_devs[dev_id][CONF_LOCAL_KEY]

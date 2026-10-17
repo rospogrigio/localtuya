@@ -33,7 +33,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .cloud_api import create_cloud_api
-from .common import async_refresh_cloud_devices, pytuya
+from .common import async_refresh_cloud_devices, get_cloud_api, pytuya
 from .const import (
     ATTR_UPDATED_AT,
     CLOUD_PROVIDER_TUYA,
@@ -55,7 +55,6 @@ from .const import (
     CONF_SETUP_CLOUD,
     CONF_USER_ID,
     CONF_ENABLE_ADD_ENTITIES,
-    DATA_CLOUD,
     DATA_DISCOVERY,
     DOMAIN,
     PLATFORMS,
@@ -449,6 +448,12 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         self.discovered_devices = {}
         self.entities = []
 
+    @property
+    def cloud_devices(self):
+        """Return the devices retrieved from the cloud for this config entry."""
+        cloud_api = get_cloud_api(self.hass, self.config_entry)
+        return cloud_api.device_list if cloud_api else {}
+
     async def async_step_init(self, user_input=None):
         """Manage basic options."""
         # device_id = self.config_entry.data[CONF_DEVICE_ID]
@@ -562,7 +567,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="add_device",
             data_schema=devices_schema(
-                devices, self.hass.data[DOMAIN][DATA_CLOUD].device_list
+                devices, self.cloud_devices
             ),
             errors=errors,
         )
@@ -590,7 +595,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="edit_device",
             data_schema=devices_schema(
-                devices, self.hass.data[DOMAIN][DATA_CLOUD].device_list, False
+                devices, self.cloud_devices, False
             ),
             errors=errors,
         )
@@ -606,7 +611,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                     # self.device_data[CONF_PRODUCT_KEY] = self.devices[
                     #     self.selected_device
                     # ]["productKey"]
-                    cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+                    cloud_devs = self.cloud_devices
                     if dev_id in cloud_devs:
                         self.device_data[CONF_MODEL] = cloud_devs[dev_id].get(
                             CONF_PRODUCT_NAME
@@ -664,7 +669,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         if self.editing_device:
             # If selected device exists as a config entry, load config from it
             defaults = self.config_entry.data[CONF_DEVICES][dev_id].copy()
-            cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+            cloud_devs = self.cloud_devices
             placeholders = {"for_device": f" for device `{dev_id}`"}
             if dev_id in cloud_devs:
                 cloud_local_key = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
@@ -691,7 +696,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
                 defaults[CONF_HOST] = device.get("ip")
                 defaults[CONF_DEVICE_ID] = device.get("gwId")
                 defaults[CONF_PROTOCOL_VERSION] = device.get("version")
-                cloud_devs = self.hass.data[DOMAIN][DATA_CLOUD].device_list
+                cloud_devs = self.cloud_devices
                 if dev_id in cloud_devs:
                     defaults[CONF_LOCAL_KEY] = cloud_devs[dev_id].get(CONF_LOCAL_KEY)
                     defaults[CONF_FRIENDLY_NAME] = cloud_devs[dev_id].get(CONF_NAME)
