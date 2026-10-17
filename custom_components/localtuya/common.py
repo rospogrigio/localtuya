@@ -254,6 +254,7 @@ class TuyaDevice(pytuya.TuyaListener, pytuya.ContextualLogger):
             for entity in self._entities:
                 await entity.restore_state_when_connected()
 
+            @callback
             def _new_entity_handler(entity_id):
                 self.debug(
                     "New entity %s was added to %s",
