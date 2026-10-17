@@ -122,8 +122,11 @@ class TuyaOemCloudApi:
         self._sid = None
         self.device_list = {}
 
-    def _request(self, action, post_data=None, version="1.0", requires_sid=True):
-        """Perform a signed request."""
+    def _request(
+        self, action, post_data=None, version="1.0", requires_sid=True, params=None
+    ):
+        """Perform a signed request, with optional extra (unsigned) query params."""
+        extra_params = params or {}
         params = {
             "a": action,
             "appVersion": "1.1.6",
@@ -142,6 +145,7 @@ class TuyaOemCloudApi:
             "v": version,
             "sdkVersion": "3.10.0",
             "time": str(int(time.time())),
+            **extra_params,
         }
         if requires_sid:
             params["sid"] = self._sid
@@ -164,18 +168,18 @@ class TuyaOemCloudApi:
             raise OemApiError(r_json.get("errorCode"), r_json.get("errorMsg"))
         return r_json["result"]
 
-    def _api(self, action, post_data=None, version="1.0"):
+    def _api(self, action, post_data=None, version="1.0", params=None):
         """Perform a request, logging in again if the session has expired."""
         if self._sid is None:
             self._login()
         try:
-            return self._request(action, post_data, version)
+            return self._request(action, post_data, version, params=params)
         except OemApiError as ex:
             if ex.code != "USER_SESSION_INVALID":
                 raise
             _LOGGER.debug("%s session expired, logging in again", self._provider_name)
             self._login()
-            return self._request(action, post_data, version)
+            return self._request(action, post_data, version, params=params)
 
     def _login(self):
         """Log in with email and password."""
@@ -206,7 +210,7 @@ class TuyaOemCloudApi:
         devices = {}
         for group in self._api("tuya.m.location.list"):
             group_devs = self._api(
-                "tuya.m.my.group.device.list", {"gid": group["groupId"]}
+                "tuya.m.my.group.device.list", params={"gid": group["groupId"]}
             )
             for dev in group_devs:
                 if not dev.get("localKey"):
