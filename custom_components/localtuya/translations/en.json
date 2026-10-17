@@ -95,7 +95,7 @@
                     "client_secret": "Secret",
                     "user_id": "User ID",
                     "email": "App account email",
-                    "password": "App account password",
+                    "password": "App account password (leave empty to keep the current one)",
                     "country_code": "App account country calling code",
                     "user_name": "Username",
                     "no_cloud": "Do not configure Cloud API account"

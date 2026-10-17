@@ -40,6 +40,10 @@ ENDPOINTS = {
     "in": "https://a1.tuyain.com/api.json",
 }
 
+# Sessions shared between instances: the API rejects logins in quick succession,
+# e.g. when the integration is set up right after validating the credentials.
+_SESSIONS = {}
+
 USER_AGENT = "TY-UA=APP/Android/1.1.6/SDK/null"
 DEVICE_ID = "5fe5abb36728cce7b9cd2185625edccbd6d9bd787e40"
 REQUEST_TIMEOUT = 15
@@ -119,7 +123,13 @@ class TuyaOemCloudApi:
         self._password = password
         self._country_code = str(country_code)
         self._session = requests.Session()
-        self._sid = None
+        self._session_key = (
+            self._endpoint,
+            self._client_id,
+            email,
+            hashlib.sha256(str(password).encode("utf-8")).hexdigest(),
+        )
+        self._sid = _SESSIONS.get(self._session_key)
         self.device_list = {}
 
     def _request(
@@ -184,6 +194,8 @@ class TuyaOemCloudApi:
     def _login(self):
         """Log in with email and password."""
         self._sid = None
+        _SESSIONS.pop(self._session_key, None)
+        _LOGGER.debug("Logging in to %s app API", self._provider_name)
         token_info = self._request(
             "tuya.m.user.email.token.create",
             {"countryCode": int(self._country_code), "email": self._email},
@@ -204,6 +216,7 @@ class TuyaOemCloudApi:
             requires_sid=False,
         )
         self._sid = login_info["sid"]
+        _SESSIONS[self._session_key] = self._sid
 
     def _get_devices(self):
         """Retrieve all devices of all homes of the account."""
@@ -238,7 +251,9 @@ class TuyaOemCloudApi:
         return "ok"
 
     async def async_get_access_token(self):
-        """Log in to the OEM app API."""
+        """Log in to the OEM app API, unless a session is already available."""
+        if self._sid is not None:
+            return "ok"
         return await self._async_call(self._login)
 
     async def async_get_devices_list(self):

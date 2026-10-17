@@ -404,6 +404,7 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         defaults = {}
         defaults.update(user_input or {})
+        defaults[CONF_PASSWORD] = ""
 
         return self.async_show_form(
             step_id="user",
@@ -469,6 +470,11 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         placeholders = {}
         if user_input is not None:
+            # The stored password is not sent to the form: keep it if left empty
+            if not user_input.get(CONF_PASSWORD):
+                user_input[CONF_PASSWORD] = self.config_entry.data.get(
+                    CONF_PASSWORD, ""
+                )
             clean_cloud_input(user_input)
             if user_input.get(CONF_NO_CLOUD):
                 new_data = self.config_entry.data.copy()
@@ -506,6 +512,7 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         defaults = self.config_entry.data.copy()
         defaults.update(user_input or {})
         defaults[CONF_NO_CLOUD] = False
+        defaults[CONF_PASSWORD] = ""
 
         return self.async_show_form(
             step_id="cloud_setup",
