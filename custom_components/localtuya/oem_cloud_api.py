@@ -47,7 +47,6 @@ ENDPOINTS = {
 _SESSIONS = {}
 
 USER_AGENT = "TY-UA=APP/Android/1.1.6/SDK/null"
-DEVICE_ID = "5fe5abb36728cce7b9cd2185625edccbd6d9bd787e40"
 REQUEST_TIMEOUT = 15
 
 KEYS_TO_SIGN = [
@@ -124,6 +123,11 @@ class TuyaOemCloudApi:
         self._email = email
         self._password = password
         self._country_code = str(country_code)
+        # The app identifies the phone with a 44 hex digits id: derive a stable
+        # one per account, instead of all installations sharing the same id.
+        self._device_id = hashlib.sha256(
+            f"{self._client_id}:{email}".encode("utf-8")
+        ).hexdigest()[:44]
         self._session = requests.Session()
         self._session_key = (
             self._endpoint,
@@ -144,7 +148,7 @@ class TuyaOemCloudApi:
             "appVersion": "1.1.6",
             "appRnVersion": "5.14",
             "channel": "oem",
-            "deviceId": DEVICE_ID,
+            "deviceId": self._device_id,
             "platform": "Linux",
             "requestId": str(uuid.uuid4()),
             "lang": "en",
