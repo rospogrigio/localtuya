@@ -13,12 +13,16 @@
         "step": {
             "user": {
                 "title": "Main Configuration",
-                "description": "Input the credentials for Tuya Cloud API.",
+                "description": "Input the credentials for Tuya Cloud API. For the Tuya IoT Platform, fill in Client ID, Secret and User ID. For the Ledvance or Sylvania app, fill in the app's email, password and country calling code (e.g. 49 for Germany).",
                 "data": {
+                    "cloud_provider": "Cloud API provider",
                     "region": "API server region",
                     "client_id": "Client ID",
                     "client_secret": "Secret",
-                    "user_id": "User ID"
+                    "user_id": "User ID",
+                    "email": "App account email",
+                    "password": "App account password",
+                    "country_code": "App account country calling code"
                 }
             },
             "power_outlet": {

@@ -7,8 +7,44 @@ import logging
 import time
 
 import requests
+from homeassistant.const import (
+    CONF_CLIENT_ID,
+    CONF_CLIENT_SECRET,
+    CONF_EMAIL,
+    CONF_PASSWORD,
+    CONF_REGION,
+)
+
+from .const import (
+    CLOUD_PROVIDER_TUYA,
+    CONF_CLOUD_PROVIDER,
+    CONF_COUNTRY_CODE,
+    CONF_USER_ID,
+)
+from .oem_cloud_api import TuyaOemCloudApi
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def create_cloud_api(hass, data):
+    """Create the cloud API client for the configured cloud provider."""
+    provider = data.get(CONF_CLOUD_PROVIDER, CLOUD_PROVIDER_TUYA)
+    if provider == CLOUD_PROVIDER_TUYA:
+        return TuyaCloudApi(
+            hass,
+            data.get(CONF_REGION),
+            data.get(CONF_CLIENT_ID),
+            data.get(CONF_CLIENT_SECRET),
+            data.get(CONF_USER_ID),
+        )
+    return TuyaOemCloudApi(
+        hass,
+        data.get(CONF_REGION),
+        provider,
+        data.get(CONF_EMAIL),
+        data.get(CONF_PASSWORD),
+        data.get(CONF_COUNTRY_CODE),
+    )
 
 
 # Signature algorithm.
@@ -107,7 +143,7 @@ class TuyaCloudApi:
             return "Request failed, status ConnectionError"
 
         if not resp.ok:
-            return "Request failed, status " + str(resp.status)
+            return "Request failed, status " + str(resp.status_code)
 
         r_json = resp.json()
         if not r_json["success"]:
@@ -123,7 +159,7 @@ class TuyaCloudApi:
         )
 
         if not resp.ok:
-            return "Request failed, status " + str(resp.status)
+            return "Request failed, status " + str(resp.status_code)
 
         r_json = resp.json()
         if not r_json["success"]:

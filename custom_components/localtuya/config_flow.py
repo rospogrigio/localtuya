@@ -13,24 +13,35 @@ from homeassistant.const import (
     CONF_CLIENT_SECRET,
     CONF_DEVICE_ID,
     CONF_DEVICES,
+    CONF_EMAIL,
     CONF_ENTITIES,
     CONF_FRIENDLY_NAME,
     CONF_HOST,
     CONF_ID,
     CONF_NAME,
+    CONF_PASSWORD,
     CONF_PLATFORM,
     CONF_REGION,
     CONF_SCAN_INTERVAL,
     CONF_USERNAME,
 )
 from homeassistant.core import callback
+from homeassistant.helpers.selector import (
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
+)
 
-from .cloud_api import TuyaCloudApi
-from .common import pytuya
+from .cloud_api import create_cloud_api
+from .common import async_refresh_cloud_devices, pytuya
 from .const import (
     ATTR_UPDATED_AT,
+    CLOUD_PROVIDER_TUYA,
+    CLOUD_PROVIDERS,
     CONF_ACTION,
     CONF_ADD_DEVICE,
+    CONF_CLOUD_PROVIDER,
+    CONF_COUNTRY_CODE,
     CONF_DPS_STRINGS,
     CONF_EDIT_DEVICE,
     CONF_ENABLE_DEBUG,
@@ -75,14 +86,32 @@ CONFIGURE_SCHEMA = vol.Schema(
 
 CLOUD_SETUP_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_CLOUD_PROVIDER, default=CLOUD_PROVIDER_TUYA): vol.In(
+            CLOUD_PROVIDERS
+        ),
         vol.Required(CONF_REGION, default="eu"): vol.In(["eu", "us", "cn", "in"]),
         vol.Optional(CONF_CLIENT_ID): cv.string,
         vol.Optional(CONF_CLIENT_SECRET): cv.string,
         vol.Optional(CONF_USER_ID): cv.string,
+        vol.Optional(CONF_EMAIL): cv.string,
+        vol.Optional(CONF_PASSWORD): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.PASSWORD)
+        ),
+        vol.Optional(CONF_COUNTRY_CODE): cv.string,
         vol.Optional(CONF_USERNAME, default=DOMAIN): cv.string,
         vol.Required(CONF_NO_CLOUD, default=False): bool,
     }
 )
+
+# Credentials only used by some cloud providers, cleared when not used
+CLOUD_CREDENTIALS = [
+    CONF_CLIENT_ID,
+    CONF_CLIENT_SECRET,
+    CONF_USER_ID,
+    CONF_EMAIL,
+    CONF_PASSWORD,
+    CONF_COUNTRY_CODE,
+]
 
 
 DEVICE_SCHEMA = vol.Schema(
@@ -302,15 +331,31 @@ async def validate_input(hass: core.HomeAssistant, data):
     return dps_string_list(detected_dps)
 
 
+def clean_cloud_input(user_input):
+    """Make sure all credentials are set, clearing the ones that are not used."""
+    if user_input.get(CONF_NO_CLOUD):
+        used = []
+    elif (
+        user_input.get(CONF_CLOUD_PROVIDER, CLOUD_PROVIDER_TUYA) == CLOUD_PROVIDER_TUYA
+    ):
+        used = [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]
+    else:
+        used = [CONF_EMAIL, CONF_PASSWORD, CONF_COUNTRY_CODE]
+    for key in CLOUD_CREDENTIALS:
+        user_input[key] = user_input.get(key, "").strip() if key in used else ""
+    return user_input
+
+
 async def attempt_cloud_connection(hass, user_input):
     """Create device."""
-    cloud_api = TuyaCloudApi(
-        hass,
-        user_input.get(CONF_REGION),
-        user_input.get(CONF_CLIENT_ID),
-        user_input.get(CONF_CLIENT_SECRET),
-        user_input.get(CONF_USER_ID),
-    )
+    provider = user_input.get(CONF_CLOUD_PROVIDER, CLOUD_PROVIDER_TUYA)
+    if provider != CLOUD_PROVIDER_TUYA and not user_input[CONF_COUNTRY_CODE].isdigit():
+        return None, {
+            "reason": "authentication_failed",
+            "msg": "The country code must be a number, e.g. 49 for Germany.",
+        }
+
+    cloud_api = create_cloud_api(hass, user_input)
 
     res = await cloud_api.async_get_access_token()
     if res != "ok":
@@ -346,9 +391,8 @@ class LocaltuyaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         placeholders = {}
         if user_input is not None:
+            clean_cloud_input(user_input)
             if user_input.get(CONF_NO_CLOUD):
-                for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
-                    user_input[i] = ""
                 return await self._create_entry(user_input)
 
             cloud_api, res = await attempt_cloud_connection(self.hass, user_input)
@@ -425,11 +469,10 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         placeholders = {}
         if user_input is not None:
+            clean_cloud_input(user_input)
             if user_input.get(CONF_NO_CLOUD):
                 new_data = self.config_entry.data.copy()
                 new_data.update(user_input)
-                for i in [CONF_CLIENT_ID, CONF_CLIENT_SECRET, CONF_USER_ID]:
-                    new_data[i] = ""
                 self.hass.config_entries.async_update_entry(
                     self.config_entry,
                     data=new_data,
@@ -483,6 +526,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
 
             return await self.async_step_configure_device()
 
+        # Retrieve name and local_key of devices paired since the last refresh
+        await async_refresh_cloud_devices(self.hass, self.config_entry, force=True)
+
         self.discovered_devices = {}
         data = self.hass.data.get(DOMAIN)
 
@@ -526,6 +572,9 @@ class LocalTuyaOptionsFlowHandler(config_entries.OptionsFlow):
             self.entities = dev_conf[CONF_ENTITIES]
 
             return await self.async_step_configure_device()
+
+        # Retrieve local_keys of devices re-paired since the last refresh
+        await async_refresh_cloud_devices(self.hass, self.config_entry, force=True)
 
         devices = {}
         for dev_id, configured_dev in self.config_entry.data[CONF_DEVICES].items():
