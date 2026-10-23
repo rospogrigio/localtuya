@@ -10,6 +10,8 @@ import requests
 
 _LOGGER = logging.getLogger(__name__)
 
+CLOUD_HTTP_TIMEOUT = (5, 10)
+
 
 # Signature algorithm.
 def calc_sign(msg, key):
@@ -77,7 +79,10 @@ class TuyaCloudApi:
 
         if method == "GET":
             func = functools.partial(
-                requests.get, full_url, headers=dict(default_par, **headers)
+                requests.get,
+                full_url,
+                headers=dict(default_par, **headers),
+                timeout=CLOUD_HTTP_TIMEOUT,
             )
         elif method == "POST":
             func = functools.partial(
@@ -85,6 +90,7 @@ class TuyaCloudApi:
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
+                timeout=CLOUD_HTTP_TIMEOUT,
             )
             # _LOGGER.debug("BODY: [%s]", body)
         elif method == "PUT":
@@ -93,6 +99,7 @@ class TuyaCloudApi:
                 full_url,
                 headers=dict(default_par, **headers),
                 data=json.dumps(body),
+                timeout=CLOUD_HTTP_TIMEOUT,
             )
 
         resp = await self._hass.async_add_executor_job(func)
