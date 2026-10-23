@@ -4,6 +4,8 @@ import logging
 import time
 from datetime import timedelta
 
+import requests
+
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
@@ -150,7 +152,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
         elif not device.connected:
             device.async_connect()
 
-
     def _shutdown(event):
         """Clean up resources when shutting down."""
         discovery.close()
@@ -255,20 +256,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         # wait 1 second to make sure possible migration has finished
         await asyncio.sleep(1)
     else:
-        res = await tuya_api.async_get_access_token()
-        if res != "ok":
-            _LOGGER.error("Cloud API connection failed: %s", res)
-        else:
-            _LOGGER.info("Cloud API connection succeeded.")
-            res = await tuya_api.async_get_devices_list()
+        try:
+            res = await tuya_api.async_get_access_token()
+            if res != "ok":
+                _LOGGER.error("Cloud API connection failed: %s", res)
+            else:
+                _LOGGER.info("Cloud API connection succeeded.")
+                res = await tuya_api.async_get_devices_list()
+        except (requests.exceptions.RequestException, ValueError) as err:
+            _LOGGER.warning(
+                "Cloud API request failed (%s); continuing with cached local devices",
+                type(err).__name__,
+            )
     hass.data[DOMAIN][DATA_CLOUD] = tuya_api
 
     platforms = set()
     for dev_id in entry.data[CONF_DEVICES].keys():
         entities = entry.data[CONF_DEVICES][dev_id][CONF_ENTITIES]
-        platforms = platforms.union(
-            set(entity[CONF_PLATFORM] for entity in entities)
-        )
+        platforms = platforms.union(set(entity[CONF_PLATFORM] for entity in entities))
         hass.data[DOMAIN][TUYA_DEVICES][dev_id] = TuyaDevice(hass, entry, dev_id)
 
     # Setup all platforms at once, letting HA handling each platform and avoiding
