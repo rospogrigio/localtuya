@@ -22,13 +22,15 @@ DEFAULT_TIMEOUT = 6.0
 def decrypt_udp(message):
     """Decrypt encrypted UDP broadcasts."""
 
-    def _unpad(data):
-        return data[: -ord(data[len(data) - 1 :])]
-
+    if not message or len(message) % 16:
+        raise ValueError("Invalid encrypted discovery payload length")
     cipher = Cipher(algorithms.AES(UDP_KEY), modes.ECB(), default_backend())
     decryptor = cipher.decryptor()
-    return _unpad(decryptor.update(message) + decryptor.finalize()).decode()
-
+    decoded = decryptor.update(message) + decryptor.finalize()
+    padding = decoded[-1]
+    if not 1 <= padding <= 16 or decoded[-padding:] != bytes([padding]) * padding:
+        raise ValueError("Invalid encrypted discovery padding")
+    return decoded[:-padding].decode("utf-8")
 
 class TuyaDiscovery(asyncio.DatagramProtocol):
     """Datagram handler listening for Tuya broadcast messages."""
@@ -60,13 +62,30 @@ class TuyaDiscovery(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         """Handle received broadcast message."""
-        data = data[20:-8]
+        if not isinstance(data, (bytes, bytearray)) or len(data) <= 28:
+            return
+        # This decoder supports the existing 55aa discovery envelope only.
+        # New/unknown binary formats must not fall through to UTF-8 decoding.
+        if data[:4] != b"\x00\x00\x55\xaa" or data[-4:] != b"\x00\x00\xaa\x55":
+            return
+        payload = data[20:-8]
         try:
-            data = decrypt_udp(data)
-        except Exception:  # pylint: disable=broad-except
-            data = data.decode()
-
-        decoded = json.loads(data)
+            text = decrypt_udp(payload)
+        except (ValueError, UnicodeDecodeError):
+            try:
+                text = payload.decode("utf-8")
+            except UnicodeDecodeError:
+                return
+        try:
+            decoded = json.loads(text)
+        except (ValueError, TypeError):
+            return
+        if (
+            not isinstance(decoded, dict)
+            or not isinstance(decoded.get("gwId"), str)
+            or not decoded["gwId"]
+        ):
+            return
         self.device_found(decoded)
 
     def device_found(self, device):
