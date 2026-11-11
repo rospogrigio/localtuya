@@ -8,6 +8,7 @@ import homeassistant.util.color as color_util
 import voluptuous as vol
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
+    ATTR_COLOR_TEMP_KELVIN,
     ATTR_EFFECT,
     ATTR_HS_COLOR,
     DOMAIN,
@@ -429,10 +430,14 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
                 states[self._config.get(CONF_COLOR)] = color
                 states[self._config.get(CONF_COLOR_MODE)] = MODE_COLOR
 
-        if ColorMode.COLOR_TEMP in kwargs and ColorMode.COLOR_TEMP in self.supported_color_modes:
+        if ATTR_COLOR_TEMP_KELVIN in kwargs and ColorMode.COLOR_TEMP in self.supported_color_modes:
             if brightness is None:
                 brightness = self._brightness
-            mired = int(kwargs[ColorMode.COLOR_TEMP])
+            mired = int(
+                color_util.color_temperature_kelvin_to_mired(
+                    kwargs[ATTR_COLOR_TEMP_KELVIN]
+                )
+            )
             if self._color_temp_reverse:
                 mired = self._max_mired - (mired - self._min_mired)
             if mired < self._min_mired:
