@@ -261,11 +261,7 @@ class LocaltuyaLight(LocalTuyaEntity, LightEntity):
     @property
     def effect_list(self):
         """Return the list of supported effects for this light."""
-        if self.is_scene_mode or self.is_music_mode:
-            return self._effect
-        elif (color_mode := self.__get_color_mode()) in self._scenes.values():
-            return self.__find_scene_by_scene_data(color_mode)
-        return None
+        return self._effect_list
 
     @property
     def supported_color_modes(self) -> set[ColorMode] | set[str] | None:
